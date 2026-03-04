@@ -1,73 +1,69 @@
-# React + TypeScript + Vite
+# EduHub Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend application for the EduHub project, built with **React 19**, **TypeScript**, and **Vite**.
 
-Currently, two official plugins are available:
+This package is part of the [EduHub monorepo](../README.md).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Prerequisites
 
-## React Compiler
+- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- npm (comes with Node.js)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting Started
 
-## Expanding the ESLint configuration
+### 1. Navigate to the frontend directory
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+From the monorepo root:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd eduhub-frontend
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Install dependencies
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
+
+### 3. Start the development server
+
+```bash
+npm run dev
+```
+
+The app will be available at `http://localhost:5173` by default. Vite provides Hot Module Replacement (HMR), so changes to your code will reflect in the browser instantly.
+
+## Available Scripts
+
+| Script | Command | Description |
+|--------|---------|-------------|
+| `dev` | `npm run dev` | Start the Vite development server with HMR |
+| `build` | `npm run build` | Type-check with TypeScript and build for production |
+| `preview` | `npm run preview` | Preview the production build locally |
+| `lint` | `npm run lint` | Run ESLint across the codebase |
+
+## Project Structure
+
+```
+eduhub-frontend/
+├── public/              # Static assets (served as-is, not processed by Vite)
+├── src/
+│   ├── assets/          # Images and other assets imported by components
+│   ├── App.tsx          # Root application component
+│   ├── App.css          # App component styles
+│   ├── main.tsx         # Entry point — mounts the React app to the DOM
+│   └── index.css        # Global styles
+├── index.html           # HTML entry point
+├── vite.config.ts       # Vite configuration
+├── tsconfig.json        # TypeScript project references
+├── tsconfig.app.json    # TypeScript config for app source code
+├── tsconfig.node.json   # TypeScript config for build tooling
+└── eslint.config.js     # ESLint configuration (flat config format)
+```
+
+## Tech Stack
+
+- **React** 19 — UI library
+- **TypeScript** 5.9 — Type-safe JavaScript (strict mode enabled)
+- **Vite** 7 — Build tool and dev server
+- **ESLint** 9 — Linting with React hooks and refresh plugins
