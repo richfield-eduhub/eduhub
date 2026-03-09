@@ -76,11 +76,21 @@ eduhub/
 ### 1. Clone the repo
 
 ```bash
-git clone <repo-url>
+git clone git@github.com:richfield-eduhub/eduhub.git
 cd eduhub
 ```
 
-### 2. Configure environment variables
+### 2. Create a new branch
+
+> **Note:** Pushing directly to `main` is not allowed. Always work on a feature branch.
+
+```bash
+git checkout -b your-feature-branch
+```
+
+Use a descriptive branch name, e.g. `feat/add-login`, `fix/user-auth`, `docs/update-readme`.
+
+### 3. Configure environment variables
 
 ```bash
 cp backend/.env.example backend/.env
@@ -108,13 +118,13 @@ MAIL_PASS=yourpassword
 MAIL_FROM="EduHub <no-reply@eduhub.co.za>"
 ```
 
-### 3. Install dependencies
+### 4. Install dependencies
 
 ```bash
 make setup
 ```
 
-### 4. Start everything
+### 5. Start everything
 
 ```bash
 make dev
