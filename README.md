@@ -132,13 +132,22 @@ make dev
 
 This will:
 1. Start PostgreSQL in Docker
-2. Wait until the database is ready
-3. Start the backend — migrations run automatically on startup
-4. Start the frontend
+2. Start pgAdmin (database GUI)
+3. Wait until the database is ready
+4. Start the backend — migrations run automatically on startup
+5. Start the frontend
 
-- Backend API: `http://localhost:3000`
-- Frontend: `http://localhost:5173`
-- Health check: `GET /api/health`
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:5173 |
+| Backend API | http://localhost:3000 |
+| Health check | http://localhost:3000/api/health |
+| PostgreSQL | `localhost:5432` |
+| pgAdmin | http://localhost:5050 |
+
+> **pgAdmin login:** `admin@eduhub.co.za` / `admin`
+>
+> To connect pgAdmin to the database, add a new server with host `db`, port `5432`, username `postgres`, and the password from your `.env`.
 
 ---
 
