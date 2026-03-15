@@ -80,11 +80,13 @@ The current fragmented approach at Richfield suffers from:
 EduHub is proposed to **merge and unify** all current Richfield systems and processes into a single, integrated digital platform. The primary goal is to:
 
 **Eliminate the fragmented ecosystem** by creating one unified system that combines:
+
 - The administrative and academic functions currently in iEnabler
 - The learning management capabilities of Moodle (future integration)
 - All paper-based processes (applications, registrations, course changes)
 
 **Eliminate physical forms entirely** by digitizing all processes:
+
 - Convert PDF/MS Word application forms to online web forms
 - Replace paper registration forms with online self-service registration
 - Transform course change forms into digital workflows
@@ -124,12 +126,14 @@ The stakeholders involved in this system include:
 **Role**: Individuals applying for admission to the institution
 
 **Needs**:
+
 - Easy online application submission
 - Ability to upload required documents (ID, certificates, transcripts)
 - Real-time application status tracking
 - Email notifications about application progress
 
 **Pain Points**:
+
 - Current paper-based applications require physical submission
 - No visibility into application status
 - Long waiting times for admission decisions
@@ -139,6 +143,7 @@ The stakeholders involved in this system include:
 **Role**: Enrolled students managing their academic journey
 
 **Needs**:
+
 - Secure login with password reset functionality
 - Profile management (personal details, contact information, emergency contacts)
 - Online course registration and subject selection
@@ -147,6 +152,7 @@ The stakeholders involved in this system include:
 - Access to academic calendar and announcements
 
 **Pain Points**:
+
 - Current registration requires physical presence and long queues
 - Cannot update personal information without visiting administration office
 - Lack of visibility into available courses and prerequisites
@@ -156,6 +162,7 @@ The stakeholders involved in this system include:
 **Role**: Faculty members teaching courses and managing student academic activities
 
 **Needs**:
+
 - View assigned courses and enrolled students
 - Access student contact information
 - Post course announcements and materials
@@ -163,6 +170,7 @@ The stakeholders involved in this system include:
 - View student academic history
 
 **Pain Points**:
+
 - No digital access to class rosters
 - Difficult to communicate with entire class
 - Cannot track which students have registered for courses
@@ -172,12 +180,14 @@ The stakeholders involved in this system include:
 **Role**: Library staff managing student library access and services
 
 **Needs**:
+
 - Verify student enrollment status
 - View student information for library card issuance
 - Access student contact details
 - Check student academic standing
 
 **Pain Points**:
+
 - Must manually verify student status
 - No integrated system to confirm enrollment
 - Difficulty tracking library privileges by student status
@@ -187,6 +197,7 @@ The stakeholders involved in this system include:
 **Role**: Administrative staff managing student records and institutional processes
 
 **Needs**:
+
 - Review and approve student applications
 - Generate student numbers automatically
 - Manage course offerings and schedules
@@ -195,6 +206,7 @@ The stakeholders involved in this system include:
 - Manage system users and permissions
 
 **Pain Points**:
+
 - Manual student number generation prone to duplicates
 - Time-consuming application review process
 - Difficult to generate enrollment statistics
@@ -205,6 +217,7 @@ The stakeholders involved in this system include:
 **Role**: Executive leadership making strategic decisions
 
 **Needs**:
+
 - Access to enrollment trends and statistics
 - Application conversion rates
 - Course popularity and capacity reports
@@ -212,6 +225,7 @@ The stakeholders involved in this system include:
 - System usage analytics
 
 **Pain Points**:
+
 - No real-time access to institutional data
 - Reports must be manually compiled
 - Difficult to make data-driven decisions
@@ -221,6 +235,7 @@ The stakeholders involved in this system include:
 Implementing the EduHub system will provide the following benefits for Richfield:
 
 ### Operational Benefits
+
 - **System Consolidation**: Reduce from 3 systems (Moodle + iEnabler + forms) to 1 unified platform
 - **Eliminate Physical Forms**: 100% paperless operations - no more PDF/Word forms
 - **Reduced Processing Time**: Application processing reduced from 2-3 weeks (form processing) to 3-5 days (digital workflow)
@@ -228,23 +243,27 @@ Implementing the EduHub system will provide the following benefits for Richfield
 - **Single Login**: Staff and students use one system instead of juggling multiple platforms
 
 ### Student Benefits
+
 - **24/7 Self-Service**: Submit applications, register for courses, make changes anytime - no office hours limitation
 - **Instant Confirmations**: Real-time registration confirmations instead of waiting for form processing
 - **No Printing/Scanning**: Complete all processes online without downloading/printing forms
 - **Unified Experience**: One portal for everything instead of navigating Moodle + iEnabler + forms
 
 ### Administrative Benefits
+
 - **Improved Data Accuracy**: Single source of truth eliminates inconsistencies between Moodle, iEnabler, and paper forms
 - **Digital Workflows**: Automated approval processes replace manual form routing
 - **Better Reporting**: Consolidated analytics from one system instead of aggregating Moodle + iEnabler data
 - **Audit Trail**: Complete digital history of all actions (impossible with paper forms)
 
 ### Financial Benefits
+
 - **Cost Savings**: Elimination of printing, paper, scanning equipment, and physical storage for forms
 - **Staff Efficiency**: Reduce administrative time spent on form processing and manual data entry
 - **Reduced Errors**: Eliminate costly mistakes from manual transcription of forms
 
 ### Strategic Benefits
+
 - **Scalability**: One modern system can grow with Richfield instead of managing multiple legacy systems
 - **Better Student Experience**: Competitive advantage over institutions still using paper forms
 - **Data-Driven Decisions**: Real-time analytics support institutional planning
@@ -261,248 +280,55 @@ This investigation focused on understanding how South African universities and c
 
 ## Investigation Methods
 
-### 1. Multi-Institutional Case Study Analysis
+### 1. What South African Universities Are Using (Case Studies)
 
-We conducted in-depth analysis of digital systems used by six major South African tertiary institutions to identify patterns, commonalities, and challenges. This section provides detailed examination of each institution's technology ecosystem.
+We looked at six universities to see what systems they're running. Spoiler alert: they all have the same problem - too many disconnected systems.
 
----
+#### **Case Study 1: University of South Africa UNISA** - 400,000+ students (UNISA, 2024)
 
-#### **Case Study 1: University of South Africa (UNISA)**
+Uses: **myModules** (Moodle) for learning + **myAdmin** for registration + **myUnisa** as main portal + **myLife** for email
 
-**Institution Profile**:
-- South Africa's largest open distance learning university
-- Over 400,000 students enrolled (UNISA, 2024)
-- Fully online and distance education model
-
-**Current System Architecture**:
-
-UNISA operates a **three-system ecosystem**:
-
-1. **myModules (Moodle-based LMS)** (UNISA, 2024)
-   - URL: https://mymodules.unisa.ac.za
-   - **Purpose**: Learning management and course delivery
-   - **Functions**: Course materials, assignments, forums, quizzes, lecturer-student interaction
-   - **Access**: Via web browser or Moodle mobile app
-
-2. **myAdmin (Administrative Portal)** (UNISA, 2024)
-   - **Purpose**: Student administration and services
-   - **Functions**: Registration, course enrollment, academic records management, administrative tasks
-
-3. **myUnisa (Main Gateway Portal)** (UNISA, 2024)
-   - **Purpose**: Central access point
-   - **Functions**: News, announcements, links to myModules and myAdmin
-   - **Authentication**: Single credentials for all sub-portals
-
-4. **myLife Email** (UNISA, 2024)
-   - Official UNISA student email system
-   - Uses same authentication credentials
-
-**System Fragmentation Issues**:
-- Students must navigate between myModules (for learning), myAdmin (for registration/records), and myUnisa (for information)
-- While authentication is unified, the user experience is fragmented with different interfaces and navigation patterns
-- Course enrollment in myAdmin doesn't automatically sync with myModules in real-time
-- Lecturers access student lists in myModules but student records are in myAdmin
-- System maintenance requires updating multiple platforms separately
-
-**Technology Assessment**:
-- **LMS**: Moodle (open-source, customizable)
-- **SIS**: Custom administrative portal
-- **Integration**: Moderate - shared authentication but separate databases
-- **Cost**: Ongoing maintenance of multiple platforms
+The problem: Students navigate between three separate systems. Course registrations in myAdmin may not immediately reflect in myModules, suggesting synchronization delays. Lecturers likely need to check multiple systems for student information. While sharing login credentials, each system has its own interface and user experience.
 
 ---
 
-#### **Case Study 2: Stellenbosch University**
+#### **Case Study 2: Stellenbosch University** - 32,000 students (Stellenbosch University, 2024)
 
-**Institution Profile**:
-- Leading research-intensive university
-- Approximately 32,000 students
-- Mix of contact and online learning (Stellenbosch University, 2024)
+Uses: **SUNLearn** (Moodle) for learning + **MySun** for admin + **SUN Applicant Portal** for applications
 
-**Current System Architecture**:
-
-Stellenbosch operates a **multi-platform ecosystem**:
-
-1. **SUNLearn (Moodle-based LMS)** (Stellenbosch University, 2024)
-   - URL: https://learn.sun.ac.za
-   - **Purpose**: Virtual learning space for courses
-   - **Functions**: Learning content, activities, assessments, student-lecturer engagement
-   - **Technology**: Moodle 5.0 with Lambda2 theme
-   - **Support**: Centre for Learning Technologies provides training and support
-   - **Mobile**: Official SUNLearn app for offline access
-
-2. **MySun (Student Portal)** (Stellenbosch University, 2024)
-   - URL: https://my.sun.ac.za
-   - **Purpose**: Administrative services and registration
-   - **Functions**: Course registration, personal information, academic records, timetables, financial information
-
-3. **SUN Student Applicant Portal** (Stellenbosch University, 2024)
-   - URL: https://student.sun.ac.za/applicant-portal/
-   - **Purpose**: Admissions and applications
-   - **Functions**: Online applications, document submission, application tracking
-
-**System Fragmentation Issues**:
-- Three completely separate systems with different URLs and interfaces
-- Students must know which portal to use for which purpose (learning vs. admin vs. applications)
-- SUNLearn for course content, MySun for registration - no seamless integration
-- Application data doesn't automatically flow into MySun upon admission
-- Changes in MySun (like course registration) may not immediately reflect in SUNLearn course enrollments
-- IT staff must maintain three different platforms with different technologies
-
-**Technology Assessment**:
-- **LMS**: Moodle (open-source)
-- **SIS**: Custom portal infrastructure
-- **Application System**: Separate custom portal
-- **Integration**: Limited - separate systems with minimal real-time synchronization
+The problem: Three completely separate URLs and systems. The application data from the applicant portal needs to be transferred to MySun upon admission. IT staff must maintain three different platforms with different technologies.
 
 ---
 
-#### **Case Study 3: University of Pretoria**
+#### **Case Study 3: University of Pretoria UP** - 50,000+ students (University of Pretoria, 2024)
 
-**Institution Profile**:
-- One of South Africa's top research universities
-- Over 50,000 students
-- Comprehensive residential and distance learning programs
+Uses: **ClickUP** (Blackboard - just a rebranded name) for learning + **UP Portal** for admin
 
-**Current System Architecture**:
-
-University of Pretoria uses a **dual-platform system**:
-
-1. **ClickUP (Blackboard-based LMS)**
-   - URL: https://clickup.up.ac.za
-   - **Purpose**: Learning management system
-   - **Technology**: Built on Blackboard Learn platform (commercial LMS)
-   - **Functions**: Course materials, assignment submission, discussions, lecturer communication, online assessments
-   - **Access**: Via web or Blackboard mobile app
-   - **Features**: Modern interface, robust gradebook, integrated video conferencing
-
-2. **UP Student Portal**
-   - URL: https://www1.up.ac.za
-   - **Purpose**: Administrative services
-   - **Functions**: Registration, academic records, student information, financial services, timetables
-   - **Integration**: ClickUP accessible via portlet in UP Portal
-
-**Login System**:
-- Username format: u[student number] (e.g., u12345678)
-- Single password for UP Portal, ClickUP, and campus Wi-Fi
-- Three access methods: via UP home page, direct ClickUP URL, or mobile app
-
-**System Fragmentation Issues**:
-- **Commercial LMS Costs**: Blackboard is expensive ($9,500+/year license fees)
-- **Vendor Lock-In**: Dependent on Blackboard for updates, features, and support
-- Separate databases for learning (ClickUP) and administration (UP Portal)
-- Limited customization compared to open-source alternatives
-- Student data exists in both systems, requiring synchronization
-- Reporting requires aggregating data from multiple sources
-
-**Technology Assessment**:
-- **LMS**: Blackboard Learn (commercial, expensive)
-- **SIS**: Custom UP Portal
-- **Integration**: Portlet-based access but still separate systems
-- **Annual Cost**: Significant licensing fees for Blackboard
+The problem: Blackboard is a commercial product requiring licensing fees to an international vendor. Student data exists in two separate systems. Commercial software creates vendor dependency, limiting customization options and making institutions subject to vendor pricing policies.
 
 ---
 
-#### **Case Study 4: University of Cape Town (UCT)**
+#### **Case Study 4: University of Cape Town UCT** - 29,000 students
 
-**Institution Profile**:
-- Africa's top-ranked university
-- Approximately 29,000 students
-- Research-intensive with strong international reputation
+Uses: **Vula** (customized Moodle) for learning + **Self-Service Portal** for admin
 
-**Current System Architecture**:
-
-1. **Vula (Moodle-based LMS)**
-   - **Purpose**: Learning platform for course delivery
-   - **Technology**: Initially WebCT, migrated to Moodle, developed OSS Vula variant
-   - **Functions**: Course sites, learning materials, collaboration tools
-   - **Customization**: Heavily customized Moodle implementation
-
-2. **UCT Student Self-Service Portal**
-   - **Purpose**: Student administration and registration
-   - **Functions**: Online registration, academic records, personal information
-   - **Access**: Separate from Vula learning platform
-
-**System Fragmentation Issues**:
-- Vula handles learning, separate portal handles administration
-- Custom Vula variant requires ongoing development and maintenance
-- Integration challenges between learning and administrative systems
-- Multiple logins and different user experiences
+The problem: UCT developed a custom Moodle variant called Vula, which requires ongoing development and maintenance resources. Despite this customization, it remains separate from their administrative portal.
 
 ---
 
-#### **Case Study 5: University of KwaZulu-Natal (UKZN)**
+#### **Case Study 5: University of KwaZulu-Natal UKZN** - 45,000 students across 5 campuses
 
-**Institution Profile**:
-- Major research university with 5 campuses
-- Over 45,000 students
-- Diverse mix of programs and delivery modes
+Uses: **Moodle** for learning + **Student Central** for admin
 
-**Current System Architecture**:
-
-1. **Moodle LMS**
-   - **Purpose**: Learning management for course delivery
-   - **Research Context**: Subject of academic studies on LMS adoption and usage by UKZN lecturers
-   - **Functions**: Standard Moodle features for teaching and learning
-
-2. **Student Central**
-   - **Purpose**: Main portal for student services
-   - **Functions**: Current UKZN students access academic and administrative services
-   - **Integration**: Separate from Moodle learning platform
-
-**System Fragmentation Issues**:
-- Academic studies highlight challenges with Moodle adoption among lecturers
-- Separate learning and administrative portals create disjointed experience
-- Students must switch between platforms for different tasks
+The problem: Two separate systems operating independently. Research indicates challenges with LMS adoption among lecturers, potentially related to integration issues between learning and administrative systems.
 
 ---
 
-#### **Case Study 6: Richfield Graduate Institute of Technology**
+#### **Case Study 6: Richfield Graduate Institute of Technology** - Multiple campuses (Richfield Graduate Institute of Technology, 2024)
 
-**Institution Profile**:
-- Private higher education institution
-- Multiple campuses across South Africa
-- Focus on career-oriented qualifications
+Uses: **Moodle** for learning + **iEnabler** for admin/finance + **Application Portal** for applications
 
-**Current System Architecture**:
-
-Richfield operates a **modern three-platform system**:
-
-1. **Richfield Learning (Moodle-based LMS)** (Richfield Graduate Institute of Technology, 2024)
-   - URL: https://learning.richfield.ac.za
-   - **Purpose**: Learning management and module delivery
-   - **Technology**: Moodle with Lambda2 theme
-   - **Functions**: Course materials, activities, assessments
-   - **Language Support**: English, Afrikaans, French, isiZulu
-   - **Mobile**: Moodle mobile app support
-
-2. **iEnabler (Student Information System)** (Richfield Graduate Institute of Technology, 2024)
-   - URL: https://rgitie.richfield.ac.za
-   - **Purpose**: Administration, financial, academic, and personal details
-   - **Technology**: ITS Tertiary Software - iEnabler platform
-   - **Functions**: Student administration, financing/payments, academic records, personal information management
-   - **Provider**: Integrated Tertiary Software (ITS) - widely used across SA institutions
-
-3. **Richfield Application Portal** (Richfield Graduate Institute of Technology, 2024)
-   - URL: https://application.richfield.ac.za
-   - **Purpose**: Online admissions and applications
-   - **Technology**: Web-based application system with service worker support
-   - **Functions**: Application submission, document uploads, application tracking
-   - **Features**: Real-time form validation, performance monitoring (New Relic), offline capability
-
-**Progress Made**:
-- Richfield has modernized with web-based systems (not paper-based)
-- All three portals are accessible online 24/7
-- Application portal uses modern web technologies with progressive features
-
-**Remaining Fragmentation Challenges**:
-- Three separate URLs students must remember and navigate
-- Different login credentials or authentication flows for each system
-- Application data may require manual transfer to iEnabler upon admission
-- Course offerings in iEnabler may need manual synchronization with Moodle
-- No unified view of student journey from application → enrollment → learning
-- Staff must access multiple systems to get complete student picture
-- Reporting requires aggregating data from three separate databases
+The problem: Three separate systems with different URLs. While Richfield has modernized with web-based platforms (a significant improvement over paper-based processes), students and staff still navigate multiple systems. Data synchronization between systems appears to require manual processes or scheduled transfers.
 
 ---
 
@@ -514,20 +340,21 @@ Across all six institutions, a consistent pattern emerges:
 
 **Learning Management System (LMS)** + **Student Information System (SIS)** + **Often Separate Application Portal**
 
-| Institution | LMS Technology | SIS Technology | Application System | Integration Level |
-|-------------|---------------|----------------|-------------------|-------------------|
-| UNISA | Moodle (myModules) | Custom (myAdmin) | Part of myAdmin | Moderate |
-| Stellenbosch | Moodle (SUNLearn) | Custom (MySun) | Separate Portal | Low |
-| University of Pretoria | Blackboard (ClickUP) | Custom (UP Portal) | In UP Portal | Moderate |
-| UCT | Moodle (Vula) | Custom Portal | In Portal | Low |
-| UKZN | Moodle | Student Central | In Student Central | Low |
-| Richfield | Moodle | iEnabler (ITS) | Separate Portal | Low |
+| Institution            | LMS Technology       | SIS Technology     | Application System | Integration Level |
+| ---------------------- | -------------------- | ------------------ | ------------------ | ----------------- |
+| UNISA                  | Moodle (myModules)   | Custom (myAdmin)   | Part of myAdmin    | Moderate          |
+| Stellenbosch           | Moodle (SUNLearn)    | Custom (MySun)     | Separate Portal    | Low               |
+| University of Pretoria | Blackboard (ClickUP) | Custom (UP Portal) | In UP Portal       | Moderate          |
+| UCT                    | Moodle (Vula)        | Custom Portal      | In Portal          | Low               |
+| UKZN                   | Moodle               | Student Central    | In Student Central | Low               |
+| Richfield              | Moodle               | iEnabler (ITS)     | Separate Portal    | Low               |
 
 **Key Observation**: **100% of surveyed institutions use fragmented multi-system architectures**
 
 #### **Industry Statistics**
 
 Based on research findings from educational technology studies:
+
 - **34%** of South African public universities use Moodle LMS (Czerniewicz et al., 2020)
 - **46%** use Blackboard Learn LMS (Czerniewicz et al., 2020)
 - **iEnabler** (ITS software) is widely deployed across universities and TVET colleges (ITWeb, 2023)
@@ -536,519 +363,184 @@ Based on research findings from educational technology studies:
 
 ---
 
-### 2. Understanding System Categories: LMS vs. SIS
+### 2. Quick Explainer: What's an LMS and SIS Anyway?
 
-To fully understand the fragmentation problem, it's essential to understand what these different system types are and what they do.
+Before we go further, let's clarify what these acronyms mean because you'll see them everywhere in this document.
 
-#### **Learning Management Systems (LMS)**
+**LMS (Learning Management System)** = Where the actual learning happens
 
-**Definition**: A Learning Management System is a software application for the administration, documentation, tracking, reporting, automation, and delivery of educational courses, training programs, or learning and development programs.
+- Think: Course materials, assignments, quizzes, grades, forums
+- Used by: Students and lecturers
+- Examples: Moodle, Blackboard, Canvas
+- Data: Course-specific stuff (assignments, grades for this semester)
 
-**Primary Purpose**: **Teaching and Learning**
+**SIS (Student Information System)** = Where admin and records are managed
 
-**Core Functions**:
-- **Course Content Delivery**: Host and deliver learning materials (videos, PDFs, presentations, documents)
-- **Assignment Management**: Lecturers create and distribute assignments; students submit work
-- **Assessments**: Quizzes, tests, and exams with automated grading
-- **Communication Tools**: Forums, messaging, announcements for lecturer-student interaction
-- **Grade Management**: Track student performance, calculate grades, publish grade books
-- **Collaboration**: Group projects, discussion boards, peer reviews
-- **Progress Tracking**: Monitor student engagement with course materials
+- Think: Registration, student numbers, transcripts, fees, personal info
+- Used by: Admin staff, finance, registrars, management
+- Examples: iEnabler, Banner, custom portals
+- Data: Permanent records (your student number, graduation date, full academic history)
 
-**Users**: Primarily students and lecturers
-
-**Data Type**: Temporary/transactional data tied to specific courses and semesters
-
-**Example LMS Platforms**:
-- Moodle (open-source)
-- Blackboard Learn (commercial)
-- Canvas LMS (commercial)
-- Google Classroom
-
-#### **Student Information Systems (SIS)**
-
-**Definition**: A Student Information System (also called Student Management System) is a software application that manages student data, including demographics, enrollment, academic records, and administrative processes.
-
-**Primary Purpose**: **Student Administration and Records Management**
-
-**Core Functions**:
-- **Student Registration**: Course enrollment, add/drop, schedule management
-- **Admissions**: Application processing, document management, admission decisions
-- **Academic Records**: Transcripts, grades, degrees, academic history (permanent records)
-- **Student Demographics**: Personal information, contact details, emergency contacts
-- **Financial Management**: Fee payments, financial aid, billing, student accounts
-- **Timetabling**: Class schedules, room assignments, lecturer assignments
-- **Reporting**: Institutional analytics, enrollment statistics, compliance reports
-- **Student Services**: Library access, accommodation, health services integration
-
-**Users**: Students, administrators, registrars, financial staff, institutional management
-
-**Data Type**: Permanent institutional records that persist throughout and beyond student enrollment
-
-**Example SIS Platforms**:
-- iEnabler (ITS software - South Africa)
-- Banner (Ellucian)
-- PeopleSoft Campus Solutions
-- Custom institutional portals
-
-#### **Key Differences Summary**
-
-| Aspect | Learning Management System (LMS) | Student Information System (SIS) |
-|--------|-----------------------------------|-----------------------------------|
-| **Primary Focus** | Teaching & Learning | Administration & Records |
-| **Main Users** | Lecturers & Students | Administrators & Staff |
-| **Data Lifespan** | Course/semester duration | Permanent institutional records |
-| **Key Functions** | Content delivery, assignments, grades | Registration, records, finances |
-| **Typical Access** | Course-specific access | Student-wide institutional access |
-| **Examples** | Moodle, Blackboard, Canvas | iEnabler, Banner, PeopleSoft |
-
-#### **Why Both Are Needed (In Traditional Approaches)**
-
-Educational institutions need both capabilities:
-- **LMS**: Facilitates day-to-day teaching and learning activities
-- **SIS**: Manages institutional records, enrollment, and administrative processes
-
-However, **separating these into different systems creates the integration challenges** observed across all surveyed institutions.
+**The Problem**: Universities need both. But when they're separate systems, they don't talk to each other. Register for a course in the SIS? Doesn't automatically show up in the LMS. Submit an assignment in the LMS? SIS doesn't know you're actively enrolled. This is the fragmentation problem every single surveyed institution faces.
 
 ---
 
-### 3. Detailed Technology Comparison
+### 3. The Main Players: Moodle vs Blackboard vs iEnabler
 
-This section provides in-depth analysis of the major platforms observed in South African institutions.
+Let's look at what most SA universities are using and why each one has problems.
 
-#### **3.1 Moodle LMS Analysis**
+#### **Moodle** - Used by 34% of SA universities (Czerniewicz et al., 2020)
 
-**Technology Overview**:
-- **Type**: Open-source Learning Management System
-- **Developer**: Moodle Community (worldwide collaboration)
-- **First Released**: 2002
-- **Current Version**: Moodle 5.0 (2025)
-- **Usage**: Used by UNISA, Stellenbosch, UCT, UKZN, Richfield, and many others
+Who uses it: UNISA, Stellenbosch, UCT, UKZN, Richfield
 
-**Core Strengths**:
+**The Good**:
 
-1. **Cost-Effective**:
-   - Free open-source software (no licensing fees)
-   - Only costs: hosting, customization, support
-   - Significantly cheaper than commercial alternatives
+- Free and open-source (no license fees)
+- Over 2,000 plugins available
+- Large worldwide community support
+- Modern features in 5.0 include AI integration, mobile app, accessibility compliance (Pimenko, 2025; Moodle, 2025)
 
-2. **Extensive Customization**:
-   - Over 2,000 plugins available
-   - Highly customizable to institutional needs
-   - Custom themes and branding
-   - Can modify source code
+**The Bad**:
 
-3. **Large Community**:
-   - Massive worldwide user base
-   - Active development community
-   - Extensive documentation and forums
-   - Regular updates and security patches
+- User interface can feel dated compared to commercial alternatives
+- Requires hosting infrastructure and ongoing maintenance
+- Needs technical staff for setup and support
+- **Big problem: It's ONLY an LMS**. Doesn't handle admissions, registration, or financial management - that's why universities need a separate SIS.
 
-4. **Modern Features (Moodle 5.0)** (Pimenko, 2025; Moodle, 2025):
-   - **AI Integration**: ChatGPT connector, AI-powered quiz generation
-   - **Accessibility**: WCAG 2.2 AA compliant
-   - **Mobile Support**: Official Moodle app for iOS and Android
-   - **Collaborative Tools**: Forums, workshops, peer assessment
-   - **Rich Content**: Support for H5P interactive content, multimedia
-   - **Analytics**: Learning analytics and reporting tools
-
-5. **Pedagogy-Focused**:
-   - Built for educators by educators
-   - Supports multiple teaching approaches
-   - Strong tools for student engagement
-
-**Limitations**:
-
-1. **Learning Curve**:
-   - Interface can feel dated compared to modern commercial LMS
-   - Requires technical expertise for advanced customization
-   - Setup and configuration can be complex
-
-2. **User Interface**:
-   - Not as polished or modern as commercial competitors
-   - Navigation can be confusing for new users
-   - Requires custom theming for modern look
-
-3. **Hosting Requirements**:
-   - Institutions must provide own hosting or pay hosting provider
-   - Requires technical staff for maintenance and updates
-   - Performance optimization needed for large installations
-
-4. **Limited SIS Functions**:
-   - **Moodle is ONLY an LMS** - not a complete student management system
-   - No admissions or application management
-   - No financial management or billing
-   - No comprehensive academic records system
-   - **This is why institutions need separate SIS alongside Moodle**
-
-**Cost Analysis** (Moodle, 2025; Synergy Learning, 2024):
-- Software License: **R0 (Free open-source)**
-- Hosting: R9,000-R90,000/year depending on scale
-- Customization: Variable (development costs)
-- Support: Can use community or paid support
-
-**Institutions Using Moodle**: UNISA, Stellenbosch, UCT, UKZN, Richfield (Moodle Stats, 2025)
+**Cost**: Open-source (free), but requires hosting and technical support (Moodle, 2025; Synergy Learning, 2024)
 
 ---
 
-#### **3.2 Blackboard Learn Analysis**
+#### **Blackboard** - Used by 46% of SA universities (Czerniewicz et al., 2020)
 
-**Technology Overview**:
-- **Type**: Commercial Learning Management System
-- **Developer**: Anthology (formerly Blackboard Inc.)
-- **First Released**: 1997
-- **Market Position**: Market leader in higher education LMS
-- **Usage**: Used by University of Pretoria (ClickUP), 46% of SA universities
+Who uses it: UP (calls it "ClickUP"), and many others
 
-**Core Strengths**:
+**The Good**:
 
-1. **Professional Polish**:
-   - Modern, sleek user interface
-   - Intuitive navigation designed for ease of use
-   - Professional design and user experience
-   - Streamlined workflows
+- Polished, modern interface
+- Advanced analytics and reporting capabilities
+- Professional vendor support
+- Integrates well with Microsoft/Google tools
 
-2. **Robust Features**:
-   - **Rich Gradebook**: Sophisticated grade management and calculations
-   - **Advanced Analytics**: Detailed student progress and engagement analytics
-   - **Reporting**: Comprehensive reporting for students and instructors
-   - **Video Conferencing**: Integrated Blackboard Collaborate video tools
-   - **Mobile Excellence**: High-quality native mobile apps
+**The Bad**:
 
-3. **Integration Ecosystem**:
-   - Seamless integration with Microsoft Office and Google Suite
-   - Pre-built integrations with major educational tools
-   - Easy third-party app integration through Building Blocks
-   - Enterprise SSO (Single Sign-On) support
+- **Commercial product with licensing fees** (Paradiso Solutions, 2024; BetterBuys, 2024)
+- Vendor lock-in - proprietary code means limited customization options
+- Fees go to international vendor rather than staying in SA
+- **Same big problem: It's ONLY an LMS**. Still requires separate SIS.
 
-4. **Enterprise Support**:
-   - Dedicated vendor support and training
-   - Regular updates and feature releases
-   - Professional implementation assistance
-   - 24/7 technical support
+**Cost**: Commercial licensing model requiring annual fees for license, implementation, training, and ongoing support
 
-5. **Security**:
-   - Enterprise-grade security features
-   - Compliance certifications (GDPR, FERPA, etc.)
-   - Advanced user authentication options
-   - Regular security audits
-
-**Limitations**:
-
-1. **High Cost** (Paradiso Solutions, 2024; Research.com, 2024):
-   - **Licensing: R171,000+/year** for base license
-   - Additional costs for modules, integrations, and premium features
-   - Significant financial burden, especially for smaller institutions
-   - Ongoing annual fees regardless of usage
-
-2. **Vendor Lock-In**:
-   - Dependent on Blackboard for updates and features
-   - Limited ability to customize core functionality
-   - Migration to other platforms is complex and expensive
-   - At mercy of vendor pricing changes
-
-3. **Limited Customization**:
-   - Cannot modify core source code (proprietary)
-   - Customization requires expensive Building Blocks
-   - Dependent on vendor for feature development
-   - Less flexible than open-source alternatives
-
-4. **Complexity**:
-   - Feature-rich but can be overwhelming
-   - Steep learning curve for advanced features
-   - Overkill for institutions with simpler needs
-
-5. **Still Only an LMS**:
-   - Like Moodle, Blackboard is ONLY a learning platform
-   - No admissions, registration, or financial management
-   - **Still requires separate SIS**, creating same fragmentation issues
-   - Not a complete institutional solution
-
-**Cost Analysis** (Paradiso Solutions, 2024; BetterBuys, 2024):
-- Software License: **R171,000-R900,000+/year** depending on institution size
-- Implementation: R90,000-R270,000 one-time
-- Training: R36,000-R90,000 annually
-- Total First Year: **R306,000-R1,260,000+**
-
-**Institutions Using Blackboard**: University of Pretoria (as ClickUP), 46% of SA universities (Czerniewicz et al., 2020)
+**Note**: UP's "ClickUP" is Blackboard Learn with institutional branding (University of Pretoria, 2024).
 
 ---
 
-#### **3.3 Moodle vs. Blackboard: Head-to-Head Comparison**
-
-| Feature/Aspect | Moodle | Blackboard Learn | Winner |
-|----------------|--------|------------------|--------|
-| **Cost** | Free (open-source) | R171,000-R900,000+/year | 🏆 **Moodle** |
-| **User Interface** | Functional but dated | Modern and polished | 🏆 **Blackboard** |
-| **Customization** | Extensive (2000+ plugins) | Limited (proprietary) | 🏆 **Moodle** |
-| **Mobile App** | Official Moodle app | Native Blackboard app | 🏆 **Blackboard** |
-| **Analytics/Reporting** | Basic to moderate | Advanced and robust | 🏆 **Blackboard** |
-| **Integration Options** | Plugin-based, varies | Streamlined, enterprise-grade | 🏆 **Blackboard** |
-| **Community Support** | Large worldwide community | Vendor support | 🟰 **Tie** |
-| **Learning Curve** | Moderate to steep | Easier for basic use | 🏆 **Blackboard** |
-| **Flexibility** | Highly flexible | Standardized | 🏆 **Moodle** |
-| **Vendor Dependence** | Independent | Locked-in | 🏆 **Moodle** |
-| **Feature Set** | Comprehensive | Comprehensive | 🟰 **Tie** |
-| **AI Integration (2025)** | ChatGPT, AI plugins | AI features | 🟰 **Tie** |
-| **Accessibility** | WCAG 2.2 AA | WCAG compliant | 🟰 **Tie** |
-| **SIS Capabilities** | ❌ None | ❌ None | **Neither** |
-
-**Key Insight**:
-- **Moodle wins on cost and flexibility**
-- **Blackboard wins on user experience and polish**
-- **Both require separate SIS**, creating fragmentation
-- **Neither provides complete institutional solution**
-
-**ClickUP Clarification** (University of Pretoria, 2024):
-- ClickUP (University of Pretoria) is simply **Blackboard Learn with a custom name**
-- It's not a different platform, just Blackboard branded as "ClickUP"
-- Has all the same strengths and limitations as Blackboard
-- Same high licensing costs (R171,000+/year)
+**Bottom Line**: Moodle = cheap and flexible but dated. Blackboard = pretty but expensive. **Neither does everything**, so you're stuck with multiple systems.
 
 ---
 
-#### **3.4 iEnabler (ITS) Student Information System Analysis**
+#### **iEnabler** - SA-based SIS (ITWeb, 2023)
 
-**Technology Overview**:
-- **Type**: Student Information System (SIS)
-- **Developer**: Integrated Tertiary Software (ITS) - South African company
-- **Target Market**: South African universities and TVET colleges
-- **Usage**: Richfield, University of Fort Hare, multiple TVET colleges
+Who uses it: Richfield, University of Fort Hare, many TVET colleges
 
-**Core Strengths**:
+**The Good**:
 
-1. **Comprehensive SIS Functions**:
-   - **Student Applications**: Online application submission and tracking
-   - **Registration**: Course enrollment, add/drop management
-   - **Academic Records**: Transcripts, grades, academic history
-   - **Financial Management**: Fee payments, billing, financial aid
-   - **Personal Information**: Demographics, contact details, emergency contacts
-   - **Timetabling**: Class schedules, venue management
+- Developed specifically for SA tertiary institutions
+- Handles administrative functions: applications, registration, finance, records, timetables
+- Web-based with 24/7 access
+- Local support team
 
-2. **South African Context**:
-   - Built specifically for SA tertiary institutions
-   - Understands local requirements and regulations
-   - Supports SA educational structures
-   - Local support and development team
+**The Bad**:
 
-3. **Web-Based Access**:
-   - Accessible via web browser
-   - Mobile-responsive design
-   - No desktop software required
-   - 24/7 student self-service
+- **It's ONLY an SIS** - provides no learning management features
+- Cannot deliver course content, assignments, or educational forums
+- Integration with LMS platforms requires custom development work (QuickRead, 2024)
+- Proprietary commercial system
 
-4. **Real-Time Access**:
-   - Students view academic and financial information online
-   - Update personal information securely
-   - Check timetables and course schedules
-   - Access from mobile devices
+**Cost**: Commercial software requiring licensing fees
 
-**Limitations**:
-
-1. **No Learning Management**:
-   - iEnabler is ONLY an SIS - **no LMS capabilities**
-   - Cannot deliver course content or materials
-   - No assignment submission or grading tools
-   - No discussion forums or communication tools
-   - **This is why institutions need separate LMS (like Moodle) alongside iEnabler**
-
-2. **Limited LMS Integration**:
-   - Integration with Moodle/Blackboard requires custom development
-   - Often operates as separate system with manual data sync
-   - No out-of-the-box LMS integration
-   - Creates data silos
-
-3. **Vendor Lock-In**:
-   - Proprietary system from single vendor
-   - Dependent on ITS for updates and support
-   - Migration to other SIS platforms is complex
-   - Limited customization options
-
-4. **Cost** (Commercial Software):
-   - Licensing fees (exact pricing not publicly available)
-   - Ongoing support and maintenance costs
-   - Implementation and training costs
-   - Less economical than open-source alternatives
-
-**The Core Problem** (QuickRead, 2024):
-iEnabler provides SIS functions, but institutions still need an LMS (Moodle/Blackboard) for teaching, resulting in:
-- Two separate systems
-- Two separate logins
-- Data synchronization challenges
-- Fragmented user experience
-
-**Institutions Using iEnabler**: Richfield, University of Fort Hare, multiple TVET colleges nationwide (ITWeb, 2023)
+**The core problem**: iEnabler handles administration, but institutions still need Moodle/Blackboard for teaching. This creates the familiar two-system fragmentation.
 
 ---
 
-### 4. The Integration Challenge: Why Separate LMS + SIS Fails
+### 4. Why Separate Systems Don't Work
 
-Based on our case studies and research (Classter, 2024; Edlink, 2024), here are the specific integration challenges institutions face:
+Every surveyed university uses LMS + SIS. Research and observation suggest several challenges with this approach (Classter, 2024; Edlink, 2024; Adapt IT, 2024):
 
-#### **4.1 Technical Integration Challenges**
+**Technical Challenges**:
 
-1. **Data Silos** (Adapt IT, 2024):
-   - Student information stored in SIS (iEnabler, custom portals)
-   - Learning data stored in LMS (Moodle, Blackboard)
-   - No single source of truth
-   - Data discrepancies between systems
+- Data fragmentation - student information in SIS, learning data in LMS (Adapt IT, 2024)
+- Synchronization requirements - course registrations may not appear immediately across systems (Classter, 2024)
+- Integration complexity - connecting separate systems requires custom development work
+- Maintenance challenges - system updates can affect integrations
 
-2. **Manual Synchronization** (Classter, 2024):
-   - Course registrations in SIS must be manually exported to LMS
-   - Student rosters don't update automatically
-   - Changes in one system require manual updates in the other
-   - Time-consuming and error-prone
+**Student Experience Issues**:
 
-3. **Authentication Complexity** (TADS, 2024):
-   - While some institutions have SSO, systems still feel separate
-   - Different user interfaces require separate training
-   - Session management issues across platforms
-   - Security vulnerabilities in integration points
+- Navigation confusion between multiple systems
+- Multiple URLs and login credentials to manage
+- Course registration changes may not reflect immediately in all systems
+- Information scattered across platforms (assignments in LMS, grades on transcript in SIS)
+- Need for multiple mobile apps or browser bookmarks
 
-4. **No Real-Time Updates** (Edlink, 2024):
-   - Student enrolls in course in SIS, but LMS doesn't know immediately
-   - Lecturer adds assignment in LMS, but SIS doesn't track it
-   - Batch updates (nightly syncs) mean delayed information
-   - Students see outdated information
+**Staff Challenges**:
 
-5. **Integration Costs** (Classter, 2024):
-   - Custom API development expensive (R180,000-R900,000+)
-   - Ongoing maintenance of integration code
-   - Integration breaks when either system updates
-   - Requires specialized technical expertise
-
-#### **4.2 User Experience Challenges**
-
-1. **Platform Switching**:
-   - Students: "Do I go to Moodle or iEnabler for this?"
-   - Must remember multiple URLs, multiple logins
-   - Different navigation patterns cause confusion
-   - Cognitive load of learning multiple systems
-
-2. **Fragmented Workflows**:
-   - Register for course in SIS → Switch to LMS to access content
-   - Check assignment in LMS → Switch to SIS to see grade on transcript
-   - Apply in application portal → Switch to SIS after admission → Switch to LMS for learning
-   - No seamless student journey
-
-3. **Mobile Experience**:
-   - Separate mobile apps for LMS and SIS
-   - Must switch between apps for different tasks
-   - Inconsistent mobile experiences
-   - Higher data usage (multiple apps)
-
-4. **Communication Gaps**:
-   - Announcements in LMS don't appear in SIS
-   - Administrative notifications from SIS separate from academic notifications from LMS
-   - Students miss important updates
-   - No unified communication hub
-
-#### **4.3 Administrative Challenges**
-
-1. **No 360° View**:
-   - Administrators must check multiple systems to see complete student picture
-   - Lecturers access class rosters in LMS, but student contact info in SIS
-   - Support staff must navigate multiple systems to help students
-   - Inefficient and time-consuming
-
-2. **Reporting Nightmares**:
-   - Institutional reports require data from both LMS and SIS
-   - Must export from each system and manually combine
-   - Excel spreadsheets and data manipulation required
-   - Time-consuming and error-prone
-   - Delayed decision-making
-
-3. **Maintenance Burden**:
-   - IT staff must maintain two separate platforms
-   - Different update schedules
-   - Different security patches
-   - Different backup procedures
-   - Double the complexity
-
-4. **Training Requirements**:
-   - Staff must be trained on both systems
-   - Students must learn both platforms
-   - Support teams must know both systems
-   - Higher support costs
+- Lecturers may need to check multiple systems for complete student information (TADS, 2024)
+- Administrative reporting often requires exporting and combining data from separate sources
+- IT teams maintain multiple platforms with different update cycles and security requirements (Edlink, 2024)
+- Training requirements multiply with each additional system
 
 ---
 
-### 5. How EduHub Solves These Problems: The Unified Platform Advantage
+### 5. How EduHub Fixes This
 
-EduHub takes a fundamentally different approach by **integrating LMS and SIS functions into ONE unified platform**.
+Simple: **Everything in one place**.
 
-#### **5.1 True Integration vs. Connected Systems**
+Instead of LMS + SIS + Application Portal (three systems), EduHub combines all of that into one platform:
 
-**Current Approach** (Moodle/Blackboard + iEnabler/Custom SIS):
-```
-[Application Portal] ← Manual Transfer → [SIS (iEnabler)] ← Manual Sync → [LMS (Moodle)]
-     ↓ Different logins           ↓ Different databases        ↓ Different interfaces
-```
-**Result**: Three separate systems, fragmented experience, integration challenges
+- One login, one URL, one interface
+- Single database - register for a course and it's instantly everywhere
+- No integration needed (because there's nothing to integrate!)
+- Open-source - no license fees, no vendor lock-in
 
-**EduHub Approach**:
-```
-┌─────────────────────────────────────────────┐
-│           EduHub Unified Platform           │
-│  ┌────────────┐ ┌────────────┐ ┌──────────┐│
-│  │Applications│ │   SIS      │ │Learning* ││
-│  │            │ │            │ │          ││
-│  └────────────┘ └────────────┘ └──────────┘│
-│         Single Database                     │
-│         Single Login                        │
-│         Single Interface                    │
-└─────────────────────────────────────────────┘
-```
-*Learning features can be extended or integrated with existing Moodle if institution prefers
+Think of it like this:
 
-**Result**: One system, seamless experience, no integration needed
+- **Current approach**: Use WhatsApp for texting, email for work, SMS for banking = juggling three apps
+- **EduHub approach**: Everything in one super-app
 
-#### **5.2 Specific Advantages of EduHub Over Fragmented Approach**
+#### **What You Get**:
 
-| Challenge with Current Approach | How EduHub Solves It |
-|--------------------------------|----------------------|
-| **Multiple logins (Moodle + iEnabler + Application)** | **One login** for everything |
-| **Different URLs to remember** | **One URL**, one platform |
-| **Data synchronization issues** | **Single database**, always in sync |
-| **Manual data transfer between systems** | **Automatic** - all modules share data |
-| **Student switches between platforms** | **All functions** in one interface |
-| **Lecturers check LMS for students, SIS for contacts** | **Complete view** in one place |
-| **Registration in SIS doesn't update LMS immediately** | **Real-time updates** across all modules |
-| **Reporting requires aggregating multiple systems** | **Unified reporting** from single database |
-| **Expensive LMS licenses (R171,000+ for Blackboard)** | **Open-source**, no licensing fees |
-| **Integration costs (R180,000-R900,000)** | **No integration needed** - native unity |
-| **Multiple mobile apps** | **One progressive web app** |
-| **Different interfaces to learn** | **Consistent UI** throughout |
-| **IT maintains multiple platforms** | **One platform** to maintain |
-| **Vendor lock-in (Blackboard, ITS)** | **Open-source**, institution owns code |
+- **Applications module** - students apply online
+- **SIS module** - registration, records, finance, admin
+- **Learning module** - course content, assignments (can integrate with existing Moodle if needed)
+- **All sharing one database** - real-time sync, no manual transfers
 
-#### **5.3 Cost Comparison**
+#### **The Cost Reality**
 
-**Current Approach Example (UP Model: Blackboard + SIS)** (based on BetterBuys, 2024; Paradiso Solutions, 2024):
-- Blackboard License: R171,000-R900,000/year
-- SIS (Custom/Commercial): R90,000-R360,000/year
-- Integration Development: R180,000-R900,000 one-time
-- Ongoing Integration Maintenance: R90,000-R180,000/year
-- **Total Year 1**: R531,000-R2,340,000
-- **Total Annual (Years 2+)**: R351,000-R1,440,000/year
+We don't have access to university budgets, but we can observe that running multiple systems obviously costs money:
 
-**Current Approach Example (Richfield Model: Moodle + iEnabler + Portal)** (based on institutional estimates, 2025):
-- Moodle Hosting/Support: R36,000-R90,000/year
-- iEnabler License: R90,000-R270,000/year (estimated)
-- Application Portal: R36,000-R90,000/year
-- Integration/Maintenance: R54,000-R144,000/year
-- **Total Annual**: R216,000-R594,000/year
+**What Universities Are Paying For**:
 
-**EduHub Unified Platform**:
-- Software License: R0 (open-source)
-- Hosting: R9,000-R36,000/year
-- Maintenance: Minimal (one platform)
-- Integration: R0 (not needed)
-- **Total Annual**: R9,000-R36,000/year
+- **Commercial LMS licenses** (Blackboard isn't free - it's a commercial product sold by a US company)
+- **SIS licenses** (iEnabler, custom systems - someone built and maintains these)
+- **Integration development** (IT staff or consultants to connect the systems)
+- **Ongoing maintenance** (updates, security patches, hosting for 3+ separate platforms)
+- **Training** (staff and students learning multiple systems)
 
-**Annual Savings**: R207,000-R2,304,000/year depending on current setup
+**What EduHub Would Cost**:
 
-**5-Year Savings**: R1,035,000-R11,520,000
+- **Software license**: R0 (it's open-source, like Moodle)
+- **Integration**: R0 (nothing to integrate - it's one system)
+- **Hosting**: Minimal (one platform instead of three)
+- **Training**: Less (one system to learn)
+
+**The Logic**: Even without knowing exact numbers, it's clear that:
+
+- One system is cheaper to maintain than three
+- Open-source means no license fees (like how Moodle is free but Blackboard isn't)
+- No integration needed = no integration costs
+- One platform to host and update instead of three
+
+This is especially important for smaller institutions or those looking to reduce IT spending.
 
 ---
 
@@ -1074,17 +566,20 @@ EduHub takes a fundamentally different approach by **integrating LMS and SIS fun
 #### **The EduHub Opportunity**
 
 EduHub addresses an **industry-wide problem** affecting:
+
 - Large universities (UNISA, Stellenbosch, UP, UCT, UKZN)
 - Smaller institutions (Richfield)
 - TVET colleges nationwide
 
 By providing a unified platform that combines:
+
 - **Application Management** (replaces standalone portals)
 - **Student Information System** (replaces iEnabler/custom SIS)
 - **Learning Management** (future integration with Moodle or native features)
 - **All in one platform** with single database, single login, single interface
 
 EduHub offers:
+
 - **Better user experience** than fragmented systems
 - **Lower costs** than commercial solutions
 - **No integration headaches** of separate systems
@@ -1097,51 +592,51 @@ This investigation confirms that **EduHub solves a real, widespread problem** af
 
 ## References
 
-Adapt IT. (2024) *Student information system vs learning management system*. Available at: https://education.adaptit.tech/blog/student-information-system-vs-learning-management-system/ (Accessed: 13 March 2025).
+Adapt IT. (2024) _Student information system vs learning management system_. Available at: https://education.adaptit.tech/blog/student-information-system-vs-learning-management-system/ (Accessed: 13 March 2025).
 
-BetterBuys. (2024) *Blackboard vs Moodle: Compare core LMS capabilities and more*. Available at: https://www.betterbuys.com/lms/blackboard-vs-moodle/ (Accessed: 13 March 2025).
+BetterBuys. (2024) _Blackboard vs Moodle: Compare core LMS capabilities and more_. Available at: https://www.betterbuys.com/lms/blackboard-vs-moodle/ (Accessed: 13 March 2025).
 
-Classter. (2024) *Integrating LMS and SIS for enhanced learning in colleges*. Available at: https://www.classter.com/blog/edtech/student-information-systems/integrating-lms-and-sis-for-enhanced-learning-in-colleges/ (Accessed: 13 March 2025).
+Classter. (2024) _Integrating LMS and SIS for enhanced learning in colleges_. Available at: https://www.classter.com/blog/edtech/student-information-systems/integrating-lms-and-sis-for-enhanced-learning-in-colleges/ (Accessed: 13 March 2025).
 
-Classter. (2024) *LMS/SIS integration: From administrative overwhelm to educational empowerment*. Available at: https://www.classter.com/blog/edtech/lms-sis-integration-from-administrative-overwhelm-to-educational-empowerment/ (Accessed: 13 March 2025).
+Classter. (2024) _LMS/SIS integration: From administrative overwhelm to educational empowerment_. Available at: https://www.classter.com/blog/edtech/lms-sis-integration-from-administrative-overwhelm-to-educational-empowerment/ (Accessed: 13 March 2025).
 
-Czerniewicz, L., Agherdien, N., Badenhorst, J., Belluigi, D., Chambers, T., Chetty, M., De Villiers, M., Felix, A., Gachago, D., Gokhale, C., Ivala, E., Kramm, N., Madiba, M., Mistri, G., Mgqwashu, E., Pallitt, N., Prinsloo, P., Solomon, K., Strydom, S., Swanepoel, M., Waghid, F. and Wissing, G. (2020) 'A wake-up call: Equity, inequality and Covid-19 emergency remote teaching and learning', *Postdigital Science and Education*, 2(3), pp. 946–967.
+Czerniewicz, L., Agherdien, N., Badenhorst, J., Belluigi, D., Chambers, T., Chetty, M., De Villiers, M., Felix, A., Gachago, D., Gokhale, C., Ivala, E., Kramm, N., Madiba, M., Mistri, G., Mgqwashu, E., Pallitt, N., Prinsloo, P., Solomon, K., Strydom, S., Swanepoel, M., Waghid, F. and Wissing, G. (2020) 'A wake-up call: Equity, inequality and Covid-19 emergency remote teaching and learning', _Postdigital Science and Education_, 2(3), pp. 946–967.
 
-Edlink. (2024) *LMS vs SIS: What's the difference?* Available at: https://ed.link/community/whats-the-difference-between-an-sis-and-an-lms/ (Accessed: 13 March 2025).
+Edlink. (2024) _LMS vs SIS: What's the difference?_ Available at: https://ed.link/community/whats-the-difference-between-an-sis-and-an-lms/ (Accessed: 13 March 2025).
 
-ITWeb. (2023) *ITS successes with ITS Student iEnabler System*. Available at: https://www.itweb.co.za/article/its-successes-with-its-student-ienabler-system/ (Accessed: 13 March 2025).
+ITWeb. (2023) _ITS successes with ITS Student iEnabler System_. Available at: https://www.itweb.co.za/article/its-successes-with-its-student-ienabler-system/ (Accessed: 13 March 2025).
 
-Moodle. (2025) *Features - MoodleDocs*. Available at: https://docs.moodle.org/501/en/Features (Accessed: 13 March 2025).
+Moodle. (2025) _Features - MoodleDocs_. Available at: https://docs.moodle.org/501/en/Features (Accessed: 13 March 2025).
 
-Moodle Stats. (2025) *South Africa - Registered sites*. Available at: https://stats.moodle.org/sites/index.php?country=ZA (Accessed: 13 March 2025).
+Moodle Stats. (2025) _South Africa - Registered sites_. Available at: https://stats.moodle.org/sites/index.php?country=ZA (Accessed: 13 March 2025).
 
-Paradiso Solutions. (2024) *Moodle vs Blackboard: Which LMS is best for you?* Available at: https://www.paradisosolutions.com/blog/moodle-vs-blackboard-lms-comparison/ (Accessed: 13 March 2025).
+Paradiso Solutions. (2024) _Moodle vs Blackboard: Which LMS is best for you?_ Available at: https://www.paradisosolutions.com/blog/moodle-vs-blackboard-lms-comparison/ (Accessed: 13 March 2025).
 
-Pimenko. (2025) *Moodle 5.0: Key features, technical updates & LMS impact [2025 guide]*. Available at: https://pimenko.com/en/moodle-5-0-new-features-technical-evolutions-and-impact-on-your-lms-2025/ (Accessed: 13 March 2025).
+Pimenko. (2025) _Moodle 5.0: Key features, technical updates & LMS impact [2025 guide]_. Available at: https://pimenko.com/en/moodle-5-0-new-features-technical-evolutions-and-impact-on-your-lms-2025/ (Accessed: 13 March 2025).
 
-QuickRead. (2024) *What is ITS iEnabler and how does it work in South Africa?* Available at: https://www.quickread.co.za/what-is-its-ienabler/ (Accessed: 13 March 2025).
+QuickRead. (2024) _What is ITS iEnabler and how does it work in South Africa?_ Available at: https://www.quickread.co.za/what-is-its-ienabler/ (Accessed: 13 March 2025).
 
-Research.com. (2024) *Blackboard Learn vs. Moodle – 2026 comparison*. Available at: https://research.com/software/guides/blackboard-learn-vs-moodle (Accessed: 13 March 2025).
+Research.com. (2024) _Blackboard Learn vs. Moodle – 2026 comparison_. Available at: https://research.com/software/guides/blackboard-learn-vs-moodle (Accessed: 13 March 2025).
 
-Richfield Graduate Institute of Technology. (2024) *Richfield Application Portal*. Available at: https://application.richfield.ac.za/ (Accessed: 13 March 2025).
+Richfield Graduate Institute of Technology. (2024) _Richfield Application Portal_. Available at: https://application.richfield.ac.za/ (Accessed: 13 March 2025).
 
-Richfield Graduate Institute of Technology. (2024) *Richfield Learning (Moodle)*. Available at: https://learning.richfield.ac.za/ (Accessed: 13 March 2025).
+Richfield Graduate Institute of Technology. (2024) _Richfield Learning (Moodle)_. Available at: https://learning.richfield.ac.za/ (Accessed: 13 March 2025).
 
-Richfield Graduate Institute of Technology. (2024) *Richfield iEnabler Portal*. Available at: https://rgitie.richfield.ac.za/ (Accessed: 13 March 2025).
+Richfield Graduate Institute of Technology. (2024) _Richfield iEnabler Portal_. Available at: https://rgitie.richfield.ac.za/ (Accessed: 13 March 2025).
 
-Stellenbosch University. (2024) *SUNLearn - Stellenbosch University learning management system*. Available at: https://learn.sun.ac.za/ (Accessed: 13 March 2025).
+Stellenbosch University. (2024) _SUNLearn - Stellenbosch University learning management system_. Available at: https://learn.sun.ac.za/ (Accessed: 13 March 2025).
 
-Stellenbosch University. (2024) *SUN Student Applicant Portal*. Available at: https://student.sun.ac.za/applicant-portal/ (Accessed: 13 March 2025).
+Stellenbosch University. (2024) _SUN Student Applicant Portal_. Available at: https://student.sun.ac.za/applicant-portal/ (Accessed: 13 March 2025).
 
-Synergy Learning. (2024) *The ultimate guide to Moodle LMS*. Available at: https://synergy-learning.com/blog/the-ultimate-guide-to-moodle-lms/ (Accessed: 13 March 2025).
+Synergy Learning. (2024) _The ultimate guide to Moodle LMS_. Available at: https://synergy-learning.com/blog/the-ultimate-guide-to-moodle-lms/ (Accessed: 13 March 2025).
 
-TADS. (2024) *Data efficiency: A guide to SIS integration with LMS platforms*. Available at: https://www.tads.com/data-efficiency-a-guide-to-sis-integration-with-lms-platforms/ (Accessed: 13 March 2025).
+TADS. (2024) _Data efficiency: A guide to SIS integration with LMS platforms_. Available at: https://www.tads.com/data-efficiency-a-guide-to-sis-integration-with-lms-platforms/ (Accessed: 13 March 2025).
 
-UNISA. (2024) *myUnisa - University of South Africa student portal*. Available at: https://www.unisa.ac.za/sites/myunisa/default/ (Accessed: 13 March 2025).
+UNISA. (2024) _myUnisa - University of South Africa student portal_. Available at: https://www.unisa.ac.za/sites/myunisa/default/ (Accessed: 13 March 2025).
 
-UNISA. (2024) *MoodleMoot Africa 2024 looks to the future of education technology*. Available at: https://www.unisa.ac.za/sites/corporate/default/News-&-Media/Articles/MoodleMoot-Africa-2024-looks-to-the-future-of-education-technology (Accessed: 13 March 2025).
+UNISA. (2024) _MoodleMoot Africa 2024 looks to the future of education technology_. Available at: https://www.unisa.ac.za/sites/corporate/default/News-&-Media/Articles/MoodleMoot-Africa-2024-looks-to-the-future-of-education-technology (Accessed: 13 March 2025).
 
-University of Pretoria. (2024) *ClickUP - University of Pretoria student portal*. Available at: https://www.up.ac.za/registration/student-portal (Accessed: 13 March 2025).
+University of Pretoria. (2024) _ClickUP - University of Pretoria student portal_. Available at: https://www.up.ac.za/registration/student-portal (Accessed: 13 March 2025).
 
 ---
 
@@ -1160,6 +655,7 @@ Research was conducted on modern university portals, academic management systems
 **Research Findings**:
 
 **Security Best Practices**:
+
 - Multi-factor authentication (MFA) reduces unauthorized access by 99.9%
 - Role-based access control (RBAC) is industry standard
 - Password policies should enforce complexity and regular updates
@@ -1167,6 +663,7 @@ Research was conducted on modern university portals, academic management systems
 - Encryption for sensitive data (passwords, personal information)
 
 **User Experience Considerations**:
+
 - Simple, intuitive navigation reduces support requests
 - Consistent UI design across all pages
 - Mobile-first design approach
@@ -1174,6 +671,7 @@ Research was conducted on modern university portals, academic management systems
 - Average page load time should be under 3 seconds
 
 **Common Features in Modern Systems**:
+
 - Online application submission with document upload
 - Automated email notifications
 - Dashboard views for different user roles
@@ -1187,6 +685,7 @@ Research was conducted on modern university portals, academic management systems
 Interviews were conducted with potential users to understand their needs and challenges.
 
 **Participants**:
+
 - 5 students from different academic programs
 - 3 administrative staff members
 - 2 lecturers
@@ -1195,6 +694,7 @@ Interviews were conducted with potential users to understand their needs and cha
 **Key Findings from Interviews**:
 
 **Students Reported**:
+
 - 85% want 24/7 access to academic information
 - 90% prefer online registration over in-person
 - Main frustration: Long queues during registration periods
@@ -1202,6 +702,7 @@ Interviews were conducted with potential users to understand their needs and cha
 - Need for real-time course availability information
 
 **Administrative Staff Reported**:
+
 - Application processing is time-consuming (30-45 minutes per application)
 - Manual student number generation causes occasional duplicates
 - Difficult to track application status without calling applicants
@@ -1209,12 +710,14 @@ Interviews were conducted with potential users to understand their needs and cha
 - Want automated workflows to reduce manual tasks
 
 **Lecturers Reported**:
+
 - No easy way to communicate with entire class
 - Cannot access class rosters remotely
 - Want to see student academic history for advising
 - Need visibility into enrollment numbers before semester starts
 
 **Librarians Reported**:
+
 - Verifying student status requires calling administration
 - No integrated system to check enrollment
 - Manual library card issuance process
@@ -1223,16 +726,16 @@ Interviews were conducted with potential users to understand their needs and cha
 
 Analysis of existing systems in the market to identify gaps and opportunities.
 
-| Feature | Canvas | Blackboard | Banner | Moodle | EduHub (Proposed) |
-|---------|--------|------------|--------|--------|-------------------|
-| Online Applications | ✗ | Limited | ✓ | ✗ | ✓ |
-| Student Registration | Limited | ✓ | ✓ | ✗ | ✓ |
-| MFA Support | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Role-Based Access | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Automated Notifications | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Cost | $$$$ | $$$$ | $$$$$ | Free | Free (Open-source) |
-| Mobile Responsive | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Easy Customization | Limited | Limited | Limited | ✓ | ✓ |
+| Feature                 | Canvas  | Blackboard | Banner  | Moodle | EduHub (Proposed)  |
+| ----------------------- | ------- | ---------- | ------- | ------ | ------------------ |
+| Online Applications     | ✗       | Limited    | ✓       | ✗      | ✓                  |
+| Student Registration    | Limited | ✓          | ✓       | ✗      | ✓                  |
+| MFA Support             | ✓       | ✓          | ✓       | ✓      | ✓                  |
+| Role-Based Access       | ✓       | ✓          | ✓       | ✓      | ✓                  |
+| Automated Notifications | ✓       | ✓          | ✓       | ✓      | ✓                  |
+| Cost                    | $$$$    | $$$$       | $$$$$   | Free   | Free (Open-source) |
+| Mobile Responsive       | ✓       | ✓          | ✓       | ✓      | ✓                  |
+| Easy Customization      | Limited | Limited    | Limited | ✓      | ✓                  |
 
 **Market Gap Identified**: Most comprehensive solutions are expensive enterprise systems, while free/open-source options lack integrated admissions and registration workflows. EduHub aims to fill this gap.
 
@@ -1241,6 +744,7 @@ Analysis of existing systems in the market to identify gaps and opportunities.
 Regular team discussions were held to determine which features should be implemented in the EduHub system based on research findings and stakeholder needs.
 
 **Discussion Topics**:
+
 - Prioritization of features (MVP vs. future enhancements)
 - Technology stack selection
 - Database design considerations
@@ -1249,6 +753,7 @@ Regular team discussions were held to determine which features should be impleme
 - Integration points with external systems (email, document storage)
 
 **Decisions Made**:
+
 - Focus on core workflows: applications, registrations, profile management
 - Use modern web technologies (React, Node.js, PostgreSQL)
 - Implement role-based access from the start
@@ -1344,6 +849,7 @@ Technical feasibility examines whether the system can be successfully developed 
 The project will be developed using widely adopted, well-documented web technologies:
 
 **Frontend Development**:
+
 - **React.js**: Component-based UI library with large community support
 - **HTML5/CSS3**: Modern web standards for semantic markup and styling
 - **JavaScript (ES6+)**: Modern JavaScript features for clean, maintainable code
@@ -1352,6 +858,7 @@ The project will be developed using widely adopted, well-documented web technolo
 - **Bootstrap/Material-UI**: UI component libraries for responsive design
 
 **Backend Development**:
+
 - **Node.js**: JavaScript runtime for server-side development
 - **Express.js**: Minimalist web framework for building APIs
 - **JWT (JSON Web Tokens)**: Secure authentication mechanism
@@ -1360,11 +867,13 @@ The project will be developed using widely adopted, well-documented web technolo
 - **Multer**: File upload handling for documents and images
 
 **Database**:
+
 - **PostgreSQL**: Robust relational database with ACID compliance
 - **pg (node-postgres)**: PostgreSQL client for Node.js
 - **Sequelize**: ORM (Object-Relational Mapping) for database operations
 
 **Development Tools**:
+
 - **Git**: Version control system
 - **GitHub**: Code repository and collaboration platform
 - **Docker**: Containerization for consistent development and deployment environments
@@ -1374,6 +883,7 @@ The project will be developed using widely adopted, well-documented web technolo
 - **VS Code**: Integrated development environment
 
 **Testing**:
+
 - **Jest**: Unit testing framework
 - **Supertest**: API endpoint testing
 - **React Testing Library**: Component testing
@@ -1383,46 +893,50 @@ The project will be developed using widely adopted, well-documented web technolo
 **Current Team Capabilities**:
 
 | Technology | Team Proficiency | Training Needed |
-|------------|------------------|-----------------|
-| JavaScript | High | None |
-| React.js | Medium | Minimal |
-| Node.js | Medium | Minimal |
-| PostgreSQL | Medium | Moderate |
-| Git/GitHub | High | None |
-| Docker | Low | Moderate |
-| REST APIs | Medium | Minimal |
+| ---------- | ---------------- | --------------- |
+| JavaScript | High             | None            |
+| React.js   | Medium           | Minimal         |
+| Node.js    | Medium           | Minimal         |
+| PostgreSQL | Medium           | Moderate        |
+| Git/GitHub | High             | None            |
+| Docker     | Low              | Moderate        |
+| REST APIs  | Medium           | Minimal         |
 
 **Assessment**: The team has strong JavaScript knowledge and web development fundamentals. Areas requiring additional learning (Docker, advanced PostgreSQL) have extensive online documentation and tutorials available.
 
 ### Infrastructure Requirements
 
 **Development Environment**:
+
 - Local development machines (existing team computers)
 - Internet connection for accessing GitHub and documentation
 - PostgreSQL installed locally or via Docker
 
 **Deployment Environment**:
+
 - Cloud hosting platform (AWS Free Tier, Heroku, or DigitalOcean)
 - Domain name (optional, can use platform subdomain)
 - SSL certificate (free via Let's Encrypt)
 
 **Hardware Requirements**:
+
 - Minimum: 8GB RAM, 256GB storage (standard modern computer)
 - Server: 2GB RAM, 20GB storage (basic cloud instance)
 
 ### Technical Risks and Mitigation
 
-| Risk | Probability | Impact | Mitigation Strategy |
-|------|-------------|--------|---------------------|
-| Learning curve for new technologies | Medium | Low | Allocate time for tutorials and documentation |
-| Database performance with large datasets | Low | Medium | Implement indexing, query optimization |
-| Security vulnerabilities | Medium | High | Follow OWASP guidelines, conduct security reviews |
-| Browser compatibility issues | Low | Low | Test on multiple browsers, use polyfills |
-| Deployment complexity | Medium | Medium | Use Docker for consistency, document deployment process |
+| Risk                                     | Probability | Impact | Mitigation Strategy                                     |
+| ---------------------------------------- | ----------- | ------ | ------------------------------------------------------- |
+| Learning curve for new technologies      | Medium      | Low    | Allocate time for tutorials and documentation           |
+| Database performance with large datasets | Low         | Medium | Implement indexing, query optimization                  |
+| Security vulnerabilities                 | Medium      | High   | Follow OWASP guidelines, conduct security reviews       |
+| Browser compatibility issues             | Low         | Low    | Test on multiple browsers, use polyfills                |
+| Deployment complexity                    | Medium      | Medium | Use Docker for consistency, document deployment process |
 
 ### Scalability Considerations
 
 The chosen architecture supports scaling:
+
 - **Horizontal Scaling**: Can add more Node.js instances behind load balancer
 - **Database Scaling**: PostgreSQL supports replication and read replicas
 - **Stateless API**: JWT authentication enables distributed deployment
@@ -1441,21 +955,25 @@ Operational feasibility examines whether the system will work effectively in the
 The EduHub system will significantly improve operational efficiency across multiple areas:
 
 **Application Processing**:
+
 - **Current**: Manual review of paper applications (30-45 minutes per application)
 - **With EduHub**: Digital review with all information in one place (10-15 minutes per application)
 - **Efficiency Gain**: 67% reduction in processing time
 
 **Course Registration**:
+
 - **Current**: In-person registration with long queues (1-2 hours wait time)
 - **With EduHub**: Online registration accessible 24/7 (5-10 minutes to complete)
 - **Efficiency Gain**: 90% reduction in registration time
 
 **Student Information Updates**:
+
 - **Current**: Students must visit administration office during business hours
 - **With EduHub**: Self-service updates anytime, anywhere
 - **Efficiency Gain**: Eliminates administrative workload for routine updates
 
 **Report Generation**:
+
 - **Current**: Manual compilation of data from multiple sources (2-4 hours)
 - **With EduHub**: Automated reports with real-time data (instant)
 - **Efficiency Gain**: 100% reduction in manual reporting effort
@@ -1463,15 +981,18 @@ The EduHub system will significantly improve operational efficiency across multi
 ### User Accessibility and Convenience
 
 **24/7 Access**:
+
 - Students and staff can access the system anytime, anywhere with internet connection
 - No dependency on office hours or physical presence
 
 **Cross-Platform Support**:
+
 - Web-based system works on Windows, macOS, Linux
 - Responsive design supports desktop, tablet, and mobile devices
 - No special software installation required, just a web browser
 
 **Simple User Interface**:
+
 - Intuitive navigation based on user role
 - Consistent design throughout the system
 - Minimal training required for basic operations
@@ -1480,14 +1001,15 @@ The EduHub system will significantly improve operational efficiency across multi
 
 **User Training Plan**:
 
-| User Group | Training Duration | Training Method | Topics Covered |
-|------------|-------------------|-----------------|----------------|
-| Students | 30 minutes | Video tutorial + User guide | Login, profile management, course registration |
-| Lecturers | 45 minutes | Live workshop | Accessing class rosters, viewing student information |
-| Administrators | 2 hours | Hands-on training | Application approval, user management, reporting |
-| Librarians | 30 minutes | Live demo | Verifying student status |
+| User Group     | Training Duration | Training Method             | Topics Covered                                       |
+| -------------- | ----------------- | --------------------------- | ---------------------------------------------------- |
+| Students       | 30 minutes        | Video tutorial + User guide | Login, profile management, course registration       |
+| Lecturers      | 45 minutes        | Live workshop               | Accessing class rosters, viewing student information |
+| Administrators | 2 hours           | Hands-on training           | Application approval, user management, reporting     |
+| Librarians     | 30 minutes        | Live demo                   | Verifying student status                             |
 
 **Implementation Strategy**:
+
 1. **Pilot Phase** (Week 1-2): Test with small group of users (10-15 students, 2 admins)
 2. **Feedback Collection**: Gather user feedback and make improvements
 3. **Phased Rollout** (Week 3-4): Gradually open to more users
@@ -1495,6 +1017,7 @@ The EduHub system will significantly improve operational efficiency across multi
 5. **Support Period** (Week 5-8): Provide enhanced support during transition
 
 **Support Structure**:
+
 - User documentation (written guides, video tutorials)
 - Email support for questions
 - FAQ section addressing common issues
@@ -1505,21 +1028,25 @@ The EduHub system will significantly improve operational efficiency across multi
 **Expected User Reception**:
 
 Based on stakeholder interviews:
+
 - **90% of students** prefer online systems over manual processes
 - **85% of administrative staff** want workflow automation
 - **100% of lecturers** desire digital access to class information
 
 **Factors Supporting Adoption**:
+
 - Addresses real pain points identified in investigation
 - Modern interface familiar to users accustomed to web applications
 - Immediate time savings and convenience
 - No cost to end users
 
 **Potential Resistance**:
+
 - Some users may prefer traditional methods
 - Concern about system reliability
 
 **Mitigation**:
+
 - Maintain hybrid approach during transition (allow alternative methods initially)
 - Ensure system stability through thorough testing
 - Provide strong support and training
@@ -1528,12 +1055,14 @@ Based on stakeholder interviews:
 ### Legal and Policy Considerations
 
 **Data Protection**:
+
 - System complies with data protection regulations
 - Personal information encrypted and securely stored
 - Clear privacy policy communicated to users
 - User consent obtained for data collection
 
 **Institutional Policies**:
+
 - System aligns with existing academic policies
 - Registration periods and deadlines enforced in system
 - Approval workflows match current institutional procedures
@@ -1553,32 +1082,32 @@ The system will be developed using open-source technologies, significantly reduc
 
 **Software and Tools**:
 
-| Resource | Cost | Notes |
-| -------- | ---- | ----- |
-| React.js | Free | Open-source UI library |
-| Node.js | Free | Open-source runtime |
-| Express.js | Free | Open-source framework |
-| PostgreSQL | Free | Open-source database |
-| GitHub | Free | Free tier for public/small private repos |
-| VS Code | Free | Open-source IDE |
-| Docker | Free | Free for development use |
-| Postman | Free | Free tier sufficient for project |
-| Draw.io | Free | Free diagramming tool |
-| **Total Software Cost** | **$0** | |
+| Resource                | Cost   | Notes                                    |
+| ----------------------- | ------ | ---------------------------------------- |
+| React.js                | Free   | Open-source UI library                   |
+| Node.js                 | Free   | Open-source runtime                      |
+| Express.js              | Free   | Open-source framework                    |
+| PostgreSQL              | Free   | Open-source database                     |
+| GitHub                  | Free   | Free tier for public/small private repos |
+| VS Code                 | Free   | Open-source IDE                          |
+| Docker                  | Free   | Free for development use                 |
+| Postman                 | Free   | Free tier sufficient for project         |
+| Draw.io                 | Free   | Free diagramming tool                    |
+| **Total Software Cost** | **$0** |                                          |
 
 **Labor Costs** (Academic Project Context):
 
-| Role | Hours | Rate | Cost |
-|------|-------|------|------|
-| Project Manager | 80 | $0 | $0 |
-| Backend Developer | 120 | $0 | $0 |
-| Frontend Developer | 120 | $0 | $0 |
-| Database Designer | 80 | $0 | $0 |
-| Tester | 60 | $0 | $0 |
-| Documentation | 40 | $0 | $0 |
-| **Total Labor Cost** | **500 hours** | | **$0** |
+| Role                 | Hours         | Rate | Cost   |
+| -------------------- | ------------- | ---- | ------ |
+| Project Manager      | 80            | $0   | $0     |
+| Backend Developer    | 120           | $0   | $0     |
+| Frontend Developer   | 120           | $0   | $0     |
+| Database Designer    | 80            | $0   | $0     |
+| Tester               | 60            | $0   | $0     |
+| Documentation        | 40            | $0   | $0     |
+| **Total Labor Cost** | **500 hours** |      | **$0** |
 
-*Note: As an academic project, labor is provided by students as part of coursework*
+_Note: As an academic project, labor is provided by students as part of coursework_
 
 **Total Development Cost**: **$0**
 
@@ -1586,19 +1115,20 @@ The system will be developed using open-source technologies, significantly reduc
 
 **Hosting and Infrastructure** (Annual Estimates):
 
-| Item | Free Tier Option | Low-Cost Option | Enterprise Option |
-|------|------------------|-----------------|-------------------|
-| Web Hosting | Heroku Free / AWS Free Tier | DigitalOcean Droplet: $60/year | AWS/Azure: $500-1000/year |
-| Database Hosting | Included with web host | Included or $50/year | Managed service: $300/year |
-| Domain Name | Use platform subdomain | $15/year | $15/year |
-| SSL Certificate | Let's Encrypt (Free) | Free | Free |
-| Email Service | Limited free tier | $100/year for 10,000 emails | $500/year |
-| Backup Storage | 5GB free (Dropbox/Drive) | 100GB: $20/year | S3: $100/year |
-| **Total** | **$0/year** | **$245/year** | **$1,415/year** |
+| Item             | Free Tier Option            | Low-Cost Option                | Enterprise Option          |
+| ---------------- | --------------------------- | ------------------------------ | -------------------------- |
+| Web Hosting      | Heroku Free / AWS Free Tier | DigitalOcean Droplet: $60/year | AWS/Azure: $500-1000/year  |
+| Database Hosting | Included with web host      | Included or $50/year           | Managed service: $300/year |
+| Domain Name      | Use platform subdomain      | $15/year                       | $15/year                   |
+| SSL Certificate  | Let's Encrypt (Free)        | Free                           | Free                       |
+| Email Service    | Limited free tier           | $100/year for 10,000 emails    | $500/year                  |
+| Backup Storage   | 5GB free (Dropbox/Drive)    | 100GB: $20/year                | S3: $100/year              |
+| **Total**        | **$0/year**                 | **$245/year**                  | **$1,415/year**            |
 
 **Recommended Approach**: Start with free tier for pilot, migrate to low-cost option upon full deployment.
 
 **Maintenance Costs**:
+
 - System updates and bug fixes: Ongoing student/volunteer effort
 - Database backups: Automated (minimal cost)
 - Security patches: Included in platform updates
@@ -1609,20 +1139,20 @@ The system will be developed using open-source technologies, significantly reduc
 
 **Quantifiable Benefits** (Annual):
 
-| Benefit Category | Current Cost | With EduHub | Annual Savings |
-|------------------|--------------|-------------|----------------|
-| Paper and Printing | $2,000 | $500 | $1,500 |
-| Physical Storage | $1,000 | $0 | $1,000 |
-| Staff Time (Application Processing)* | $8,000 | $2,500 | $5,500 |
-| Staff Time (Registration Support)** | $5,000 | $1,000 | $4,000 |
-| Manual Record Updates*** | $3,000 | $500 | $2,500 |
-| **Total Annual Savings** | **$19,000** | **$4,500** | **$14,500** |
+| Benefit Category                      | Current Cost | With EduHub | Annual Savings |
+| ------------------------------------- | ------------ | ----------- | -------------- |
+| Paper and Printing                    | $2,000       | $500        | $1,500         |
+| Physical Storage                      | $1,000       | $0          | $1,000         |
+| Staff Time (Application Processing)\* | $8,000       | $2,500      | $5,500         |
+| Staff Time (Registration Support)\*\* | $5,000       | $1,000      | $4,000         |
+| Manual Record Updates\*\*\*           | $3,000       | $500        | $2,500         |
+| **Total Annual Savings**              | **$19,000**  | **$4,500**  | **$14,500**    |
 
-*Based on 200 applications/year at 45 min each vs 15 min each, administrative staff rate
-**Based on reduced support needed during registration periods
-***Based on reduced manual data entry and corrections
+\*Based on 200 applications/year at 45 min each vs 15 min each, administrative staff rate
+**Based on reduced support needed during registration periods \***Based on reduced manual data entry and corrections
 
 **Intangible Benefits**:
+
 - Improved student satisfaction and experience
 - Enhanced institutional reputation
 - Better data for decision-making
@@ -1634,6 +1164,7 @@ The system will be developed using open-source technologies, significantly reduc
 ### Return on Investment (ROI)
 
 **Scenario 1: Free Hosting (Pilot/Small Scale)**
+
 - Initial Investment: $0
 - Annual Operating Cost: $0
 - Annual Savings: $14,500
@@ -1641,6 +1172,7 @@ The system will be developed using open-source technologies, significantly reduc
 - Payback Period: Immediate
 
 **Scenario 2: Low-Cost Hosting (Recommended)**
+
 - Initial Investment: $0
 - Annual Operating Cost: $245
 - Annual Savings: $14,500
@@ -1649,6 +1181,7 @@ The system will be developed using open-source technologies, significantly reduc
 - Payback Period: Less than 1 week
 
 **Scenario 3: Enterprise Hosting (Maximum Scalability)**
+
 - Initial Investment: $0
 - Annual Operating Cost: $1,415
 - Annual Savings: $14,500
@@ -1658,32 +1191,34 @@ The system will be developed using open-source technologies, significantly reduc
 
 **5-Year Cost Comparison**:
 
-| Option | 5-Year Cost | 5-Year Savings | Net Benefit |
-|--------|-------------|----------------|-------------|
-| Keep Current System | $95,000 | $0 | $0 |
-| Free Hosting | $0 | $72,500 | $72,500 |
-| Low-Cost Hosting | $1,225 | $72,500 | $71,275 |
-| Enterprise Hosting | $7,075 | $72,500 | $65,425 |
+| Option              | 5-Year Cost | 5-Year Savings | Net Benefit |
+| ------------------- | ----------- | -------------- | ----------- |
+| Keep Current System | $95,000     | $0             | $0          |
+| Free Hosting        | $0          | $72,500        | $72,500     |
+| Low-Cost Hosting    | $1,225      | $72,500        | $71,275     |
+| Enterprise Hosting  | $7,075      | $72,500        | $65,425     |
 
 ### Risk Assessment
 
 **Financial Risks**:
 
-| Risk | Probability | Potential Cost Impact | Mitigation |
-|------|-------------|----------------------|------------|
-| Cloud hosting cost overruns | Low | $500-1000/year | Monitor usage, optimize queries, start with free tier |
-| Unexpected maintenance costs | Low | $500/year | Document system well, use stable technologies |
-| Need for paid third-party services | Low | $500/year | Use open-source alternatives, build features in-house |
-| System downtime costs | Low | $100-500/incident | Implement backups, monitoring, quick recovery procedures |
+| Risk                               | Probability | Potential Cost Impact | Mitigation                                               |
+| ---------------------------------- | ----------- | --------------------- | -------------------------------------------------------- |
+| Cloud hosting cost overruns        | Low         | $500-1000/year        | Monitor usage, optimize queries, start with free tier    |
+| Unexpected maintenance costs       | Low         | $500/year             | Document system well, use stable technologies            |
+| Need for paid third-party services | Low         | $500/year             | Use open-source alternatives, build features in-house    |
+| System downtime costs              | Low         | $100-500/incident     | Implement backups, monitoring, quick recovery procedures |
 
 **Maximum Reasonable Risk Exposure**: $2,500/year (still much lower than current costs)
 
 ### Funding Sources
 
 **Initial Development**:
+
 - No funding required (academic project with student labor)
 
 **Ongoing Operations**:
+
 - Institutional IT budget ($245-1,415/year)
 - Cost savings from reduced paper/storage can cover hosting
 - Potential grants for educational technology initiatives
@@ -1691,17 +1226,20 @@ The system will be developed using open-source technologies, significantly reduc
 ### Economic Comparison with Alternatives
 
 **Option 1: Purchase Commercial Solution**
+
 - License Cost: $10,000-50,000/year
 - Implementation: $5,000-15,000
 - Training: $2,000-5,000
 - Total First Year: $17,000-70,000
 
 **Option 2: Hire External Development Team**
+
 - Development: $30,000-100,000
 - Maintenance: $10,000-20,000/year
 - Total First Year: $40,000-120,000
 
 **Option 3: EduHub (This Project)**
+
 - Development: $0 (student project)
 - Maintenance: $245-1,415/year
 - Total First Year: $245-1,415
@@ -1741,27 +1279,29 @@ The Agile approach is particularly suited for this project because:
 The project will use **2-week sprints** to maintain a steady development pace while allowing sufficient time for meaningful progress.
 
 **Sprint Timeline**:
+
 - Total Project Duration: 14 weeks (7 sprints)
 - Sprint Duration: 2 weeks each
 - Total Sprints: 7 sprints
 
 **Sprint Breakdown**:
 
-| Sprint | Duration | Focus Area | Key Deliverables |
-|--------|----------|------------|------------------|
-| Sprint 1 | Week 1-2 | Setup & Authentication | Development environment, database schema, user authentication |
-| Sprint 2 | Week 3-4 | Application System | Application submission, document upload, application management |
-| Sprint 3 | Week 5-6 | Admin Approval Workflow | Application review interface, approval process, student number generation |
-| Sprint 4 | Week 7-8 | Student Profile Management | Student dashboard, profile editing, emergency contacts |
-| Sprint 5 | Week 9-10 | Course Registration | Course catalog, registration system, add/drop functionality |
-| Sprint 6 | Week 11-12 | Additional Features & Integration | Lecturer/librarian features, notifications, reporting |
-| Sprint 7 | Week 13-14 | Testing & Refinement | Bug fixes, performance optimization, user acceptance testing |
+| Sprint   | Duration   | Focus Area                        | Key Deliverables                                                          |
+| -------- | ---------- | --------------------------------- | ------------------------------------------------------------------------- |
+| Sprint 1 | Week 1-2   | Setup & Authentication            | Development environment, database schema, user authentication             |
+| Sprint 2 | Week 3-4   | Application System                | Application submission, document upload, application management           |
+| Sprint 3 | Week 5-6   | Admin Approval Workflow           | Application review interface, approval process, student number generation |
+| Sprint 4 | Week 7-8   | Student Profile Management        | Student dashboard, profile editing, emergency contacts                    |
+| Sprint 5 | Week 9-10  | Course Registration               | Course catalog, registration system, add/drop functionality               |
+| Sprint 6 | Week 11-12 | Additional Features & Integration | Lecturer/librarian features, notifications, reporting                     |
+| Sprint 7 | Week 13-14 | Testing & Refinement              | Bug fixes, performance optimization, user acceptance testing              |
 
 ### Agile Ceremonies
 
 The team will conduct the following Agile ceremonies:
 
 #### 1. Sprint Planning (Start of each sprint)
+
 - **Duration**: 2 hours
 - **Frequency**: Every 2 weeks (start of sprint)
 - **Participants**: All team members
@@ -1773,6 +1313,7 @@ The team will conduct the following Agile ceremonies:
   - Define sprint goal and success criteria
 
 #### 2. Daily Standup (Daily during development)
+
 - **Duration**: 15 minutes
 - **Frequency**: Daily (weekdays)
 - **Participants**: All team members
@@ -1783,6 +1324,7 @@ The team will conduct the following Agile ceremonies:
 - **Purpose**: Synchronize team activities, identify blockers quickly
 
 #### 3. Sprint Review (End of each sprint)
+
 - **Duration**: 1.5 hours
 - **Frequency**: Every 2 weeks (end of sprint)
 - **Participants**: Team members + stakeholders (instructor, potential users)
@@ -1793,6 +1335,7 @@ The team will conduct the following Agile ceremonies:
   - Review sprint metrics (velocity, completed work)
 
 #### 4. Sprint Retrospective (End of each sprint)
+
 - **Duration**: 1 hour
 - **Frequency**: Every 2 weeks (after sprint review)
 - **Participants**: Team members only
@@ -1803,6 +1346,7 @@ The team will conduct the following Agile ceremonies:
   - Celebrate successes and learn from challenges
 
 #### 5. Backlog Refinement (Mid-sprint)
+
 - **Duration**: 1 hour
 - **Frequency**: Once per sprint (mid-sprint)
 - **Participants**: Project Manager + interested team members
@@ -1816,20 +1360,21 @@ The team will conduct the following Agile ceremonies:
 
 ### Team Members and Responsibilities
 
-| Team Member | Primary Role | Secondary Responsibilities | Key Deliverables |
-| ----------- | ------------ | ------------------------- | ---------------- |
-| Student 1 | Project Manager | Requirements analysis, stakeholder communication | Sprint planning, project documentation, status reports |
-| Student 2 | Backend Developer | API development, database operations | REST API endpoints, authentication, business logic |
-| Student 3 | Frontend Developer | UI/UX implementation, React components | User interface, responsive design, client-side logic |
-| Student 4 | Database Designer | Schema design, query optimization | Database schema, migrations, data models |
-| Student 5 | System Testing | Quality assurance, test automation | Test cases, bug reports, test documentation |
-| Student 6 | Documentation & Diagrams | Technical writing, system architecture | User guides, API documentation, system diagrams |
+| Team Member | Primary Role             | Secondary Responsibilities                       | Key Deliverables                                       |
+| ----------- | ------------------------ | ------------------------------------------------ | ------------------------------------------------------ |
+| Student 1   | Project Manager          | Requirements analysis, stakeholder communication | Sprint planning, project documentation, status reports |
+| Student 2   | Backend Developer        | API development, database operations             | REST API endpoints, authentication, business logic     |
+| Student 3   | Frontend Developer       | UI/UX implementation, React components           | User interface, responsive design, client-side logic   |
+| Student 4   | Database Designer        | Schema design, query optimization                | Database schema, migrations, data models               |
+| Student 5   | System Testing           | Quality assurance, test automation               | Test cases, bug reports, test documentation            |
+| Student 6   | Documentation & Diagrams | Technical writing, system architecture           | User guides, API documentation, system diagrams        |
 
 **Note**: While each member has a primary role, Agile encourages cross-functional collaboration. Team members may assist each other across different areas as needed.
 
 ### Role Descriptions
 
 **Project Manager (Scrum Master)**:
+
 - Facilitate Agile ceremonies
 - Remove blockers and impediments
 - Track project progress and velocity
@@ -1838,6 +1383,7 @@ The team will conduct the following Agile ceremonies:
 - Maintain product backlog
 
 **Backend Developer**:
+
 - Design and implement RESTful API endpoints
 - Implement authentication and authorization
 - Develop business logic and workflows
@@ -1846,6 +1392,7 @@ The team will conduct the following Agile ceremonies:
 - Write unit tests for backend code
 
 **Frontend Developer**:
+
 - Design and implement user interfaces
 - Create reusable React components
 - Implement client-side routing
@@ -1855,6 +1402,7 @@ The team will conduct the following Agile ceremonies:
 - Write unit tests for React components
 
 **Database Designer**:
+
 - Design normalized database schema
 - Create entity-relationship diagrams
 - Write and optimize SQL queries
@@ -1863,6 +1411,7 @@ The team will conduct the following Agile ceremonies:
 - Design data validation rules
 
 **System Testing**:
+
 - Develop test plans and test cases
 - Perform functional and integration testing
 - Report and track bugs
@@ -1871,6 +1420,7 @@ The team will conduct the following Agile ceremonies:
 - Document testing procedures
 
 **Documentation & Diagrams**:
+
 - Create system architecture diagrams (Use Case, ERD, DFD)
 - Write user documentation and guides
 - Document API endpoints
@@ -1884,29 +1434,32 @@ Effective communication is critical for project success. The team will use multi
 
 ### Communication Channels
 
-| Channel | Purpose | Frequency | Tools |
-|---------|---------|-----------|-------|
-| Daily Standup | Synchronize daily work | Daily (15 min) | In-person / Zoom |
-| Sprint Meetings | Planning and reviews | Every 2 weeks | In-person / Zoom |
-| Team Chat | Quick questions, updates | As needed | Slack / WhatsApp / Discord |
-| Video Calls | Deep discussions, problem-solving | As needed | Zoom / Google Meet |
-| Email | Formal communication, stakeholders | As needed | Email |
-| Project Board | Task tracking, progress visibility | Continuous | GitHub Projects / Trello / ClickUp |
+| Channel         | Purpose                            | Frequency      | Tools                              |
+| --------------- | ---------------------------------- | -------------- | ---------------------------------- |
+| Daily Standup   | Synchronize daily work             | Daily (15 min) | In-person / Zoom                   |
+| Sprint Meetings | Planning and reviews               | Every 2 weeks  | In-person / Zoom                   |
+| Team Chat       | Quick questions, updates           | As needed      | Slack / WhatsApp / Discord         |
+| Video Calls     | Deep discussions, problem-solving  | As needed      | Zoom / Google Meet                 |
+| Email           | Formal communication, stakeholders | As needed      | Email                              |
+| Project Board   | Task tracking, progress visibility | Continuous     | GitHub Projects / Trello / ClickUp |
 
 ### Communication Guidelines
 
 **Response Time Expectations**:
+
 - Urgent issues: Within 2 hours during working hours
 - Regular questions: Within 24 hours
 - Non-urgent updates: Within 48 hours
 
 **Documentation Standards**:
+
 - Code comments for complex logic
 - Commit messages follow conventional format: `type(scope): description`
 - Pull requests include description and testing notes
 - Meeting notes documented in shared repository
 
 **Decision Making**:
+
 - Technical decisions: Team consensus, documented in ADR (Architecture Decision Records)
 - Priority changes: Project Manager with team input
 - Major scope changes: Require stakeholder approval
@@ -1915,13 +1468,13 @@ Effective communication is critical for project success. The team will use multi
 
 **Weekly Schedule** (During active development):
 
-| Day | Time | Meeting | Duration |
-|-----|------|---------|----------|
-| Monday | 9:00 AM | Sprint Planning (every 2 weeks) | 2 hours |
-| Daily | 9:00 AM | Daily Standup | 15 minutes |
-| Wednesday | 2:00 PM | Backlog Refinement (mid-sprint) | 1 hour |
-| Friday | 3:00 PM | Sprint Review (every 2 weeks) | 1.5 hours |
-| Friday | 4:30 PM | Sprint Retrospective (every 2 weeks) | 1 hour |
+| Day       | Time    | Meeting                              | Duration   |
+| --------- | ------- | ------------------------------------ | ---------- |
+| Monday    | 9:00 AM | Sprint Planning (every 2 weeks)      | 2 hours    |
+| Daily     | 9:00 AM | Daily Standup                        | 15 minutes |
+| Wednesday | 2:00 PM | Backlog Refinement (mid-sprint)      | 1 hour     |
+| Friday    | 3:00 PM | Sprint Review (every 2 weeks)        | 1.5 hours  |
+| Friday    | 4:30 PM | Sprint Retrospective (every 2 weeks) | 1 hour     |
 
 ## Risk Management
 
@@ -1929,18 +1482,18 @@ Proactive risk management helps identify and mitigate potential project challeng
 
 ### Risk Identification and Mitigation
 
-| Risk ID | Risk Description | Probability | Impact | Mitigation Strategy | Contingency Plan |
-|---------|------------------|-------------|--------|---------------------|------------------|
-| R-001 | Team member unavailability due to illness or personal reasons | Medium | High | Cross-train team members, document work regularly | Redistribute tasks to other team members, adjust sprint scope |
-| R-002 | Technical challenges with new technologies (React, Node.js) | Medium | Medium | Allocate learning time, peer programming, code reviews | Consult online resources, seek help from instructor/mentor |
-| R-003 | Scope creep - adding too many features | Medium | High | Clear requirements, strict backlog prioritization | Defer non-critical features to future releases |
-| R-004 | Integration issues between frontend and backend | Low | Medium | Define API contracts early, use API documentation tools | Schedule integration testing sprint, allocate debugging time |
-| R-005 | Database performance issues with test data | Low | Medium | Implement database indexing, optimize queries | Use database monitoring tools, add caching layer |
-| R-006 | Security vulnerabilities | Medium | High | Follow OWASP guidelines, conduct security reviews | Perform security audit, implement recommended fixes |
-| R-007 | Deployment challenges | Medium | Medium | Use Docker for consistency, document deployment process | Allocate extra time for deployment, test in staging environment |
-| R-008 | Inadequate testing leading to bugs | Low | High | Maintain test coverage goals (>70%), automated testing | Extended testing sprint, bug fixing sprint |
-| R-009 | Communication breakdowns | Low | Medium | Regular meetings, clear documentation, project board | Emergency team meeting to realign, clarify responsibilities |
-| R-010 | Time constraints - running out of time | Medium | High | Regular progress tracking, early warning system | Reduce scope, prioritize core features, extend timeline if possible |
+| Risk ID | Risk Description                                              | Probability | Impact | Mitigation Strategy                                     | Contingency Plan                                                    |
+| ------- | ------------------------------------------------------------- | ----------- | ------ | ------------------------------------------------------- | ------------------------------------------------------------------- |
+| R-001   | Team member unavailability due to illness or personal reasons | Medium      | High   | Cross-train team members, document work regularly       | Redistribute tasks to other team members, adjust sprint scope       |
+| R-002   | Technical challenges with new technologies (React, Node.js)   | Medium      | Medium | Allocate learning time, peer programming, code reviews  | Consult online resources, seek help from instructor/mentor          |
+| R-003   | Scope creep - adding too many features                        | Medium      | High   | Clear requirements, strict backlog prioritization       | Defer non-critical features to future releases                      |
+| R-004   | Integration issues between frontend and backend               | Low         | Medium | Define API contracts early, use API documentation tools | Schedule integration testing sprint, allocate debugging time        |
+| R-005   | Database performance issues with test data                    | Low         | Medium | Implement database indexing, optimize queries           | Use database monitoring tools, add caching layer                    |
+| R-006   | Security vulnerabilities                                      | Medium      | High   | Follow OWASP guidelines, conduct security reviews       | Perform security audit, implement recommended fixes                 |
+| R-007   | Deployment challenges                                         | Medium      | Medium | Use Docker for consistency, document deployment process | Allocate extra time for deployment, test in staging environment     |
+| R-008   | Inadequate testing leading to bugs                            | Low         | High   | Maintain test coverage goals (>70%), automated testing  | Extended testing sprint, bug fixing sprint                          |
+| R-009   | Communication breakdowns                                      | Low         | Medium | Regular meetings, clear documentation, project board    | Emergency team meeting to realign, clarify responsibilities         |
+| R-010   | Time constraints - running out of time                        | Medium      | High   | Regular progress tracking, early warning system         | Reduce scope, prioritize core features, extend timeline if possible |
 
 ### Risk Monitoring
 
@@ -1955,17 +1508,20 @@ Quality is built into the development process through multiple practices:
 ### Code Quality Standards
 
 **Code Reviews**:
+
 - All code changes require peer review before merging
 - Review checklist: functionality, readability, security, performance
 - At least one team member must approve pull request
 
 **Coding Standards**:
+
 - Follow JavaScript/React best practices and style guides
 - Use ESLint for code linting
 - Consistent naming conventions
 - DRY (Don't Repeat Yourself) principle
 
 **Version Control**:
+
 - Git branching strategy: main (production), develop (integration), feature branches
 - Branch naming: `feature/feature-name`, `bugfix/bug-description`
 - Commit regularly with descriptive messages
@@ -1995,6 +1551,7 @@ Quality is built into the development process through multiple practices:
    - Verify system meets requirements
 
 **Bug Tracking**:
+
 - Bugs logged in GitHub Issues or project management tool
 - Priority levels: Critical, High, Medium, Low
 - Bugs triaged and fixed according to priority
@@ -2002,6 +1559,7 @@ Quality is built into the development process through multiple practices:
 ### Definition of Done
 
 A user story is considered "Done" when:
+
 - Code is written and committed to repository
 - Unit tests are written and passing
 - Code review is completed and approved
@@ -2026,6 +1584,7 @@ A user story is considered "Done" when:
 ### Development Environment
 
 **Required Software** (all team members):
+
 - Node.js (v16 or higher)
 - PostgreSQL (v14 or higher)
 - Git
@@ -2033,6 +1592,7 @@ A user story is considered "Done" when:
 - Postman or similar API testing tool
 
 **Environment Setup**:
+
 - Shared `.env.example` file for configuration
 - Docker Compose for consistent database setup
 - Detailed setup instructions in README.md
@@ -2041,22 +1601,23 @@ A user story is considered "Done" when:
 
 ### Key Project Milestones
 
-| Milestone | Target Date | Deliverables |
-|-----------|-------------|--------------|
-| M1: Project Kickoff | Week 1 | Team formed, roles assigned, tools set up |
-| M2: Requirements Complete | Week 2 | Requirements document, user stories, database schema |
-| M3: Authentication Working | Week 2 | Login, registration, password reset functional |
-| M4: Application System Live | Week 4 | Students can submit applications |
-| M5: Admin Approval Functional | Week 6 | Administrators can approve applications |
-| M6: Student Portal Complete | Week 8 | Students can manage profiles |
-| M7: Registration System Working | Week 10 | Course registration functional |
-| M8: All Features Complete | Week 12 | All planned features implemented |
-| M9: Testing Complete | Week 13 | All tests passed, bugs fixed |
-| M10: Project Delivery | Week 14 | Final presentation, documentation, deployed system |
+| Milestone                       | Target Date | Deliverables                                         |
+| ------------------------------- | ----------- | ---------------------------------------------------- |
+| M1: Project Kickoff             | Week 1      | Team formed, roles assigned, tools set up            |
+| M2: Requirements Complete       | Week 2      | Requirements document, user stories, database schema |
+| M3: Authentication Working      | Week 2      | Login, registration, password reset functional       |
+| M4: Application System Live     | Week 4      | Students can submit applications                     |
+| M5: Admin Approval Functional   | Week 6      | Administrators can approve applications              |
+| M6: Student Portal Complete     | Week 8      | Students can manage profiles                         |
+| M7: Registration System Working | Week 10     | Course registration functional                       |
+| M8: All Features Complete       | Week 12     | All planned features implemented                     |
+| M9: Testing Complete            | Week 13     | All tests passed, bugs fixed                         |
+| M10: Project Delivery           | Week 14     | Final presentation, documentation, deployed system   |
 
 ### Sprint Deliverables
 
 Each sprint produces:
+
 - Working software (potentially shippable increment)
 - Updated documentation
 - Test cases and test results
@@ -2079,16 +1640,16 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 
 ### Project Timeline Overview
 
-| Task | Duration | Start Date | End Date | Dependencies | Assigned To |
-| ---- | -------- | ---------- | -------- | ------------ | ----------- |
-| Project Proposal | 1 week | Mar 16 | Mar 23 | None | All team members |
-| Planning Phase | 3 weeks | Mar 24 | Apr 13 | Project Proposal | All team members |
-| Analysis Phase | 4 weeks | Apr 14 | May 11 | Planning Phase | All team members |
-| System Design | 4 weeks | May 12 | Jun 8 | Analysis Phase | Database Designer, Documentation |
-| Implementation | 2 weeks | Jun 9 | Jun 22 | System Design | Developers (Frontend, Backend) |
-| Testing | 1 week | Jun 23 | Jun 27 | Implementation | System Testing, All developers |
-| Documentation Finalization | 2 days | Jun 27 | Jun 28 | Testing (concurrent) | Documentation & Diagrams |
-| Final Submission | 1 day | Jun 29 | Jun 29 | Documentation Finalization, Testing | Project Manager |
+| Task                       | Duration | Start Date | End Date | Dependencies                        | Assigned To                      |
+| -------------------------- | -------- | ---------- | -------- | ----------------------------------- | -------------------------------- |
+| Project Proposal           | 1 week   | Mar 16     | Mar 23   | None                                | All team members                 |
+| Planning Phase             | 3 weeks  | Mar 24     | Apr 13   | Project Proposal                    | All team members                 |
+| Analysis Phase             | 4 weeks  | Apr 14     | May 11   | Planning Phase                      | All team members                 |
+| System Design              | 4 weeks  | May 12     | Jun 8    | Analysis Phase                      | Database Designer, Documentation |
+| Implementation             | 2 weeks  | Jun 9      | Jun 22   | System Design                       | Developers (Frontend, Backend)   |
+| Testing                    | 1 week   | Jun 23     | Jun 27   | Implementation                      | System Testing, All developers   |
+| Documentation Finalization | 2 days   | Jun 27     | Jun 28   | Testing (concurrent)                | Documentation & Diagrams         |
+| Final Submission           | 1 day    | Jun 29     | Jun 29   | Documentation Finalization, Testing | Project Manager                  |
 
 **Total Project Duration**: 15 weeks (Mar 16 - Jun 29)
 
@@ -2097,6 +1658,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 #### Phase 1: Project Proposal (1 week: Mar 16 - Mar 23)
 
 **Activities**:
+
 - Define project scope and objectives
 - Identify system requirements at high level
 - Select implementation language (JavaScript)
@@ -2105,6 +1667,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 - Create proposal document
 
 **Deliverables**:
+
 - Project proposal document
 - Team structure
 - Initial project vision
@@ -2112,6 +1675,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 #### Phase 2: Planning Phase (3 weeks: Mar 24 - Apr 13)
 
 **Activities**:
+
 - Conduct stakeholder analysis
 - Perform preliminary investigation (research, observation)
 - Complete feasibility study (technical, operational, economic)
@@ -2121,6 +1685,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 - Create initial data models (Use Case, ERD, DFD)
 
 **Deliverables**:
+
 - Planning phase document (this document)
 - Feasibility study report
 - Software requirements specification
@@ -2128,6 +1693,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 - System diagrams
 
 **Milestones**:
+
 - Week 1: Stakeholder analysis and investigation complete
 - Week 2: Feasibility study complete
 - Week 3: SRS and data models complete
@@ -2135,6 +1701,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 #### Phase 3: Analysis Phase (4 weeks: Apr 14 - May 11)
 
 **Activities**:
+
 - Detailed requirements analysis
 - User story creation and prioritization
 - System workflow analysis
@@ -2145,6 +1712,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 - Define acceptance criteria for all features
 
 **Deliverables**:
+
 - Detailed requirements document
 - User stories with acceptance criteria
 - System analysis document
@@ -2152,6 +1720,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 - Interface mockups/wireframes
 
 **Milestones**:
+
 - Week 1: Requirements gathering complete
 - Week 2: User stories created
 - Week 3: System workflows defined
@@ -2160,6 +1729,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 #### Phase 4: System Design (4 weeks: May 12 - Jun 8)
 
 **Activities**:
+
 - Database schema design
 - API endpoint design
 - System architecture design
@@ -2170,6 +1740,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 - Deployment architecture design
 
 **Deliverables**:
+
 - Database schema and ER diagrams
 - API documentation
 - System architecture diagrams
@@ -2177,6 +1748,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 - Technical design document
 
 **Milestones**:
+
 - Week 1: Database schema finalized
 - Week 2: API design complete
 - Week 3: UI/UX designs approved
@@ -2185,6 +1757,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 #### Phase 5: Implementation (2 weeks: Jun 9 - Jun 22)
 
 **Activities**:
+
 - Sprint 1-7 development (compressed timeline)
 - Database setup and migrations
 - Backend API development
@@ -2197,18 +1770,21 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 - Integration and testing during development
 
 **Deliverables**:
+
 - Working EduHub system
 - All planned features implemented
 - Source code in GitHub repository
 - Initial testing complete
 
 **Milestones**:
+
 - Week 1: Core features (auth, applications) implemented
 - Week 2: All features complete, integrated system working
 
 #### Phase 6: Testing (1 week: Jun 23 - Jun 27)
 
 **Activities**:
+
 - Unit testing
 - Integration testing
 - System testing
@@ -2220,12 +1796,14 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 - Final quality assurance
 
 **Deliverables**:
+
 - Test reports
 - Bug fix documentation
 - Tested and stable system
 - Test cases documentation
 
 **Milestones**:
+
 - Day 1-2: All testing executed
 - Day 3-4: Critical bugs fixed
 - Day 5: Final QA approval
@@ -2233,6 +1811,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 #### Phase 7: Documentation Finalization (2 days: Jun 27 - Jun 28)
 
 **Activities** (Runs concurrently with end of testing):
+
 - Finalize user documentation
 - Complete technical documentation
 - Create system deployment guide
@@ -2240,6 +1819,7 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 - Compile all project deliverables
 
 **Deliverables**:
+
 - Complete user manual
 - Technical documentation
 - Deployment guide
@@ -2249,12 +1829,14 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 #### Phase 8: Final Submission (1 day: Jun 29)
 
 **Activities**:
+
 - Final review of all deliverables
 - Submit project documentation
 - Deliver final presentation
 - Hand over system to stakeholders
 
 **Deliverables**:
+
 - All project documentation
 - Deployed working system
 - Final presentation
@@ -2262,16 +1844,16 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 
 ### Resource Allocation
 
-| Phase | Project Manager | Backend Dev | Frontend Dev | Database Designer | Testing | Documentation |
-|-------|----------------|-------------|--------------|-------------------|---------|---------------|
-| Proposal | 40% | 20% | 20% | 10% | 5% | 5% |
-| Planning | 30% | 15% | 15% | 15% | 10% | 15% |
-| Analysis | 30% | 20% | 20% | 15% | 5% | 10% |
-| Design | 20% | 20% | 20% | 25% | 5% | 10% |
-| Implementation | 15% | 35% | 35% | 10% | 5% | 0% |
-| Testing | 10% | 20% | 20% | 5% | 45% | 0% |
-| Documentation | 20% | 10% | 10% | 5% | 5% | 50% |
-| Submission | 50% | 10% | 10% | 5% | 5% | 20% |
+| Phase          | Project Manager | Backend Dev | Frontend Dev | Database Designer | Testing | Documentation |
+| -------------- | --------------- | ----------- | ------------ | ----------------- | ------- | ------------- |
+| Proposal       | 40%             | 20%         | 20%          | 10%               | 5%      | 5%            |
+| Planning       | 30%             | 15%         | 15%          | 15%               | 10%     | 15%           |
+| Analysis       | 30%             | 20%         | 20%          | 15%               | 5%      | 10%           |
+| Design         | 20%             | 20%         | 20%          | 25%               | 5%      | 10%           |
+| Implementation | 15%             | 35%         | 35%          | 10%               | 5%      | 0%            |
+| Testing        | 10%             | 20%         | 20%          | 5%                | 45%     | 0%            |
+| Documentation  | 20%             | 10%         | 10%          | 5%                | 5%      | 50%           |
+| Submission     | 50%             | 10%         | 10%          | 5%                | 5%      | 20%           |
 
 ### Critical Success Factors
 
@@ -2316,16 +1898,16 @@ The PERT (Program Evaluation and Review Technique) chart shows the dependencies 
 
 **Task Dependencies and Duration**:
 
-| Task ID | Task Name | Duration | Predecessor(s) | Successor(s) |
-|---------|-----------|----------|----------------|--------------|
-| A | Project Proposal | 1 week | - | B |
-| B | Planning Phase | 3 weeks | A | C |
-| C | Analysis Phase | 4 weeks | B | D |
-| D | System Design | 4 weeks | C | E |
-| E | Implementation | 2 weeks | D | F, G |
-| F | Testing | 1 week | E | H |
-| G | Documentation | 2 days | E | H |
-| H | Final Submission | 1 day | F, G | - |
+| Task ID | Task Name        | Duration | Predecessor(s) | Successor(s) |
+| ------- | ---------------- | -------- | -------------- | ------------ |
+| A       | Project Proposal | 1 week   | -              | B            |
+| B       | Planning Phase   | 3 weeks  | A              | C            |
+| C       | Analysis Phase   | 4 weeks  | B              | D            |
+| D       | System Design    | 4 weeks  | C              | E            |
+| E       | Implementation   | 2 weeks  | D              | F, G         |
+| F       | Testing          | 1 week   | E              | H            |
+| G       | Documentation    | 2 days   | E              | H            |
+| H       | Final Submission | 1 day    | F, G           | -            |
 
 ### Activity Sequencing
 
@@ -2368,6 +1950,7 @@ The PERT (Program Evaluation and Review Technique) chart shows the dependencies 
 **Critical Path**: A → B → C → D → E → F → H
 
 **Total Duration on Critical Path**: 15 weeks and 3 days
+
 - A: 1 week
 - B: 3 weeks
 - C: 4 weeks
@@ -2378,6 +1961,7 @@ The PERT (Program Evaluation and Review Technique) chart shows the dependencies 
 - **Total: 15 weeks + 1 day**
 
 **Critical Path Significance**:
+
 - Tasks on critical path cannot be delayed without delaying entire project
 - Any delay in critical path tasks directly impacts final submission date
 - Non-critical task: Documentation (G) has 5 days of float time
@@ -2386,17 +1970,18 @@ The PERT (Program Evaluation and Review Technique) chart shows the dependencies 
 ### Slack Time Analysis
 
 | Task | Earliest Start | Latest Start | Earliest Finish | Latest Finish | Slack/Float |
-|------|---------------|--------------|-----------------|---------------|-------------|
-| A | Week 0 | Week 0 | Week 1 | Week 1 | 0 days |
-| B | Week 1 | Week 1 | Week 4 | Week 4 | 0 days |
-| C | Week 4 | Week 4 | Week 8 | Week 8 | 0 days |
-| D | Week 8 | Week 8 | Week 12 | Week 12 | 0 days |
-| E | Week 12 | Week 12 | Week 14 | Week 14 | 0 days |
-| F | Week 14 | Week 14 | Week 15 | Week 15 | 0 days |
-| G | Week 14 | Week 14.5 | Week 14.4 | Week 14.9 | 5 days |
-| H | Week 15 | Week 15 | Week 15.2 | Week 15.2 | 0 days |
+| ---- | -------------- | ------------ | --------------- | ------------- | ----------- |
+| A    | Week 0         | Week 0       | Week 1          | Week 1        | 0 days      |
+| B    | Week 1         | Week 1       | Week 4          | Week 4        | 0 days      |
+| C    | Week 4         | Week 4       | Week 8          | Week 8        | 0 days      |
+| D    | Week 8         | Week 8       | Week 12         | Week 12       | 0 days      |
+| E    | Week 12        | Week 12      | Week 14         | Week 14       | 0 days      |
+| F    | Week 14        | Week 14      | Week 15         | Week 15       | 0 days      |
+| G    | Week 14        | Week 14.5    | Week 14.4       | Week 14.9     | 5 days      |
+| H    | Week 15        | Week 15      | Week 15.2       | Week 15.2     | 0 days      |
 
 **Interpretation**:
+
 - **Zero Slack Tasks** (Critical Path): A, B, C, D, E, F, H - No room for delay
 - **Non-Zero Slack**: Task G (Documentation) - Can be delayed up to 5 days without impacting project
 
@@ -2404,17 +1989,18 @@ The PERT (Program Evaluation and Review Technique) chart shows the dependencies 
 
 Using PERT three-point estimation for realistic timeline:
 
-| Task | Optimistic (O) | Most Likely (M) | Pessimistic (P) | Expected Time (TE) |
-|------|---------------|-----------------|-----------------|-------------------|
-| Planning Phase | 2.5 weeks | 3 weeks | 4 weeks | 3 weeks |
-| Analysis Phase | 3 weeks | 4 weeks | 6 weeks | 4.2 weeks |
-| System Design | 3.5 weeks | 4 weeks | 5 weeks | 4.1 weeks |
-| Implementation | 1.5 weeks | 2 weeks | 3 weeks | 2.1 weeks |
-| Testing | 5 days | 7 days | 10 days | 7.2 days |
+| Task           | Optimistic (O) | Most Likely (M) | Pessimistic (P) | Expected Time (TE) |
+| -------------- | -------------- | --------------- | --------------- | ------------------ |
+| Planning Phase | 2.5 weeks      | 3 weeks         | 4 weeks         | 3 weeks            |
+| Analysis Phase | 3 weeks        | 4 weeks         | 6 weeks         | 4.2 weeks          |
+| System Design  | 3.5 weeks      | 4 weeks         | 5 weeks         | 4.1 weeks          |
+| Implementation | 1.5 weeks      | 2 weeks         | 3 weeks         | 2.1 weeks          |
+| Testing        | 5 days         | 7 days          | 10 days         | 7.2 days           |
 
 **Formula**: TE = (O + 4M + P) / 6
 
 **Risk Analysis**:
+
 - Implementation has highest variability (1.5x difference between optimistic and pessimistic)
 - Buffer time should be allocated in implementation phase
 - Testing may extend if major bugs found
@@ -2467,16 +2053,19 @@ Critical Path: A→B→C→D→E→F→H (shown in bold)
 ### Project Control Measures
 
 **Progress Tracking**:
+
 - Weekly progress reviews during sprint retrospectives
 - Compare actual vs. planned completion dates
 - Identify variance and take corrective action
 
 **Schedule Management**:
+
 - Monitor critical path tasks closely
 - Use float time in non-critical tasks if critical tasks face delays
 - Escalate schedule risks immediately
 
 **Adjustment Strategies**:
+
 - **If ahead of schedule**: Add features, improve quality, enhance documentation
 - **If on schedule**: Maintain current pace, monitor closely
 - **If behind schedule**:
@@ -2487,15 +2076,15 @@ Critical Path: A→B→C→D→E→F→H (shown in bold)
 
 ### Key Schedule Milestones
 
-| Milestone | Date | Significance |
-|-----------|------|--------------|
-| **Proposal Approved** | Mar 23 | Project officially begins |
-| **Planning Complete** | Apr 13 | Current phase deadline (25% weight) |
-| **Analysis Complete** | May 11 | Requirements locked |
-| **Design Approved** | Jun 8 | Ready to implement |
-| **Implementation Done** | Jun 22 | Feature complete |
-| **Testing Passed** | Jun 27 | Quality assured |
-| **Final Submission** | Jun 29 | Project complete (100%) |
+| Milestone               | Date   | Significance                        |
+| ----------------------- | ------ | ----------------------------------- |
+| **Proposal Approved**   | Mar 23 | Project officially begins           |
+| **Planning Complete**   | Apr 13 | Current phase deadline (25% weight) |
+| **Analysis Complete**   | May 11 | Requirements locked                 |
+| **Design Approved**     | Jun 8  | Ready to implement                  |
+| **Implementation Done** | Jun 22 | Feature complete                    |
+| **Testing Passed**      | Jun 27 | Quality assured                     |
+| **Final Submission**    | Jun 29 | Project complete (100%)             |
 
 This scheduling approach ensures systematic progress tracking, identifies critical dependencies, and provides clear visibility into project timeline and potential risks.
 
@@ -2514,6 +2103,7 @@ Functional requirements describe what the system must do - the specific behavior
 ### 1. User Authentication and Account Management
 
 The system must provide secure user authentication with the following capabilities:
+
 - User registration with email verification
 - Secure login with password hashing
 - Password reset functionality
@@ -2524,6 +2114,7 @@ The system must provide secure user authentication with the following capabiliti
 ### 2. Role-Based Access Control
 
 The system must support different user roles with appropriate permissions:
+
 - **Applicant**: Can submit and track applications
 - **Student**: Can manage profile and register for courses
 - **Lecturer**: Can view assigned courses and class rosters
@@ -2534,6 +2125,7 @@ The system must support different user roles with appropriate permissions:
 ### 3. Application Management
 
 Applicants must be able to:
+
 - Complete online application forms
 - Upload required documents (ID, certificates, transcripts)
 - Save applications as drafts
@@ -2544,6 +2136,7 @@ Applicants must be able to:
 ### 4. Administrative Approval Workflow
 
 Administrators must be able to:
+
 - View and filter all submitted applications
 - Review application details and documents
 - Approve or reject applications with comments
@@ -2554,6 +2147,7 @@ Administrators must be able to:
 ### 5. Student Profile Management
 
 Students must be able to:
+
 - View complete profile information
 - Edit personal details (address, phone, email)
 - Manage emergency contacts (up to 3)
@@ -2563,6 +2157,7 @@ Students must be able to:
 ### 6. Course Registration System
 
 The system must enable students to:
+
 - Browse available courses with filtering and search
 - View detailed course information (description, prerequisites, schedule)
 - Register for courses during specified registration periods
@@ -2573,6 +2168,7 @@ The system must enable students to:
 ### 7. Course Management
 
 Administrators and lecturers must be able to:
+
 - Create and edit course offerings
 - Set course capacity and prerequisites
 - Assign lecturers to courses
@@ -2583,6 +2179,7 @@ Administrators and lecturers must be able to:
 ### 8. Lecturer Features
 
 Lecturers must be able to:
+
 - View assigned courses
 - Access class rosters with student contact information
 - Post course announcements
@@ -2591,6 +2188,7 @@ Lecturers must be able to:
 ### 9. Librarian Features
 
 Librarians must be able to:
+
 - Search for students by number or name
 - Verify student enrollment status
 - View basic student information
@@ -2599,6 +2197,7 @@ Librarians must be able to:
 ### 10. Reporting and Analytics
 
 Administrators should be able to:
+
 - Generate application statistics reports
 - View enrollment reports by program and semester
 - Export data to CSV/PDF formats
@@ -2607,6 +2206,7 @@ Administrators should be able to:
 ### 11. Notifications
 
 The system must provide:
+
 - Automated email notifications for key events
 - In-app notification system
 - Notification history and read/unread status
@@ -2687,6 +2287,7 @@ Non-functional requirements define system qualities and constraints. The EduHub 
 The EduHub system encompasses approximately **50-60 functional requirements** across 11 major categories and **25-30 non-functional requirements** across 8 quality attribute categories.
 
 **Priority Breakdown**:
+
 - **Must Have** (~75%): Core system functionality required for MVP
 - **Should Have** (~20%): Important features that add significant value
 - **Could Have** (~5%): Nice-to-have features for future releases
@@ -2709,24 +2310,26 @@ Use case diagrams illustrate the functional requirements from the user's perspec
 
 The EduHub system has six primary actors:
 
-| Actor | Description | Key Responsibilities |
-|-------|-------------|---------------------|
-| **Applicant** | Person applying for admission | Submit applications, upload documents, track status |
-| **Student** | Enrolled student | Manage profile, register for courses, view academic records |
-| **Lecturer** | Faculty member | View assigned courses, access class rosters, post announcements |
-| **Administrator** | System administrator | Approve applications, manage courses, configure system, generate reports |
-| **Librarian** | Library staff | Verify student status, view student information |
-| **Alumni** | Graduated student | View academic history (future enhancement) |
+| Actor             | Description                   | Key Responsibilities                                                     |
+| ----------------- | ----------------------------- | ------------------------------------------------------------------------ |
+| **Applicant**     | Person applying for admission | Submit applications, upload documents, track status                      |
+| **Student**       | Enrolled student              | Manage profile, register for courses, view academic records              |
+| **Lecturer**      | Faculty member                | View assigned courses, access class rosters, post announcements          |
+| **Administrator** | System administrator          | Approve applications, manage courses, configure system, generate reports |
+| **Librarian**     | Library staff                 | Verify student status, view student information                          |
+| **Alumni**        | Graduated student             | View academic history (future enhancement)                               |
 
 ### Primary Use Cases
 
 **Applicant Use Cases**:
+
 - Register Account
 - Submit Application
 - Upload Documents
 - View Application Status
 
 **Student Use Cases**:
+
 - Manage Profile
 - Register for Courses
 - Drop Courses
@@ -2734,12 +2337,14 @@ The EduHub system has six primary actors:
 - Manage Emergency Contacts
 
 **Lecturer Use Cases**:
+
 - View Assigned Courses
 - View Class Roster
 - Export Student Lists
 - Post Announcements
 
 **Administrator Use Cases**:
+
 - Approve/Reject Applications
 - Manage Courses
 - Assign Lecturers
@@ -2747,6 +2352,7 @@ The EduHub system has six primary actors:
 - Generate Reports
 
 **Librarian Use Cases**:
+
 - Search Students
 - Verify Student Status
 - View Student Information
@@ -2783,15 +2389,18 @@ The system manages the following core entities:
 ### Key Relationships
 
 **One-to-One**:
+
 - Users ↔ Students (each student record links to one user account)
 
 **One-to-Many**:
+
 - Users → Applications (users can have multiple applications)
 - Students → Emergency_Contacts (students can have multiple emergency contacts)
 - Users → Courses (as lecturer - one lecturer can teach multiple courses)
 - Applications → Application_Documents (applications can have multiple documents)
 
 **Many-to-Many**:
+
 - Students ↔ Courses (through Registrations junction table)
   - Students can register for multiple courses
   - Courses can have multiple students enrolled
@@ -2842,6 +2451,7 @@ External Entities:
 ```
 
 **Input Data Flows**:
+
 - Applicants: Application data, documents
 - Students: Profile updates, course selections
 - Lecturers: Course information, announcements
@@ -2849,6 +2459,7 @@ External Entities:
 - Librarians: Student verification requests
 
 **Output Data Flows**:
+
 - To Applicants: Application status, notifications
 - To Students: Registration confirmations, course information
 - To Lecturers: Class rosters, student contact details
@@ -2913,6 +2524,7 @@ Creates student record → Updates user role → Sends notification
 ## Data Model Summary
 
 The EduHub system's conceptual data model includes:
+
 - **10 primary entities** managing users, students, applications, courses, and system data
 - **Multiple relationship types** including one-to-one, one-to-many, and many-to-many
 - **8 major processes** handling authentication, applications, profiles, courses, and reporting
@@ -2921,6 +2533,7 @@ The EduHub system's conceptual data model includes:
 This conceptual foundation will guide the development of detailed database schemas, API specifications, and system architecture in subsequent project phases.
 
 **Next Steps**:
+
 - Phase 3 (Analysis): Detailed data requirements, data dictionaries, normalization analysis
 - Phase 4 (System Design): Complete database schema with all attributes, data types, constraints, indexes, and relationships
 
