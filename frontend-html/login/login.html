@@ -4,127 +4,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EduHub</title>
-
-  <!-- Optional external CSS -->
-  <!-- <link rel="stylesheet" href="css/style.css"> -->
+  <title>EduHub Login</title>
 
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 0;
       background-color: #f4f4f4;
-    }
-
-    /* NAVBAR */
-    .navbar {
-      background-color: #123f7a;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 40px;
-    }
-
-    .navbar a {
-      color: white;
-      text-decoration: none;
-      margin-left: 25px;
-      font-weight: bold;
-    }
-
-    /* HERO */
-    .hero {
-      background-color: #123f7a;
-      color: white;
-      padding: 100px 20px;
-    }
-
-    .hero h1 {
-      font-size: 50px;
-      margin-bottom: 10px;
-    }
-
-    .hero p {
-      font-size: 20px;
-      margin-bottom: 20px;
-    }
-
-    .hero button {
-      padding: 12px 25px;
-      font-size: 16px;
-      background-color: #ffc72c;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
-
-    .hero button:hover {
-      background-color: #e6b700;
-    }
-
-    /* PROGRAMMES */
-    .section {
-      padding: 40px 20px;
-      text-align: center;
-    }
-
-    .programmes {
+      margin: 0;
       display: flex;
       justify-content: center;
-      gap: 30px;
-      flex-wrap: wrap;
+      align-items: center;
+      height: 100vh;
     }
 
-    .card {
+    .login-container {
       background: white;
-      padding: 20px;
-      width: 260px;
+      padding: 40px;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      width: 300px;
+      text-align: center;
     }
 
-    .card h3 {
+    h2 {
       color: #123f7a;
-    }
-
-    .card button {
-      background: #123f7a;
-      color: white;
-      border: none;
-      padding: 10px;
-      cursor: pointer;
-      margin-top: 10px;
-      border-radius: 5px;
-    }
-
-    /* FOOTER */
-    .footer {
-      background: #173f77;
-      color: white;
-      padding: 60px 20px;
-      text-align: left;
-    }
-
-    .footer-column {
       margin-bottom: 20px;
     }
 
-    .footer-column h3 {
-      margin-bottom: 15px;
+    input[type="text"],
+    input[type="password"] {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
     }
 
-    .footer-column a {
-      display: block;
+    button {
+      background-color: #123f7a;
       color: white;
+      border: none;
+      padding: 12px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 10px;
+      width: 95%;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #0f3360;
+    }
+
+    .back-link {
+      margin-top: 15px;
+      display: block;
+      color: #123f7a;
       text-decoration: none;
-      margin-bottom: 8px;
       font-size: 14px;
     }
 
-    .footer-column a:hover {
+    .back-link:hover {
       text-decoration: underline;
     }
   </style>
@@ -132,71 +72,14 @@
 
 <body>
 
-  <!-- NAVBAR -->
-  <div class="navbar">
-    <div class="logo">EduHub</div>
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="#programmes">Programmes</a>
-      <a href="login.html">Login</a>
-    </div>
-  </div>
-
-  <!-- HERO -->
-  <div class="hero">
-    <h1>Welcome to EduHub</h1>
-    <p>Your Student Learning Portal</p>
-    <!-- LOGIN BUTTON -->
-    <button onclick="window.location.href='login.html'">
-      Student Login
-    </button>
-  </div>
-
-  <!-- PROGRAMMES -->
-  <div class="section" id="programmes">
-    <h2>Popular Programmes</h2>
-    <div class="programmes">
-
-      <div class="card">
-        <h3>BSc Information Technology</h3>
-        <p>Learn programming, networking, cybersecurity and data science.</p>
-        <button onclick="window.location.href='https://www.richfield.ac.za/programmes/degrees/faculty-of-information-technology/bachelor-of-science-in-information-technology-bsc-it'">
-          Learn More
-        </button>
-      </div>
-
-      <div class="card">
-        <h3>Bachelor of Commerce</h3>
-        <p>Develop financial, management and business leadership skills.</p>
-        <button onclick="window.location.href='https://www.richfield.ac.za/programmes/degrees/business-science/bachelor-of-commerce-bcom'">
-          Learn More
-        </button>
-      </div>
-
-      <div class="card">
-        <h3>Business Administration</h3>
-        <p>Build strong management and entrepreneurship knowledge.</p>
-        <button onclick="window.location.href='https://www.richfield.ac.za/programmes/degrees/business-science/bachelor-of-business-administration-bba'">
-          Learn More
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <div class="footer">
-    <div class="footer-column">
-      <h3>Contact Us</h3>
-      <a href="#">Email: info@eduhub.com</a>
-      <a href="#">Phone: +27 11 000 0000</a>
-    </div>
-    <div class="footer-column">
-      <h3>Follow Us</h3>
-      <a href="#">Facebook</a>
-      <a href="#">Twitter</a>
-      <a href="#">Instagram</a>
-    </div>
+  <div class="login-container">
+    <h2>Student Login</h2>
+    <form>
+      <input type="text" placeholder="Username" required><br>
+      <input type="password" placeholder="Password" required><br>
+      <button type="submit">Login</button>
+    </form>
+    <a class="back-link" href="index.html">← Back to Home</a>
   </div>
 
 </body>
