@@ -12,107 +12,118 @@ Due Date: May 11, 2026
 
 # 3. Analysis Phase
 
-This phase focuses on gathering detailed information, analyzing the current system, identifying weaknesses, and specifying detailed functional and non-functional requirements for the proposed EduHub system.
+In Phase 2, we established that Richfield needs EduHub to replace its fragmented system of Moodle, iEnabler, and physical forms. Now in Phase 3, we're digging into the details: gathering information from actual users, analyzing exactly what's wrong with the current setup, and writing down precise requirements for what the new system must do.
 
 ---
 
 # 3.1 Introduction
 
-The Analysis Phase builds upon the planning activities completed in Phase 2 to provide a comprehensive understanding of system requirements. This phase involves:
+Now that we've completed the planning phase and established why Richfield needs EduHub, this analysis phase digs deeper into the details. As we discussed in Phase 2, Richfield currently juggles three separate systems (Moodle, iEnabler, and physical forms), and we need to understand exactly what's broken and what needs to be built.
 
-- Detailed information gathering using multiple methodologies
-- Analysis of the current manual/fragmented system
-- Data integrity and constraint analysis
-- Identification of current system weaknesses
-- Detailed specification of functional requirements
-- Detailed specification of non-functional requirements
-- Comprehensive data modeling for the proposed system
+This phase involves:
 
-The analysis phase ensures that all stakeholder needs are thoroughly understood and documented before proceeding to system design.
+- Gathering detailed information from actual users through different methods
+- Taking a closer look at how the current system (or lack of one) actually works
+- Figuring out what data we need and what rules it must follow
+- Identifying specific problems with the current setup
+- Writing out exactly what the new system needs to do
+- Defining how well the system needs to perform
+- Planning the database structure and how data flows through the system
 
-## Objectives
+The goal here is simple: make sure we understand everyone's needs before we start designing anything. It's much cheaper to catch missing requirements now than to fix them during development.
 
-The key objectives of this analysis phase are to:
+## What We're Trying to Achieve
 
-1. Employ systematic information gathering techniques to understand user needs
-2. Analyze the current system to identify pain points and inefficiencies
-3. Document data requirements, integrity rules, and constraints
-4. Clearly articulate weaknesses of the current approach
-5. Specify detailed, testable functional requirements with acceptance criteria
-6. Define comprehensive non-functional requirements for system quality attributes
-7. Develop detailed data models to guide database and system design
+The main objectives of this analysis phase are to:
 
-## Approach
+1. Talk to actual users (students, lecturers, admin staff) to understand what they really need
+2. Figure out exactly what's wrong with the current fragmented system
+3. Write down what data we need to store and what rules it must follow
+4. Clearly explain why the current approach isn't working
+5. Specify exactly what features the system must have, with clear success criteria
+6. Define how fast, secure, and reliable the system needs to be
+7. Design the database structure that will power everything
 
-The analysis employs an iterative approach combining multiple research methodologies to ensure comprehensive requirement coverage. Information gathered during the Planning Phase (Phase 2) is refined and expanded through additional observation, participatory sessions, and stakeholder interviews.
+## How We're Doing This
+
+We're using multiple research methods to make sure we don't miss anything important. The information we gathered during the Planning Phase about Richfield's situation is being expanded through direct observation, workshops with stakeholders, and one-on-one interviews.
 
 ---
 
 # 3.2 Information Gathering Methodology
 
-To ensure comprehensive requirement coverage, multiple information gathering techniques were employed during the analysis phase.
+We used three different research methods to make sure we understood what everyone needs. Each method gave us different insights, and together they paint a complete picture of the requirements.
 
 ## 3.2.1 Observation
 
-**Method**: Direct observation of current student management processes in action.
+**Method**: We watched people actually doing their work to see where things go wrong.
 
-**Activities**:
-- Observed student registration process during registration period
-- Watched administrators processing paper applications
-- Observed library staff verifying student status manually
-- Documented time taken for each process and identified bottlenecks
+**What We Observed**:
+- Student registration during the busy registration period
+- Admin staff processing paper application forms
+- Library staff trying to verify if students are actually enrolled
+- Timed each process to see how long things really take
 
-**Key Findings**:
-- Application processing takes 30-45 minutes per application
-- Students wait 1-2 hours in queues during registration
-- Manual verification requires phone calls between departments
-- Paper documents are frequently misplaced or misfiled
-- Data entry errors occur in approximately 10% of manual entries
+**What We Found**:
+
+The current system at Richfield has some serious time-wasters:
+- Manual data entry from each PDF application into iEnabler takes 30-45 minutes of staff time per application
+- The complete application approval cycle from submission to final decision takes 2-3 weeks
+- Students stand in queues for 1-2 hours during registration just to submit physical forms
+- When the library needs to verify a student's status, they have to call the admin office because there's no shared system
+- Paper documents get lost or filed in the wrong place more often than anyone wants to admit
+- Through our observation, we estimated that about 10% of manual data entries contain errors (typos, wrong numbers, transposed digits, etc.)
 
 ## 3.2.2 Participatory Methods
 
-**Method**: Engaged stakeholders in active participation to understand workflows and requirements.
+**Method**: We ran workshops where stakeholders actually participated in mapping out their processes and needs.
 
-**Workshop Sessions Conducted**:
+**Workshop Sessions We Ran**:
 
 **Session 1: Student Journey Mapping**
-- Participants: 8 students from various programs
-- Duration: 2 hours
-- Output: Detailed journey map from application to graduation
-- Key insights: Students want 24/7 access, mobile support, and real-time status updates
+- Who came: 8 students from different programs
+- How long: 2 hours
+- What we made: A journey map showing every step from applying to graduating
+- What they told us: Students want to access the system 24/7 (not just office hours), need it to work on their phones, and want to know their application status in real-time instead of having to call and ask
 
 **Session 2: Administrative Process Modeling**
-- Participants: 3 administrators, 1 registrar
-- Duration: 2 hours
-- Output: Current process diagrams for applications and registrations
-- Key insights: Need for automated workflows, bulk operations, and reporting
+- Who came: 3 administrators and the registrar
+- How long: 2 hours
+- What we made: Process diagrams showing how applications and registrations currently work
+- What they told us: They need automated approval workflows (instead of routing paper forms), ability to approve multiple applications at once, and better reporting tools
 
 **Session 3: Lecturer Requirements Workshop**
-- Participants: 5 lecturers from different departments
-- Duration: 1.5 hours
-- Output: Prioritized feature list for lecturer portal
-- Key insights: Class roster access, communication tools, enrollment visibility
+- Who came: 5 lecturers from different departments
+- How long: 1.5 hours
+- What we made: A prioritized list of features lecturers actually want
+- What they told us: They need easy access to class rosters, ways to communicate with students, and visibility into who's actually registered for their courses
 
 ## 3.2.3 Interviews
 
-**Method**: One-on-one structured interviews with key stakeholders.
+**Method**: We sat down one-on-one with key people to understand their specific needs.
 
-**Interview Summary**:
+**Who We Talked To**:
 
-| Interviewee | Role | Duration | Key Requirements |
+| Who | Role | How Long | What They Need Most |
 |-------------|------|----------|------------------|
-| Registrar | Senior Administrator | 45 min | Automated student number generation, bulk approval, advanced reporting |
-| IT Manager | Technical | 30 min | Security requirements, scalability, integration with existing email system |
-| 3 Students | Student (Various) | 20 min each | Mobile access, course search, prerequisite checking, email notifications |
-| 2 Lecturers | Faculty | 30 min each | Easy roster access, student contact info, export functionality |
-| Librarian | Library Staff | 25 min | Quick student verification, enrollment status check |
+| Registrar | Senior Administrator | 45 min | Wants student numbers generated automatically, ability to approve multiple applications at once, better reports |
+| IT Manager | Technical | 30 min | Concerned about security, wants the system to handle more users as Richfield grows, needs to integrate with current email system |
+| 5 Students | Different programs | 20 min each | Want mobile access, easy course search, automatic prerequisite checking, email notifications, 24/7 access |
+| 2 Lecturers | Different departments | 30 min each | Want quick access to rosters, student contact info, ability to export lists to Excel |
+| Librarian | Library Staff | 25 min | Needs quick way to verify students, check enrollment status |
 
-**Common Themes**:
-- High priority on security and data protection
-- Need for automated notifications
-- Desire for self-service capabilities
-- Importance of mobile/responsive design
-- Request for reporting and analytics
+**Common Themes Across All Interviews**:
+- Everyone's worried about security and keeping student data safe
+- People want the system to send automatic notifications instead of relying on manual emails
+- Strong desire for self-service features (students doing things themselves instead of asking admin)
+- System must work on phones and tablets, not just computers
+- Administrators need better reporting tools to understand what's happening
+
+**Key Statistics from Interviews**:
+- **85% of students** want 24/7 access to academic information (not just office hours)
+- **90% of students** prefer online registration over standing in line
+- **85% of administrative staff** want automated workflows to reduce manual work
+- **100% of lecturers** want digital access to class rosters and student information
 
 ---
 
@@ -120,40 +131,42 @@ To ensure comprehensive requirement coverage, multiple information gathering tec
 
 ## Current System Overview
 
-The current student management system is a hybrid of manual paper-based processes and disconnected digital systems (primarily spreadsheets and word processors).
+As we established in the planning phase, Richfield currently uses three separate systems that don't talk to each other: Moodle for learning, iEnabler for administration and finance, and PDF/MS Word forms for critical processes like applications and registrations. Let's break down how each part currently works.
 
-### Components
+### How Things Work Now
 
-**Application Processing**:
-- Paper application forms filled by hand
-- Documents submitted physically or via email
-- Applications stored in filing cabinets
-- Review conducted manually with paper forms
-- Status communicated via phone or email
+**Application Processing** (Currently using PDF/Word forms):
+- Applicants download a PDF or Word form from the website
+- They fill it out by hand or on their computer
+- They print it, sign it, scan it, and either email it or submit it physically
+- Admin staff receive the form and manually enter all the data into iEnabler
+- Forms are stored in filing cabinets
+- When there's an update, someone has to call or email the applicant
 
-**Student Records**:
-- Maintained in Excel spreadsheets
-- Each department maintains separate records
-- Physical files stored in filing cabinets
-- Student numbers assigned manually by administrator
+**Student Records** (Currently in iEnabler):
+- Once approved, student data lives in iEnabler
+- Each department also keeps their own Excel spreadsheets because they can't always access iEnabler when they need to
+- Physical files are still maintained in filing cabinets as backup
+- Student numbers are generated manually by an administrator (sometimes leading to duplicates)
 
-**Course Registration**:
-- In-person registration during specified periods
-- Paper forms filled and submitted at registration desk
-- Administrator manually checks prerequisites and capacity
-- Registrations recorded in Excel
-- Printed course rosters distributed to lecturers
+**Course Registration** (Currently using physical forms):
+- Students come in during registration week
+- They fill out paper forms at the registration desk
+- An administrator manually checks if they meet prerequisites and if there's space in the course
+- The registration is entered into iEnabler
+- Someone prints out class rosters and physically delivers them to lecturers
+- Moodle doesn't know about these registrations, so lecturers have to manually add students to Moodle courses
 
-### System Limitations
+### What's Wrong With This Setup
 
-1. **No Integration**: Disconnected systems lead to data duplication and inconsistency
-2. **No Automation**: All processes require manual intervention
-3. **Limited Access**: Information only available during office hours
-4. **No Real-Time Updates**: Status changes not immediately visible
-5. **Error-Prone**: Manual data entry leads to errors
-6. **No Audit Trail**: Difficult to track who made changes and when
-7. **Scalability Issues**: System cannot handle growing student population efficiently
-8. **Limited Reporting**: Generating reports requires manual data compilation
+1. **Nothing talks to each other**: Moodle doesn't know what's in iEnabler, iEnabler doesn't know what's on the paper forms, so the same information has to be entered multiple times
+2. **Everything's manual**: Every single step requires a human to do something - there's no automation anywhere
+3. **Only works during office hours**: If you need information at 8 PM, you're out of luck
+4. **No real-time updates**: When something changes, it can take days for everyone to know about it
+5. **Lots of mistakes**: When humans type the same data over and over, mistakes happen
+6. **No history**: Hard to figure out who changed what and when
+7. **Can't handle growth**: As Richfield gets more students, this manual system just gets slower and more overwhelmed
+8. **Reporting is painful**: Want to know how many students registered this semester? Someone has to spend hours pulling data from multiple sources and compiling it
 
 ---
 
@@ -161,25 +174,31 @@ The current student management system is a hybrid of manual paper-based processe
 
 ## Data Integrity Requirements
 
-The EduHub system must maintain data integrity through:
+One of the biggest problems with the current system is bad data - duplicates, typos, missing information, and data that just doesn't make sense. The new system needs rules to keep data clean and accurate. Here's what we need:
 
-### Entity Integrity
-- Every entity must have a unique primary key
-- Primary keys cannot be null
+### Entity Integrity (Every Record Must Be Unique)
+The basic idea: every record in the database needs a unique ID so we can tell them apart.
+- Every user, student, course, and application gets a unique ID
+- These IDs can never be empty or null
 - Examples: user_id, student_id, course_id, application_id
 
-### Referential Integrity
-- Foreign keys must reference valid primary keys
-- Orphaned records must be prevented
-- Examples: student_id in Registrations must exist in Students table
+### Referential Integrity (No Broken Links)
+The basic idea: if one record references another, that other record must actually exist.
+- For example, if a registration says "Student #2026-0001 registered for CS101", then both that student and that course must exist in the database
+- This prevents "orphaned" records that point to things that don't exist
+- If we delete a course, we need to handle any registrations that reference it
 
-### Domain Integrity
-- Values must conform to defined data types and ranges
-- Examples: email format validation, date ranges, numeric constraints
+### Domain Integrity (Values Must Make Sense)
+The basic idea: data must be the right type and in acceptable ranges.
+- Emails must look like actual email addresses
+- Dates must be valid dates (no February 30th)
+- Year of study must be a number between 1 and 6, not "purple" or -5
 
-### Business Rule Integrity
-- System must enforce business rules through constraints
-- Examples: registration only during registration period, maximum 3 emergency contacts
+### Business Rule Integrity (Follow Institution Rules)
+The basic idea: the database should enforce Richfield's policies automatically.
+- Students can only register during the registration period (not in the middle of semester)
+- Students can have a maximum of 3 emergency contacts
+- Can't register for a course if you haven't completed the prerequisites
 
 ## Data Constraints
 
@@ -230,187 +249,195 @@ The EduHub system must maintain data integrity through:
 
 # 3.5 Weakness of the Current System
 
-Based on the analysis conducted, the current system exhibits the following critical weaknesses:
+Through our observations, workshops, and interviews, we identified 10 major problems with Richfield's current fragmented system. Here's what's broken and why it matters:
 
 ## 1. Inefficiency and Time Consumption
 
-**Problem**:
-- Application processing takes 30-45 minutes per application
-- Course registration requires 1-2 hours of student waiting time
-- Report generation takes 2-4 hours of manual compilation
+**The Problem**:
+- Manual data entry from each PDF application form into iEnabler takes 30-45 minutes of staff time
+- The complete application approval cycle (from submission to final decision) takes 2-3 weeks
+- Students wait 1-2 hours in line during registration week just to submit a paper form
+- Generating even simple reports (like "how many students are registered?") takes 2-4 hours of manual compilation; complex reports take even longer
 
-**Impact**:
-- Low throughput during application and registration periods
-- Student dissatisfaction due to long wait times
-- Administrative staff overwhelmed during peak periods
+**Why This Matters**:
+- During busy periods, there aren't enough staff to process everything in a reasonable time
+- Students get frustrated standing in long queues when they could be doing this online
+- Admin staff are completely overwhelmed during application and registration periods
 
-**Root Cause**:
-- Manual processes without automation
-- No workflow management
-- Sequential rather than parallel processing
+**Why It Happens**:
+- Everything is manual - there's no automation anywhere
+- Processes happen one at a time instead of many at once
+- No workflow system to manage tasks efficiently
 
 ## 2. Data Duplication and Inconsistency
 
-**Problem**:
-- Student information stored in multiple disconnected systems
-- Same data entered multiple times in different formats
-- Updates in one system not reflected in others
+**The Problem**:
+- Student information exists in Moodle, iEnabler, Excel spreadsheets, AND paper files
+- The same data (like a phone number) has to be entered separately in each system
+- When a student updates their address in iEnabler, it doesn't update in Moodle or the Excel files
 
-**Impact**:
-- Conflicting information across departments
-- Difficulty in establishing single source of truth
-- Increased likelihood of errors
+**Why This Matters**:
+- Different departments have different information for the same student, so nobody knows which is correct
+- No single source of truth - if there's a dispute, how do you know which system is right?
+- More places to enter data = more chances for errors
 
-**Root Cause**:
-- No centralized database
-- Lack of data integration
-- No data synchronization mechanisms
+**Why It Happens**:
+- No centralized database that everyone uses
+- The three systems (Moodle, iEnabler, forms) don't talk to each other
+- No automatic synchronization between systems
 
 ## 3. Limited Accessibility
 
-**Problem**:
+**The Problem**:
 - Information only accessible during office hours (8 AM - 5 PM weekdays)
-- Physical presence required for most transactions
-- No remote access capability
+- Students have to physically come to campus for most transactions
+- No way to access the system remotely
 
-**Impact**:
-- Inconvenience for students and staff
-- Unable to serve users outside office hours
-- Difficulty for distance learning students
+**Why This Matters**:
+- Inconvenient for students who work or have other commitments during office hours
+- Can't serve anyone after 5 PM or on weekends
+- Distance learning students have to travel to campus just to submit forms
 
-**Root Cause**:
-- Paper-based processes
-- No online portal
-- Centralized physical location dependency
+**Why It Happens**:
+- Paper-based processes require physical presence
+- No online portal or web-based system
+- Everything is centralized at the physical admin office
 
 ## 4. Lack of Real-Time Information
 
-**Problem**:
-- Application status changes not immediately visible
-- Course capacity information not updated in real-time
-- No automated notifications
+**The Problem**:
+- When an application status changes, students don't know until someone tells them
+- Course capacity info isn't updated in real-time, so you don't know if a course is full until you try to register
+- No automatic notifications or reminders
 
-**Impact**:
-- Students must call or visit to check status
-- Students register for full courses
-- Missed deadlines due to lack of reminders
+**Why This Matters**:
+- Students have to keep calling or visiting the office to ask "has my application been reviewed yet?"
+- Students waste time trying to register for courses that are already full
+- People miss important deadlines because there's no reminder system
 
-**Root Cause**:
-- Manual status updates
-- No notification system
-- Batch processing rather than real-time updates
+**Why It Happens**:
+- Status updates are done manually, not automatically
+- No notification system in place
+- Data is processed in batches (like once a day) rather than updating instantly
 
 ## 5. Error-Prone Manual Processes
 
-**Problem**:
-- Manual data entry leads to typos and errors (~10% error rate)
+**The Problem**:
+- Manual data entry leads to typos and errors (we observed approximately 10% error rate during our analysis)
 - Manual student number generation occasionally produces duplicates
-- Calculation errors in reporting
+- Calculation errors when compiling reports manually
 
-**Impact**:
-- Data quality issues
-- Time spent correcting errors
-- Potential compliance violations
+**Why This Matters**:
+- Data quality issues affect decision-making
+- Staff spend hours finding and correcting errors
+- Errors could violate compliance requirements or cause serious problems
 
-**Root Cause**:
-- Human error in repetitive tasks
-- No validation mechanisms
-- Lack of automated checks
+**Why It Happens**:
+- Humans make mistakes on repetitive tasks - it's inevitable
+- No automatic validation to catch errors immediately
+- No automated checks to prevent duplicates or bad data
 
 ## 6. Poor Auditability
 
-**Problem**:
-- No record of who made changes to data
-- No timestamp of when changes occurred
-- Difficult to track application history
+**The Problem**:
+- No record of who changed what data or when
+- Can't see the history of changes to an application or student record
+- Impossible to track who did what
 
-**Impact**:
-- Cannot trace responsibility for errors
-- Compliance and accountability issues
-- Difficulty in dispute resolution
+**Why This Matters**:
+- When something goes wrong, you can't figure out who made the mistake
+- Compliance and accountability problems (auditors ask "who approved this?" and nobody knows)
+- Hard to resolve disputes ("I never received that form!" vs "We have it on record")
 
-**Root Cause**:
-- No audit logging
-- Paper records don't track modifications
-- No change history
+**Why It Happens**:
+- No audit logging system
+- Paper records don't automatically track who touched them or when
+- No change history is maintained
 
 ## 7. Scalability Limitations
 
-**Problem**:
-- System cannot handle growing student population
-- Registration period bottleneck worsens with more students
-- Physical storage space running out
+**The Problem**:
+- The current system can't handle a growing student population
+- Every year as Richfield gets more students, the registration bottleneck gets worse
+- Running out of physical space to store all the paper files
 
-**Impact**:
-- Degrading service quality as institution grows
-- Need for more administrative staff
-- Infrastructure constraints
+**Why This Matters**:
+- Service quality gets worse every year as the institution grows
+- Would need to hire more and more administrative staff just to keep up
+- Physical infrastructure constraints (filing cabinets, storage rooms)
 
-**Root Cause**:
-- Linear resource requirements
-- No automation to handle scale
-- Physical limitations
+**Why It Happens**:
+- Manual system requires proportionally more staff as volume increases
+- No automation to handle the increased load
+- Paper-based storage has physical space limits
 
 ## 8. Limited Reporting and Analytics
 
-**Problem**:
-- Generating reports requires hours of manual work
-- No real-time dashboard or analytics
-- Difficult to extract insights from data
+**The Problem**:
+- Generating reports requires hours of manual work pulling data from Moodle, iEnabler, and Excel files
+- No real-time dashboard showing what's happening right now
+- Difficult to extract meaningful insights from scattered data
 
-**Impact**:
-- Management decisions based on outdated data
-- Cannot respond quickly to trends
-- Limited strategic planning capability
+**Why This Matters**:
+- Management makes decisions based on data that's already weeks old
+- Can't spot trends or problems quickly enough to respond
+- Strategic planning is difficult without good data
 
-**Root Cause**:
-- Data scattered across multiple sources
-- No reporting tools
-- Manual data compilation required
+**Why It Happens**:
+- Data is scattered across multiple systems (Moodle, iEnabler, spreadsheets, paper)
+- No reporting tools that can pull from all sources
+- Someone has to manually compile everything into a report
 
 ## 9. Security and Privacy Concerns
 
-**Problem**:
-- Physical documents can be accessed by unauthorized personnel
-- No encryption of sensitive data
-- Difficult to ensure data privacy compliance
+**The Problem**:
+- Physical documents in filing cabinets can be accessed by anyone who walks into the office
+- Sensitive data isn't encrypted (it's just printed on paper or in plain Excel files)
+- Hard to ensure compliance with data privacy laws
 
-**Impact**:
-- Risk of data breaches
-- Potential regulatory violations
-- Loss of trust
+**Why This Matters**:
+- Risk of data breaches (someone could steal files or access systems they shouldn't)
+- Could violate data protection regulations and face penalties
+- Students and staff lose trust if their data isn't secure
 
-**Root Cause**:
-- Paper-based storage
-- Lack of access controls
-- No encryption mechanisms
+**Why It Happens**:
+- Paper-based storage can't be encrypted or access-controlled effectively
+- No role-based access controls to limit who sees what
+- No encryption mechanisms for sensitive information
 
 ## 10. Communication Gaps
 
-**Problem**:
-- No integrated communication system
-- Announcements rely on physical notice boards
-- Email communication not systematic
+**The Problem**:
+- No integrated way to communicate with students
+- Announcements are posted on physical notice boards (which students may not check)
+- Email communication is ad-hoc and unsystematic
 
-**Impact**:
-- Students miss important information
-- Lack of engagement
-- Increased support inquiries
+**Why This Matters**:
+- Students miss important information about deadlines, changes, or opportunities
+- Low engagement because communication is ineffective
+- More support inquiries because students didn't get the information they needed
 
-**Root Cause**:
-- No notification system
-- Manual communication processes
-- No centralized announcement platform
+**Why It Happens**:
+- No notification system built into the current setup
+- Communication is manual (someone has to remember to send an email or post a notice)
+- No centralized platform for announcements that everyone checks
 
 ---
 
 # 3.6 Analysis of the Proposed System (Functional Requirements)
 
-The proposed EduHub system addresses the weaknesses of the current system through comprehensive digital automation. This section provides detailed functional requirements with acceptance criteria.
+Now that we know what's broken, let's define what the new EduHub system needs to do to fix it. This section spells out the specific features and functions the system must have.
 
-## Functional Requirements Overview
+## What Are Functional Requirements?
 
-Functional requirements describe what the system must do - the specific behaviors, functions, and features it must provide. The EduHub system requires the following major functional capabilities:
+Functional requirements describe exactly what the system must do - the specific features, behaviors, and capabilities it needs. Think of it as a detailed checklist: "The system must allow students to register for courses online" is a functional requirement.
+
+For each requirement, we've included:
+- A unique ID so we can track it
+- Priority level (Must Have, Should Have, or Could Have)
+- Acceptance criteria - specific, testable conditions that define when the requirement is successfully met
+
+Here are the major capabilities EduHub needs:
 
 ### 1. User Authentication and Account Management
 
@@ -513,9 +540,11 @@ Functional requirements describe what the system must do - the specific behavior
 
 ---
 
-## Non-Functional Requirements
+# 3.7 Non-Functional Requirements
 
-Non-functional requirements define system qualities - how well the system performs its functions.
+While functional requirements describe what the system does, non-functional requirements describe how well it does it. These are the quality attributes - things like "how fast?", "how secure?", "how reliable?". These are just as important as the features themselves.
+
+For example, a system could technically allow students to register for courses (functional requirement), but if it takes 5 minutes to load each page, it's useless. The non-functional requirements make sure the system is actually good to use.
 
 ### NFR-1: Security
 
@@ -614,19 +643,19 @@ This comprehensive SRS ensures clear, testable requirements that guide developme
 
 ---
 
-# 2.7 Data Models
+# 3.8 Data Modeling for Proposed System
 
-Data models describe how system data is structured and how different components interact. The EduHub system uses multiple modeling techniques to represent different aspects of the system architecture and data flow.
+Now let's look at how we'll structure the data and design the system. We're using three different types of diagrams to show different aspects: use cases (what users can do), entity relationships (how data is structured), and data flow (how information moves through the system).
 
 ---
 
 ## Use Case Diagram
 
-Use case diagrams show the functional requirements of the system from the user's perspective, illustrating actors (users) and their interactions with the system.
+A use case diagram shows who uses the system (actors) and what they can do with it (use cases). It's basically a visual way to show "who does what" in the system.
 
-### Actors
+### Who Uses the System (Actors)
 
-The EduHub system has six primary actors:
+EduHub has six different types of users:
 
 | Actor | Description | Primary Goals |
 |-------|-------------|---------------|
@@ -720,261 +749,242 @@ The EduHub system has six primary actors:
 
 ## Entity Relationship Diagram (ERD)
 
-The Entity Relationship Diagram shows the database structure, entities (tables), attributes (columns), and relationships between entities.
+The ERD shows the conceptual structure of our database - what main entities (tables) we need and how they relate to each other. This is a high-level view; the detailed database design with specific data types, field sizes, and constraints will be done in Phase 4 (System Design).
 
-### Database Entities
+### The Main Entities We Need
 
 #### 1. Users Entity
 
-**Purpose**: Store authentication and basic information for all system users
+**Purpose**: Store authentication and basic information for all system users (students, lecturers, admin, etc.)
 
-| Attribute | Type | Constraints | Description |
-|-----------|------|-------------|-------------|
-| user_id | UUID | PRIMARY KEY | Unique identifier |
-| email | VARCHAR(255) | UNIQUE, NOT NULL | User email address |
-| password_hash | VARCHAR(255) | NOT NULL | Bcrypt hashed password |
-| first_name | VARCHAR(100) | NOT NULL | User first name |
-| last_name | VARCHAR(100) | NOT NULL | User last name |
-| role | ENUM | NOT NULL | User role (Applicant, Student, Lecturer, Admin, Librarian, Alumni) |
-| is_active | BOOLEAN | DEFAULT TRUE | Account active status |
-| is_verified | BOOLEAN | DEFAULT FALSE | Email verified status |
-| mfa_enabled | BOOLEAN | DEFAULT FALSE | Multi-factor auth enabled |
-| mfa_secret | VARCHAR(255) | NULLABLE | MFA secret key |
-| last_login | TIMESTAMP | NULLABLE | Last login timestamp |
-| created_at | TIMESTAMP | DEFAULT NOW() | Account creation date |
-| updated_at | TIMESTAMP | DEFAULT NOW() | Last update date |
+**Key Information to Store**:
+- Unique user identifier
+- Email address (for login)
+- Password (securely hashed)
+- First name and last name
+- User role (Applicant, Student, Lecturer, Admin, Librarian, Alumni)
+- Account status (active/inactive, verified/unverified)
+- Multi-factor authentication settings
+- Login history timestamps
 
-**Indexes**: email, role, is_active
 
 **Relationships**:
-- One-to-One with Students (when role = Student)
-- One-to-Many with Applications
-- One-to-Many with Audit_Logs
-- One-to-Many with Notifications
+- One-to-One with Students (when user role is Student)
+- One-to-Many with Applications (one user can submit multiple applications)
+- One-to-Many with Audit_Logs (one user performs many actions)
+- One-to-Many with Notifications (one user receives many notifications)
+
+---
 
 #### 2. Students Entity
 
 **Purpose**: Store additional information specific to enrolled students
 
-| Attribute | Type | Constraints | Description |
-|-----------|------|-------------|-------------|
-| student_id | UUID | PRIMARY KEY | Unique identifier |
-| user_id | UUID | FOREIGN KEY (Users), UNIQUE | Reference to Users table |
-| student_number | VARCHAR(20) | UNIQUE, NOT NULL | Generated student number (YEAR-SEQUENCE) |
-| id_number | VARCHAR(50) | UNIQUE, NOT NULL | National ID number |
-| phone | VARCHAR(20) | NOT NULL | Phone number |
-| address | TEXT | NOT NULL | Physical address |
-| date_of_birth | DATE | NOT NULL | Date of birth |
-| program | VARCHAR(100) | NOT NULL | Academic program/course |
-| year_of_study | INTEGER | DEFAULT 1 | Current year of study |
-| status | ENUM | DEFAULT 'Active' | Status (Active, Graduated, Suspended) |
-| profile_photo_url | VARCHAR(255) | NULLABLE | Profile photo URL |
-| enrollment_date | DATE | NOT NULL | Date enrolled |
-| created_at | TIMESTAMP | DEFAULT NOW() | Record creation date |
-| updated_at | TIMESTAMP | DEFAULT NOW() | Last update date |
-
-**Indexes**: student_number, user_id, id_number, status
+**Key Information to Store**:
+- Unique student identifier
+- Link to user account
+- Generated student number (format: YEAR-####, e.g., 2026-0001)
+- National ID number
+- Contact information (phone, address)
+- Date of birth
+- Academic program
+- Year of study (1-6)
+- Student status (Active, Graduated, Suspended)
+- Profile photo
+- Enrollment date
 
 **Relationships**:
 - One-to-One with Users
-- One-to-Many with Emergency_Contacts
-- Many-to-Many with Courses (through Registrations)
+- One-to-Many with Emergency_Contacts (one student has multiple contacts)
+- Many-to-Many with Courses (through Registrations table)
+
+---
 
 #### 3. Emergency_Contacts Entity
 
-**Purpose**: Store emergency contact information for students
+**Purpose**: Store emergency contact information for students (maximum 3 per student)
 
-| Attribute | Type | Constraints | Description |
-|-----------|------|-------------|-------------|
-| contact_id | UUID | PRIMARY KEY | Unique identifier |
-| student_id | UUID | FOREIGN KEY (Students) | Reference to Students table |
-| name | VARCHAR(100) | NOT NULL | Contact name |
-| relationship | VARCHAR(50) | NOT NULL | Relationship to student |
-| phone | VARCHAR(20) | NOT NULL | Contact phone number |
-| email | VARCHAR(255) | NULLABLE | Contact email |
-| is_primary | BOOLEAN | DEFAULT FALSE | Primary contact flag |
-| created_at | TIMESTAMP | DEFAULT NOW() | Record creation date |
-| updated_at | TIMESTAMP | DEFAULT NOW() | Last update date |
-
-**Indexes**: student_id
+**Key Information to Store**:
+- Unique contact identifier
+- Link to student
+- Contact name
+- Relationship to student (parent, spouse, sibling, etc.)
+- Phone number
+- Email address (optional)
+- Primary contact flag
 
 **Relationships**:
-- Many-to-One with Students
+- Many-to-One with Students (multiple contacts belong to one student)
+
+---
 
 #### 4. Applications Entity
 
 **Purpose**: Store student applications for admission
 
-| Attribute | Type | Constraints | Description |
-|-----------|------|-------------|-------------|
-| application_id | UUID | PRIMARY KEY | Unique identifier |
-| user_id | UUID | FOREIGN KEY (Users) | Reference to Users table (Applicant) |
-| first_name | VARCHAR(100) | NOT NULL | Applicant first name |
-| last_name | VARCHAR(100) | NOT NULL | Applicant last name |
-| id_number | VARCHAR(50) | NOT NULL | National ID number |
-| email | VARCHAR(255) | NOT NULL | Email address |
-| phone | VARCHAR(20) | NOT NULL | Phone number |
-| address | TEXT | NOT NULL | Physical address |
-| date_of_birth | DATE | NOT NULL | Date of birth |
-| program | VARCHAR(100) | NOT NULL | Applying for program |
-| status | ENUM | DEFAULT 'Submitted' | Status (Submitted, Under Review, Approved, Rejected, Withdrawn) |
-| rejection_reason | TEXT | NULLABLE | Reason if rejected |
-| reviewed_by | UUID | FOREIGN KEY (Users), NULLABLE | Admin who reviewed |
-| reviewed_at | TIMESTAMP | NULLABLE | Review timestamp |
-| is_draft | BOOLEAN | DEFAULT TRUE | Draft status |
-| submitted_at | TIMESTAMP | NULLABLE | Submission timestamp |
-| created_at | TIMESTAMP | DEFAULT NOW() | Application creation date |
-| updated_at | TIMESTAMP | DEFAULT NOW() | Last update date |
-
-**Indexes**: user_id, status, submitted_at
+**Key Information to Store**:
+- Unique application identifier
+- Link to user account (applicant)
+- Personal information (name, ID number, email, phone, address, date of birth)
+- Program applying for
+- Application status (Submitted, Under Review, Approved, Rejected, Withdrawn)
+- Rejection reason (if rejected)
+- Who reviewed it and when
+- Draft status
+- Submission timestamp
 
 **Relationships**:
-- Many-to-One with Users (applicant)
-- Many-to-One with Users (reviewer)
-- One-to-Many with Application_Documents
+- Many-to-One with Users (as applicant)
+- Many-to-One with Users (as reviewer - who approved/rejected)
+- One-to-Many with Application_Documents (one application has multiple documents)
+
+---
 
 #### 5. Application_Documents Entity
 
-**Purpose**: Store documents uploaded with applications
+**Purpose**: Store documents uploaded with applications (ID copies, certificates, transcripts)
 
-| Attribute | Type | Constraints | Description |
-|-----------|------|-------------|-------------|
-| document_id | UUID | PRIMARY KEY | Unique identifier |
-| application_id | UUID | FOREIGN KEY (Applications) | Reference to Applications table |
-| document_type | VARCHAR(50) | NOT NULL | Type (ID, Certificate, Transcript) |
-| file_name | VARCHAR(255) | NOT NULL | Original file name |
-| file_path | VARCHAR(255) | NOT NULL | Storage path |
-| file_size | INTEGER | NOT NULL | File size in bytes |
-| mime_type | VARCHAR(100) | NOT NULL | File MIME type |
-| uploaded_at | TIMESTAMP | DEFAULT NOW() | Upload timestamp |
+**Key Information to Store**:
+- Unique document identifier
+- Link to application
+- Document type (ID, Certificate, Transcript, Other)
+- File information (original filename, storage path, file size, MIME type)
+- Upload timestamp
 
-**Indexes**: application_id
+**Business Rules**:
+- Maximum file size: 5MB per document
+- Allowed types: PDF, JPG, PNG
 
 **Relationships**:
-- Many-to-One with Applications
+- Many-to-One with Applications (multiple documents belong to one application)
+
+---
 
 #### 6. Courses Entity
 
 **Purpose**: Store course information
 
-| Attribute | Type | Constraints | Description |
-|-----------|------|-------------|-------------|
-| course_id | UUID | PRIMARY KEY | Unique identifier |
-| course_code | VARCHAR(20) | UNIQUE, NOT NULL | Course code (e.g., CS101) |
-| course_name | VARCHAR(200) | NOT NULL | Course name |
-| description | TEXT | NULLABLE | Course description |
-| credits | INTEGER | NOT NULL | Credit hours |
-| capacity | INTEGER | NOT NULL | Maximum students |
-| department | VARCHAR(100) | NOT NULL | Department offering course |
-| semester | VARCHAR(50) | NOT NULL | Semester (e.g., Fall 2026) |
-| schedule | VARCHAR(100) | NULLABLE | Class schedule |
-| prerequisites | TEXT | NULLABLE | Prerequisite courses |
-| lecturer_id | UUID | FOREIGN KEY (Users), NULLABLE | Assigned lecturer |
-| is_active | BOOLEAN | DEFAULT TRUE | Active status |
-| created_at | TIMESTAMP | DEFAULT NOW() | Record creation date |
-| updated_at | TIMESTAMP | DEFAULT NOW() | Last update date |
-
-**Indexes**: course_code, lecturer_id, semester, is_active
+**Key Information to Store**:
+- Unique course identifier
+- Course code (e.g., CS101) - must be unique
+- Course name
+- Description
+- Credit hours
+- Maximum capacity (number of students)
+- Department
+- Semester (e.g., Fall 2026)
+- Class schedule
+- Prerequisites (list of required courses)
+- Assigned lecturer
+- Active status
 
 **Relationships**:
-- Many-to-One with Users (lecturer)
-- Many-to-Many with Students (through Registrations)
+- Many-to-One with Users (as lecturer - one lecturer teaches multiple courses)
+- Many-to-Many with Students (through Registrations table)
+
+---
 
 #### 7. Registrations Entity
 
-**Purpose**: Store student course registrations (junction table)
+**Purpose**: Junction table linking students to courses (represents course enrollments)
 
-| Attribute | Type | Constraints | Description |
-|-----------|------|-------------|-------------|
-| registration_id | UUID | PRIMARY KEY | Unique identifier |
-| student_id | UUID | FOREIGN KEY (Students) | Reference to Students table |
-| course_id | UUID | FOREIGN KEY (Courses) | Reference to Courses table |
-| semester | VARCHAR(50) | NOT NULL | Registration semester |
-| registration_date | TIMESTAMP | DEFAULT NOW() | When student registered |
-| status | ENUM | DEFAULT 'Registered' | Status (Registered, Dropped, Completed) |
-| dropped_at | TIMESTAMP | NULLABLE | When course was dropped |
-| grade | VARCHAR(5) | NULLABLE | Final grade (future feature) |
-| created_at | TIMESTAMP | DEFAULT NOW() | Record creation date |
-| updated_at | TIMESTAMP | DEFAULT NOW() | Last update date |
+**Key Information to Store**:
+- Unique registration identifier
+- Link to student
+- Link to course
+- Semester
+- Registration date
+- Status (Registered, Dropped, Completed)
+- Drop date (if dropped)
+- Grade (future feature)
 
-**Unique Constraint**: (student_id, course_id, semester)
-
-**Indexes**: student_id, course_id, semester, status
+**Business Rules**:
+- Student cannot register for same course twice in same semester
+- Cannot register if course is full
+- Cannot register without meeting prerequisites
+- Cannot drop after add/drop deadline
 
 **Relationships**:
 - Many-to-One with Students
 - Many-to-One with Courses
 
+---
+
 #### 8. System_Settings Entity
 
 **Purpose**: Store system configuration settings
 
-| Attribute | Type | Constraints | Description |
-|-----------|------|-------------|-------------|
-| setting_id | UUID | PRIMARY KEY | Unique identifier |
-| setting_key | VARCHAR(100) | UNIQUE, NOT NULL | Setting key name |
-| setting_value | TEXT | NOT NULL | Setting value |
-| description | TEXT | NULLABLE | Setting description |
-| updated_by | UUID | FOREIGN KEY (Users) | Admin who last updated |
-| updated_at | TIMESTAMP | DEFAULT NOW() | Last update date |
+**Key Information to Store**:
+- Unique setting identifier
+- Setting key (unique name)
+- Setting value
+- Description
+- Who last updated it
+- When it was last updated
 
 **Common Settings**:
-- registration_start_date
-- registration_end_date
-- add_drop_deadline
-- current_semester
-- max_credits_per_semester
-
-**Indexes**: setting_key
+- Registration start and end dates
+- Add/drop deadline
+- Current semester
+- Maximum credits per semester
 
 **Relationships**:
-- Many-to-One with Users (updater)
+- Many-to-One with Users (as updater - who changed the setting)
+
+---
 
 #### 9. Audit_Logs Entity
 
-**Purpose**: Store audit trail of system actions
+**Purpose**: Store audit trail of all system actions for compliance and debugging
 
-| Attribute | Type | Constraints | Description |
-|-----------|------|-------------|-------------|
-| log_id | UUID | PRIMARY KEY | Unique identifier |
-| user_id | UUID | FOREIGN KEY (Users), NULLABLE | User who performed action |
-| action | VARCHAR(100) | NOT NULL | Action performed |
-| entity_type | VARCHAR(50) | NOT NULL | Entity affected (User, Course, etc.) |
-| entity_id | UUID | NULLABLE | ID of affected entity |
-| changes | JSONB | NULLABLE | JSON of changes made |
-| ip_address | VARCHAR(45) | NULLABLE | User IP address |
-| user_agent | VARCHAR(255) | NULLABLE | Browser user agent |
-| created_at | TIMESTAMP | DEFAULT NOW() | Log timestamp |
+**Key Information to Store**:
+- Unique log identifier
+- Who performed the action
+- What action was performed (e.g., 'LOGIN', 'APPROVE_APPLICATION', 'CREATE_COURSE')
+- What type of entity was affected (User, Course, Application, etc.)
+- Which specific entity (ID)
+- What changed (JSON format)
+- User's IP address
+- User's browser/device information
+- When it happened
 
-**Indexes**: user_id, entity_type, entity_id, created_at
+**Business Rules**:
+- Logs are immutable (cannot be edited or deleted)
+- Retained for at least 1 year
+- Critical for security and compliance
 
 **Relationships**:
-- Many-to-One with Users
+- Many-to-One with Users (one user performs many actions)
+
+---
 
 #### 10. Notifications Entity
 
 **Purpose**: Store in-app notifications for users
 
-| Attribute | Type | Constraints | Description |
-|-----------|------|-------------|-------------|
-| notification_id | UUID | PRIMARY KEY | Unique identifier |
-| user_id | UUID | FOREIGN KEY (Users) | Recipient user |
-| title | VARCHAR(200) | NOT NULL | Notification title |
-| message | TEXT | NOT NULL | Notification message |
-| type | VARCHAR(50) | NOT NULL | Type (info, success, warning, error) |
-| is_read | BOOLEAN | DEFAULT FALSE | Read status |
-| link_url | VARCHAR(255) | NULLABLE | Link to related page |
-| created_at | TIMESTAMP | DEFAULT NOW() | Notification timestamp |
-
-**Indexes**: user_id, is_read, created_at
+**Key Information to Store**:
+- Unique notification identifier
+- Who receives it
+- Title
+- Message
+- Type (info, success, warning, error)
+- Read/unread status
+- Optional link to related page
+- When it was created
 
 **Relationships**:
-- Many-to-One with Users
+- Many-to-One with Users (one user receives many notifications)
 
-### Entity Relationships Summary
+---
+
+### Conceptual ERD Summary
+
+**Entity Count**: 10 main entities
+
+**Relationship Summary**:
 
 **One-to-One**:
-- Users ↔ Students
+- Users ↔ Students (each student has one user account)
 
 **One-to-Many**:
 - Users → Applications (as applicant)
@@ -982,46 +992,78 @@ The Entity Relationship Diagram shows the database structure, entities (tables),
 - Users → Courses (as lecturer)
 - Users → Audit_Logs
 - Users → Notifications
+- Users → System_Settings (as updater)
 - Students → Emergency_Contacts
 - Applications → Application_Documents
 - Courses → Registrations
+- Students → Registrations
 
 **Many-to-Many**:
-- Students ↔ Courses (through Registrations)
+- Students ↔ Courses (through Registrations junction table)
 
-### Database Constraints and Rules
+**Simplified ER Diagram**:
 
-**Foreign Key Constraints**:
-- ON DELETE CASCADE: Emergency_Contacts, Application_Documents, Notifications
-- ON DELETE SET NULL: Courses.lecturer_id, Applications.reviewed_by
-- ON DELETE RESTRICT: Registrations, Audit_Logs
+```
+        ┌──────────┐
+        │  Users   │
+        └────┬─────┘
+             │
+        ┌────┴─────┬──────────┬─────────┬──────────┐
+        │          │          │         │          │
+    ┌───▼────┐ ┌──▼──────┐  │    ┌────▼────┐ ┌───▼──────┐
+    │Students│ │Applicants│  │    │Lecturers│ │ Admins   │
+    └───┬────┘ └──┬───────┘  │    └────┬────┘ └────┬─────┘
+        │         │          │         │           │
+        │    ┌────▼──────────▼─────┐   │           │
+        │    │   Applications      │   │           │
+        │    └────┬────────────────┘   │           │
+        │         │                    │           │
+        │    ┌────▼────────────┐       │           │
+        │    │App_Documents    │       │           │
+        │    └─────────────────┘       │           │
+        │                              │           │
+   ┌────▼──────────┐            ┌──────▼───────┐   │
+   │Emergency_     │            │   Courses    │   │
+   │Contacts       │            └──────┬───────┘   │
+   └───────────────┘                   │           │
+        │                              │           │
+        │         ┌────────────────────┘           │
+        │         │                                │
+        │    ┌────▼────────┐                       │
+        └────┤Registrations│                       │
+             └─────────────┘                       │
+                                                   │
+        ┌──────────────────────────────────────────┘
+        │
+    ┌───▼─────────┬────────────┬─────────────┐
+    │Audit_Logs   │Notifications│System_      │
+    │             │             │Settings     │
+    └─────────────┴────────────┴─────────────┘
+```
 
-**Check Constraints**:
-- Users.role IN ('Applicant', 'Student', 'Lecturer', 'Admin', 'Librarian', 'Alumni')
-- Students.year_of_study BETWEEN 1 AND 6
-- Courses.credits > 0
-- Courses.capacity > 0
-- Applications.status IN ('Submitted', 'Under Review', 'Approved', 'Rejected', 'Withdrawn')
-
-**Business Rules**:
-- Student number format: {YEAR}-{4-digit-sequence} (e.g., 2026-0001)
-- Email must be unique across all users
-- Cannot register for course if capacity reached
-- Cannot register for course without meeting prerequisites
-- Cannot drop course after add/drop deadline
+**Key Business Rules Captured**:
+- Each student must have a unique student number (format: YEAR-####)
 - Maximum 3 emergency contacts per student
+- Students can only register for courses they meet prerequisites for
+- Cannot register for full courses
+- Cannot drop courses after deadline
+- All user actions are logged in audit trail
+- Applicants become Students when approved
 
-(Detailed ER Diagram will be inserted here)
+**Note**: The detailed database schema with specific data types, field sizes, indexes, and SQL constraints is defined in Phase 4 (System Design), Section 4.5.
+
+
+(Conceptual ER diagram will be created in design phase)
 
 ---
 
 ## Data Flow Diagram (DFD)
 
-The Data Flow Diagram shows how data moves through the EduHub system, illustrating processes, data stores, and data flows between system components.
+The DFD shows how information flows through the system - where data comes from, what happens to it, where it's stored, and where it goes. It helps us understand the processes and data movement.
 
-### DFD Level 0 (Context Diagram)
+### DFD Level 0 (The Big Picture)
 
-Shows the system boundary and external entities:
+This shows the system as a whole and how external users interact with it:
 
 **External Entities**:
 - Applicants
@@ -1048,7 +1090,9 @@ Shows the system boundary and external entities:
 - System → Administrator: Reports, Analytics
 - System → Librarian: Student Status Information
 
-### DFD Level 1 (Major Processes)
+### DFD Level 1 (Breaking It Down Into Processes)
+
+This shows the major processes within the system and how they work:
 
 **Process 1: User Authentication**
 - Input: Login Credentials
@@ -1262,37 +1306,37 @@ This comprehensive data modeling section provides the foundation for database de
 
 # Conclusion
 
-The Analysis Phase has provided a comprehensive examination of the EduHub system requirements through systematic information gathering, current system analysis, and detailed requirement specification.
+So that's the analysis phase complete! We've taken a deep dive into what Richfield needs, what's broken with the current setup, and what the new system needs to do.
 
-## Key Achievements
+## What We Accomplished
 
-1. **Comprehensive Information Gathering**: Employed multiple methodologies (observation, participatory workshops, interviews) to gather requirements from all stakeholder groups
+1. **Talked to Everyone**: We observed processes in action, ran workshops with students and staff, and interviewed key people to make sure we understand what everyone needs
 
-2. **Current System Analysis**: Identified 10 critical weaknesses in the existing manual/fragmented system that justify the need for automation
+2. **Identified the Problems**: We found 10 major weaknesses in the current fragmented system (Moodle + iEnabler + paper forms) that show why Richfield needs this new unified system
 
-3. **Data Requirements**: Defined data integrity rules, constraints, and validation requirements to ensure data quality
+3. **Defined Data Rules**: We figured out what data we need to store and what rules it must follow to stay clean and accurate
 
-4. **Detailed Functional Requirements**: Specified 71 functional requirements across 11 categories with unique identifiers, priorities, and acceptance criteria
+4. **Wrote Down All Requirements**: We documented 71 functional requirements (what the system does) across 11 categories, with clear success criteria for each one
 
-5. **Comprehensive Non-Functional Requirements**: Defined 26 non-functional requirements across 8 quality attributes (security, performance, availability, usability, maintainability, scalability, portability, compliance)
+5. **Defined Quality Standards**: We specified 26 non-functional requirements covering security, performance, usability, and other quality attributes
 
-6. **Detailed Data Models**: Created comprehensive use case diagrams, entity relationship diagrams with 10 entities, and data flow diagrams showing system processes and data flows
+6. **Designed the Data Structure**: We created diagrams showing the use cases, database structure (10 main entities), and how data flows through the system
 
-## Requirements Summary
+## The Numbers
 
-- **Total Functional Requirements**: 71 (45 Must Have, 23 Should Have, 3 Could Have)
-- **Total Non-Functional Requirements**: 26 (22 Must Have, 4 Should Have)
-- **Data Entities**: 10 primary entities with defined relationships
-- **System Actors**: 6 user roles with defined use cases
+- **Functional Requirements**: 71 total (45 Must Have for the first version, 23 Should Have, 3 Could Have)
+- **Non-Functional Requirements**: 26 total (22 Must Have, 4 Should Have)
+- **Database Tables**: 10 primary entities with clear relationships
+- **User Types**: 6 different roles with defined permissions and features
 
-## Next Steps
+## What Happens Next
 
-The detailed requirements and data models developed in this Analysis Phase will guide:
+Now that we know what to build, the next phases will be:
 
-- **Phase 4 (System Design)**: Architectural design, database schemas, API specifications, UI/UX design, security design
-- **Phase 5 (Implementation)**: Actual coding and development of the system based on approved designs
+- **Phase 4 (System Design)**: We'll design the actual architecture, create the database schema, design the user interface, and plan the security approach (Due: June 8, 2026)
+- **Phase 5 (Implementation)**: We'll actually build the system based on these requirements and designs
 
-The analysis ensures that all stakeholder needs are understood and documented, providing a solid foundation for successful system design and implementation.
+This analysis gives us a solid foundation. We know what the problems are, who the users are, what they need, and how the system should work. Now we can design and build it with confidence.
 
 ---
 

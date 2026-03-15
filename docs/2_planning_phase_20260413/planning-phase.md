@@ -2,10 +2,11 @@
 
 ## Phase 2 – Planning Phase
 
-Project: EduHub Student Management System  
-Team: EduHub Development Team  
-Course: IT Project  
+Project: EduHub Student Management System
+Team: EduHub Development Team
+Course: IT Project
 Date: April 2026
+Due Date: April 13, 2026
 
 ---
 
