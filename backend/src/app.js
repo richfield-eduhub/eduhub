@@ -1,12 +1,7 @@
 require('dotenv').config();
 const express = require('express');
-<<<<<<< HEAD
-<<<<<<< HEAD
-const morgan = require('morgan');
-=======
 const path    = require('path');
 const morgan  = require('morgan');
->>>>>>> 531c062 (popi's changes)
 const { migrator } = require('./db/migrator');
 
 // Middleware
@@ -14,17 +9,6 @@ const corsMiddleware = require('./middleware/cors.middleware');
 const { sanitizeInputs } = require('./middleware/validator.middleware');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler.middleware');
 
-<<<<<<< HEAD
-// Routes
-const authRoutes = require('./routes/auth.routes');
-const studentRoutes = require('./routes/student.routes');
-const lecturerRoutes = require('./routes/lecturer.routes');
-const qualificationRoutes = require('./routes/qualification.routes');
-const moduleRoutes = require('./routes/module.routes');
-const campusRoutes = require('./routes/campus.routes');
-const applicationRoutes = require('./routes/application.routes');
-const adminRoutes = require('./routes/admin.routes');
-=======
 // Routes — core (Postgres/JWT)
 const authRoutes          = require('./routes/auth.routes');
 const studentRoutes       = require('./routes/student.routes');
@@ -41,7 +25,6 @@ const notificationRoutes  = require('./routes/notification.routes');
 const usersRoutes         = require('./routes/users.routes');
 const coursesRoutes       = require('./routes/courses.routes');
 const registrationsRoutes = require('./routes/registrations.routes');
->>>>>>> 531c062 (popi's changes)
 
 const app = express();
 
@@ -75,22 +58,6 @@ app.get('/api/health', (_, res) => {
 });
 
 /**
-<<<<<<< HEAD
- * API Routes
- */
-app.use('/api/auth', authRoutes);
-app.use('/api/students', studentRoutes);
-app.use('/api/lecturers', lecturerRoutes);
-app.use('/api/qualifications', qualificationRoutes);
-app.use('/api/modules', moduleRoutes);
-app.use('/api/campuses', campusRoutes);
-app.use('/api/applications', applicationRoutes);
-app.use('/api/admin', adminRoutes);
-
-/**
- * Error Handling
- * Must be placed after all routes
-=======
  * API Routes — core
  */
 app.use('/api/auth',           authRoutes);
@@ -150,7 +117,6 @@ app.get('/lecturer/announcements', page('lecturer/Announcements.html'));
 
 /**
  * Error Handling — must be after all routes
->>>>>>> 531c062 (popi's changes)
  */
 app.use(notFoundHandler);
 app.use(errorHandler);
@@ -158,60 +124,11 @@ app.use(errorHandler);
 /**
  * Start Server
  */
-=======
-const cors = require('cors');
-const { sequelize } = require('./models');
-const { migrator } = require('./db/migrator');
-
-const authRoutes = require('./routes/auth');
-const applicationRoutes = require('./routes/applications');
-const userRoutes = require('./routes/users');
-const qualificationRoutes = require('./routes/qualifications');
-const moduleRoutes = require('./routes/modules');
-const semesterRoutes = require('./routes/semesters');
-const registrationRoutes = require('./routes/registrations');
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/applications', applicationRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/qualifications', qualificationRoutes);
-app.use('/api/modules', moduleRoutes);
-app.use('/api/semesters', semesterRoutes);
-app.use('/api/registrations', registrationRoutes);
-
-// Health check
-app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
-
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ message: 'Internal server error' });
-});
-
->>>>>>> 5ab37d8 (WIP)
 const PORT = process.env.PORT || 3000;
 
 migrator()
   .then(() => {
-<<<<<<< HEAD
     app.listen(PORT, () => {
-<<<<<<< HEAD
-      console.log('=================================');
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
-      console.log('=================================');
-    });
-  })
-  .catch((err) => {
-    console.error('❌ Startup failed:', err.message);
-=======
       console.log(`
   ╔══════════════════════════════════════════════════════════╗
   ║   EduHub is running →  http://localhost:${PORT}              ║
@@ -228,12 +145,5 @@ migrator()
   })
   .catch((err) => {
     console.error('Startup failed:', err.message);
->>>>>>> 531c062 (popi's changes)
-=======
-    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
-  })
-  .catch((err) => {
-    console.error('Startup failed:', err.message);
->>>>>>> 5ab37d8 (WIP)
     process.exit(1);
   });
