@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign In — EduHub</title>
+  <link rel="stylesheet" href="../shared.css" />
+  <style>
+    body { background: var(--rf-offwhite); }
+    .auth-wrap { min-height: 100vh; display: flex; }
+    .auth-left { flex: 1; background: linear-gradient(135deg, var(--rf-navy) 0%, var(--rf-blue) 100%); display: flex; flex-direction: column; justify-content: center; padding: 60px 48px; color: white; position: relative; overflow: hidden; }
+    .auth-left::before { content: ''; position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; border-radius: 50%; background: rgba(245,166,35,0.1); }
+    .auth-left::after  { content: ''; position: absolute; bottom: -80px; left: -40px; width: 360px; height: 360px; border-radius: 50%; background: rgba(255,255,255,0.04); }
+    .auth-inner { position: relative; z-index: 1; }
+    .auth-right { width: 480px; display: flex; flex-direction: column; justify-content: center; padding: 60px 48px; background: white; }
+    .demo-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; cursor: pointer; transition: background .15s; }
+    .demo-card:hover { background: rgba(255,255,255,0.14); }
+    @media(max-width:768px) { .auth-left { display: none; } .auth-right { width: 100%; } }
+  </style>
+</head>
+<body>
+  <div class="auth-wrap">
+    <!-- Left branding panel -->
+    <div class="auth-left">
+      <div class="auth-inner">
+        <div style="font-family:var(--font-display);font-size:14px;letter-spacing:4px;opacity:.6;margin-bottom:32px">RICHFIELD GRADUATE INSTITUTE</div>
+        <h1 style="font-family:var(--font-display);font-size:52px;letter-spacing:2px;line-height:1;margin-bottom:20px">WELCOME<br><span style="color:var(--rf-gold)">BACK.</span></h1>
+        <p style="font-size:16px;opacity:.75;line-height:1.7;max-width:320px">Access your student portal, manage registrations, and track your academic journey.</p>
+        <div style="margin-top:48px;border-top:1px solid rgba(255,255,255,.15);padding-top:32px">
+          <div style="font-size:13px;opacity:.6;margin-bottom:16px">DEMO ACCOUNTS — click to fill</div>
+          <div class="demo-card" onclick="fillDemo('admin@richfield.ac.za','admin123')">
+            <div style="font-weight:600;font-size:13px">Admin</div>
+            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">admin@richfield.ac.za / admin123</div>
+          </div>
+          <div class="demo-card" onclick="fillDemo('smokoena@richfield.ac.za','lec123')">
+            <div style="font-weight:600;font-size:13px">Lecturer</div>
+            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">smokoena@richfield.ac.za / lec123</div>
+          </div>
+          <div style="font-size:12px;opacity:.5;margin-top:10px">Students are created when admin approves an application.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="auth-right">
+      <div style="margin-bottom:40px">
+        <h2 style="font-family:var(--font-display);font-size:30px;letter-spacing:1px;margin-bottom:6px">SIGN IN</h2>
+        <p style="color:var(--rf-gray);font-size:14px">Enter your credentials to access your account</p>
+      </div>
+
+      <div id="alert-box"></div>
+
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="email" class="form-input" placeholder="your@email.com" onkeydown="if(event.key==='Enter')handleLogin()" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="password" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleLogin()" />
+        </div>
+        <button id="login-btn" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;margin-top:8px" onclick="handleLogin()">
+          Sign In →
+        </button>
+      </div>
+
+      <div style="text-align:center;margin-top:32px;padding-top:24px;border-top:1px solid var(--rf-border)">
+        <p style="font-size:14px;color:var(--rf-gray)">
+          New student? <a href="/apply" style="color:var(--rf-blue);font-weight:600">Apply here →</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared.js"></script>
+  <script>
+    // Redirect if already logged in
+    const existing = getCurrentUser();
+    if (existing && localStorage.getItem('authToken')) window.location.href = `/${existing.role}`;
+
+    function fillDemo(email, pwd) {
+      document.getElementById('email').value = email;
+      document.getElementById('password').value = pwd;
+    }
+
+    async function handleLogin() {
+      clearAlert('alert-box');
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      if (!email || !password) return showAlert('alert-box', 'Please enter your email and password.', 'error');
+      setLoading('login-btn', true, 'Signing in...');
+      const result = await login(email, password);
+      if (!result.success) {
+        showAlert('alert-box', result.message, 'error');
+        setLoading('login-btn', false, 'Sign In →');
+        return;
+      }
+      window.location.href = `/${result.user.role}`;
+    }
+  </script>
+</body>
+</html>

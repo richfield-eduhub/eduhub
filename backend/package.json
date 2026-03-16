@@ -1,17 +1,16 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "",
+  "name": "eduhub-backend",
+  "version": "2.0.0",
+  "description": "EduHub — Richfield Graduate Institute Portal",
   "main": "src/app.js",
+  "type": "commonjs",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev":   "nodemon src/app.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
+    "express": "^4.18.2",
+    "uuid":    "^9.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
