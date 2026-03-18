@@ -1094,23 +1094,23 @@ The system will be developed using open-source technologies, significantly reduc
 | Docker                  | Free   | Free for development use                 |
 | Postman                 | Free   | Free tier sufficient for project         |
 | Draw.io                 | Free   | Free diagramming tool                    |
-| **Total Software Cost** | **$0** |                                          |
+| **Total Software Cost** | **R0** |                                          |
 
 **Labor Costs** (Academic Project Context):
 
 | Role                 | Hours         | Rate | Cost   |
 | -------------------- | ------------- | ---- | ------ |
-| Project Manager      | 80            | $0   | $0     |
-| Backend Developer    | 120           | $0   | $0     |
-| Frontend Developer   | 120           | $0   | $0     |
-| Database Designer    | 80            | $0   | $0     |
-| Tester               | 60            | $0   | $0     |
-| Documentation        | 40            | $0   | $0     |
-| **Total Labor Cost** | **500 hours** |      | **$0** |
+| Project Manager      | 80            | R0   | R0     |
+| Backend Developer    | 120           | R0   | R0     |
+| Frontend Developer   | 120           | R0   | R0     |
+| Database Designer    | 80            | R0   | R0     |
+| Tester               | 60            | R0   | R0     |
+| Documentation        | 40            | R0   | R0     |
+| **Total Labor Cost** | **500 hours** |      | **R0** |
 
 _Note: As an academic project, labor is provided by students as part of coursework_
 
-**Total Development Cost**: **$0**
+**Total Development Cost**: **R0**
 
 ### Operational Costs
 
@@ -1118,13 +1118,13 @@ _Note: As an academic project, labor is provided by students as part of coursewo
 
 | Item             | Free Tier Option            | Low-Cost Option                | Enterprise Option          |
 | ---------------- | --------------------------- | ------------------------------ | -------------------------- |
-| Web Hosting      | Heroku Free / AWS Free Tier | DigitalOcean Droplet: $60/year | AWS/Azure: $500-1000/year  |
-| Database Hosting | Included with web host      | Included or $50/year           | Managed service: $300/year |
-| Domain Name      | Use platform subdomain      | $15/year                       | $15/year                   |
+| Web Hosting      | Heroku Free / AWS Free Tier | DigitalOcean Droplet: R60/year | AWS/Azure: R500-1000/year  |
+| Database Hosting | Included with web host      | Included or R50/year           | Managed service: R300/year |
+| Domain Name      | Use platform subdomain      | R15/year                       | R15/year                   |
 | SSL Certificate  | Let's Encrypt (Free)        | Free                           | Free                       |
-| Email Service    | Limited free tier           | $100/year for 10,000 emails    | $500/year                  |
-| Backup Storage   | 5GB free (Dropbox/Drive)    | 100GB: $20/year                | S3: $100/year              |
-| **Total**        | **$0/year**                 | **$245/year**                  | **$1,415/year**            |
+| Email Service    | Limited free tier           | R100/year for 10,000 emails    | R500/year                  |
+| Backup Storage   | 5GB free (Dropbox/Drive)    | 100GB: R20/year                | S3: R100/year              |
+| **Total**        | **R0/year**                 | **R245/year**                  | **R1,415/year**            |
 
 **Recommended Approach**: Start with free tier for pilot, migrate to low-cost option upon full deployment.
 
@@ -1134,7 +1134,7 @@ _Note: As an academic project, labor is provided by students as part of coursewo
 - Database backups: Automated (minimal cost)
 - Security patches: Included in platform updates
 
-**First Year Total Cost**: **$0 - $245** (depending on hosting choice)
+**First Year Total Cost**: **R0 - R245** (depending on hosting choice)
 
 ### Cost-Benefit Analysis
 
@@ -1142,12 +1142,12 @@ _Note: As an academic project, labor is provided by students as part of coursewo
 
 | Benefit Category                      | Current Cost | With EduHub | Annual Savings |
 | ------------------------------------- | ------------ | ----------- | -------------- |
-| Paper and Printing                    | $2,000       | $500        | $1,500         |
-| Physical Storage                      | $1,000       | $0          | $1,000         |
-| Staff Time (Application Processing)\* | $8,000       | $2,500      | $5,500         |
-| Staff Time (Registration Support)\*\* | $5,000       | $1,000      | $4,000         |
-| Manual Record Updates\*\*\*           | $3,000       | $500        | $2,500         |
-| **Total Annual Savings**              | **$19,000**  | **$4,500**  | **$14,500**    |
+| Paper and Printing                    | R2,000       | R500        | R1,500         |
+| Physical Storage                      | R1,000       | R0          | R1,000         |
+| Staff Time (Application Processing)\* | R8,000       | R2,500      | R5,500         |
+| Staff Time (Registration Support)\*\* | R5,000       | R1,000      | R4,000         |
+| Manual Record Updates\*\*\*           | R3,000       | R500        | R2,500         |
+| **Total Annual Savings**              | **R19,000**  | **R4,500**  | **R14,500**    |
 
 \*Based on 200 applications/year at 45 min each vs 15 min each, administrative staff rate
 **Based on reduced support needed during registration periods \***Based on reduced manual data entry and corrections
@@ -1166,27 +1166,27 @@ _Note: As an academic project, labor is provided by students as part of coursewo
 
 **Scenario 1: Free Hosting (Pilot/Small Scale)**
 
-- Initial Investment: $0
-- Annual Operating Cost: $0
-- Annual Savings: $14,500
+- Initial Investment: R0
+- Annual Operating Cost: R0
+- Annual Savings: R14,500
 - ROI: Infinite (savings with no cost)
 - Payback Period: Immediate
 
 **Scenario 2: Low-Cost Hosting (Recommended)**
 
-- Initial Investment: $0
-- Annual Operating Cost: $245
-- Annual Savings: $14,500
-- Net Annual Benefit: $14,255
+- Initial Investment: R0
+- Annual Operating Cost: R245
+- Annual Savings: R14,500
+- Net Annual Benefit: R14,255
 - ROI: 5,818%
 - Payback Period: Less than 1 week
 
 **Scenario 3: Enterprise Hosting (Maximum Scalability)**
 
-- Initial Investment: $0
-- Annual Operating Cost: $1,415
-- Annual Savings: $14,500
-- Net Annual Benefit: $13,085
+- Initial Investment: R0
+- Annual Operating Cost: R1,415
+- Annual Savings: R14,500
+- Net Annual Benefit: R13,085
 - ROI: 925%
 - Payback Period: Less than 1 month
 
@@ -1194,10 +1194,10 @@ _Note: As an academic project, labor is provided by students as part of coursewo
 
 | Option              | 5-Year Cost | 5-Year Savings | Net Benefit |
 | ------------------- | ----------- | -------------- | ----------- |
-| Keep Current System | $95,000     | $0             | $0          |
-| Free Hosting        | $0          | $72,500        | $72,500     |
-| Low-Cost Hosting    | $1,225      | $72,500        | $71,275     |
-| Enterprise Hosting  | $7,075      | $72,500        | $65,425     |
+| Keep Current System | R95,000     | R0             | R0          |
+| Free Hosting        | R0          | R72,500        | R72,500     |
+| Low-Cost Hosting    | R1,225      | R72,500        | R71,275     |
+| Enterprise Hosting  | R7,075      | R72,500        | R65,425     |
 
 ### Risk Assessment
 
@@ -1205,12 +1205,12 @@ _Note: As an academic project, labor is provided by students as part of coursewo
 
 | Risk                               | Probability | Potential Cost Impact | Mitigation                                               |
 | ---------------------------------- | ----------- | --------------------- | -------------------------------------------------------- |
-| Cloud hosting cost overruns        | Low         | $500-1000/year        | Monitor usage, optimize queries, start with free tier    |
-| Unexpected maintenance costs       | Low         | $500/year             | Document system well, use stable technologies            |
-| Need for paid third-party services | Low         | $500/year             | Use open-source alternatives, build features in-house    |
-| System downtime costs              | Low         | $100-500/incident     | Implement backups, monitoring, quick recovery procedures |
+| Cloud hosting cost overruns        | Low         | R500-1000/year        | Monitor usage, optimize queries, start with free tier    |
+| Unexpected maintenance costs       | Low         | R500/year             | Document system well, use stable technologies            |
+| Need for paid third-party services | Low         | R500/year             | Use open-source alternatives, build features in-house    |
+| System downtime costs              | Low         | R100-500/incident     | Implement backups, monitoring, quick recovery procedures |
 
-**Maximum Reasonable Risk Exposure**: $2,500/year (still much lower than current costs)
+**Maximum Reasonable Risk Exposure**: R2,500/year (still much lower than current costs)
 
 ### Funding Sources
 
@@ -1220,7 +1220,7 @@ _Note: As an academic project, labor is provided by students as part of coursewo
 
 **Ongoing Operations**:
 
-- Institutional IT budget ($245-1,415/year)
+- Institutional IT budget (R245-1,415/year)
 - Cost savings from reduced paper/storage can cover hosting
 - Potential grants for educational technology initiatives
 
@@ -1228,22 +1228,22 @@ _Note: As an academic project, labor is provided by students as part of coursewo
 
 **Option 1: Purchase Commercial Solution**
 
-- License Cost: $10,000-50,000/year
-- Implementation: $5,000-15,000
-- Training: $2,000-5,000
-- Total First Year: $17,000-70,000
+- License Cost: R10,000-50,000/year
+- Implementation: R5,000-15,000
+- Training: R2,000-5,000
+- Total First Year: R17,000-70,000
 
 **Option 2: Hire External Development Team**
 
-- Development: $30,000-100,000
-- Maintenance: $10,000-20,000/year
-- Total First Year: $40,000-120,000
+- Development: R30,000-100,000
+- Maintenance: R10,000-20,000/year
+- Total First Year: R40,000-120,000
 
 **Option 3: EduHub (This Project)**
 
-- Development: $0 (student project)
-- Maintenance: $245-1,415/year
-- Total First Year: $245-1,415
+- Development: R0 (student project)
+- Maintenance: R245-1,415/year
+- Total First Year: R245-1,415
 
 **Economic Advantage**: EduHub costs 95-99% less than alternatives
 

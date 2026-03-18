@@ -49,7 +49,7 @@ Your EduHub Student Management System documentation has been comprehensively rev
 - **23 academic references** (properly cited in Harvard style)
 - **11 stakeholder interviews**: 5 students, 3 admin staff, 2 lecturers, 1 librarian
 - **Comprehensive feasibility analysis**: Technical, operational, economic
-- **Economic analysis**: 5-year ROI of $65,425-$72,500
+- **Economic analysis**: 5-year ROI of R65,425-R72,500
 - **Competitive analysis**: 5 systems compared
 
 #### Key Statistics
@@ -770,24 +770,24 @@ Phase 5 (Implementation) - June 29, 2026
 ### Economic Analysis (Phase 2)
 
 **Development Costs**:
-- Labor: $0 (student project)
-- Tools: $0 (open-source stack)
-- Total: $0
+- Labor: R0 (student project)
+- Tools: R0 (open-source stack)
+- Total: R0
 
 **Operational Costs (Annual)**:
-- Low-cost option: $0 (free tiers)
-- Mid-tier: $500/year
-- Premium: $1,415/year
+- Low-cost option: R0 (free tiers)
+- Mid-tier: R500/year
+- Premium: R1,415/year
 
 **Benefits**:
-- Annual savings: $14,500/year
-- 5-year net benefit: $65,425-$72,500
+- Annual savings: R14,500/year
+- 5-year net benefit: R65,425-R72,500
 - ROI: 5,818% (low-cost option)
 - Payback period: < 1 week
 
 **Commercial Alternative Costs**:
-- First-year: $17,000-$120,000
-- Annual: $5,000-$25,000
+- First-year: R17,000-R120,000
+- Annual: R5,000-R25,000
 
 ### Project Timeline
 
