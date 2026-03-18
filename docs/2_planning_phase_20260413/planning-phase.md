@@ -1274,6 +1274,29 @@ The Agile approach is particularly suited for this project because:
 2. **Customer Collaboration**: Regular feedback from potential users (students, admin staff)
 3. **Responding to Change**: Adapt to new requirements based on testing and feedback
 4. **Incremental Delivery**: Release features progressively rather than all at once
+5. **Early and Continuous Development**: **As new developers**, we will begin coding immediately after the Planning Phase (mid-April), running development parallel to Analysis and Design phases to maximize learning time and reduce implementation risk
+
+### Early Implementation Strategy for New Developers
+
+**⚠️ Critical Adaptation for Learning Team**:
+
+The formal project schedule allocates only 2 weeks for implementation (June 9-22, 2026). However, **as a team of new developers learning full-stack development, we will begin coding much earlier** to ensure success:
+
+**Start Date**: Mid-April 2026 (immediately after Planning Phase completion)
+**Actual Coding Duration**: 10+ weeks (April through June)
+**Rationale**:
+- New developers need extended time to learn Node.js, React, PostgreSQL, and Git
+- Early start provides buffer for troubleshooting and debugging
+- Allows multiple iterations and refactoring opportunities
+- Reduces pressure during formal implementation deadline
+- Enables experimentation without compromising documentation deliverables
+
+**Parallel Development Approach**:
+- Analysis Phase (April-May) → Sprints 1-2 run concurrently
+- Design Phase (May-June) → Sprints 3-5 run concurrently
+- Formal Implementation (June) → Sprints 6-7 for final integration
+
+This pragmatic approach acknowledges the learning curve while maintaining formal deliverable schedules. Documentation phases proceed as planned while developers gain hands-on experience, ensuring both academic requirements and working software are delivered successfully.
 
 ### Sprint Structure
 
@@ -1296,6 +1319,29 @@ The project will use **2-week sprints** to maintain a steady development pace wh
 | Sprint 5 | Week 9-10  | Course Registration               | Course catalog, registration system, add/drop functionality               |
 | Sprint 6 | Week 11-12 | Additional Features & Integration | Lecturer/librarian features, notifications, reporting                     |
 | Sprint 7 | Week 13-14 | Testing & Refinement              | Bug fixes, performance optimization, user acceptance testing              |
+
+**📝 Note on Implementation Timeline**:
+
+While the table above shows sprints occurring within a formal 14-week implementation window, **actual coding will begin immediately after the Planning Phase is complete (mid-April 2026)**. As a team of new developers, we recognize the need for extended learning and practice time. Therefore:
+
+- **Sprints will start in mid-April 2026**, not in June as shown in the formal schedule
+- Sprint activities will run **parallel to Analysis and Design phases**
+- This gives us **10+ weeks of actual coding time** (mid-April through June) instead of 2 weeks
+- The formal Implementation Phase (June 9-22) will focus on final integration and polish
+- This approach allows for:
+  - Adequate learning time with new technologies
+  - Experimentation without deadline pressure
+  - Building foundational skills before critical features
+  - Multiple iterations and refactoring opportunities
+
+**Adjusted Sprint Timeline**:
+- **Sprint 1**: Mid-April (Week 1-2) - During Analysis Phase
+- **Sprint 2**: Late-April (Week 3-4) - During Analysis Phase
+- **Sprint 3**: Early-May (Week 5-6) - During Design Phase transition
+- **Sprint 4**: Mid-May (Week 7-8) - During Design Phase
+- **Sprint 5**: Late-May (Week 9-10) - During Design Phase
+- **Sprint 6**: Early-June (Week 11-12) - During formal Implementation Phase
+- **Sprint 7**: Mid-June (Week 13-14) - During formal Implementation Phase
 
 ### Agile Ceremonies
 
@@ -1629,6 +1675,188 @@ This comprehensive project plan ensures the team has clear structure, defined pr
 
 ---
 
+## Work Breakdown Structure (WBS)
+
+The Work Breakdown Structure provides a hierarchical decomposition of the total scope of work to be carried out by the project team to accomplish the project objectives and create the deliverables.
+
+### WBS Hierarchy
+
+```
+EduHub Student Management System
+│
+├── 1. Project Initiation
+│   ├── 1.1 Project Proposal
+│   │   ├── 1.1.1 Define Project Scope
+│   │   ├── 1.1.2 Identify Objectives
+│   │   ├── 1.1.3 Select Technology Stack
+│   │   ├── 1.1.4 Choose SDLC Model
+│   │   └── 1.1.5 Form Project Team
+│   │
+├── 2. Planning Phase (25% of Project Grade - Due: Apr 13, 2026)
+│   ├── 2.1 Identification of Need
+│   │   ├── 2.1.1 Identify Current System Problems
+│   │   ├── 2.1.2 Define Proposed Solution
+│   │   ├── 2.1.3 Identify Stakeholders
+│   │   └── 2.1.4 Define Expected Benefits
+│   │
+│   ├── 2.2 Preliminary Investigation
+│   │   ├── 2.2.1 Conduct Case Studies (SA Universities)
+│   │   ├── 2.2.2 System Analysis (LMS vs SIS)
+│   │   ├── 2.2.3 Market Research (Moodle, Blackboard, iEnabler)
+│   │   └── 2.2.4 Literature Review
+│   │
+│   ├── 2.3 Feasibility Study
+│   │   ├── 2.3.1 Technical Feasibility
+│   │   ├── 2.3.2 Operational Feasibility
+│   │   └── 2.3.3 Economic Feasibility
+│   │
+│   ├── 2.4 Project Planning
+│   │   ├── 2.4.1 Define Agile Methodology
+│   │   ├── 2.4.2 Create Sprint Structure
+│   │   ├── 2.4.3 Define Agile Ceremonies
+│   │   ├── 2.4.4 Establish Quality Assurance
+│   │   └── 2.4.5 Define Development Tools
+│   │
+│   ├── 2.5 Project Scheduling
+│   │   ├── 2.5.1 Create Gantt Chart
+│   │   └── 2.5.2 Create PERT Chart
+│   │
+│   ├── 2.6 Software Requirement Specification (SRS)
+│   │   ├── 2.6.1 Define Functional Requirements
+│   │   ├── 2.6.2 Define Non-Functional Requirements
+│   │   ├── 2.6.3 Define System Features
+│   │   └── 2.6.4 Define User Requirements
+│   │
+│   └── 2.7 Data Models
+│       ├── 2.7.1 Create Use Case Diagram
+│       ├── 2.7.2 Create Entity Relationship Diagram (ERD)
+│       └── 2.7.3 Create Data Flow Diagram (DFD)
+│
+├── 3. Analysis Phase
+│   ├── 3.1 Requirements Analysis
+│   │   ├── 3.1.1 Detailed Requirements Gathering
+│   │   ├── 3.1.2 Create User Stories
+│   │   └── 3.1.3 Define Acceptance Criteria
+│   │
+│   ├── 3.2 System Analysis
+│   │   ├── 3.2.1 Workflow Analysis
+│   │   ├── 3.2.2 Database Requirements Analysis
+│   │   └── 3.2.3 Security Requirements Definition
+│   │
+│   └── 3.3 Documentation
+│       ├── 3.3.1 Requirements Document
+│       └── 3.3.2 Interface Mockups/Wireframes
+│
+├── 4. System Design
+│   ├── 4.1 Database Design
+│   │   ├── 4.1.1 Database Schema Design
+│   │   └── 4.1.2 ER Diagrams
+│   │
+│   ├── 4.2 System Architecture
+│   │   ├── 4.2.1 API Endpoint Design
+│   │   ├── 4.2.2 Security Architecture Design
+│   │   └── 4.2.3 Deployment Architecture Design
+│   │
+│   └── 4.3 UI/UX Design
+│       ├── 4.3.1 UI/UX Mockups
+│       └── 4.3.2 Component Design
+│
+├── 5. Implementation
+│   ├── 5.1 Sprint 1: Setup & Authentication (Week 1-2)
+│   │   ├── 5.1.1 Development Environment Setup
+│   │   ├── 5.1.2 Database Schema Implementation
+│   │   └── 5.1.3 User Authentication System
+│   │
+│   ├── 5.2 Sprint 2: Application System (Week 3-4)
+│   │   ├── 5.2.1 Application Submission Form
+│   │   ├── 5.2.2 Document Upload System
+│   │   └── 5.2.3 Application Management
+│   │
+│   ├── 5.3 Sprint 3: Admin Approval Workflow (Week 5-6)
+│   │   ├── 5.3.1 Application Review Interface
+│   │   ├── 5.3.2 Approval Process
+│   │   └── 5.3.3 Student Number Generation
+│   │
+│   ├── 5.4 Sprint 4: Student Profile Management (Week 7-8)
+│   │   ├── 5.4.1 Student Dashboard
+│   │   ├── 5.4.2 Profile Editing
+│   │   └── 5.4.3 Emergency Contacts Management
+│   │
+│   ├── 5.5 Sprint 5: Course Registration (Week 9-10)
+│   │   ├── 5.5.1 Course Catalog
+│   │   ├── 5.5.2 Registration System
+│   │   └── 5.5.3 Add/Drop Functionality
+│   │
+│   ├── 5.6 Sprint 6: Additional Features (Week 11-12)
+│   │   ├── 5.6.1 Lecturer Features
+│   │   ├── 5.6.2 Librarian Features
+│   │   ├── 5.6.3 Notifications System
+│   │   └── 5.6.4 Reporting Module
+│   │
+│   └── 5.7 Sprint 7: Testing & Refinement (Week 13-14)
+│       ├── 5.7.1 Bug Fixes
+│       ├── 5.7.2 Performance Optimization
+│       └── 5.7.3 User Acceptance Testing
+│
+├── 6. Testing
+│   ├── 6.1 Unit Testing
+│   ├── 6.2 Integration Testing
+│   ├── 6.3 System Testing
+│   ├── 6.4 User Acceptance Testing
+│   ├── 6.5 Security Testing
+│   └── 6.6 Performance Testing
+│
+├── 7. Documentation Finalization
+│   ├── 7.1 User Documentation
+│   ├── 7.2 Technical Documentation
+│   ├── 7.3 Deployment Guide
+│   └── 7.4 Final Presentation Preparation
+│
+└── 8. Final Submission
+    ├── 8.1 Final Review
+    ├── 8.2 Submit Documentation
+    ├── 8.3 Deliver Presentation
+    └── 8.4 System Handover
+```
+
+### WBS Dictionary
+
+| WBS Code | Work Package Name                  | Description                                                                | Deliverable                              |
+| -------- | ---------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------- |
+| 1.1      | Project Proposal                   | Initial project definition and planning                                    | Project proposal document                |
+| 2.1      | Identification of Need             | Analyze current problems and define system need                            | Needs analysis document                  |
+| 2.2      | Preliminary Investigation          | Research existing systems and conduct case studies                         | Investigation report                     |
+| 2.3      | Feasibility Study                  | Evaluate technical, operational, and economic feasibility                  | Feasibility study report                 |
+| 2.4      | Project Planning                   | Define project methodology, ceremonies, and tools                          | Project plan document                    |
+| 2.5      | Project Scheduling                 | Create project timelines using Gantt and PERT charts                       | Gantt chart, PERT chart                  |
+| 2.6      | Software Requirement Specification | Define functional and non-functional requirements                          | SRS document                             |
+| 2.7      | Data Models                        | Create use case, ERD, and DFD diagrams                                     | System diagrams                          |
+| 3.1      | Requirements Analysis              | Detailed analysis of system requirements                                   | Requirements document                    |
+| 4.1      | Database Design                    | Design database schema and relationships                                   | Database schema, ER diagrams             |
+| 4.2      | System Architecture                | Design system components and APIs                                          | Architecture diagrams, API documentation |
+| 5.1-5.7  | Implementation Sprints             | Develop system features in 7 two-week sprints                              | Working software increments              |
+| 6.1-6.6  | Testing                            | Comprehensive testing across all levels                                    | Test reports, bug fixes                  |
+| 7.1-7.4  | Documentation Finalization         | Complete all documentation and prepare for submission                      | Complete documentation package           |
+| 8.1-8.4  | Final Submission                   | Final review, submission, and handover                                     | Deployed system, final presentation      |
+
+### Planning Phase Work Packages (Current Focus)
+
+The Planning Phase (Phase 2) represents **25% of the project grade** and is due on **April 13, 2026**. This phase consists of seven major work packages:
+
+| Work Package | Estimated Effort | Assigned To        | Status      |
+| ------------ | ---------------- | ------------------ | ----------- |
+| 2.1          | 2 days           | All team members   | Complete    |
+| 2.2          | 3 days           | All team members   | Complete    |
+| 2.3          | 2 days           | All team members   | Complete    |
+| 2.4          | 3 days           | Project Manager    | Complete    |
+| 2.5          | 2 days           | Project Manager    | In Progress |
+| 2.6          | 4 days           | All team members   | Complete    |
+| 2.7          | 3 days           | Database Designer  | In Progress |
+
+**Total Planning Phase Effort**: 19 days (~3 weeks)
+
+---
+
 # 2.5 Project Scheduling
 
 Project scheduling is used to organize tasks, manage project timelines effectively, and track progress throughout the development lifecycle. Two scheduling techniques are used for this project: the Gantt Chart and the PERT Chart. These tools help visualize project activities, identify dependencies, allocate resources, and ensure timely completion.
@@ -1727,6 +1955,17 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 - Week 3: System workflows defined
 - Week 4: Analysis documentation complete
 
+**🔧 Parallel Development Activity**:
+
+During this Analysis Phase, **development sprints will begin** (Sprints 1-2). While formal analysis documentation is being completed, developers will:
+- Set up development environments
+- Initialize Git repository and project structure
+- Begin basic authentication implementation
+- Create initial database schema
+- Build proof-of-concept features to validate technical feasibility
+
+This parallel approach allows new developers to learn while formal documentation proceeds, ensuring adequate hands-on time with technologies.
+
 #### Phase 4: System Design (4 weeks: May 12 - Jun 8)
 
 **Activities**:
@@ -1755,6 +1994,18 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 - Week 3: UI/UX designs approved
 - Week 4: All design documents complete
 
+**🔧 Parallel Development Activity**:
+
+During this Design Phase, **development continues** (Sprints 3-5). Developers will:
+- Implement application submission system
+- Build admin approval workflow
+- Develop student profile management features
+- Create course registration functionality
+- Refine authentication and authorization
+- Integrate designed UI components
+
+By the time formal design documentation is complete, substantial working code will already exist, allowing the formal Implementation Phase to focus on integration, polish, and advanced features.
+
 #### Phase 5: Implementation (2 weeks: Jun 9 - Jun 22)
 
 **Activities**:
@@ -1781,6 +2032,41 @@ The Gantt chart provides a visual timeline of project activities, showing when e
 
 - Week 1: Core features (auth, applications) implemented
 - Week 2: All features complete, integrated system working
+
+**⚠️ Important Note - Early Implementation Strategy**:
+
+While the formal project schedule shows implementation beginning in June 2026, **the development team will begin coding activities much earlier, starting in mid-April 2026** (immediately after completing the Planning Phase). This early start is essential for the following reasons:
+
+1. **Learning Curve**: As new developers, the team needs additional time to:
+   - Practice with the technology stack (Node.js, React, PostgreSQL)
+   - Learn development patterns and best practices
+   - Build confidence with full-stack development
+   - Troubleshoot and debug effectively
+
+2. **Skill Development**: Early coding allows the team to:
+   - Experiment with authentication systems before formal sprint
+   - Build small proof-of-concept features
+   - Learn Git workflows and collaboration
+   - Practice database design and API development
+
+3. **Risk Mitigation**: Starting early provides:
+   - Buffer time for unexpected technical challenges
+   - Opportunity to discover and address knowledge gaps
+   - Reduced pressure during formal implementation phase
+   - More time for debugging and refinement
+
+4. **Parallel Development**: The team will:
+   - Work on coding during Analysis Phase (April-May)
+   - Continue development during Design Phase (May-June)
+   - Use formal Implementation Phase (June) for final integration and polish
+
+**Practical Timeline**:
+- **Mid-April 2026**: Begin experimental coding and environment setup
+- **April-May 2026**: Develop core features (authentication, basic CRUD operations)
+- **May-June 2026**: Build application and registration systems
+- **June 2026**: Final integration, advanced features, and polish (formal phase)
+
+This approach ensures the team has **2-3 months of coding time** instead of the scheduled 2 weeks, providing adequate learning time for new developers while still meeting the formal project deliverable dates.
 
 #### Phase 6: Testing (1 week: Jun 23 - Jun 27)
 
@@ -1887,7 +2173,81 @@ Milestones:
 ▼ Jun 29: Final Submission
 ```
 
-(Detailed Gantt Chart diagram will be inserted here)
+### Detailed Gantt Chart Visualization
+
+```mermaid
+gantt
+    title EduHub Project Schedule (Mar 16 - Jun 29, 2026)
+    dateFormat YYYY-MM-DD
+    axisFormat %b %d
+
+    section Phase 1
+    Project Proposal           :milestone, m1, 2026-03-23, 0d
+    Proposal Work              :done, prop, 2026-03-16, 7d
+
+    section Phase 2: Planning
+    Planning Complete          :milestone, m2, 2026-04-13, 0d
+    Identify System Need       :done, plan1, 2026-03-24, 3d
+    Preliminary Investigation  :done, plan2, 2026-03-27, 4d
+    Feasibility Study          :done, plan3, 2026-03-31, 3d
+    Project Planning           :done, plan4, 2026-04-03, 3d
+    Create WBS                 :active, plan5, 2026-04-06, 2d
+    Create Gantt & PERT Charts :active, plan6, 2026-04-08, 2d
+    Write SRS Document         :done, plan7, 2026-04-10, 2d
+    Create Data Models         :active, plan8, 2026-04-12, 2d
+
+    section Phase 3: Analysis
+    Analysis Complete          :milestone, m3, 2026-05-11, 0d
+    Requirements Analysis      :crit, anal1, 2026-04-14, 7d
+    User Story Creation        :crit, anal2, 2026-04-21, 7d
+    System Workflow Analysis   :crit, anal3, 2026-04-28, 7d
+    Interface Requirements     :crit, anal4, 2026-05-05, 7d
+
+    section Phase 4: Design
+    Design Complete            :milestone, m4, 2026-06-08, 0d
+    Database Schema Design     :crit, des1, 2026-05-12, 7d
+    API Endpoint Design        :crit, des2, 2026-05-19, 7d
+    UI/UX Design               :crit, des3, 2026-05-26, 7d
+    Technical Design Doc       :crit, des4, 2026-06-02, 7d
+
+    section Phase 5: Implementation
+    Implementation Complete    :milestone, m5, 2026-06-22, 0d
+    Sprint 1: Auth             :crit, impl1, 2026-06-09, 7d
+    Sprint 2: Applications     :crit, impl2, 2026-06-16, 7d
+
+    section Phase 6: Testing
+    Testing Complete           :milestone, m6, 2026-06-27, 0d
+    System Testing             :crit, test1, 2026-06-23, 3d
+    UAT & Bug Fixes            :crit, test2, 2026-06-26, 2d
+
+    section Phase 7: Documentation
+    Documentation Finalization :doc1, 2026-06-27, 2d
+
+    section Phase 8: Submission
+    Final Submission           :milestone, m7, 2026-06-29, 0d
+    Final Review & Handover    :crit, sub1, 2026-06-29, 1d
+```
+
+**Chart Legend**:
+- 🟩 Green (Done): Completed tasks
+- 🟨 Yellow (Active): Currently in progress
+- 🟦 Blue (Crit): Critical path tasks
+- ◆ Diamond: Project milestones
+
+### Interactive Gantt Chart (Detailed Version)
+
+For a more detailed breakdown showing all subtasks and resource assignments, see below:
+
+| Phase | Week | Sprint | Key Activities | Team Focus | Deliverables |
+|-------|------|--------|----------------|------------|--------------|
+| **Proposal** | Week 1 (Mar 16-23) | - | Project definition, team formation | All members | Proposal document |
+| **Planning** | Week 2-4 (Mar 24-Apr 13) | - | Requirements, feasibility, scheduling | All members | Planning docs, charts, SRS |
+| **Analysis** | Week 5-8 (Apr 14-May 11) | - | Requirements analysis, user stories | All members | Requirements doc, wireframes |
+| **Design** | Week 9-12 (May 12-Jun 8) | - | Database, API, UI/UX design | Designers, Architects | Design docs, schemas |
+| **Implementation** | Week 13-14 (Jun 9-22) | Sprint 1-2 | Core features development | Developers | Working system |
+| **Testing** | Week 15 (Jun 23-27) | - | System testing, UAT | Testing team | Test reports |
+| **Documentation** | Week 15 (Jun 27-28) | - | Final documentation | Docs team | Complete docs |
+| **Submission** | Week 16 (Jun 29) | - | Final review, handover | Project Manager | Final submission |
 
 ---
 
@@ -2049,7 +2409,128 @@ Using PERT three-point estimation for realistic timeline:
 Critical Path: A→B→C→D→E→F→H (shown in bold)
 ```
 
-(Detailed PERT Diagram will be inserted here)
+### Detailed PERT Network Diagram
+
+```mermaid
+graph LR
+    Start([START]) --> A[A: Proposal<br/>1 week]
+    A --> B[B: Planning<br/>3 weeks]
+    B --> C[C: Analysis<br/>4 weeks]
+    C --> D[D: Design<br/>4 weeks]
+    D --> E[E: Implementation<br/>2 weeks]
+    E --> F[F: Testing<br/>1 week]
+    E --> G[G: Documentation<br/>2 days]
+    F --> H[H: Submission<br/>1 day]
+    G --> H
+    H --> End([END])
+
+    style Start fill:#90EE90
+    style End fill:#90EE90
+    style A fill:#FFB6C1
+    style B fill:#FFB6C1
+    style C fill:#FFB6C1
+    style D fill:#FFB6C1
+    style E fill:#FFB6C1
+    style F fill:#FFB6C1
+    style H fill:#FFB6C1
+    style G fill:#87CEEB
+
+    classDef critical stroke:#ff0000,stroke-width:3px
+    class A,B,C,D,E,F,H critical
+```
+
+**Diagram Legend**:
+- 🔴 Red Border: Critical path tasks (cannot be delayed)
+- 🟦 Blue Fill: Non-critical task (has slack time)
+- 🟢 Green: Start/End nodes
+
+### PERT Chart with Node Details
+
+```
+                  ES=0, EF=1, LS=0, LF=1
+                  ┌──────────────────┐
+        ┌─────────┤  A: Proposal     ├─────────┐
+        │         │  Duration: 1w    │         │
+        │         │  Slack: 0 days   │         │
+        │         └──────────────────┘         │
+        │                                      │
+        │         ES=1, EF=4, LS=1, LF=4      │
+        │         ┌──────────────────┐         │
+        └────────►│  B: Planning     ├─────────┤
+                  │  Duration: 3w    │         │
+                  │  Slack: 0 days   │         │
+                  └──────────────────┘         │
+                                              │
+                  ES=4, EF=8, LS=4, LF=8      │
+                  ┌──────────────────┐         │
+        ┌─────────┤  C: Analysis     ├◄────────┘
+        │         │  Duration: 4w    │
+        │         │  Slack: 0 days   │
+        │         └──────────────────┘
+        │
+        │         ES=8, EF=12, LS=8, LF=12
+        │         ┌──────────────────┐
+        └────────►│  D: Design       ├─────────┐
+                  │  Duration: 4w    │         │
+                  │  Slack: 0 days   │         │
+                  └──────────────────┘         │
+                                              │
+                  ES=12, EF=14, LS=12, LF=14  │
+                  ┌──────────────────┐         │
+        ┌─────────┤ E: Implementation├◄────────┘
+        │         │  Duration: 2w    │
+        │         │  Slack: 0 days   │
+        │         └─────┬────────┬───┘
+        │               │        │
+        │               │        │ ES=14, EF=14.4, LS=14.5, LF=14.9
+        │               │        │ ┌──────────────────┐
+        │               │        └►│ G: Documentation │
+        │               │          │  Duration: 2d    │
+        │               │          │  Slack: 5 days   │──┐
+        │               │          └──────────────────┘  │
+        │               │                                │
+        │               │ ES=14, EF=15, LS=14, LF=15     │
+        │               │ ┌──────────────────┐           │
+        │               └►│  F: Testing      │           │
+        │                 │  Duration: 1w    │           │
+        │                 │  Slack: 0 days   │───────────┤
+        │                 └──────────────────┘           │
+        │                                                │
+        │                 ES=15, EF=15.2, LS=15, LF=15.2 │
+        │                 ┌──────────────────┐           │
+        └────────────────►│  H: Submission   │◄──────────┘
+                          │  Duration: 1d    │
+                          │  Slack: 0 days   │
+                          └──────────────────┘
+
+Legend:
+ES = Earliest Start    EF = Earliest Finish
+LS = Latest Start      LF = Latest Finish
+Slack = LS - ES (or LF - EF)
+```
+
+### Critical Path Calculations
+
+**Critical Path: A → B → C → D → E → F → H**
+
+| Task | Duration | ES   | EF   | LS   | LF   | Slack | On Critical Path? |
+|------|----------|------|------|------|------|-------|-------------------|
+| A    | 1 week   | 0    | 1    | 0    | 1    | 0     | ✅ Yes            |
+| B    | 3 weeks  | 1    | 4    | 1    | 4    | 0     | ✅ Yes            |
+| C    | 4 weeks  | 4    | 8    | 4    | 8    | 0     | ✅ Yes            |
+| D    | 4 weeks  | 8    | 12   | 8    | 12   | 0     | ✅ Yes            |
+| E    | 2 weeks  | 12   | 14   | 12   | 14   | 0     | ✅ Yes            |
+| F    | 1 week   | 14   | 15   | 14   | 15   | 0     | ✅ Yes            |
+| G    | 2 days   | 14   | 14.4 | 14.5 | 14.9 | 5 days| ❌ No             |
+| H    | 1 day    | 15   | 15.2 | 15   | 15.2 | 0     | ✅ Yes            |
+
+**Total Project Duration**: 15 weeks + 1 day (106 days)
+
+**Key Insights**:
+- **7 out of 8 tasks** are on the critical path (87.5%)
+- Only Task G (Documentation) has slack time (5 days)
+- Any delay in critical path tasks will delay project completion
+- Documentation can start up to 5 days late without impacting the final deadline
 
 ### Project Control Measures
 
@@ -2364,7 +2845,482 @@ The EduHub system has six primary actors:
 - **Extend**: Optional behavior that enhances use cases (e.g., Enable MFA extends Login)
 - **Generalization**: All user roles generalize from "Registered User" except Applicant
 
-(Detailed Use Case diagram will be created in Phase 3 - Analysis)
+### Detailed Use Case Diagram
+
+```mermaid
+graph TB
+    %% Actors
+    Applicant[👤 Applicant]
+    Student[👤 Student]
+    Lecturer[👤 Lecturer]
+    Admin[👤 Administrator]
+    Librarian[👤 Librarian]
+
+    %% System Boundary
+    subgraph EduHub["🏫 EduHub Student Management System"]
+
+        %% Authentication Use Cases
+        Login[Login]
+        ResetPassword[Reset Password]
+
+        %% Applicant Use Cases
+        RegisterAccount[Register Account]
+        SubmitApp[Submit Application]
+        UploadDocs[Upload Documents]
+        ViewAppStatus[View Application Status]
+
+        %% Student Use Cases
+        ManageProfile[Manage Profile]
+        RegisterCourse[Register for Courses]
+        DropCourse[Drop Courses]
+        ViewRecords[View Academic Records]
+        ManageContacts[Manage Emergency Contacts]
+
+        %% Lecturer Use Cases
+        ViewAssignedCourses[View Assigned Courses]
+        ViewRoster[View Class Roster]
+        ExportStudentList[Export Student Lists]
+        PostAnnouncement[Post Announcements]
+
+        %% Administrator Use Cases
+        ApproveApp[Approve/Reject Applications]
+        ManageCourses[Manage Courses]
+        AssignLecturers[Assign Lecturers to Courses]
+        ConfigureSystem[Configure System Settings]
+        GenerateReports[Generate Reports]
+        ManageUsers[Manage User Accounts]
+
+        %% Librarian Use Cases
+        SearchStudents[Search Students]
+        VerifyStatus[Verify Student Status]
+        ViewStudentInfo[View Student Information]
+
+        %% Shared Use Cases
+        ViewNotifications[View Notifications]
+        UpdatePassword[Update Password]
+    end
+
+    %% Applicant Connections
+    Applicant --> RegisterAccount
+    Applicant --> SubmitApp
+    Applicant --> UploadDocs
+    Applicant --> ViewAppStatus
+
+    %% Student Connections
+    Student --> Login
+    Student --> ManageProfile
+    Student --> RegisterCourse
+    Student --> DropCourse
+    Student --> ViewRecords
+    Student --> ManageContacts
+    Student --> ViewNotifications
+
+    %% Lecturer Connections
+    Lecturer --> Login
+    Lecturer --> ViewAssignedCourses
+    Lecturer --> ViewRoster
+    Lecturer --> ExportStudentList
+    Lecturer --> PostAnnouncement
+    Lecturer --> ViewNotifications
+
+    %% Administrator Connections
+    Admin --> Login
+    Admin --> ApproveApp
+    Admin --> ManageCourses
+    Admin --> AssignLecturers
+    Admin --> ConfigureSystem
+    Admin --> GenerateReports
+    Admin --> ManageUsers
+    Admin --> ViewNotifications
+
+    %% Librarian Connections
+    Librarian --> Login
+    Librarian --> SearchStudents
+    Librarian --> VerifyStatus
+    Librarian --> ViewStudentInfo
+
+    %% Include Relationships (shown with dotted lines)
+    SubmitApp -.->|<<include>>| Login
+    RegisterCourse -.->|<<include>>| Login
+    ManageProfile -.->|<<include>>| Login
+
+    %% Extend Relationships
+    Login -.->|<<extend>>| ResetPassword
+
+    style EduHub fill:#f0f8ff,stroke:#333,stroke-width:3px
+    style Applicant fill:#FFE4E1
+    style Student fill:#E0FFE0
+    style Lecturer fill:#FFE4B5
+    style Admin fill:#FFB6C1
+    style Librarian fill:#E6E6FA
+```
+
+### Use Case Detailed Description
+
+#### **UC-01: Submit Application**
+- **Actor**: Applicant
+- **Precondition**: Applicant has registered an account
+- **Main Flow**:
+  1. Applicant logs into system
+  2. Applicant fills application form with personal information
+  3. Applicant uploads required documents (ID, certificates, transcripts)
+  4. Applicant submits application
+  5. System generates application reference number
+  6. System sends confirmation email
+- **Postcondition**: Application stored in database with "Pending" status
+
+#### **UC-02: Approve/Reject Application**
+- **Actor**: Administrator
+- **Precondition**: Applications exist in "Pending" status
+- **Main Flow**:
+  1. Administrator logs into system
+  2. Administrator views pending applications
+  3. Administrator reviews application details and documents
+  4. Administrator makes approval decision
+  5. If approved, system generates student number
+  6. System updates application status
+  7. System sends notification to applicant
+- **Postcondition**: Application status changed, student account created (if approved)
+
+#### **UC-03: Register for Courses**
+- **Actor**: Student
+- **Precondition**: Student is logged in and registration period is active
+- **Main Flow**:
+  1. Student views available courses
+  2. Student selects desired course
+  3. System checks prerequisites
+  4. System checks course capacity
+  5. System checks schedule conflicts
+  6. System creates registration record
+  7. System sends confirmation
+- **Postcondition**: Student enrolled in course
+
+#### **UC-04: View Class Roster**
+- **Actor**: Lecturer
+- **Precondition**: Lecturer is assigned to course
+- **Main Flow**:
+  1. Lecturer logs into system
+  2. Lecturer selects assigned course
+  3. System displays enrolled students with contact information
+  4. Lecturer can export list if needed
+- **Postcondition**: Lecturer has access to student information
+
+### Use Case Summary Table
+
+| Use Case ID | Use Case Name | Primary Actor | Complexity | Priority |
+|-------------|---------------|---------------|------------|----------|
+| UC-01 | Submit Application | Applicant | Medium | High |
+| UC-02 | Approve/Reject Application | Administrator | High | High |
+| UC-03 | Register for Courses | Student | High | High |
+| UC-04 | Drop Courses | Student | Medium | High |
+| UC-05 | Manage Profile | Student | Low | Medium |
+| UC-06 | View Class Roster | Lecturer | Low | Medium |
+| UC-07 | Manage Courses | Administrator | Medium | High |
+| UC-08 | Generate Reports | Administrator | Medium | Medium |
+| UC-09 | Verify Student Status | Librarian | Low | Low |
+| UC-10 | View Notifications | All Users | Low | Medium |
+
+---
+
+## Process Flowcharts
+
+Process flowcharts illustrate the step-by-step logic and decision points for critical system workflows. These diagrams show how the system processes user requests, handles validations, manages errors, and makes decisions based on business rules.
+
+### Flowchart 1: Application Submission & Approval Workflow
+
+This flowchart shows the complete lifecycle of a student application from initial submission through admin review to final approval or rejection.
+
+```mermaid
+flowchart TD
+    Start([Student Starts Application]) --> Login{Is User<br/>Logged In?}
+    Login -->|No| Register[Register New Account]
+    Register --> LoginForm[Navigate to Login]
+    Login -->|Yes| FillForm[Fill Application Form]
+    LoginForm --> FillForm
+
+    FillForm --> ValidateForm{Form Data<br/>Valid?}
+    ValidateForm -->|No| ShowErrors[Display Validation Errors]
+    ShowErrors --> FillForm
+    ValidateForm -->|Yes| UploadDocs[Upload Required Documents]
+
+    UploadDocs --> ValidateDocs{All Required<br/>Documents<br/>Uploaded?}
+    ValidateDocs -->|No| UploadPrompt[Prompt: Upload Missing Documents]
+    UploadPrompt --> UploadDocs
+    ValidateDocs -->|Yes| CheckFileTypes{File Types<br/>Valid?}
+
+    CheckFileTypes -->|No| FileError[Show: Invalid File Format Error]
+    FileError --> UploadDocs
+    CheckFileTypes -->|Yes| Submit[Submit Application]
+
+    Submit --> GenerateRef[Generate Application Reference Number]
+    GenerateRef --> SaveDB[(Save to Database<br/>Status: Pending)]
+    SaveDB --> SendConfirm[Send Confirmation Email to Applicant]
+    SendConfirm --> StudentWait[Applicant Waits for Review]
+
+    StudentWait --> AdminReview{Admin Reviews<br/>Application}
+    AdminReview -->|Request More Info| RequestInfo[Send Information Request]
+    RequestInfo --> StudentWait
+
+    AdminReview -->|Reject| Reject[Update Status: Rejected]
+    Reject --> LogRejection[(Log Rejection Reason)]
+    LogRejection --> NotifyReject[Send Rejection Email]
+    NotifyReject --> EndReject([End: Application Rejected])
+
+    AdminReview -->|Approve| Approve[Update Status: Approved]
+    Approve --> GenStudentNum[Generate Unique Student Number]
+    GenStudentNum --> CreateStudent[(Create Student Record)]
+    CreateStudent --> UpdateRole[Update User Role to 'Student']
+    UpdateRole --> LogApproval[(Log Approval in Audit Trail)]
+    LogApproval --> NotifyApprove[Send Approval Email with Student Number]
+    NotifyApprove --> EndApprove([End: Application Approved])
+
+    style Start fill:#90EE90
+    style EndReject fill:#FFB6C1
+    style EndApprove fill:#90EE90
+    style Login fill:#FFE4B5
+    style ValidateForm fill:#FFE4B5
+    style ValidateDocs fill:#FFE4B5
+    style CheckFileTypes fill:#FFE4B5
+    style AdminReview fill:#FFE4B5
+    style SaveDB fill:#E6E6FA
+    style CreateStudent fill:#E6E6FA
+    style LogRejection fill:#E6E6FA
+    style LogApproval fill:#E6E6FA
+```
+
+**Key Decision Points**:
+1. **Login Check**: Ensures user is authenticated before accessing application form
+2. **Form Validation**: Validates required fields, data formats, and business rules
+3. **Document Validation**: Checks all required documents are uploaded and file types are acceptable
+4. **Admin Decision**: Admin reviews application and decides to approve, reject, or request more information
+
+**Error Handling**:
+- Invalid form data → Display specific validation errors
+- Missing documents → Prompt user to upload missing items
+- Invalid file types → Show file format error message
+
+**Success Path**: Application submitted → Admin approves → Student number generated → Student account created → Notification sent
+
+---
+
+### Flowchart 2: Course Registration Workflow
+
+This flowchart illustrates how students register for courses with comprehensive validation checks including prerequisites, capacity, and schedule conflicts.
+
+```mermaid
+flowchart TD
+    Start([Student Initiates Course Registration]) --> CheckLogin{Is Student<br/>Logged In?}
+    CheckLogin -->|No| LoginPage[Redirect to Login]
+    LoginPage --> Start
+    CheckLogin -->|Yes| CheckRole{User Role<br/>= Student?}
+
+    CheckRole -->|No| AccessDenied[Show: Access Denied Error]
+    AccessDenied --> End1([End: Unauthorized])
+    CheckRole -->|Yes| CheckPeriod{Registration<br/>Period Active?}
+
+    CheckPeriod -->|No| ShowClosed[Show: Registration Period Closed]
+    ShowClosed --> End2([End: Registration Closed])
+    CheckPeriod -->|Yes| ViewCourses[Display Available Courses]
+
+    ViewCourses --> SelectCourse[Student Selects Course]
+    SelectCourse --> CheckPrereq{Prerequisites<br/>Met?}
+
+    CheckPrereq -->|No| PrereqError[Show: Prerequisites Not Met Error]
+    PrereqError --> ListPrereq[Display Required Prerequisites]
+    ListPrereq --> ViewCourses
+    CheckPrereq -->|Yes| CheckCapacity{Course Has<br/>Available Seats?}
+
+    CheckCapacity -->|No| CapacityError[Show: Course Full Error]
+    CapacityError --> WaitlistOption{Enable<br/>Waitlist?}
+    WaitlistOption -->|Yes| AddWaitlist[Add to Waitlist]
+    AddWaitlist --> NotifyWaitlist[Send Waitlist Confirmation]
+    NotifyWaitlist --> End3([End: Added to Waitlist])
+    WaitlistOption -->|No| ViewCourses
+
+    CheckCapacity -->|Yes| CheckConflict{Schedule<br/>Conflicts?}
+    CheckConflict -->|Yes| ConflictError[Show: Schedule Conflict Error]
+    ConflictError --> DisplayConflict[Display Conflicting Courses]
+    DisplayConflict --> ViewCourses
+
+    CheckConflict -->|No| CheckAlready{Already<br/>Registered?}
+    CheckAlready -->|Yes| DuplicateError[Show: Already Registered Error]
+    DuplicateError --> ViewCourses
+    CheckAlready -->|No| ConfirmReg{Student<br/>Confirms<br/>Registration?}
+
+    ConfirmReg -->|No| ViewCourses
+    ConfirmReg -->|Yes| CreateReg[(Create Registration Record)]
+    CreateReg --> UpdateCapacity[(Decrease Available Seats)]
+    UpdateCapacity --> LogReg[(Log Registration in Audit Trail)]
+    LogReg --> SendEmail[Send Confirmation Email]
+    SendEmail --> ShowSuccess[Display Success Message]
+    ShowSuccess --> MoreCourses{Register for<br/>More Courses?}
+
+    MoreCourses -->|Yes| ViewCourses
+    MoreCourses -->|No| EndSuccess([End: Registration Complete])
+
+    style Start fill:#90EE90
+    style EndSuccess fill:#90EE90
+    style End1 fill:#FFB6C1
+    style End2 fill:#FFB6C1
+    style End3 fill:#87CEEB
+    style CheckLogin fill:#FFE4B5
+    style CheckRole fill:#FFE4B5
+    style CheckPeriod fill:#FFE4B5
+    style CheckPrereq fill:#FFE4B5
+    style CheckCapacity fill:#FFE4B5
+    style CheckConflict fill:#FFE4B5
+    style CheckAlready fill:#FFE4B5
+    style ConfirmReg fill:#FFE4B5
+    style MoreCourses fill:#FFE4B5
+    style CreateReg fill:#E6E6FA
+    style UpdateCapacity fill:#E6E6FA
+    style LogReg fill:#E6E6FA
+```
+
+**Key Decision Points**:
+1. **Authentication Check**: Verifies user is logged in
+2. **Authorization Check**: Confirms user has Student role
+3. **Registration Period Check**: Ensures registration is currently open
+4. **Prerequisites Check**: Validates student has completed required prerequisite courses
+5. **Capacity Check**: Verifies course has available seats
+6. **Schedule Conflict Check**: Ensures no time conflicts with already-registered courses
+7. **Duplicate Check**: Prevents registering for same course twice
+
+**Error Handling**:
+- Not logged in → Redirect to login page
+- Wrong role → Access denied
+- Closed period → Display registration dates
+- Prerequisites not met → List required courses
+- Course full → Offer waitlist option (if enabled)
+- Schedule conflict → Display conflicting courses
+- Already registered → Show error message
+
+**Success Path**: Student authenticated → Checks passed → Registration created → Capacity updated → Confirmation sent
+
+---
+
+### Flowchart 3: User Authentication & Authorization Workflow
+
+This flowchart shows how the system authenticates users and grants role-based access to different parts of the application.
+
+```mermaid
+flowchart TD
+    Start([User Accesses System]) --> LoginPage[Display Login Page]
+    LoginPage --> EnterCreds[User Enters Email & Password]
+    EnterCreds --> ValidateInput{Input Fields<br/>Empty?}
+
+    ValidateInput -->|Yes| EmptyError[Show: Email/Password Required]
+    EmptyError --> LoginPage
+    ValidateInput -->|No| CheckFormat{Email Format<br/>Valid?}
+
+    CheckFormat -->|No| FormatError[Show: Invalid Email Format]
+    FormatError --> LoginPage
+    CheckFormat -->|Yes| QueryDB[(Query User Database)]
+
+    QueryDB --> UserExists{User Found<br/>in Database?}
+    UserExists -->|No| LoginFail[Show: Invalid Credentials]
+    LoginFail --> LogFailure[(Log Failed Login Attempt)]
+    LogFailure --> CheckAttempts{Failed Attempts<br/>> 5?}
+
+    CheckAttempts -->|Yes| LockAccount[Lock Account Temporarily]
+    LockAccount --> NotifyLock[Send Account Lock Email]
+    NotifyLock --> EndLock([End: Account Locked])
+    CheckAttempts -->|No| LoginPage
+
+    UserExists -->|Yes| CheckActive{Account<br/>Active?}
+    CheckActive -->|No| InactiveError[Show: Account Inactive/Suspended]
+    InactiveError --> EndInactive([End: Access Denied])
+
+    CheckActive -->|Yes| VerifyPassword{Password<br/>Matches Hash?}
+    VerifyPassword -->|No| LoginFail
+    VerifyPassword -->|Yes| CheckRole{User Role?}
+
+    CheckRole -->|Student| GenToken[Generate JWT Token]
+    CheckRole -->|Lecturer| GenToken
+    CheckRole -->|Administrator| GenToken
+    CheckRole -->|Librarian| GenToken
+    CheckRole -->|Applicant| GenToken
+
+    GenToken --> CreateSession[(Create Session Record)]
+    CreateSession --> LogSuccess[(Log Successful Login)]
+    LogSuccess --> ResetFailCount[Reset Failed Login Counter]
+    ResetFailCount --> SetCookie[Set Session Cookie]
+
+    SetCookie --> RouteUser{Route Based<br/>on Role}
+    RouteUser -->|Student| StudentDash[Redirect to Student Dashboard]
+    RouteUser -->|Lecturer| LecturerDash[Redirect to Lecturer Dashboard]
+    RouteUser -->|Administrator| AdminDash[Redirect to Admin Dashboard]
+    RouteUser -->|Librarian| LibrarianDash[Redirect to Librarian Dashboard]
+    RouteUser -->|Applicant| ApplicantDash[Redirect to Application Portal]
+
+    StudentDash --> EndSuccess([End: Authenticated])
+    LecturerDash --> EndSuccess
+    AdminDash --> EndSuccess
+    LibrarianDash --> EndSuccess
+    ApplicantDash --> EndSuccess
+
+    style Start fill:#90EE90
+    style EndSuccess fill:#90EE90
+    style EndLock fill:#FFB6C1
+    style EndInactive fill:#FFB6C1
+    style ValidateInput fill:#FFE4B5
+    style CheckFormat fill:#FFE4B5
+    style UserExists fill:#FFE4B5
+    style CheckActive fill:#FFE4B5
+    style VerifyPassword fill:#FFE4B5
+    style CheckAttempts fill:#FFE4B5
+    style CheckRole fill:#FFE4B5
+    style RouteUser fill:#FFE4B5
+    style QueryDB fill:#E6E6FA
+    style CreateSession fill:#E6E6FA
+    style LogFailure fill:#E6E6FA
+    style LogSuccess fill:#E6E6FA
+```
+
+**Key Decision Points**:
+1. **Input Validation**: Checks if email and password fields are filled
+2. **Format Validation**: Verifies email format is valid
+3. **User Existence**: Confirms user exists in database
+4. **Account Status**: Ensures account is active (not suspended/deleted)
+5. **Password Verification**: Compares entered password with stored hash
+6. **Failed Attempts Check**: Locks account after 5 failed login attempts
+7. **Role-Based Routing**: Redirects user to appropriate dashboard based on role
+
+**Security Features**:
+- Password hashing verification (bcrypt)
+- Failed login attempt tracking
+- Account locking after 5 failed attempts
+- Session token generation (JWT)
+- Audit trail logging
+- Role-based access control
+
+**Error Handling**:
+- Empty fields → Prompt to fill all fields
+- Invalid email format → Show format error
+- Invalid credentials → Display generic error message (security best practice)
+- Account inactive → Show account status message
+- Too many failed attempts → Lock account and notify user
+
+**Success Path**: Credentials validated → Session created → JWT token generated → User redirected to role-specific dashboard
+
+---
+
+### Flowchart Summary
+
+| Flowchart | Purpose | Decision Points | Complexity | Business Value |
+|-----------|---------|-----------------|------------|----------------|
+| **Application Submission & Approval** | Shows complete application lifecycle | 5 major decisions | High | Critical - core admission process |
+| **Course Registration** | Illustrates registration with validations | 8 major decisions | Very High | Critical - core academic function |
+| **User Authentication** | Details login and role-based access | 7 major decisions | High | Essential - security foundation |
+
+**Key Benefits of These Flowcharts**:
+1. **Clarity**: Shows exact process flow for developers to implement
+2. **Error Handling**: Identifies all possible error scenarios and responses
+3. **Decision Logic**: Documents all business rules and validation points
+4. **Security**: Highlights authentication and authorization checkpoints
+5. **User Experience**: Maps out user journey including error recovery paths
+
+These flowcharts complement the existing DFDs (which show data movement) by illustrating **procedural logic and decision-making** within critical system processes.
 
 ---
 
@@ -2418,7 +3374,252 @@ The system manages the following core entities:
 
 **Registrations**: Junction table linking students to courses, storing enrollment information, registration date, and status.
 
-(Detailed ERD with attributes, data types, and constraints will be created in Phase 4 - System Design)
+### Detailed Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    USERS ||--o| STUDENTS : "extends"
+    USERS ||--o{ APPLICATIONS : "submits"
+    USERS ||--o{ COURSES : "teaches"
+    USERS ||--o{ NOTIFICATIONS : "receives"
+    USERS ||--o{ AUDIT_LOGS : "generates"
+
+    STUDENTS ||--o{ EMERGENCY_CONTACTS : "has"
+    STUDENTS ||--o{ REGISTRATIONS : "enrolls"
+
+    APPLICATIONS ||--o{ APPLICATION_DOCUMENTS : "contains"
+
+    COURSES ||--o{ REGISTRATIONS : "has"
+
+    USERS {
+        int user_id PK
+        string email UK
+        string password_hash
+        enum role "Student, Lecturer, Administrator, Librarian"
+        string first_name
+        string last_name
+        date date_of_birth
+        string phone_number
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    STUDENTS {
+        int student_id PK
+        int user_id FK
+        string student_number UK "Auto-generated"
+        string id_number
+        string address
+        string city
+        string postal_code
+        string program
+        string level "Certificate, Diploma, Degree"
+        enum status "Active, Inactive, Graduated"
+        date enrollment_date
+        datetime created_at
+        datetime updated_at
+    }
+
+    APPLICATIONS {
+        int application_id PK
+        int user_id FK
+        string application_number UK "Auto-generated"
+        string program
+        string level
+        text motivation
+        enum status "Pending, Approved, Rejected"
+        int reviewed_by FK "References Users"
+        datetime reviewed_at
+        text review_notes
+        datetime created_at
+        datetime updated_at
+    }
+
+    APPLICATION_DOCUMENTS {
+        int document_id PK
+        int application_id FK
+        enum document_type "ID, Matric, Transcript, Other"
+        string file_name
+        string file_path
+        int file_size
+        string mime_type
+        datetime uploaded_at
+    }
+
+    COURSES {
+        int course_id PK
+        string course_code UK
+        string course_name
+        text description
+        int credits
+        int capacity
+        string prerequisites
+        int lecturer_id FK "References Users"
+        string semester
+        int year
+        boolean is_active
+        datetime created_at
+        datetime updated_at
+    }
+
+    REGISTRATIONS {
+        int registration_id PK
+        int student_id FK
+        int course_id FK
+        enum status "Registered, Dropped, Completed"
+        date registration_date
+        date drop_date
+        string grade
+        datetime created_at
+        datetime updated_at
+    }
+
+    EMERGENCY_CONTACTS {
+        int contact_id PK
+        int student_id FK
+        string contact_name
+        string relationship
+        string phone_number
+        string email
+        boolean is_primary
+        datetime created_at
+        datetime updated_at
+    }
+
+    NOTIFICATIONS {
+        int notification_id PK
+        int user_id FK
+        string title
+        text message
+        enum type "Info, Warning, Success, Error"
+        boolean is_read
+        datetime created_at
+        datetime read_at
+    }
+
+    AUDIT_LOGS {
+        int log_id PK
+        int user_id FK
+        string action
+        string entity_type
+        int entity_id
+        json old_values
+        json new_values
+        string ip_address
+        datetime created_at
+    }
+
+    SYSTEM_SETTINGS {
+        int setting_id PK
+        string key UK
+        string value
+        text description
+        datetime updated_at
+    }
+```
+
+### Entity Attribute Details
+
+#### USERS Table
+| Attribute | Type | Constraints | Description |
+|-----------|------|-------------|-------------|
+| user_id | INTEGER | PK, AUTO_INCREMENT | Unique user identifier |
+| email | VARCHAR(255) | UNIQUE, NOT NULL | User email (login username) |
+| password_hash | VARCHAR(255) | NOT NULL | Bcrypt hashed password |
+| role | ENUM | NOT NULL | User role (Student, Lecturer, Administrator, Librarian) |
+| first_name | VARCHAR(100) | NOT NULL | User first name |
+| last_name | VARCHAR(100) | NOT NULL | User last name |
+| date_of_birth | DATE | NOT NULL | User date of birth |
+| phone_number | VARCHAR(20) | - | Contact phone number |
+| is_active | BOOLEAN | DEFAULT TRUE | Account active status |
+| created_at | TIMESTAMP | DEFAULT NOW() | Account creation timestamp |
+| updated_at | TIMESTAMP | ON UPDATE NOW() | Last update timestamp |
+
+#### STUDENTS Table
+| Attribute | Type | Constraints | Description |
+|-----------|------|-------------|-------------|
+| student_id | INTEGER | PK, AUTO_INCREMENT | Unique student identifier |
+| user_id | INTEGER | FK (USERS), UNIQUE | Reference to Users table |
+| student_number | VARCHAR(20) | UNIQUE, NOT NULL | Auto-generated student number |
+| id_number | VARCHAR(20) | UNIQUE, NOT NULL | National ID number |
+| address | VARCHAR(255) | - | Residential address |
+| city | VARCHAR(100) | - | City |
+| postal_code | VARCHAR(10) | - | Postal code |
+| program | VARCHAR(100) | NOT NULL | Study program |
+| level | ENUM | NOT NULL | Certificate, Diploma, Degree |
+| status | ENUM | DEFAULT 'Active' | Active, Inactive, Graduated |
+| enrollment_date | DATE | NOT NULL | Date of enrollment |
+| created_at | TIMESTAMP | DEFAULT NOW() | Record creation timestamp |
+| updated_at | TIMESTAMP | ON UPDATE NOW() | Last update timestamp |
+
+#### APPLICATIONS Table
+| Attribute | Type | Constraints | Description |
+|-----------|------|-------------|-------------|
+| application_id | INTEGER | PK, AUTO_INCREMENT | Unique application identifier |
+| user_id | INTEGER | FK (USERS) | Reference to applicant |
+| application_number | VARCHAR(20) | UNIQUE, NOT NULL | Auto-generated reference number |
+| program | VARCHAR(100) | NOT NULL | Applied program |
+| level | ENUM | NOT NULL | Certificate, Diploma, Degree |
+| motivation | TEXT | - | Motivation statement |
+| status | ENUM | DEFAULT 'Pending' | Pending, Approved, Rejected |
+| reviewed_by | INTEGER | FK (USERS) | Administrator who reviewed |
+| reviewed_at | TIMESTAMP | - | Review timestamp |
+| review_notes | TEXT | - | Admin review notes |
+| created_at | TIMESTAMP | DEFAULT NOW() | Application submission timestamp |
+| updated_at | TIMESTAMP | ON UPDATE NOW() | Last update timestamp |
+
+#### COURSES Table
+| Attribute | Type | Constraints | Description |
+|-----------|------|-------------|-------------|
+| course_id | INTEGER | PK, AUTO_INCREMENT | Unique course identifier |
+| course_code | VARCHAR(20) | UNIQUE, NOT NULL | Course code (e.g., CS101) |
+| course_name | VARCHAR(200) | NOT NULL | Course name |
+| description | TEXT | - | Course description |
+| credits | INTEGER | NOT NULL | Credit hours |
+| capacity | INTEGER | NOT NULL | Maximum enrollment |
+| prerequisites | VARCHAR(255) | - | Prerequisite courses |
+| lecturer_id | INTEGER | FK (USERS) | Assigned lecturer |
+| semester | VARCHAR(20) | NOT NULL | Semester (1, 2, Summer) |
+| year | INTEGER | NOT NULL | Academic year |
+| is_active | BOOLEAN | DEFAULT TRUE | Course active status |
+| created_at | TIMESTAMP | DEFAULT NOW() | Record creation timestamp |
+| updated_at | TIMESTAMP | ON UPDATE NOW() | Last update timestamp |
+
+#### REGISTRATIONS Table (Junction Table)
+| Attribute | Type | Constraints | Description |
+|-----------|------|-------------|-------------|
+| registration_id | INTEGER | PK, AUTO_INCREMENT | Unique registration identifier |
+| student_id | INTEGER | FK (STUDENTS) | Reference to student |
+| course_id | INTEGER | FK (COURSES) | Reference to course |
+| status | ENUM | DEFAULT 'Registered' | Registered, Dropped, Completed |
+| registration_date | DATE | NOT NULL | Date of registration |
+| drop_date | DATE | - | Date course was dropped (if applicable) |
+| grade | VARCHAR(5) | - | Final grade (populated later) |
+| created_at | TIMESTAMP | DEFAULT NOW() | Record creation timestamp |
+| updated_at | TIMESTAMP | ON UPDATE NOW() | Last update timestamp |
+
+**Note**: The combination of `student_id` and `course_id` should have a unique constraint to prevent duplicate registrations.
+
+### Cardinality Summary
+
+| Relationship | Type | Description |
+|--------------|------|-------------|
+| Users ↔ Students | 1:1 | One user account can have one student profile |
+| Users → Applications | 1:N | One user can submit multiple applications |
+| Users → Courses | 1:N | One lecturer can teach multiple courses |
+| Students → Emergency Contacts | 1:N | One student can have multiple emergency contacts |
+| Applications → Documents | 1:N | One application can have multiple documents |
+| Students ↔ Courses | M:N | Students enroll in multiple courses; courses have multiple students (through Registrations) |
+
+### Database Normalization
+
+The database design follows **Third Normal Form (3NF)**:
+- **1NF**: All attributes contain atomic values
+- **2NF**: No partial dependencies (all non-key attributes depend on the entire primary key)
+- **3NF**: No transitive dependencies (non-key attributes depend only on the primary key)
+
+**Detailed schema with indexes, constraints, and performance optimizations will be finalized in Phase 4 - System Design.**
 
 ---
 
@@ -2493,7 +3694,242 @@ The system uses the following conceptual data stores:
 - **DS7: Audit Trail** - System activity logs
 - **DS8: Notifications** - User alerts and messages
 
-(Detailed DFD with Level 1 and Level 2 decomposition will be created in Phase 3 - Analysis)
+### DFD Level 0 - Context Diagram (Visual)
+
+```mermaid
+graph TD
+    %% External Entities
+    Applicant[🙋 Applicant]
+    Student[🎓 Student]
+    Lecturer[👨‍🏫 Lecturer]
+    Admin[👔 Administrator]
+    Librarian[📚 Librarian]
+
+    %% Central System
+    EduHub[("🏫 EduHub<br/>Student Management<br/>System")]
+
+    %% Applicant Data Flows
+    Applicant -->|Application Data<br/>Documents| EduHub
+    EduHub -->|Application Status<br/>Notifications| Applicant
+
+    %% Student Data Flows
+    Student -->|Profile Updates<br/>Course Selections<br/>Drop Requests| EduHub
+    EduHub -->|Registration Confirmations<br/>Course Information<br/>Academic Records| Student
+
+    %% Lecturer Data Flows
+    Lecturer -->|Course Information<br/>Announcements<br/>Grade Updates| EduHub
+    EduHub -->|Class Rosters<br/>Student Lists<br/>Enrollment Data| Lecturer
+
+    %% Administrator Data Flows
+    Admin -->|Approval Decisions<br/>Course Management<br/>System Configuration| EduHub
+    EduHub -->|Reports<br/>Analytics<br/>System Data| Admin
+
+    %% Librarian Data Flows
+    Librarian -->|Student Verification<br/>Search Requests| EduHub
+    EduHub -->|Student Status<br/>Student Information| Librarian
+
+    style EduHub fill:#4A90E2,stroke:#333,stroke-width:4px,color:#fff
+    style Applicant fill:#FFE4E1
+    style Student fill:#E0FFE0
+    style Lecturer fill:#FFE4B5
+    style Admin fill:#FFB6C1
+    style Librarian fill:#E6E6FA
+```
+
+### DFD Level 1 - Major System Processes
+
+```mermaid
+graph TB
+    %% External Entities
+    Applicant[🙋 Applicant]
+    Student[🎓 Student]
+    Lecturer[👨‍🏫 Lecturer]
+    Admin[👔 Administrator]
+    Librarian[📚 Librarian]
+
+    %% Processes
+    P1[("1.0<br/>User<br/>Authentication")]
+    P2[("2.0<br/>Application<br/>Management")]
+    P3[("3.0<br/>Application<br/>Approval")]
+    P4[("4.0<br/>Profile<br/>Management")]
+    P5[("5.0<br/>Course<br/>Registration")]
+    P6[("6.0<br/>Course<br/>Management")]
+    P7[("7.0<br/>Notification<br/>Management")]
+    P8[("8.0<br/>Reporting<br/>& Analytics")]
+
+    %% Data Stores
+    DS1[(DS1: User Data)]
+    DS2[(DS2: Student Data)]
+    DS3[(DS3: Applications)]
+    DS4[(DS4: Courses)]
+    DS5[(DS5: Registrations)]
+    DS6[(DS6: Settings)]
+    DS7[(DS7: Audit Logs)]
+    DS8[(DS8: Notifications)]
+
+    %% Applicant Flows
+    Applicant -->|Login Credentials| P1
+    Applicant -->|Application Form| P2
+    P2 -->|Application Status| Applicant
+    P7 -->|Email Notifications| Applicant
+
+    %% Student Flows
+    Student -->|Login Credentials| P1
+    Student -->|Profile Updates| P4
+    Student -->|Course Selection| P5
+    P4 -->|Updated Profile| Student
+    P5 -->|Registration Confirmation| Student
+    P7 -->|Notifications| Student
+
+    %% Lecturer Flows
+    Lecturer -->|Login Credentials| P1
+    Lecturer -->|Course Info| P6
+    P6 -->|Class Rosters| Lecturer
+    P7 -->|Notifications| Lecturer
+
+    %% Admin Flows
+    Admin -->|Login Credentials| P1
+    Admin -->|Review Decision| P3
+    Admin -->|Course Data| P6
+    Admin -->|Report Request| P8
+    P8 -->|Reports| Admin
+
+    %% Librarian Flows
+    Librarian -->|Login Credentials| P1
+    Librarian -->|Search Query| P4
+    P4 -->|Student Info| Librarian
+
+    %% Process to Data Store Flows
+    P1 -.->|Read/Write| DS1
+    P2 -.->|Write| DS3
+    P2 -.->|Read| DS3
+    P3 -.->|Update| DS3
+    P3 -.->|Create| DS2
+    P3 -.->|Update| DS1
+    P4 -.->|Read/Write| DS2
+    P5 -.->|Write| DS5
+    P5 -.->|Read| DS4
+    P5 -.->|Read| DS2
+    P6 -.->|Read/Write| DS4
+    P7 -.->|Write| DS8
+    P8 -.->|Read| DS1
+    P8 -.->|Read| DS2
+    P8 -.->|Read| DS3
+    P8 -.->|Read| DS4
+    P8 -.->|Read| DS5
+
+    %% All processes log to audit
+    P1 -.->|Log| DS7
+    P2 -.->|Log| DS7
+    P3 -.->|Log| DS7
+    P4 -.->|Log| DS7
+    P5 -.->|Log| DS7
+    P6 -.->|Log| DS7
+
+    %% Inter-process flows
+    P3 -->|Approval| P7
+    P5 -->|Registration| P7
+
+    style P1 fill:#FFE4E1
+    style P2 fill:#E0FFE0
+    style P3 fill:#FFE4B5
+    style P4 fill:#FFB6C1
+    style P5 fill:#E6E6FA
+    style P6 fill:#FFD700
+    style P7 fill:#87CEEB
+    style P8 fill:#FFA07A
+    style DS1 fill:#D3D3D3
+    style DS2 fill:#D3D3D3
+    style DS3 fill:#D3D3D3
+    style DS4 fill:#D3D3D3
+    style DS5 fill:#D3D3D3
+    style DS6 fill:#D3D3D3
+    style DS7 fill:#D3D3D3
+    style DS8 fill:#D3D3D3
+```
+
+### Process Descriptions
+
+#### Process 1.0: User Authentication
+**Input**: Login credentials (email, password)
+**Processing**:
+- Validates credentials against user database
+- Checks user role and permissions
+- Creates session token
+- Logs authentication attempt
+**Output**: Authentication token, user role information
+**Data Stores Used**: DS1 (User Data), DS7 (Audit Logs)
+
+#### Process 2.0: Application Management
+**Input**: Application form data, uploaded documents
+**Processing**:
+- Validates application data
+- Generates application reference number
+- Stores application and documents
+- Updates application status
+**Output**: Application confirmation, reference number
+**Data Stores Used**: DS3 (Applications), DS7 (Audit Logs)
+
+#### Process 3.0: Application Approval
+**Input**: Review decision from administrator
+**Processing**:
+- Validates admin permissions
+- Updates application status
+- If approved: generates student number, creates student record, updates user role
+- If rejected: logs reason
+- Triggers notification
+**Output**: Approval/rejection notification
+**Data Stores Used**: DS1 (User Data), DS2 (Student Data), DS3 (Applications), DS7 (Audit Logs)
+
+#### Process 4.0: Profile Management
+**Input**: Profile update requests, search queries
+**Processing**:
+- Validates user permissions
+- Updates student profile information
+- Manages emergency contacts
+- Handles librarian search requests
+**Output**: Updated profile data, search results
+**Data Stores Used**: DS2 (Student Data), DS7 (Audit Logs)
+
+#### Process 5.0: Course Registration
+**Input**: Course selection, drop requests
+**Processing**:
+- Checks prerequisites
+- Verifies course capacity
+- Checks schedule conflicts
+- Creates/updates registration record
+- Triggers confirmation notification
+**Output**: Registration confirmation, enrollment status
+**Data Stores Used**: DS2 (Student Data), DS4 (Courses), DS5 (Registrations), DS7 (Audit Logs)
+
+#### Process 6.0: Course Management
+**Input**: Course creation/update requests, lecturer assignments
+**Processing**:
+- Validates admin permissions
+- Creates/updates course records
+- Assigns lecturers to courses
+- Manages course capacity and schedule
+**Output**: Course information, class rosters
+**Data Stores Used**: DS4 (Courses), DS7 (Audit Logs)
+
+#### Process 7.0: Notification Management
+**Input**: Event triggers (approval, registration, etc.)
+**Processing**:
+- Creates notification records
+- Sends email notifications
+- Manages notification read/unread status
+**Output**: Email notifications, in-app notifications
+**Data Stores Used**: DS8 (Notifications)
+
+#### Process 8.0: Reporting & Analytics
+**Input**: Report requests, date ranges, filters
+**Processing**:
+- Queries relevant data stores
+- Aggregates data
+- Generates reports (applications, enrollments, usage)
+- Exports to CSV/PDF
+**Output**: Statistical reports, analytics dashboards
+**Data Stores Used**: DS1-DS5 (All data stores for reporting)
 
 ---
 
