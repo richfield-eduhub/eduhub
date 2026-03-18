@@ -895,11 +895,11 @@ The project will be developed using widely adopted, well-documented web technolo
 
 | Technology | Team Proficiency | Training Needed |
 | ---------- | ---------------- | --------------- |
-| JavaScript | High             | None            |
+| JavaScript | Medium           | None            |
 | React.js   | Medium           | Minimal         |
 | Node.js    | Medium           | Minimal         |
 | PostgreSQL | Medium           | Moderate        |
-| Git/GitHub | High             | None            |
+| Git/GitHub | High             | Moderate        |
 | Docker     | Low              | Moderate        |
 | REST APIs  | Medium           | Minimal         |
 
