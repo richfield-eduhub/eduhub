@@ -254,7 +254,7 @@ function renderNavbar(activePage) {
   const cachedCount = parseInt(localStorage.getItem('_unreadCount')||'0');
   const userHtml = user ? `
     <div style="position:relative;margin-left:8px">
-      <button class="notif-btn" id="notif-btn" onclick="toggleNotifs()">🔔
+      <button class="notif-btn" id="notif-btn" onclick="toggleNotifs(event)">🔔
         <span id="notif-badge" style="position:absolute;top:4px;right:4px;width:16px;height:16px;background:#e8192c;border-radius:50%;font-size:10px;font-weight:700;display:${cachedCount>0?'flex':'none'};align-items:center;justify-content:center">${cachedCount}</span>
       </button>
     </div>
@@ -295,7 +295,8 @@ function renderNavbar(activePage) {
   });
 }
 
-function toggleNotifs() {
+function toggleNotifs(event) {
+  if (event) event.stopPropagation();
   const d=document.getElementById('notif-dropdown');
   if (!d) return;
   const wasHidden=d.classList.contains('hidden');

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Create Account — Richfield</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    body{background:var(--rf-offwhite)}
+    .auth-wrap{min-height:100vh;display:flex}
+    .auth-left{flex:1;background:linear-gradient(135deg,var(--rf-navy) 0%,var(--rf-blue) 100%);display:flex;flex-direction:column;justify-content:center;padding:60px 48px;color:white;position:relative;overflow:hidden}
+    .auth-left::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;border-radius:50%;background:rgba(245,166,35,.1)}
+    .auth-left::after{content:'';position:absolute;bottom:-80px;left:-40px;width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,.04)}
+    .auth-inner{position:relative;z-index:1}
+    .auth-right{width:520px;display:flex;flex-direction:column;justify-content:center;padding:48px;background:white;overflow-y:auto}
+    @media(max-width:768px){.auth-left{display:none}.auth-right{width:100%}}
+  </style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-left">
+    <div class="auth-inner">
+      <div style="font-family:var(--font-display);font-size:14px;letter-spacing:4px;opacity:.6;margin-bottom:32px">RICHFIELD GRADUATE INSTITUTE</div>
+      <h1 style="font-family:var(--font-display);font-size:48px;letter-spacing:2px;line-height:1;margin-bottom:20px">JOIN<br><span style="color:var(--rf-gold)">RICHFIELD.</span></h1>
+      <p style="font-size:16px;opacity:.75;line-height:1.7;max-width:320px">Create your account to start your application and track your academic journey.</p>
+      <div style="margin-top:40px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:18px">
+        <div style="font-size:12px;opacity:.6;margin-bottom:10px;letter-spacing:1px">AFTER REGISTERING</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;opacity:.85">
+          <div>📝 Submit your application online</div>
+          <div>✅ Get approved by admissions</div>
+          <div>📚 Receive your module allocation</div>
+          <div>🎓 Begin your studies</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div style="margin-bottom:32px">
+      <h2 style="font-family:var(--font-display);font-size:28px;letter-spacing:1px;margin-bottom:6px">CREATE ACCOUNT</h2>
+      <p style="color:var(--rf-gray);font-size:14px">Fill in your details to get started</p>
+    </div>
+    <div id="alert-box"></div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name <span class="required">*</span></label><input id="firstName" class="form-input" placeholder="John"/></div>
+        <div class="form-group"><label class="form-label">Last Name <span class="required">*</span></label><input id="lastName" class="form-input" placeholder="Doe"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email Address <span class="required">*</span></label><input type="email" id="email" class="form-input" placeholder="you@example.com"/></div>
+      <div class="form-group"><label class="form-label">Phone Number</label><input type="tel" id="phone" class="form-input" placeholder="+27 XX XXX XXXX"/></div>
+      <div class="form-group"><label class="form-label">SA ID Number</label><input id="idNumber" class="form-input" placeholder="Optional — can be added later" maxlength="13"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Password <span class="required">*</span></label><input type="password" id="password" class="form-input" placeholder="Min 8 characters"/></div>
+        <div class="form-group"><label class="form-label">Confirm Password <span class="required">*</span></label><input type="password" id="confirm" class="form-input" placeholder="Repeat password"/></div>
+      </div>
+      <div style="background:var(--rf-offwhite);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--rf-gray)">
+        By creating an account you agree to Richfield's <strong style="color:var(--rf-blue)">Terms &amp; Conditions</strong> and <strong style="color:var(--rf-blue)">Privacy Policy</strong>.
+      </div>
+      <button id="reg-btn" class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="handleRegister()">Create Account →</button>
+    </div>
+    <div style="text-align:center;margin-top:24px;padding-top:20px;border-top:1px solid var(--rf-border)">
+      <p style="font-size:14px;color:var(--rf-gray)">Already have an account? <a href="Login.html" style="color:var(--rf-blue);font-weight:600">Sign in →</a></p>
+    </div>
+  </div>
+</div>
+<script src="../shared-local.js"></script>
+<script>
+// Already logged in → redirect
+const existing = getCurrentUser();
+if (existing) window.location.href = rootPath(existing.role==='admin'?'admin/Dashboard.html':existing.role==='lecturer'?'lecturer/Dashboard.html':'student/Dashboard.html');
+
+function handleRegister() {
+  clearAlert('alert-box');
+  const firstName = document.getElementById('firstName').value.trim();
+  const lastName  = document.getElementById('lastName').value.trim();
+  const email     = document.getElementById('email').value.trim();
+  const phone     = document.getElementById('phone').value.trim();
+  const idNumber  = document.getElementById('idNumber').value.trim();
+  const password  = document.getElementById('password').value;
+  const confirm   = document.getElementById('confirm').value;
+
+  if (!firstName || !lastName || !email || !password)
+    return showAlert('alert-box', 'First name, last name, email and password are required.', 'error');
+  if (password !== confirm)
+    return showAlert('alert-box', 'Passwords do not match.', 'error');
+
+  setLoading('reg-btn', true, 'Creating account...');
+  const result = registerUser(firstName, lastName, email, password, phone, idNumber);
+  if (!result.success) {
+    showAlert('alert-box', result.message, 'error');
+    setLoading('reg-btn', false, 'Create Account →');
+    return;
+  }
+  // Auto login after registration
+  login(email, password);
+  showToast('Account created! Redirecting...', 'success');
+  setTimeout(() => window.location.href = rootPath('student/Dashboard.html'), 1000);
+}
+</script>
+</body>
+</html>
