@@ -1,318 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Applications — Admin — EduHub</title>
-  <link rel="stylesheet" href="../shared.css" />
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Applications — Richfield Admin</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .module-row{display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:10px;cursor:pointer;border:2px solid #e5e7eb;background:white;transition:all .15s;margin-bottom:8px}
+    .module-row.picked{border-color:#123f7a;background:#EEF2FF}
+    .chk{width:22px;height:22px;border-radius:5px;border:2px solid #d1d5db;background:white;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0;font-size:13px;font-weight:700}
+    .module-row.picked .chk{background:#123f7a;border-color:#123f7a;color:white}
+    .filter-btn{padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--rf-border);background:white;color:var(--rf-navy);transition:all .15s}
+    .filter-btn.active{background:var(--rf-blue);color:white;border-color:var(--rf-blue)}
+  </style>
 </head>
-<body class="page-container">
-  <div id="navbar-placeholder"></div>
-  <div class="main-content">
-    <h1 class="section-title">APPLICATIONS</h1>
-    <p class="section-subtitle">Review, approve and allocate modules to students</p>
-
-    <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:14px;color:#3730a3">
-      <strong>Workflow:</strong> &nbsp;① Student applies &nbsp;→&nbsp; ② Admin approves &nbsp;→&nbsp; ③ Admin allocates modules (📚) &nbsp;→&nbsp; ④ Student sees modules
-    </div>
-
-    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap" id="filter-btns"></div>
-    <div id="alert-box" class="mb-24"></div>
-    <div class="card"><div id="apps-table"><div style="padding:48px;text-align:center;color:var(--rf-gray)">Loading...</div></div></div>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">APPLICATIONS</h1>
+  <p class="section-subtitle">Review, approve and allocate modules to students</p>
+  <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:14px;color:#3730a3">
+    <strong>Workflow:</strong> &nbsp;
+    ① Student applies &amp; picks course &nbsp;→&nbsp;
+    ② Admin approves application &nbsp;→&nbsp;
+    ③ Admin allocates modules (📚) &nbsp;→&nbsp;
+    ④ Student sees modules on portal
   </div>
+  <div id="filter-bar" style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap"></div>
+  <div class="card" id="table-wrap"></div>
+</div>
 
-  <!-- View Modal -->
-  <div id="view-modal" class="modal-overlay hidden">
-    <div class="modal modal-lg">
-      <div class="modal-header"><span class="modal-title" id="view-modal-title">Application</span><button class="modal-close" onclick="closeModal('view-modal')">×</button></div>
-      <div class="modal-body" id="view-modal-body"></div>
-      <div class="modal-footer" id="view-modal-footer"></div>
+<!-- VIEW MODAL -->
+<div id="view-modal" class="modal-overlay hidden">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="view-title">Application</div>
+      <button class="modal-close" onclick="closeModal('view-modal')">×</button>
     </div>
+    <div class="modal-body" id="view-body"></div>
+    <div class="modal-footer" id="view-footer"></div>
   </div>
+</div>
 
-  <!-- Decline Modal -->
-  <div id="decline-modal" class="modal-overlay hidden">
-    <div class="modal">
-      <div class="modal-header"><span class="modal-title">Decline Application</span><button class="modal-close" onclick="closeModal('decline-modal')">×</button></div>
-      <div class="modal-body">
-        <div class="alert alert-warning mb-24"><span>⚠️</span><div>Declining for <strong id="decline-name"></strong>.</div></div>
-        <div class="form-group"><label class="form-label">Reason <span class="required">*</span></label><textarea id="decline-reason" class="form-textarea" placeholder="Reason for declining..."></textarea></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('decline-modal')">Cancel</button>
-        <button id="confirm-decline-btn" class="btn btn-danger" onclick="confirmDecline()">Confirm Decline</button>
-      </div>
+<!-- DECLINE MODAL -->
+<div id="decline-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Decline Application</div>
+      <button class="modal-close" onclick="closeModal('decline-modal')">×</button>
     </div>
-  </div>
-
-  <!-- Allocate Modal -->
-  <div id="alloc-modal" class="modal-overlay hidden">
-    <div class="modal modal-lg" style="max-width:680px">
-      <div class="modal-header" style="background:linear-gradient(135deg,var(--rf-navy),#123f7a);border-radius:12px 12px 0 0">
-        <div>
-          <div class="modal-title" style="color:white;font-size:17px">📚 Allocate Modules</div>
-          <div id="alloc-student-sub" style="font-size:13px;opacity:.75;margin-top:2px;color:white"></div>
-        </div>
-        <button class="modal-close" onclick="closeModal('alloc-modal')" style="color:white;opacity:.7;font-size:22px">×</button>
-      </div>
-      <div class="modal-body" style="display:flex;flex-direction:column;gap:20px">
-        <div id="alloc-student-info" style="background:var(--rf-offwhite);border-radius:8px;padding:14px 16px;font-size:14px"></div>
-        <div class="form-row">
-          <div><label style="display:block;font-size:13px;font-weight:700;color:var(--rf-navy);margin-bottom:8px">Study Year</label><div style="display:flex;gap:8px" id="year-btns"></div></div>
-          <div><label style="display:block;font-size:13px;font-weight:700;color:var(--rf-navy);margin-bottom:8px">Semester</label><div style="display:flex;gap:8px" id="sem-btns"></div></div>
-        </div>
-        <div id="alloc-existing-warn" style="display:none" class="alert alert-warning"></div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:700;font-size:14px;color:var(--rf-navy)" id="alloc-modules-title">Available Modules</div>
-          <div style="display:flex;gap:8px">
-            <button onclick="selectAllMods()" style="font-size:12px;padding:4px 12px;border:1px solid var(--rf-border);border-radius:6px;cursor:pointer;background:white;font-weight:600">Select All</button>
-            <button onclick="clearAllMods()" style="font-size:12px;padding:4px 12px;border:1px solid var(--rf-border);border-radius:6px;cursor:pointer;background:white;font-weight:600">Clear</button>
-          </div>
-        </div>
-        <div id="alloc-module-list"></div>
-        <div id="alloc-summary-bar" style="display:none;background:linear-gradient(135deg,var(--rf-navy),#123f7a);color:white;border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-          <div><div style="font-size:12px;opacity:.7">SELECTED</div><div id="alloc-sum-count" style="font-weight:900;font-size:26px"></div></div>
-          <div><div style="font-size:12px;opacity:.7">CREDITS</div><div id="alloc-sum-credits" style="font-weight:900;font-size:26px"></div></div>
-          <div><div style="font-size:12px;opacity:.7">SEMESTER / YEAR</div><div id="alloc-sum-period" style="font-weight:700;font-size:15px"></div></div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('alloc-modal')">Cancel</button>
-        <button id="confirm-alloc-btn" class="btn btn-success" onclick="confirmAllocation()" disabled style="opacity:.5">✅ Confirm Allocation</button>
+    <div class="modal-body">
+      <div class="alert alert-warning" style="margin-bottom:16px"><span>⚠️</span> <span id="decline-name-msg"></span></div>
+      <div class="form-group">
+        <label class="form-label">Reason <span class="required">*</span></label>
+        <textarea id="decline-reason" class="form-textarea" placeholder="Reason for declining..."></textarea>
       </div>
     </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('decline-modal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDecline()">Confirm Decline</button>
+    </div>
   </div>
-  <div id="_toast" class="toast hidden"></div>
+</div>
 
-  <script src="../shared.js"></script>
-  <script>
-    const user = requireAuth('admin');
-    let currentFilter = 'all';
-    let allApps = [];
-    let allRegs = [];
-    let declineTargetId = null;
-    let allocApp = null, allocYear = 1, allocSem = 1, allocSelected = [];
+<!-- ALLOCATE MODAL -->
+<div id="alloc-modal" class="modal-overlay hidden">
+  <div class="modal modal-lg" style="max-height:90vh;overflow-y:auto">
+    <div class="modal-header" style="background:linear-gradient(135deg,#001A4D,#123f7a);color:white;border-radius:12px 12px 0 0">
+      <div>
+        <div class="modal-title" style="color:white;font-size:17px">📚 Allocate Modules</div>
+        <div id="alloc-subtitle" style="font-size:13px;opacity:.75;margin-top:2px"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('alloc-modal')" style="color:white;opacity:.7;font-size:22px">×</button>
+    </div>
+    <div class="modal-body" id="alloc-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('alloc-modal')">Cancel</button>
+      <button class="btn btn-success" id="alloc-confirm-btn" onclick="confirmAllocation()">✅ Confirm Allocation</button>
+    </div>
+  </div>
+</div>
 
-    if (user) { (async()=>{ await renderNavbar('applications'); await loadPage(); })(); }
+<script src="../shared-local.js"></script>
+<script>
+requireAuth('admin');
+renderNavbar('admin-apps');
 
-    async function loadPage() {
-      [allApps, allRegs] = await Promise.all([getApplications(), getRegistrations()]);
-      renderFilters();
-      renderTable();
-    }
+let currentFilter='all';
+let selectedApp=null;
+let allocApp=null, allocSemester=1, allocYear=1, allocSelected=[];
 
-    function renderFilters() {
-      const filters = ['all','pending','approved','declined'];
-      document.getElementById('filter-btns').innerHTML = filters.map(f => `
-        <button onclick="setFilter('${f}',this)" class="btn btn-sm"
-          style="background:${currentFilter===f?'var(--rf-blue)':'white'};color:${currentFilter===f?'white':'var(--rf-navy)'};border:1.5px solid var(--rf-border);text-transform:capitalize">
-          ${f} (${allApps.filter(a => f==='all'||a.status===f).length})
-        </button>`).join('');
-    }
+function render(){
+  const apps=getApplications();
+  const regs=getRegistrations();
+  const counts={all:apps.length,pending:apps.filter(a=>a.status==='pending').length,approved:apps.filter(a=>a.status==='approved').length,declined:apps.filter(a=>a.status==='declined').length};
+  document.getElementById('filter-bar').innerHTML=['all','pending','approved','declined'].map(f=>
+    `<button class="filter-btn ${currentFilter===f?'active':''}" onclick="setFilter('${f}')">${f} (${counts[f]})</button>`
+  ).join('');
+  const filtered=currentFilter==='all'?apps:apps.filter(a=>a.status===currentFilter);
+  if(filtered.length===0){
+    document.getElementById('table-wrap').innerHTML=`<div style="padding:48px;text-align:center;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">📋</div><div>No ${currentFilter==='all'?'':currentFilter} applications found</div></div>`;
+    return;
+  }
+  document.getElementById('table-wrap').innerHTML=`<table class="data-table"><thead><tr><th>Student</th><th>Type</th><th>Qualification</th><th>Submitted</th><th>Status</th><th>Modules</th><th>Actions</th></tr></thead><tbody>
+  ${filtered.map(a=>{
+    const alloc=regs.find(r=>r.studentId===a.studentId&&r.status==='allocated');
+    return `<tr>
+      <td><div style="font-weight:600">${a.firstName} ${a.lastName}</div><div style="font-size:12px;color:var(--rf-gray)">${a.email}</div><div style="font-size:11px;font-family:var(--font-mono);color:var(--rf-blue)">${a.studentId}</div></td>
+      <td><span style="font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;background:${a.applicationType==='returning'?'#FEF3C7':'#D1FAE5'};color:${a.applicationType==='returning'?'#92400e':'#065f46'}">${a.applicationType==='returning'?'🔄 Returning':'🆕 New'}</span><div style="font-size:11px;color:var(--rf-gray);margin-top:2px">Year ${a.studyYear}</div></td>
+      <td><div style="font-weight:600;font-size:13px">${a.qualificationCode}</div><div style="font-size:12px;color:var(--rf-gray)">${a.qualificationName}</div></td>
+      <td style="font-size:13px;color:var(--rf-gray)">${fmtDate(a.submittedAt)}</td>
+      <td>${badge(a.status)}</td>
+      <td>${alloc?`<span style="font-size:12px;color:#059669;font-weight:700">✅ ${alloc.modules.length} allocated</span>`:a.status==='approved'?'<span style="font-size:12px;color:#f59e0b;font-weight:600">⏳ Pending</span>':'<span style="font-size:12px;color:var(--rf-gray)">—</span>'}</td>
+      <td><div style="display:flex;gap:5px;flex-wrap:wrap">
+        <button class="btn btn-sm btn-secondary" onclick="openView('${a.id}')">View</button>
+        ${a.status==='approved'?`<button class="btn btn-sm" onclick="openAlloc('${a.id}')" style="background:${alloc?'#D1FAE5':'#001A4D'};color:${alloc?'#065f46':'white'};border:none;font-weight:700">📚 ${alloc?'Reallocate':'Allocate'}</button>`:''}
+        ${a.status==='pending'?`<button class="btn btn-sm btn-success" onclick="handleApprove('${a.id}')">✓ Approve</button><button class="btn btn-sm btn-danger" onclick="openDecline('${a.id}')">✗</button>`:''}
+      </div></td>
+    </tr>`;
+  }).join('')}
+  </tbody></table>`;
+}
 
-    function setFilter(f, el) {
-      currentFilter = f;
-      document.querySelectorAll('#filter-btns button').forEach(b=>{b.style.background='white';b.style.color='var(--rf-navy)';});
-      el.style.background='var(--rf-blue)'; el.style.color='white';
-      renderTable();
-    }
+function setFilter(f){currentFilter=f;render();}
 
-    function getExistingAlloc(studentId, sem, yr) {
-      return allRegs.find(r => r.studentId===studentId && r.semester===sem && r.studyYear===yr && r.status==='allocated');
-    }
+function openView(id){
+  const apps=getApplications(),regs=getRegistrations();
+  const a=apps.find(x=>x.id===id); if(!a)return;
+  selectedApp=a;
+  const alloc=regs.find(r=>r.studentId===a.studentId&&r.status==='allocated');
+  document.getElementById('view-title').textContent=`Application: ${a.firstName} ${a.lastName}`;
+  document.getElementById('view-body').innerHTML=`
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+      ${badge(a.status)}<span class="badge badge-info" style="font-family:var(--font-mono)">${a.studentId}</span>
+      <span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:${a.applicationType==='returning'?'#FEF3C7':'#D1FAE5'};color:${a.applicationType==='returning'?'#92400e':'#065f46'}">${a.applicationType==='returning'?'🔄 Returning Student':'🆕 New Student'}</span>
+    </div>
+    ${a.status==='approved'&&!alloc?'<div class="alert alert-warning" style="margin-bottom:16px"><span>⏳</span> Application approved but <strong>no modules allocated yet</strong>. Use the 📚 Allocate button.</div>':''}
+    ${[
+      {title:'Personal',rows:[['Name',a.firstName+' '+a.lastName],[a.nationality==='South African'?'SA ID':'Passport',a.nationality==='South African'?a.idNumber:a.passportNumber],['DOB',a.dateOfBirth],['Gender',a.gender],['Nationality',a.nationality]]},
+      {title:'Contact',rows:[['Phone',a.phone],['Email',a.email],['Address',`${a.streetAddress}, ${a.city}, ${a.province}`]]},
+      {title:'Qualification & Enrolment',rows:[['Code',a.qualificationCode],['Name',a.qualificationName],['Admission For',a.admissionFor||'—'],['Study Year',`Year ${a.studyYear}`]]},
+      {title:'Documents Ticked',rows:a.docsUploaded.length>0?a.docsUploaded.map((d,i)=>[`Doc ${i+1}`,d]):[['Status','No documents ticked']]},
+    ].map(sec=>`<div style="border:1px solid var(--rf-border);border-radius:8px;overflow:hidden;margin-bottom:12px">
+      <div style="background:var(--rf-offwhite);padding:8px 14px;font-weight:700;font-size:13px;border-bottom:1px solid var(--rf-border)">${sec.title}</div>
+      <div style="padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${sec.rows.map(([k,v])=>`<div style="font-size:13px"><div style="color:var(--rf-gray);font-size:11px;font-weight:600;text-transform:uppercase">${k}</div><div style="font-weight:500">${v||'—'}</div></div>`).join('')}
+      </div>
+    </div>`).join('')}
+    ${a.declineReason?`<div class="alert alert-error"><span>❌</span> ${a.declineReason}</div>`:''}`;
+  document.getElementById('view-footer').innerHTML=`
+    ${a.status==='approved'?`<button class="btn btn-primary" onclick="closeModal('view-modal');openAlloc('${a.id}')">📚 Allocate Modules</button>`:''}
+    ${a.status==='pending'?`<button class="btn btn-danger" onclick="closeModal('view-modal');openDecline('${a.id}')">✗ Decline</button><button class="btn btn-success" onclick="closeModal('view-modal');handleApprove('${a.id}')">✓ Approve & Notify</button>`:''}`;
+  openModal('view-modal');
+}
 
-    function renderTable() {
-      const apps = allApps.filter(a => currentFilter==='all'||a.status===currentFilter);
-      const tableEl = document.getElementById('apps-table');
-      if (apps.length === 0) {
-        tableEl.innerHTML = `<div style="padding:48px;text-align:center;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">📋</div><div>No ${currentFilter==='all'?'':currentFilter} applications found</div></div>`;
-        return;
-      }
-      tableEl.innerHTML = `<table class="data-table">
-        <thead><tr><th>Student</th><th>Type</th><th>Qualification</th><th>Submitted</th><th>Status</th><th>Modules</th><th>Actions</th></tr></thead>
-        <tbody>${apps.map(a => {
-          const alloc = getExistingAlloc(a.studentId,1,a.studyYear||1)||getExistingAlloc(a.studentId,2,a.studyYear||1);
-          return `<tr>
-            <td>
-              <div style="font-weight:600">${a.firstName} ${a.lastName}</div>
-              <div style="font-size:12px;color:var(--rf-gray)">${a.email}</div>
-              <div style="font-size:11px;font-family:var(--font-mono);color:var(--rf-blue)">${a.studentId}</div>
-            </td>
-            <td>
-              <span style="font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;background:${a.applicationType==='returning'?'#FEF3C7':'#D1FAE5'};color:${a.applicationType==='returning'?'#92400e':'#065f46'}">
-                ${a.applicationType==='returning'?'🔄 Returning':'🆕 New'}
-              </span>
-              <div style="font-size:11px;color:var(--rf-gray);margin-top:2px">Year ${a.studyYear}</div>
-            </td>
-            <td><div style="font-weight:600;font-size:13px">${a.qualificationCode}</div><div style="font-size:12px;color:var(--rf-gray)">${a.qualificationName}</div></td>
-            <td style="font-size:13px;color:var(--rf-gray)">${fmtDate(a.submittedAt)}</td>
-            <td>${badge(a.status)}</td>
-            <td>${alloc?`<span style="font-size:12px;color:#059669;font-weight:700">✅ ${alloc.modules.length} allocated</span>`:a.status==='approved'?`<span style="font-size:12px;color:#f59e0b;font-weight:600">⏳ Pending</span>`:`<span style="font-size:12px;color:var(--rf-gray)">—</span>`}</td>
-            <td>
-              <div style="display:flex;gap:5px;flex-wrap:wrap">
-                <button class="btn btn-sm btn-secondary" onclick="viewApp('${a.id}')">View</button>
-                ${a.status==='approved'?`<button class="btn btn-sm" onclick="openAllocate('${a.id}')" style="background:${alloc?'#D1FAE5':'var(--rf-navy)'};color:${alloc?'#065f46':'white'};border:none;font-weight:700">📚 ${alloc?'Reallocate':'Allocate'}</button>`:''}
-                ${a.status==='pending'?`
-                  <button class="btn btn-sm btn-success" onclick="doApprove('${a.id}')">✓ Approve</button>
-                  <button class="btn btn-sm btn-danger" onclick="openDecline('${a.id}','${a.firstName} ${a.lastName}')">✗</button>`:''} 
-              </div>
-            </td>
-          </tr>`;
-        }).join('')}</tbody></table>`;
-    }
+function handleApprove(id){
+  const apps=getApplications();
+  const a=apps.find(x=>x.id===id); if(!a)return;
+  const result=approveApplication(id);
+  let msg=result.isNew?`✅ Approved! Student ID: ${a.studentId}. Temp password: ${result.tempPassword}. Now allocate modules via 📚.`:`✅ Re-enrolment approved for ${a.firstName} ${a.lastName}.`;
+  showToast(msg,'success',6000);
+  render();
+}
 
-    function viewApp(id) {
-      const a = allApps.find(x=>x.id===id);
-      if (!a) return;
-      const alloc = getExistingAlloc(a.studentId,1,a.studyYear||1)||getExistingAlloc(a.studentId,2,a.studyYear||1);
-      document.getElementById('view-modal-title').textContent = `${a.firstName} ${a.lastName} — Application`;
-      document.getElementById('view-modal-body').innerHTML = `
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
-          ${badge(a.status)}
-          <span class="badge badge-info" style="font-family:var(--font-mono)">${a.studentId}</span>
-          <span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:${a.applicationType==='returning'?'#FEF3C7':'#D1FAE5'};color:${a.applicationType==='returning'?'#92400e':'#065f46'}">${a.applicationType==='returning'?'🔄 Returning':'🆕 New'}</span>
+function openDecline(id){
+  const a=getApplications().find(x=>x.id===id); if(!a)return;
+  selectedApp=a;
+  document.getElementById('decline-name-msg').innerHTML=`Declining for <strong>${a.firstName} ${a.lastName}</strong>.`;
+  document.getElementById('decline-reason').value='';
+  openModal('decline-modal');
+}
+
+function confirmDecline(){
+  const reason=document.getElementById('decline-reason').value.trim();
+  if(!reason)return showToast('Please provide a reason','error');
+  declineApplication(selectedApp.id,reason);
+  closeModal('decline-modal');
+  showToast('Application declined.','info');
+  render();
+}
+
+function openAlloc(id){
+  const apps=getApplications();
+  const a=apps.find(x=>x.id===id); if(!a)return;
+  allocApp=a; allocYear=(a.studyYear||1); allocSemester=1; allocSelected=[];
+  document.getElementById('alloc-subtitle').textContent=`${a.firstName} ${a.lastName} · ${a.studentId}`;
+  renderAllocModal();
+  openModal('alloc-modal');
+}
+
+function renderAllocModal(){
+  if(!allocApp)return;
+  const qual=QUALIFICATIONS.find(q=>q.code===allocApp.qualificationCode);
+  const mods=qual?qual.modules.filter(m=>m.semester===allocSemester&&m.year===allocYear):[];
+  const regs=getRegistrations();
+  const existing=regs.find(r=>r.studentId===allocApp.studentId&&r.semester===allocSemester&&r.studyYear===allocYear&&r.status==='allocated');
+  const selectedCount=allocSelected.length;
+  const totalCredits=mods.filter(m=>allocSelected.includes(m.code)).reduce((s,m)=>s+m.credits,0);
+  document.getElementById('alloc-body').innerHTML=`
+    <div style="background:#F4F6FB;border-radius:8px;padding:14px 16px;font-size:14px;margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><div style="font-size:11px;color:var(--rf-gray);font-weight:600;text-transform:uppercase">Qualification</div><div style="font-weight:600">${allocApp.qualificationName} (${allocApp.qualificationCode})</div></div>
+        <div><div style="font-size:11px;color:var(--rf-gray);font-weight:600;text-transform:uppercase">Email</div><div style="font-weight:600">${allocApp.email}</div></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div>
+        <label style="display:block;font-size:13px;font-weight:700;color:var(--rf-navy);margin-bottom:8px">Study Year</label>
+        <div style="display:flex;gap:8px">
+          ${[1,2,3].map(y=>`<button onclick="allocYear=${y};allocSelected=[];renderAllocModal()" style="flex:1;padding:9px 0;border-radius:8px;border:2px solid ${allocYear===y?'#123f7a':'#e5e7eb'};background:${allocYear===y?'#123f7a':'white'};color:${allocYear===y?'white':'#374151'};font-weight:700;cursor:pointer;font-size:14px">Year ${y}</button>`).join('')}
         </div>
-        ${a.status==='approved'&&!alloc?`<div class="alert alert-warning" style="margin-bottom:16px"><span>⏳</span><div>Application approved but <strong>no modules allocated yet</strong>. Use the 📚 Allocate button.</div></div>`:''}
-        ${[
-          {title:'Personal',rows:[['Name',`${a.firstName} ${a.lastName}`],['Nationality',a.nationality],[a.nationality==='South African'?'SA ID':'Passport',a.nationality==='South African'?a.idNumber:a.passportNumber],['DOB',a.dateOfBirth],['Gender',a.gender]]},
-          {title:'Contact',rows:[['Phone',a.phone],['Email',a.email],['Address',`${a.streetAddress||''}, ${a.city||''}, ${a.province||''}`]]},
-          {title:'Qualification',rows:[['Code',a.qualificationCode],['Name',a.qualificationName],['Admission For',a.admissionFor||'—'],['Study Year',`Year ${a.studyYear}`]]},
-        ].map(sec=>`
-          <div style="border:1px solid var(--rf-border);border-radius:8px;overflow:hidden;margin-bottom:12px">
-            <div style="background:var(--rf-offwhite);padding:8px 14px;font-weight:700;font-size:13px;border-bottom:1px solid var(--rf-border)">${sec.title}</div>
-            <div style="padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              ${sec.rows.map(([k,v])=>`<div style="font-size:13px"><div style="color:var(--rf-gray);font-size:11px;font-weight:600;text-transform:uppercase">${k}</div><div style="font-weight:500">${v||'—'}</div></div>`).join('')}
-            </div>
-          </div>`).join('')}
-        ${a.declineReason?`<div class="alert alert-error"><span>❌</span> ${a.declineReason}</div>`:''}`;
-      document.getElementById('view-modal-footer').innerHTML = `
-        ${a.status==='approved'?`<button class="btn btn-primary" onclick="closeModal('view-modal');openAllocate('${a.id}')">📚 Allocate Modules</button>`:''}
-        ${a.status==='pending'?`
-          <button class="btn btn-danger" onclick="closeModal('view-modal');openDecline('${a.id}','${a.firstName} ${a.lastName}')">✗ Decline</button>
-          <button class="btn btn-success" onclick="closeModal('view-modal');doApprove('${a.id}')">✓ Approve</button>`:''} 
-        <button class="btn btn-secondary" onclick="closeModal('view-modal')">Close</button>`;
-      openModal('view-modal');
-    }
+      </div>
+      <div>
+        <label style="display:block;font-size:13px;font-weight:700;color:var(--rf-navy);margin-bottom:8px">Semester</label>
+        <div style="display:flex;gap:8px">
+          ${[1,2].map(s=>`<button onclick="allocSemester=${s};allocSelected=[];renderAllocModal()" style="flex:1;padding:9px 0;border-radius:8px;border:2px solid ${allocSemester===s?'#123f7a':'#e5e7eb'};background:${allocSemester===s?'#123f7a':'white'};color:${allocSemester===s?'white':'#374151'};font-weight:700;cursor:pointer;font-size:14px">Semester ${s}</button>`).join('')}
+        </div>
+      </div>
+    </div>
+    ${existing?`<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:12px 16px;font-size:14px;color:#92400e;margin-bottom:16px">⚠️ Existing allocation found for Year ${allocYear}, Semester ${allocSemester} (${existing.modules.length} modules). Saving will <strong>replace</strong> it.</div>`:''}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-weight:700;font-size:14px;color:var(--rf-navy)">Available Modules — Semester ${allocSemester}, Year ${allocYear} <span style="font-size:12px;color:var(--rf-gray);font-weight:400">(${mods.length} modules)</span></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="allocSelected=QUALIFICATIONS.find(q=>q.code===allocApp.qualificationCode)?.modules.filter(m=>m.semester===allocSemester&&m.year===allocYear).map(m=>m.code)||[];renderAllocModal()" style="font-size:12px;padding:4px 12px;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;background:white;font-weight:600">Select All</button>
+        <button onclick="allocSelected=[];renderAllocModal()" style="font-size:12px;padding:4px 12px;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;background:white;font-weight:600">Clear</button>
+      </div>
+    </div>
+    ${mods.length===0?`<div style="text-align:center;padding:28px;color:var(--rf-gray);background:#F4F6FB;border-radius:8px"><div style="font-size:32px;margin-bottom:8px">📭</div>No modules for this qualification, year and semester.</div>`:
+    mods.map(m=>{const checked=allocSelected.includes(m.code);return `
+      <div class="module-row ${checked?'picked':''}" onclick="toggleAllocMod('${m.code}')">
+        <div class="chk">${checked?'✓':''}</div>
+        <div style="flex:1"><div style="font-weight:600;font-size:14px;color:${checked?'#001A4D':'#374151'}">${m.name}</div><div style="font-size:12px;color:var(--rf-gray);margin-top:2px;font-family:var(--font-mono)">${m.code}</div></div>
+        <div style="text-align:right;flex-shrink:0"><div style="font-weight:700;font-size:14px;color:#123f7a">${m.credits}</div><div style="font-size:11px;color:var(--rf-gray)">credits</div></div>
+      </div>`;}).join('')}
+    ${selectedCount>0?`<div style="background:linear-gradient(135deg,#001A4D,#123f7a);color:white;border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:12px">
+      <div><div style="font-size:12px;opacity:.7">SELECTED</div><div style="font-weight:900;font-size:26px">${selectedCount}</div></div>
+      <div><div style="font-size:12px;opacity:.7">CREDITS</div><div style="font-weight:900;font-size:26px">${totalCredits}</div></div>
+      <div><div style="font-size:12px;opacity:.7">PERIOD</div><div style="font-weight:700;font-size:15px">Sem ${allocSemester} · Year ${allocYear}</div></div>
+    </div>`:''}`;
+  const btn=document.getElementById('alloc-confirm-btn');
+  btn.disabled=allocSelected.length===0;
+  btn.style.opacity=allocSelected.length===0?'.5':'1';
+  btn.textContent=`✅ Confirm Allocation (${allocSelected.length} modules)`;
+}
 
-    async function doApprove(id) {
-      const a = allApps.find(x=>x.id===id);
-      if (!a) return;
-      const res = await approveApplication(id);
-      if (!res.ok) return showToast(res.message||'Failed to approve.','error');
-      showToast(res.isNew
-        ? `✅ Approved! Temp password: ${res.tempPassword}. Now allocate modules via 📚.`
-        : '✅ Application approved. Allocate modules via 📚.', 'success', 7000);
-      [allApps, allRegs] = await Promise.all([getApplications(), getRegistrations()]);
-      renderFilters(); renderTable();
-    }
+function toggleAllocMod(code){
+  if(allocSelected.includes(code))allocSelected=allocSelected.filter(c=>c!==code);
+  else allocSelected=[...allocSelected,code];
+  renderAllocModal();
+}
 
-    function openDecline(id, name) {
-      declineTargetId = id;
-      document.getElementById('decline-name').textContent = name;
-      document.getElementById('decline-reason').value = '';
-      openModal('decline-modal');
-    }
+function confirmAllocation(){
+  if(!allocApp||allocSelected.length===0)return;
+  const qual=QUALIFICATIONS.find(q=>q.code===allocApp.qualificationCode);
+  const mods=qual?qual.modules.filter(m=>allocSelected.includes(m.code)):[];
+  doAllocateModules(allocApp.id,mods,allocSemester,allocYear);
+  showToast(`✅ ${mods.length} modules allocated to ${allocApp.firstName} ${allocApp.lastName}!`,'success');
+  closeModal('alloc-modal');
+  render();
+}
 
-    async function confirmDecline() {
-      const reason = document.getElementById('decline-reason').value.trim();
-      if (!reason) return showAlert('alert-box','Please provide a reason.','error');
-      setLoading('confirm-decline-btn', true, 'Declining...');
-      const res = await rejectApplication(declineTargetId, reason);
-      setLoading('confirm-decline-btn', false, 'Confirm Decline');
-      if (!res.ok) return showAlert('alert-box', res.message||'Failed.','error');
-      closeModal('decline-modal');
-      showToast('Application declined.','info');
-      allApps = await getApplications();
-      renderFilters(); renderTable();
-    }
-
-    // ── ALLOCATE MODULES ────────────────────────────────────
-    function openAllocate(id) {
-      allocApp = allApps.find(x=>x.id===id);
-      if (!allocApp) return;
-      allocYear = allocApp.studyYear||1; allocSem = 1; allocSelected = [];
-      document.getElementById('alloc-student-sub').textContent = `${allocApp.firstName} ${allocApp.lastName} · ${allocApp.studentId}`;
-      document.getElementById('alloc-student-info').innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          ${[['Qualification',`${allocApp.qualificationName} (${allocApp.qualificationCode})`],['Admission For',allocApp.admissionFor||'1st Year'],['Email',allocApp.email],['Nationality',allocApp.nationality]].map(([k,v])=>`
-            <div><div style="font-size:11px;color:var(--rf-gray);font-weight:600;text-transform:uppercase">${k}</div><div style="font-weight:600">${v}</div></div>`).join('')}
-        </div>`;
-      renderYearSemBtns(); renderAllocModules(); openModal('alloc-modal');
-    }
-
-    function renderYearSemBtns() {
-      const qual = QUALIFICATIONS.find(q=>q.code===allocApp?.qualificationCode);
-      const maxYear = qual?.duration?.startsWith('1')?1:qual?.duration?.startsWith('2')?2:3;
-      document.getElementById('year-btns').innerHTML = [1,2,3].slice(0,maxYear).map(y=>`
-        <button onclick="setAllocYear(${y})" style="flex:1;padding:9px 0;border-radius:7px;border:2px solid ${allocYear===y?'#123f7a':'#e5e7eb'};background:${allocYear===y?'#123f7a':'white'};color:${allocYear===y?'white':'#374151'};font-weight:700;font-size:14px;cursor:pointer">Year ${y}</button>`).join('');
-      document.getElementById('sem-btns').innerHTML = [1,2].map(s=>`
-        <button onclick="setAllocSem(${s})" style="flex:1;padding:9px 0;border-radius:7px;border:2px solid ${allocSem===s?'#123f7a':'#e5e7eb'};background:${allocSem===s?'#123f7a':'white'};color:${allocSem===s?'white':'#374151'};font-weight:700;font-size:14px;cursor:pointer">Sem ${s}</button>`).join('');
-    }
-
-    function setAllocYear(y){allocYear=y;allocSelected=[];renderYearSemBtns();renderAllocModules();}
-    function setAllocSem(s){allocSem=s;allocSelected=[];renderYearSemBtns();renderAllocModules();}
-
-    function renderAllocModules() {
-      const qual = QUALIFICATIONS.find(q=>q.code===allocApp?.qualificationCode);
-      const mods = qual ? qual.modules.filter(m=>m.year===allocYear&&m.semester===allocSem) : [];
-      const existing = getExistingAlloc(allocApp.studentId, allocSem, allocYear);
-      const warnEl = document.getElementById('alloc-existing-warn');
-      if (existing) { warnEl.style.display='flex'; warnEl.innerHTML=`<span>⚠️</span><div>Student already has an allocation for Semester ${allocSem}, Year ${allocYear} (${existing.modules.length} modules). Saving will <strong>replace</strong> it.</div>`; }
-      else { warnEl.style.display='none'; }
-      document.getElementById('alloc-modules-title').textContent = `Available Modules — Semester ${allocSem}, Year ${allocYear} (${mods.length} modules)`;
-      if (mods.length===0) {
-        document.getElementById('alloc-module-list').innerHTML=`<div style="text-align:center;padding:28px;color:var(--rf-gray);background:var(--rf-offwhite);border-radius:8px"><div style="font-size:32px;margin-bottom:8px">📭</div>No modules for this qualification, year and semester.</div>`;
-      } else {
-        document.getElementById('alloc-module-list').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">
-          ${mods.map((m,i)=>{const checked=allocSelected.includes(m.code);return `
-            <div onclick="toggleAllocMod('${m.code}')" style="display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:8px;cursor:pointer;border:2px solid ${checked?'#123f7a':'#e5e7eb'};background:${checked?'#EEF2FF':'#fafafa'};transition:all .12s">
-              <div style="width:22px;height:22px;border-radius:5px;border:2px solid ${checked?'#123f7a':'#d1d5db'};background:${checked?'#123f7a':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center">${checked?'<span style="color:white;font-size:13px;font-weight:700">✓</span>':''}</div>
-              <div style="width:28px;height:28px;background:${checked?'#123f7a':'#e5e7eb'};border-radius:6px;color:${checked?'white':'#6b7280'};font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-              <div style="flex:1"><div style="font-weight:600;font-size:14px;color:${checked?'var(--rf-navy)':'#374151'}">${m.name}</div><div style="font-size:12px;color:var(--rf-gray);font-family:monospace;margin-top:2px">${m.code}</div></div>
-              <div style="text-align:right;flex-shrink:0"><div style="font-weight:700;font-size:14px;color:${checked?'#123f7a':'var(--rf-gray)'}">${m.credits}</div><div style="font-size:11px;color:var(--rf-gray)">credits</div></div>
-            </div>`;}).join('')}
-        </div>`;
-      }
-      updateAllocSummary();
-    }
-
-    function toggleAllocMod(code){
-      if(allocSelected.includes(code)) allocSelected=allocSelected.filter(c=>c!==code);
-      else allocSelected.push(code);
-      renderAllocModules();
-    }
-    function selectAllMods(){const qual=QUALIFICATIONS.find(q=>q.code===allocApp?.qualificationCode);const mods=qual?qual.modules.filter(m=>m.year===allocYear&&m.semester===allocSem):[];allocSelected=mods.map(m=>m.code);renderAllocModules();}
-    function clearAllMods(){allocSelected=[];renderAllocModules();}
-
-    function updateAllocSummary() {
-      const qual=QUALIFICATIONS.find(q=>q.code===allocApp?.qualificationCode);
-      const mods=qual?qual.modules.filter(m=>m.year===allocYear&&m.semester===allocSem):[];
-      const selected=mods.filter(m=>allocSelected.includes(m.code));
-      const credits=selected.reduce((s,m)=>s+m.credits,0);
-      const bar=document.getElementById('alloc-summary-bar'),btn=document.getElementById('confirm-alloc-btn');
-      if(selected.length>0){
-        bar.style.display='flex';
-        document.getElementById('alloc-sum-count').textContent=selected.length;
-        document.getElementById('alloc-sum-credits').textContent=credits;
-        document.getElementById('alloc-sum-period').textContent=`Sem ${allocSem} · Year ${allocYear}`;
-        btn.disabled=false;btn.style.opacity='1';btn.textContent=`✅ Confirm Allocation (${selected.length} modules)`;
-      } else {
-        bar.style.display='none';btn.disabled=true;btn.style.opacity='.5';btn.textContent='✅ Confirm Allocation';
-      }
-    }
-
-    async function confirmAllocation() {
-      if(!allocApp||allocSelected.length===0) return;
-      const qual=QUALIFICATIONS.find(q=>q.code===allocApp.qualificationCode);
-      const mods=qual?qual.modules.filter(m=>m.year===allocYear&&m.semester===allocSem&&allocSelected.includes(m.code)):[];
-      setLoading('confirm-alloc-btn',true,'Allocating...');
-      const res = await allocateModules(allocApp.id, mods, allocSem, allocYear);
-      setLoading('confirm-alloc-btn',false,`✅ Confirm Allocation (${mods.length} modules)`);
-      if(!res.ok) return showToast(res.message||'Failed to allocate.','error');
-      closeModal('alloc-modal');
-      showToast(`✅ ${mods.length} modules allocated to ${allocApp.firstName} ${allocApp.lastName}!`,'success');
-      [allApps, allRegs] = await Promise.all([getApplications(), getRegistrations()]);
-      renderFilters(); renderTable();
-    }
-  </script>
+render();
+</script>
 </body>
 </html>

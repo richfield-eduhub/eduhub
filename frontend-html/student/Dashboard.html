@@ -1,160 +1,1373 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Student Dashboard — EduHub</title>
-  <link rel="stylesheet" href="../shared.css" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Richfield – Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+
+/* ─────────────────────────────────────────
+   VARIABLES  — colour #123f7a from your files
+   button hover #0d2c56 from index.html
+───────────────────────────────────────── */
+:root {
+  --navy:   #123f7a;   /* index.html + apply.html */
+  --navy2:  #0d2c56;   /* index.html button:hover */
+  --red:    #c0392b;
+  --teal:   #1a9e8f;
+  --purple: #6b3fa0;
+  --orange: #e05a30;
+  --yellow: #ffc72c;   /* index.html hero button */
+  --bg:     #f4f4f4;   /* index.html + login.html body background */
+  --white:  #ffffff;
+  --border: #d4dbe8;
+  --text:   #1e2a3a;
+  --muted:  #6b7a99;
+  --link:   #1a5db5;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Source Sans 3', Arial, sans-serif; /* Arial fallback from your files */
+  background: var(--bg);  /* #f4f4f4 from your files */
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─────────────────────────────────────────
+   NAVBAR  — mirrors index.html .navbar exactly
+   background:#123f7a  padding:12px 40px
+───────────────────────────────────────── */
+.navbar {
+  background: #123f7a;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;              /* reduced padding, fixed height */
+  height: 52px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  gap: 0;
+  overflow: visible;
+}
+
+.navbar-brand {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 900;
+  color: white;
+  letter-spacing: .07em;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+/* nav-links — centred, no wrap */
+.nav-links {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  overflow: hidden;             /* prevent overflow */
+}
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  margin-left: 0;
+  padding: 0 9px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: .78rem;
+  white-space: nowrap;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  transition: background .15s;
+  border-bottom: 3px solid transparent;
+}
+.nav-links a:hover { background: rgba(255,255,255,.1); }
+.nav-links a.active { border-bottom: 3px solid var(--red); }
+
+/* Right side — user pill + edit mode */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+.nav-icon { color: rgba(255,255,255,.75); cursor: pointer; flex-shrink: 0; }
+.nav-icon:hover { color: white; }
+
+.user-pill {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 999px;
+  padding: 3px 8px 3px 3px;
+  cursor: pointer; color: white;
+  font-size: .74rem; font-weight: bold;
+  white-space: nowrap;
+}
+.avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--red);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .68rem; font-weight: 700; color: white;
+  flex-shrink: 0;
+}
+.edit-mode {
+  display: flex; align-items: center; gap: 5px;
+  color: rgba(255,255,255,.8); font-size: .72rem; font-weight: bold;
+  white-space: nowrap;
+}
+.toggle {
+  width: 34px; height: 18px;
+  background: rgba(255,255,255,.2);
+  border-radius: 10px; position: relative; cursor: pointer;
+  flex-shrink: 0;
+}
+.toggle::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; border-radius: 50%; background: white;
+  transition: transform .2s;
+}
+
+/* ─────────────────────────────────────────
+   LAYOUT
+───────────────────────────────────────── */
+.shell { display: flex; flex: 1; }
+
+.main-content { flex: 1; padding: 32px 36px; overflow-y: auto; }
+
+/* Sidebar — from screenshots "Upcoming events" */
+.sidebar {
+  width: 270px; flex-shrink: 0;
+  background: var(--white);
+  border-left: 1px solid var(--border);
+  padding: 22px 18px;
+}
+.sb-close {
+  float: right; font-size: 1rem; color: var(--muted);
+  cursor: pointer; line-height: 1;
+}
+.sb-close:hover { color: var(--text); }
+.sb-title {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: .95rem; font-weight: 900; color: var(--navy); margin-bottom: 5px;
+}
+.sb-bar { width: 44px; height: 3px; background: var(--red); border-radius: 2px; margin-bottom: 13px; }
+.sb-empty { color: var(--muted); font-size: .82rem; }
+.sb-link { color: var(--link); font-size: .8rem; display: block; margin-top: 6px; cursor: pointer; text-decoration: none; }
+.sb-link:hover { text-decoration: underline; }
+.sb-divider { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+/* Quick links */
+.quick-links { display: flex; flex-direction: column; gap: 7px; }
+.ql-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 11px; background: var(--bg);
+  border-radius: 7px; cursor: pointer;
+  font-size: .82rem; font-weight: 600; color: var(--navy);
+  transition: background .15s;
+}
+.ql-item:hover { background: var(--border); }
+
+/* ─────────────────────────────────────────
+   PAGES (tab system)
+───────────────────────────────────────── */
+.page { display: none; }
+.page.active { display: block; animation: fadeUp .3s ease both; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+/* ─────────────────────────────────────────
+   SHARED HEADING STYLE
+───────────────────────────────────────── */
+.page-title {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.5rem; font-weight: 900;
+  color: var(--navy); margin-bottom: 4px;
+}
+.greeting { font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 22px; }
+.sec-head {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: .93rem; font-weight: 900; color: var(--navy); margin-bottom: 5px;
+}
+.sec-bar { width: 50px; height: 3px; background: var(--red); border-radius: 2px; margin-bottom: 14px; }
+
+/* ─────────────────────────────────────────
+   DASHBOARD  — from screenshots
+───────────────────────────────────────── */
+
+/* Hero banner — "Welcome to the Moodle Platform" */
+.dash-hero {
+  border-radius: 8px; overflow: hidden; height: 135px;
+  background: linear-gradient(110deg, #123f7a 55%, #1a5296);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 36px 0 40px; margin-bottom: 28px; position: relative;
+}
+.dash-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: url('https://images.unsplash.com/photo-1562774053-701939374585?w=900&q=50') center/cover;
+  opacity: .18;
+}
+.dh-text { position: relative; z-index: 1; }
+.dh-text p { color: rgba(255,255,255,.75); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; }
+.dh-text h2 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  color: white; font-size: 1.55rem; font-weight: 900; text-transform: uppercase; line-height: 1.1;
+}
+.dh-text small { font-size: .68rem; color: rgba(255,255,255,.55); }
+.dh-brand { position: relative; z-index: 1; text-align: center; }
+.dh-shield {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1rem; font-weight: 900; color: white;
+  margin: 0 auto 5px;
+}
+.dh-brand strong { display: block; color: white; font-family: 'Montserrat', Arial, sans-serif; font-size: .9rem; font-weight: 900; letter-spacing: .06em; }
+.dh-brand span   { color: rgba(255,255,255,.55); font-size: .65rem; font-style: italic; }
+
+
+/* Calendar — from screenshot */
+.cal-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; gap: 10px;
+}
+.cal-select {
+  flex: 1; padding: 8px 12px; border: 1px solid var(--border); /* 1px solid #ccc like index.html */
+  border-radius: 5px;           /* border-radius:5px from index.html */
+  font-size: .82rem; font-family: Arial, sans-serif;
+  color: var(--text); background: white; cursor: pointer; outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b7a99' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;
+}
+/* New event button — matches your button style */
+.btn-new {
+  padding: 8px 18px;
+  background: #123f7a;         /* your button colour */
+  color: white;
+  border: none;
+  border-radius: 5px;          /* your border-radius */
+  font-size: .82rem; font-weight: bold; cursor: pointer;
+  font-family: Arial, sans-serif;
+  white-space: nowrap;
+  transition: background .2s;
+}
+.btn-new:hover { background: #0d2c56; } /* your button:hover */
+
+.cal-nav-row { display: flex; align-items: center; margin-bottom: 12px; }
+.cal-arrow { color: var(--link); font-size: .82rem; font-weight: bold; cursor: pointer; padding: 4px 8px; }
+.cal-arrow:hover { text-decoration: underline; }
+.cal-month {
+  flex: 1; text-align: center;
+  font-family: 'Montserrat', Arial, sans-serif; font-size: 1.1rem; font-weight: 900; color: var(--navy);
+}
+
+table.cal { width: 100%; border-collapse: collapse; }
+table.cal th { font-size: .72rem; font-weight: 700; color: var(--muted); padding: 6px 0; text-align: center; letter-spacing: .04em; }
+table.cal td { text-align: center; padding: 7px 4px; font-size: .82rem; color: var(--link); cursor: pointer; border-radius: 4px; transition: background .12s; }
+table.cal td:hover:not(.empty) { background: rgba(26,93,181,.08); }
+table.cal td.today { background: var(--red); color: white; border-radius: 50%; font-weight: 700; }
+table.cal td.empty { color: transparent; cursor: default; pointer-events: none; }
+
+.cal-footer { margin-top: 9px; font-size: .77rem; color: var(--link); }
+.cal-footer a { cursor: pointer; text-decoration: none; }
+.cal-footer a:hover { text-decoration: underline; }
+
+/* Timeline — from screenshot */
+.tl-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.tl-btn {
+  display: flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); border-radius: 5px;
+  padding: 7px 13px; background: white;
+  font-size: .8rem; cursor: pointer; color: var(--text); font-family: Arial, sans-serif;
+  transition: border-color .15s;
+}
+.tl-btn:hover { border-color: var(--navy); }
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 38px 20px; color: var(--muted); font-size: .87rem;
+}
+
+/* ─────────────────────────────────────────
+   MY COURSES PAGE  — from index.html programmes
+───────────────────────────────────────── */
+.course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px,1fr)); gap: 16px; margin-top: 18px; }
+.course-card {
+  background: white; border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--border); cursor: pointer;
+  box-shadow: 0 0 8px rgba(0,0,0,.06);
+  transition: box-shadow .2s, transform .2s;
+}
+.course-card:hover { box-shadow: 0 6px 22px rgba(0,0,0,.12); transform: translateY(-3px); }
+.cc-banner {
+  height: 75px; display: flex; align-items: center; justify-content: center;
+  font-family: 'Montserrat', Arial, sans-serif; font-size: .78rem; font-weight: 800;
+  color: white; text-align: center; padding: 10px; line-height: 1.2;
+}
+.cc-body { padding: 13px 15px; }
+.cc-title { font-size: .87rem; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+.cc-meta  { font-size: .73rem; color: var(--muted); margin-bottom: 9px; }
+.cc-bar-wrap { background: var(--bg); border-radius: 4px; height: 5px; overflow: hidden; }
+.cc-bar { height: 100%; border-radius: 4px; background: var(--teal); }
+.cc-pct { font-size: .69rem; color: var(--muted); margin-top: 4px; }
+
+/* ─────────────────────────────────────────
+   PROGRAMMES PAGE  — from index.html + it-course.html
+───────────────────────────────────────── */
+.prog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px,1fr)); gap: 18px; }
+.prog-card {
+  background: white; border-radius: 10px; border: 1px solid var(--border);
+  overflow: hidden; cursor: pointer;
+  transition: box-shadow .2s, transform .2s;
+}
+.prog-card:hover { box-shadow: 0 8px 26px rgba(0,0,0,.12); transform: translateY(-3px); }
+.prog-banner {
+  height: 68px; display: flex; align-items: center; padding: 0 18px;
+  font-family: 'Montserrat', Arial, sans-serif; font-size: .78rem; font-weight: 900;
+  color: white; letter-spacing: .04em; text-transform: uppercase;
+}
+.prog-body { padding: 16px 18px; }
+.prog-title { font-family: 'Montserrat', Arial, sans-serif; font-size: .95rem; font-weight: 900; color: var(--navy); margin-bottom: 7px; }
+/* it-course.html paragraph style */
+.prog-desc { font-size: .83rem; color: var(--muted); line-height: 1.65; margin-bottom: 12px; }
+.prog-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+.prog-tag { font-size: .67rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--bg); color: var(--navy); }
+.prog-link { font-size: .79rem; font-weight: 700; color: var(--link); text-decoration: none; cursor: pointer; }
+.prog-link:hover { text-decoration: underline; }
+
+/* Programme detail — styled like it-course.html content */
+.back-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .84rem; font-weight: bold; color: var(--link);
+  cursor: pointer; text-decoration: none; margin-bottom: 18px;
+}
+.back-link:hover { text-decoration: underline; }
+.prog-det-banner { border-radius: 8px; padding: 26px 30px; color: white; margin-bottom: 22px; }
+.prog-det-banner h1 {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.5rem; font-weight: 900; margin-bottom: 5px;
+}
+.prog-det-banner p { font-size: .86rem; opacity: .78; }
+
+/* content body mirrors it-course.html plain layout */
+.prog-det-body {
+  background: white; border-radius: 10px;
+  border: 1px solid var(--border); padding: 26px 30px; margin-bottom: 18px;
+}
+.prog-det-body p  { font-size: .9rem; line-height: 1.75; color: var(--text); margin-bottom: 14px; }
+.prog-det-body ul { padding-left: 20px; }
+.prog-det-body li { font-size: .86rem; color: var(--muted); margin-bottom: 5px; line-height: 1.5; }
+
+/* ─────────────────────────────────────────
+   APPLICATION FORM PAGE
+   Preserving ALL styles from apply.html + index.html
+   container, form-group, .row, button colours
+───────────────────────────────────────── */
+.apply-page-wrap {
+  max-width: 700px;             /* index.html container max-width */
+  margin: 0 auto;
+  background: white;            /* index.html container background */
+  padding: 30px;                /* index.html container padding */
+  border-radius: 10px;          /* index.html + apply.html */
+  box-shadow: 0 0 15px rgba(0,0,0,.1); /* index.html */
+}
+.apply-page-wrap h1 {
+  text-align: center; color: #123f7a; /* index.html h1 */
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.3rem; font-weight: 900; margin-bottom: 6px;
+}
+
+/* Steps bar (enhancement) */
+.steps { display: flex; align-items: center; margin-bottom: 26px; }
+.step  { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; }
+.step-circle {
+  width: 29px; height: 29px; border-radius: 50%;
+  background: var(--bg); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; font-weight: 700; color: var(--muted); transition: all .3s;
+}
+.step.active .step-circle { background: #123f7a; border-color: #123f7a; color: white; }
+.step.done   .step-circle { background: var(--teal); border-color: var(--teal); color: white; }
+.step-label { font-size: .63rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.step.active .step-label  { color: #123f7a; }
+.step-line { flex: 1; height: 2px; background: var(--border); margin-bottom: 14px; transition: background .3s; }
+.step-line.done { background: var(--teal); }
+
+/* Section separator */
+.f-sep { display: flex; align-items: center; gap: 10px; margin: 6px 0 16px; }
+.f-sep span { font-family: 'Montserrat', Arial, sans-serif; font-size: .67rem; font-weight: 800; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+.f-sep::before, .f-sep::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* form-group — from index.html exactly */
+.form-group { margin-bottom: 15px; }   /* index.html */
+.form-group label {
+  font-weight: bold;               /* index.html */
+  display: block;
+  margin-bottom: 5px;              /* index.html */
+  font-size: .83rem;
+  color: var(--navy);
+}
+.form-group label .req { color: var(--red); }
+
+/* input, select, textarea — from index.html + apply.html exactly */
+.apply-page-wrap input,
+.apply-page-wrap select,
+.apply-page-wrap textarea {
+  width: 100%;                     /* index.html */
+  padding: 10px;                   /* index.html + apply.html */
+  border-radius: 5px;              /* index.html */
+  border: 1px solid #ccc;         /* index.html */
+  font-family: Arial, sans-serif;
+  font-size: .88rem; color: var(--text);
+  outline: none;
+  transition: border-color .2s;
+}
+.apply-page-wrap input:focus,
+.apply-page-wrap select:focus { border-color: #123f7a; }
+.apply-page-wrap input.err,
+.apply-page-wrap select.err { border-color: var(--red); }
+
+/* .row — from index.html exactly */
+.f-row { display: flex; gap: 15px; }   /* index.html .row */
+.f-row .form-group { flex: 1; }
+
+/* file upload box */
+.file-box {
+  border: 2px dashed var(--border); border-radius: 5px;
+  padding: 18px 12px; text-align: center; cursor: pointer;
+  position: relative; transition: border-color .2s;
+}
+.file-box:hover { border-color: #123f7a; }
+.file-box input[type="file"] { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+.file-box .fi { font-size: 1.5rem; margin-bottom: 5px; }
+.file-box p { font-size: .79rem; color: var(--muted); }
+.file-box p strong { color: #123f7a; }
+.file-fname { font-size: .74rem; color: var(--teal); font-weight: 700; margin-top: 4px; display: none; }
+
+/* checkbox */
+.check-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
+.check-row input[type="checkbox"] { width: 15px; height: 15px; margin-top: 3px; accent-color: #123f7a; }
+.check-row label { font-size: .8rem; color: var(--muted); line-height: 1.5; }
+.check-row label a { color: #123f7a; font-weight: bold; }
+
+/* BUTTON — from apply.html exactly
+   width:100%; padding:12px; background:#123f7a; color:white; border:none */
+.apply-page-wrap button[type="submit"] {
+  width: 100%;                  /* apply.html */
+  padding: 12px;                /* apply.html */
+  background: #123f7a;          /* apply.html */
+  color: white;                 /* apply.html */
+  border: none;                 /* apply.html */
+  font-size: 16px;              /* index.html button font-size */
+  cursor: pointer;
+  border-radius: 5px;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 800;
+  margin-top: 15px;             /* index.html button margin-top */
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background .2s;
+}
+.apply-page-wrap button[type="submit"]:hover { background: #0d2c56; } /* index.html button:hover */
+
+/* ─────────────────────────────────────────
+   SUCCESS OVERLAY
+───────────────────────────────────────── */
+.overlay {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(18,63,122,.65); backdrop-filter: blur(5px);
+  align-items: center; justify-content: center;
+}
+.overlay.show { display: flex; }
+.overlay-box {
+  background: white; border-radius: 10px;  /* border-radius:10px from your files */
+  padding: 42px 38px; text-align: center; max-width: 390px; width: 90%;
+  box-shadow: 0 0 15px rgba(0,0,0,.2);    /* box-shadow from index.html */
+  animation: pop .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pop { from{transform:scale(.75);opacity:0} to{transform:scale(1);opacity:1} }
+.ov-icon { width: 58px; height: 58px; border-radius: 50%; background: var(--teal); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 1.5rem; color: white; }
+.overlay-box h2 { font-family: 'Montserrat', Arial, sans-serif; font-size: 1.25rem; font-weight: 900; color: var(--navy); margin-bottom: 8px; }
+.overlay-box p  { font-size: .84rem; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+/* button inside overlay — same style as your button */
+.overlay-box .btn-ok {
+  background: #123f7a; color: white;
+  padding: 12px 30px; border: none; border-radius: 5px;
+  font-family: 'Montserrat', Arial, sans-serif; font-size: .85rem; font-weight: 800;
+  cursor: pointer;
+  transition: background .2s;
+}
+.overlay-box .btn-ok:hover { background: #0d2c56; }
+
+/* ─────────────────────────────────────────
+   DROPDOWN MENUS (calendar & timeline)
+───────────────────────────────────────── */
+.cal-dropdown-wrap,
+.tl-drop-wrap { position: relative; }
+
+.cal-select-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  flex: 1; min-width: 200px;
+  padding: 8px 12px; border: 1px solid #ccc;
+  border-radius: 5px; font-size: .82rem;
+  font-family: Arial, sans-serif; color: var(--text);
+  background: white; cursor: pointer; outline: none;
+  transition: border-color .2s;
+}
+.cal-select-btn:hover { border-color: var(--navy); }
+
+.drop-menu {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0;
+  background: white; border: 1px solid var(--border);
+  border-radius: 5px; box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  min-width: 100%; z-index: 200;
+  overflow: hidden;
+}
+.drop-menu.open { display: block; }
+
+.tl-drop { min-width: 160px; }
+
+.drop-item {
+  padding: 9px 16px; font-size: .83rem; color: var(--text);
+  cursor: pointer; transition: background .12s; white-space: nowrap;
+}
+.drop-item:hover { background: var(--bg); }
+.drop-item.active { background: var(--navy); color: white; }
+
+.drop-sep {
+  padding: 8px 16px 4px; font-size: .68rem; font-weight: 800;
+  color: var(--muted); letter-spacing: .08em; text-transform: uppercase;
+  background: var(--bg); border-top: 1px solid var(--border);
+}
+
+/* ─────────────────────────────────────────
+   EDIT MODE TOGGLE — working
+───────────────────────────────────────── */
+.toggle {
+  width: 34px; height: 18px;
+  background: rgba(255,255,255,.2);
+  border-radius: 10px; position: relative; cursor: pointer;
+  flex-shrink: 0; transition: background .25s;
+}
+.toggle.on { background: var(--teal); }
+.toggle::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; border-radius: 50%; background: white;
+  transition: transform .25s;
+}
+.toggle.on::after { transform: translateX(16px); }
+
+/* Edit mode banner */
+.edit-banner {
+  display: none; background: var(--teal); color: white;
+  text-align: center; padding: 7px; font-size: .82rem; font-weight: 700;
+}
+.edit-banner.show { display: block; }
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main-content { padding: 20px 16px; }
+  .f-row { flex-direction: column; gap: 0; }
+}
+@media (max-width: 620px) {
+  .navbar { padding: 10px 16px; }
+  .nav-links a { margin-left: 10px; font-size: .78rem; }
+  .guide-cards { gap: 8px; }
+}
+</style>
 </head>
-<body class="page-container">
-  <div id="navbar-placeholder"></div>
+<body>
+
+<!-- ══════════════════════════════════════
+     NAVBAR  (from index.html .navbar)
+══════════════════════════════════════ -->
+<div class="navbar">
+  <a class="navbar-brand" onclick="showPage('pg-dashboard')">EduHub</a>
+
+  <!-- from index.html: .nav-links -->
+  <div class="nav-links">
+    <a id="nl-dashboard" class="active" onclick="showPage('pg-dashboard')">Dashboard</a>
+    <a id="nl-courses"   onclick="showPage('pg-courses')">My courses</a>
+    <a id="nl-programmes" onclick="showPage('pg-programmes')">Programmes</a>
+    <a href="index.html">Home</a>
+    <a onclick="goToLogin()">Logout</a>
+  </div>
+
+  <!-- User pill + edit mode from screenshots -->
+  <div class="nav-right">
+    <svg class="nav-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <svg class="nav-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <div class="user-pill">
+      <div class="avatar">S</div>
+      Student ▾
+    </div>
+    <div class="edit-mode">
+      Edit mode
+      <div class="toggle" id="editToggle" onclick="toggleEditMode()"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit mode banner -->
+<div class="edit-banner" id="editBanner">✏️ Edit mode is ON — you can now customise your dashboard</div>
+
+<!-- ══════════════════════════════════════
+     SHELL
+══════════════════════════════════════ -->
+<div class="shell">
+
   <div class="main-content">
-    <!-- Welcome Banner -->
-    <div style="background:linear-gradient(135deg,var(--rf-navy) 0%,var(--rf-blue) 100%);border-radius:var(--radius-lg);padding:28px 32px;color:white;margin-bottom:24px;position:relative;overflow:hidden">
-      <div style="position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.04)"></div>
-      <div style="position:relative;z-index:1">
-        <div style="font-size:13px;opacity:.7;margin-bottom:6px;letter-spacing:1px">STUDENT PORTAL</div>
-        <h1 id="welcome-name" style="font-family:var(--font-display);font-size:32px;letter-spacing:1px;margin-bottom:6px">WELCOME!</h1>
-        <div style="display:flex;gap:20px;font-size:13px;opacity:.85;flex-wrap:wrap" id="welcome-meta"></div>
-      </div>
-    </div>
-    <div id="temp-pwd-alert" style="display:none" class="alert alert-warning mb-24">
-      <span>🔑</span>
-      <div><strong>Action Required:</strong> You are using a temporary password.
-        <button onclick="openModal('pwd-modal')" style="background:none;border:none;color:var(--rf-blue);font-weight:700;cursor:pointer;text-decoration:underline">Change it now</button>.
-      </div>
-    </div>
-    <div class="grid-2 mb-24">
-      <div class="card">
-        <div class="card-header"><span class="card-title">Application Status</span></div>
-        <div class="card-body" id="app-status-body"><div style="text-align:center;color:var(--rf-gray);padding:20px 0"><div style="font-size:32px">⏳</div></div></div>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Module Allocation</span>
-          <a id="view-modules-btn" href="/student/modules" class="btn btn-sm btn-primary" style="display:none">View Modules →</a>
-        </div>
-        <div class="card-body" id="allocation-body"><div style="text-align:center;color:var(--rf-gray);padding:20px 0"><div style="font-size:32px">⏳</div></div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">Notifications</span></div>
-      <div id="notifs-list" style="max-height:320px;overflow-y:auto">
-        <div style="padding:32px;text-align:center;color:var(--rf-gray);font-size:14px">Loading...</div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Change Password Modal -->
-  <div id="pwd-modal" class="modal-overlay hidden">
-    <div class="modal">
-      <div class="modal-header"><span class="modal-title">Change Password</span><button class="modal-close" onclick="closeModal('pwd-modal')">×</button></div>
-      <div class="modal-body">
-        <div id="pwd-alert"></div>
-        <div style="display:flex;flex-direction:column;gap:16px">
-          <div class="form-group"><label class="form-label">Current Password <span class="required">*</span></label><input type="password" id="cur-pwd" class="form-input" placeholder="Your current password"></div>
-          <div class="form-group"><label class="form-label">New Password <span class="required">*</span></label><input type="password" id="new-pwd" class="form-input" placeholder="Minimum 8 characters"></div>
-          <div class="form-group"><label class="form-label">Confirm New Password <span class="required">*</span></label><input type="password" id="conf-pwd" class="form-input" placeholder="Repeat new password"></div>
+    <!-- ══════════════════════════════
+         PAGE 1: DASHBOARD
+         (from screenshots)
+    ══════════════════════════════ -->
+    <div class="page active" id="pg-dashboard">
+
+      <h1 class="page-title">Dashboard</h1>
+      <!-- "Hi, Student!" — not a name, just "Student" -->
+      <p class="greeting">Hi, Student! 👋</p>
+
+      <!-- Hero banner — from screenshot -->
+      <div class="dash-hero">
+        <div class="dh-text">
+          <p>Welcome to the</p>
+          <h2>Moodle Platform</h2>
+          <small>eduhub.ac.za</small>
+        </div>
+        <div class="dh-brand">
+          <div class="dh-shield">E</div>
+          <strong>EduHub</strong>
+          <span>A learning experience of a lifetime</span>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('pwd-modal')">Cancel</button>
-        <button id="save-pwd-btn" class="btn btn-primary" onclick="submitPasswordChange()">Update Password</button>
-      </div>
-    </div>
-  </div>
 
-  <script src="../shared.js"></script>
-  <script>
-    const user = requireAuth('student');
-    if (user) { (async()=>{ await renderNavbar('dashboard'); await init(); })(); }
-
-    async function init() {
-      document.getElementById('welcome-name').textContent = `WELCOME, ${user.name.split(' ')[0].toUpperCase()}!`;
-      const meta = [];
-      if (user.studentId) meta.push(`<span>🆔 ${user.studentId}</span>`);
-      if (user.tempPassword) {
-        meta.push(`<span onclick="openModal('pwd-modal')" style="cursor:pointer;background:rgba(245,166,35,.3);border:1px solid rgba(245,166,35,.5);padding:2px 10px;border-radius:99px;color:var(--rf-gold);font-weight:700">⚠ Change temporary password</span>`);
-        document.getElementById('temp-pwd-alert').style.display = 'flex';
-      }
-
-      // Load applications + registrations in parallel
-      const [apps, regs, notifs] = await Promise.all([
-        getApplications(),
-        getRegistrations(),
-        getNotifications(),
-      ]);
-
-      const myApp = apps.find(a => a.status === 'approved');
-      if (myApp) meta.push(`<span>📚 ${myApp.qualificationName}</span>`);
-      document.getElementById('welcome-meta').innerHTML = meta.join('');
-
-      // Application status card
-      const appBody = document.getElementById('app-status-body');
-      if (myApp) {
-        appBody.innerHTML = `
-          <span class="badge badge-approved" style="margin-bottom:12px">✓ Approved</span>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            ${[['Qualification',myApp.qualificationName],['Code',myApp.qualificationCode],['Applied',fmtDate(myApp.submittedAt)]].map(([k,v])=>`
-            <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--rf-gray)">${k}</span><span style="font-weight:600">${v}</span></div>`).join('')}
-          </div>`;
-      } else if (apps.length) {
-        appBody.innerHTML = `${badge(apps[0].status)}<div style="margin-top:12px;font-size:13px;color:var(--rf-gray)">${apps[0].qualificationName||'Application under review'}</div>`;
-      } else {
-        appBody.innerHTML = `<div style="text-align:center;color:var(--rf-gray);padding:20px 0"><div style="font-size:32px;margin-bottom:8px">📋</div><div style="font-size:14px">No approved application yet</div></div>`;
-      }
-
-      // Module allocation card
-      const allocated = regs.filter(r => r.status === 'allocated');
-      const allocBody = document.getElementById('allocation-body');
-      if (allocated.length > 0) {
-        document.getElementById('view-modules-btn').style.display = 'inline-flex';
-        allocBody.innerHTML = `
-          <span class="badge badge-approved" style="margin-bottom:12px">✅ Modules Allocated</span>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            ${allocated.map(r=>`<div style="font-size:13px"><strong>${r.modules.length}</strong> modules · Year ${r.studyYear}, Sem ${r.semester}</div>`).join('')}
-            <a href="/student/modules" style="font-size:13px;color:var(--rf-blue);font-weight:600;margin-top:4px">View my modules →</a>
-          </div>`;
-      } else if (myApp) {
-        allocBody.innerHTML = `<div style="text-align:center;padding:20px 0"><div style="font-size:32px;margin-bottom:8px">⏳</div><div style="font-size:14px;font-weight:600;color:var(--rf-navy);margin-bottom:4px">Awaiting Module Allocation</div><div style="font-size:13px;color:var(--rf-gray);line-height:1.6">The admissions office will assign your modules shortly.</div></div>`;
-      } else {
-        allocBody.innerHTML = `<div style="text-align:center;color:var(--rf-gray);padding:20px 0"><div style="font-size:32px;margin-bottom:8px">📋</div><div style="font-size:14px">Modules will be allocated once your application is approved</div></div>`;
-      }
-
-      // Notifications
-      const notifList = document.getElementById('notifs-list');
-      if (notifs.length === 0) {
-        notifList.innerHTML = '<div style="padding:32px;text-align:center;color:var(--rf-gray);font-size:14px">No notifications yet</div>';
-      } else {
-        notifList.innerHTML = notifs.map(n => `
-          <div style="padding:14px 20px;border-bottom:1px solid var(--rf-border);background:${n.read?'white':'#EEF2FF'}">
-            <div style="display:flex;gap:10px;align-items:flex-start">
-              <span style="font-size:18px">${n.type==='success'?'✅':n.type==='error'?'❌':n.type==='warning'?'⚠️':'ℹ️'}</span>
-              <div>
-                <div style="font-weight:700;font-size:14px">${n.title}</div>
-                <div style="font-size:13px;color:var(--rf-gray);margin-top:2px;line-height:1.6">${n.message}</div>
-                <div style="font-size:11px;color:#9CA3AF;margin-top:4px">${fmtDate(n.createdAt)}</div>
-              </div>
+      <!-- Calendar — fully working with navigation and course dropdown -->
+      <div style="margin-top:28px;">
+        <div class="sec-head">Calendar</div>
+        <div class="sec-bar"></div>
+        <div class="cal-top">
+          <!-- Course dropdown — matches screenshot Image 1 -->
+          <div class="cal-dropdown-wrap">
+            <button class="cal-select-btn" onclick="toggleDrop('coursesDrop')">
+              <span id="selectedCourse">All courses</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="drop-menu" id="coursesDrop">
+              <div class="drop-item active" onclick="selectCourse(this,'All courses')">All courses</div>
+              <div class="drop-item" onclick="selectCourse(this,'BSc Information Technology')">BSc Information Technology</div>
+              <div class="drop-item" onclick="selectCourse(this,'Intro to Programming')">Intro to Programming</div>
+              <div class="drop-item" onclick="selectCourse(this,'Database Systems')">Database Systems</div>
+              <div class="drop-item" onclick="selectCourse(this,'Networking Fundamentals')">Networking Fundamentals</div>
+              <div class="drop-item" onclick="selectCourse(this,'Web Development')">Web Development</div>
+              <div class="drop-item" onclick="selectCourse(this,'Bachelor of Commerce')">Bachelor of Commerce</div>
+              <div class="drop-item" onclick="selectCourse(this,'Business Administration')">Business Administration</div>
+              <div class="drop-item" onclick="selectCourse(this,'Diploma in IT')">Diploma in IT</div>
             </div>
-          </div>`).join('');
-      }
-    }
+          </div>
+          <button class="btn-new" onclick="alert('New event created!')">New event</button>
+        </div>
+        <div class="cal-nav-row">
+          <span class="cal-arrow" onclick="changeMonth(-1)">◀ <span id="prevMonthLabel"></span></span>
+          <span class="cal-month" id="calMonthTitle"></span>
+          <span class="cal-arrow" onclick="changeMonth(1)"><span id="nextMonthLabel"></span> ▶</span>
+        </div>
+        <table class="cal">
+          <thead>
+            <tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr>
+          </thead>
+          <tbody id="calBody"></tbody>
+        </table>
+        <div class="cal-footer">
+          <a onclick="alert('Full calendar view')">Full calendar</a> &bull; <a onclick="alert('Import or export calendars')">Import or export calendars</a>
+        </div>
+      </div>
 
-    async function submitPasswordChange() {
-      clearAlert('pwd-alert');
-      const cur  = document.getElementById('cur-pwd').value;
-      const np   = document.getElementById('new-pwd').value;
-      const conf = document.getElementById('conf-pwd').value;
-      if (!cur)         return showAlert('pwd-alert', 'Enter your current password.', 'error');
-      if (np.length < 8) return showAlert('pwd-alert', 'New password must be at least 8 characters.', 'error');
-      if (np !== conf)  return showAlert('pwd-alert', 'Passwords do not match.', 'error');
-      setLoading('save-pwd-btn', true, 'Saving...');
-      const res = await changePassword(cur, np);
-      setLoading('save-pwd-btn', false, 'Update Password');
-      if (!res.ok) return showAlert('pwd-alert', res.message || 'Failed to change password.', 'error');
-      closeModal('pwd-modal');
-      document.getElementById('temp-pwd-alert').style.display = 'none';
-      showToast('Password changed successfully! ✅', 'success');
-    }
-  </script>
+      <!-- Timeline — working dropdowns matching screenshots Image 2 & 3 -->
+      <div style="margin-top:28px;">
+        <div class="sec-head">Timeline</div>
+        <div class="sec-bar"></div>
+        <div class="tl-controls">
+
+          <!-- Filter dropdown — Image 2: All, Overdue, Due Date options -->
+          <div class="tl-drop-wrap">
+            <button class="tl-btn" onclick="toggleDrop('tlFilterDrop')">
+              ⏰ <span id="tlFilterLabel">Next 7 days</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="drop-menu tl-drop" id="tlFilterDrop">
+              <div class="drop-item" onclick="setTlFilter(this,'All')">All</div>
+              <div class="drop-item" onclick="setTlFilter(this,'Overdue')">Overdue</div>
+              <div class="drop-sep">DUE DATE</div>
+              <div class="drop-item active" onclick="setTlFilter(this,'Next 7 days')">✓ Next 7 days</div>
+              <div class="drop-item" onclick="setTlFilter(this,'Next 30 days')">Next 30 days</div>
+              <div class="drop-item" onclick="setTlFilter(this,'Next 3 months')">Next 3 months</div>
+              <div class="drop-item" onclick="setTlFilter(this,'Next 6 months')">Next 6 months</div>
+            </div>
+          </div>
+
+          <!-- Sort dropdown — Image 3: Sort by dates / Sort by courses -->
+          <div class="tl-drop-wrap">
+            <button class="tl-btn" onclick="toggleDrop('tlSortDrop')">
+              ≡ <span id="tlSortLabel">Sort by dates</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="drop-menu tl-drop" id="tlSortDrop">
+              <div class="drop-item active" onclick="setTlSort(this,'Sort by dates')" style="background:var(--red);color:white;">✓ Sort by dates</div>
+              <div class="drop-item" onclick="setTlSort(this,'Sort by courses')">Sort by courses</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="empty-state">
+          <svg width="58" height="66" viewBox="0 0 58 66" fill="none">
+            <rect x="5" y="3" width="48" height="58" rx="4" fill="#c8d0e0"/>
+            <rect x="13" y="17" width="32" height="4" rx="2" fill="#a0aec0"/>
+            <rect x="13" y="27" width="24" height="4" rx="2" fill="#a0aec0"/>
+            <rect x="13" y="37" width="28" height="4" rx="2" fill="#a0aec0"/>
+          </svg>
+          No activities require action
+        </div>
+      </div>
+
+
+    </div><!-- /pg-dashboard -->
+
+    <!-- ══════════════════════════════
+         PAGE 2: MY COURSES
+         (from index.html programmes list)
+    ══════════════════════════════ -->
+    <div class="page" id="pg-courses">
+      <h1 class="page-title">My Courses</h1>
+      <p style="color:var(--muted);font-size:.87rem;margin-bottom:4px;">
+        You are enrolled in <strong style="color:var(--navy)">4 courses</strong> this semester.
+      </p>
+      <div style="height:3px;width:48px;background:var(--red);border-radius:2px;margin-bottom:20px;"></div>
+      <div class="course-grid">
+        <div class="course-card">
+          <div class="cc-banner" style="background:#123f7a;">BSc Information Technology</div>
+          <div class="cc-body">
+            <div class="cc-title">Intro to Programming</div>
+            <div class="cc-meta">Dr. S. Mokoena &nbsp;|&nbsp; Semester 1</div>
+            <div class="cc-bar-wrap"><div class="cc-bar" style="width:72%"></div></div>
+            <div class="cc-pct">72% complete</div>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="cc-banner" style="background:var(--red);">BSc Information Technology</div>
+          <div class="cc-body">
+            <div class="cc-title">Database Systems</div>
+            <div class="cc-meta">Prof. A. Dlamini &nbsp;|&nbsp; Semester 1</div>
+            <div class="cc-bar-wrap"><div class="cc-bar" style="width:45%"></div></div>
+            <div class="cc-pct">45% complete</div>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="cc-banner" style="background:var(--teal);">BSc Information Technology</div>
+          <div class="cc-body">
+            <div class="cc-title">Networking Fundamentals</div>
+            <div class="cc-meta">Mr. K. Sithole &nbsp;|&nbsp; Semester 1</div>
+            <div class="cc-bar-wrap"><div class="cc-bar" style="width:60%"></div></div>
+            <div class="cc-pct">60% complete</div>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="cc-banner" style="background:var(--purple);">BSc Information Technology</div>
+          <div class="cc-body">
+            <div class="cc-title">Web Development</div>
+            <div class="cc-meta">Ms. T. Nkosi &nbsp;|&nbsp; Semester 1</div>
+            <div class="cc-bar-wrap"><div class="cc-bar" style="width:88%"></div></div>
+            <div class="cc-pct">88% complete</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /pg-courses -->
+
+    <!-- ══════════════════════════════
+         PAGE 3: PROGRAMMES
+         (from index.html Programmes nav + it-course.html)
+    ══════════════════════════════ -->
+    <div class="page" id="pg-programmes">
+      <h1 class="page-title">Programmes</h1>
+      <p style="color:var(--muted);font-size:.87rem;margin-bottom:4px;">
+        Click a programme to view more details.
+      </p>
+      <div style="height:3px;width:48px;background:var(--red);border-radius:2px;margin-bottom:22px;"></div>
+      <div class="prog-grid">
+
+        <!-- BSc IT — content from it-course.html -->
+        <div class="prog-card" onclick="showProgDetail('bscit')">
+          <div class="prog-banner" style="background:#123f7a;">Bachelor Degree</div>
+          <div class="prog-body">
+            <div class="prog-title">BSc Information Technology</div>
+            <!-- exact text from it-course.html -->
+            <div class="prog-desc">This programme teaches programming, networking, cybersecurity and data analysis. Students develop skills required for careers in software development, IT support and systems administration.</div>
+            <div class="prog-tags">
+              <span class="prog-tag">Programming</span>
+              <span class="prog-tag">Networking</span>
+              <span class="prog-tag">Cybersecurity</span>
+            </div>
+            <a class="prog-link">View details →</a>
+          </div>
+        </div>
+
+        <!-- BCom — from index.html select option -->
+        <div class="prog-card" onclick="showProgDetail('bcom')">
+          <div class="prog-banner" style="background:var(--red);">Bachelor Degree</div>
+          <div class="prog-body">
+            <div class="prog-title">Bachelor of Commerce</div>
+            <div class="prog-desc">Covers finance, marketing, human resources and strategic management. Prepares students for leadership roles across all industries.</div>
+            <div class="prog-tags">
+              <span class="prog-tag">Finance</span>
+              <span class="prog-tag">Marketing</span>
+              <span class="prog-tag">HR</span>
+            </div>
+            <a class="prog-link">View details →</a>
+          </div>
+        </div>
+
+        <!-- BBA — from index.html select option -->
+        <div class="prog-card" onclick="showProgDetail('bba')">
+          <div class="prog-banner" style="background:var(--teal);">Bachelor Degree</div>
+          <div class="prog-body">
+            <div class="prog-title">Business Administration</div>
+            <div class="prog-desc">Focuses on operations, entrepreneurship and project management. Ideal for students looking to run or manage organisations.</div>
+            <div class="prog-tags">
+              <span class="prog-tag">Operations</span>
+              <span class="prog-tag">Entrepreneurship</span>
+            </div>
+            <a class="prog-link">View details →</a>
+          </div>
+        </div>
+
+        <!-- Diploma IT — from index.html select option -->
+        <div class="prog-card" onclick="showProgDetail('dipit')">
+          <div class="prog-banner" style="background:var(--purple);">Diploma</div>
+          <div class="prog-body">
+            <div class="prog-title">Diploma in IT</div>
+            <div class="prog-desc">A practical diploma covering software development, databases and network administration.</div>
+            <div class="prog-tags">
+              <span class="prog-tag">Software Dev</span>
+              <span class="prog-tag">Databases</span>
+            </div>
+            <a class="prog-link">View details →</a>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /pg-programmes -->
+
+    <!-- Programme detail (it-course.html layout) -->
+    <div class="page" id="pg-progdetail">
+      <!-- "Back to Home" from it-course.html — goes back to programmes list -->
+      <a class="back-link" onclick="showPage('pg-programmes')">← Back to Programmes</a>
+      <div id="progDetailContent"></div>
+    </div>
+
+    <!-- ══════════════════════════════
+         PAGE 4: APPLICATION FORM
+         Preserving apply.html + index.html form
+         EXACT styles: width:100%, padding:10px,
+         border-radius:5px, background:#123f7a
+    ══════════════════════════════ -->
+    <div class="page" id="pg-apply">
+      <h1 class="page-title" style="margin-bottom:4px;">New Application</h1>
+      <div style="height:3px;width:48px;background:var(--red);border-radius:2px;margin-bottom:22px;"></div>
+
+      <div class="apply-page-wrap">
+
+        <!-- Progress steps -->
+        <div class="steps">
+          <div class="step active"><div class="step-circle">1</div><div class="step-label">Personal</div></div>
+          <div class="step-line" id="sLine1"></div>
+          <div class="step" id="sStep2"><div class="step-circle">2</div><div class="step-label">Study</div></div>
+          <div class="step-line" id="sLine2"></div>
+          <div class="step" id="sStep3"><div class="step-circle">3</div><div class="step-label">Docs</div></div>
+        </div>
+
+        <!-- from index.html h1 -->
+        <h1>University Application Form</h1>
+        <p style="text-align:center;color:var(--muted);font-size:.83rem;margin-bottom:18px;">
+          Fields marked <span style="color:var(--red);font-weight:bold;">*</span> are required
+        </p>
+
+        <form id="applyForm" novalidate>
+
+          <!-- PERSONAL INFO — from index.html -->
+          <div class="f-sep"><span>Personal Information</span></div>
+
+          <div class="f-row">
+            <div class="form-group">
+              <label>First Name <span class="req">*</span></label>
+              <input type="text" id="aFirst" placeholder="First Name" required/>
+            </div>
+            <div class="form-group">
+              <label>Last Name <span class="req">*</span></label>
+              <input type="text" id="aLast" placeholder="Last Name" required/>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" id="aDob"/>
+            </div>
+            <div class="form-group">
+              <label>Gender</label>
+              <select id="aGender">
+                <option value="">Select</option>
+                <option>Male</option><option>Female</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>ID / Passport Number</label>
+            <input type="text" id="aIdNum" placeholder="ID or Passport number"/>
+          </div>
+
+          <!-- CONTACT — from index.html -->
+          <div class="f-sep"><span>Contact Information</span></div>
+
+          <div class="form-group">
+            <label>Email Address <span class="req">*</span></label>
+            <input type="email" id="aEmail" placeholder="Email" required/>
+          </div>
+          <div class="form-group">
+            <label>Phone Number <span class="req">*</span></label>
+            <input type="tel" id="aPhone" placeholder="Phone" required/>
+          </div>
+          <div class="form-group">
+            <label>Home Address</label>
+            <textarea id="aAddr" rows="3" placeholder="Home address"></textarea>
+          </div>
+
+          <!-- STUDY INFO — from index.html -->
+          <div class="f-sep"><span>Study Information</span></div>
+
+          <div class="form-group">
+            <label>Programme Applying For <span class="req">*</span></label>
+            <!-- from index.html select options -->
+            <select id="aProg" required>
+              <option value="">Select Programme</option>
+              <option>BSc Information Technology</option>
+              <option>Bachelor of Commerce</option>
+              <option>Business Administration</option>
+              <option>Diploma in IT</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Mode of Study</label>
+            <select id="aMode">
+              <option value="">Select Mode</option>
+              <option>Full-Time</option>
+              <option>Part-Time</option>
+              <option>Online</option>
+            </select>
+          </div>
+
+          <div class="f-row">
+            <div class="form-group">
+              <label>Academic Year</label>
+              <select id="aYear">
+                <option value="">Select Year</option>
+                <option>1</option><option>2</option><option>3</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Semester</label>
+              <select id="aSem">
+                <option value="">Select Semester</option>
+                <option>1st Semester</option>
+                <option>2nd Semester</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Year of Attendance</label>
+            <select id="aAttYear">
+              <option>2026</option><option>2027</option><option>2028</option>
+            </select>
+          </div>
+
+          <!-- EDUCATION — from index.html -->
+          <div class="f-sep"><span>Education Background</span></div>
+
+          <div class="form-group">
+            <label>Highest Qualification</label>
+            <input type="text" id="aQual" placeholder="e.g. Matric"/>
+          </div>
+          <div class="form-group">
+            <label>School / Institution Name</label>
+            <input type="text" id="aSchool" placeholder="School name"/>
+          </div>
+          <div class="form-group">
+            <label>Year Completed</label>
+            <input type="number" id="aYearComp" placeholder="e.g. 2024"/>
+          </div>
+
+          <!-- DOCUMENTS — from index.html + apply.html file input -->
+          <div class="f-sep"><span>Upload Documents</span></div>
+
+          <div class="form-group">
+            <label>ID Copy</label>
+            <!-- apply.html: input type="file" -->
+            <div class="file-box">
+              <input type="file" id="aIdFile" accept=".pdf,.jpg,.jpeg,.png" onchange="showFname(this,'aIdFname')"/>
+              <div class="fi">📄</div>
+              <p><strong>Click to upload</strong> or drag &amp; drop</p>
+              <div class="file-fname" id="aIdFname"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Academic Results</label>
+            <div class="file-box">
+              <input type="file" id="aResFile" accept=".pdf,.jpg,.jpeg,.png" onchange="showFname(this,'aResFname')"/>
+              <div class="fi">🎓</div>
+              <p><strong>Click to upload</strong> or drag &amp; drop</p>
+              <div class="file-fname" id="aResFname"></div>
+            </div>
+          </div>
+
+          <!-- DECLARATION — from index.html -->
+          <div class="f-sep"><span>Declaration</span></div>
+
+          <div class="check-row">
+            <input type="checkbox" id="aDecl"/>
+            <!-- exact text from index.html -->
+            <label for="aDecl">I confirm that the information provided is true and correct.</label>
+          </div>
+
+          <!-- SUBMIT — from apply.html button exactly -->
+          <button type="submit">Submit Application</button>
+
+        </form>
+      </div>
+    </div><!-- /pg-apply -->
+
+  </div><!-- /main-content -->
+
+  <!-- ══════════════════════════════
+       SIDEBAR  (from screenshots)
+       "Upcoming events" panel
+  ══════════════════════════════ -->
+  <aside class="sidebar">
+    <span class="sb-close" onclick="this.parentElement.style.display='none'">✕</span>
+    <div class="sb-title">Upcoming events</div>
+    <div class="sb-bar"></div>
+    <p class="sb-empty">There are no upcoming events</p>
+    <a class="sb-link">Go to calendar...</a>
+
+    <hr class="sb-divider"/>
+
+    <div class="sb-title">Quick Links</div>
+    <div class="sb-bar"></div>
+    <div class="quick-links">
+      <div class="ql-item" onclick="showPage('pg-apply')">📝 Apply Now</div>
+      <div class="ql-item" onclick="showPage('pg-programmes')">🎓 Programmes</div>
+      <div class="ql-item" onclick="window.location.href='it-course.html'">💻 BSc IT</div>
+      <div class="ql-item">📧 My Email</div>
+      <div class="ql-item">📚 Library</div>
+      <div class="ql-item">💬 Student Support</div>
+    </div>
+  </aside>
+
+</div><!-- /shell -->
+
+<!-- ══════════════════════════════
+     SUCCESS OVERLAY
+══════════════════════════════ -->
+<div class="overlay" id="successOv">
+  <div class="overlay-box">
+    <div class="ov-icon">✓</div>
+    <h2>Application Submitted!</h2>
+    <p>Thank you. Our admissions team will review your application and contact you within <strong>3–5 business days</strong>.</p>
+    <button class="btn-ok" onclick="closeOverlay()">Back to Dashboard</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   PAGE SWITCHING
+══════════════════════════════════════ */
+const navLinks = {
+  'pg-dashboard':  'nl-dashboard',
+  'pg-courses':    'nl-courses',
+  'pg-programmes': 'nl-programmes',
+  'pg-apply':      'nl-apply'
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  Object.values(navLinks).forEach(nid => {
+    const el = document.getElementById(nid);
+    if (el) el.classList.remove('active');
+  });
+  if (navLinks[id]) {
+    const el = document.getElementById(navLinks[id]);
+    if (el) el.classList.add('active');
+  }
+  closeAllDrops();
+  window.scrollTo(0, 0);
+}
+
+/* ══════════════════════════════════════
+   LOGOUT
+══════════════════════════════════════ */
+function goToLogin() {
+  sessionStorage.removeItem('loggedInUser');
+  window.location.href = 'login.html';
+}
+
+/* ══════════════════════════════════════
+   EDIT MODE TOGGLE
+══════════════════════════════════════ */
+let editMode = false;
+function toggleEditMode() {
+  editMode = !editMode;
+  document.getElementById('editToggle').classList.toggle('on', editMode);
+  document.getElementById('editBanner').classList.toggle('show', editMode);
+}
+
+/* ══════════════════════════════════════
+   DROPDOWN HELPERS
+══════════════════════════════════════ */
+function toggleDrop(id) {
+  const menu = document.getElementById(id);
+  const isOpen = menu.classList.contains('open');
+  closeAllDrops();
+  if (!isOpen) menu.classList.add('open');
+}
+function closeAllDrops() {
+  document.querySelectorAll('.drop-menu').forEach(m => m.classList.remove('open'));
+}
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.cal-dropdown-wrap') && !e.target.closest('.tl-drop-wrap')) {
+    closeAllDrops();
+  }
+});
+
+/* ══════════════════════════════════════
+   CALENDAR  — working with navigation
+══════════════════════════════════════ */
+const monthNames = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+
+let calDate = new Date(2026, 2, 1); // Start at March 2026
+
+function buildCalendar() {
+  const year  = calDate.getFullYear();
+  const month = calDate.getMonth();
+  const today = new Date();
+
+  // Labels
+  document.getElementById('calMonthTitle').textContent = monthNames[month] + ' ' + year;
+  const prev = new Date(year, month - 1, 1);
+  const next = new Date(year, month + 1, 1);
+  document.getElementById('prevMonthLabel').textContent = monthNames[prev.getMonth()];
+  document.getElementById('nextMonthLabel').textContent = monthNames[next.getMonth()];
+
+  // First day of month (0=Sun … 6=Sat), convert to Mon-start (0=Mon … 6=Sun)
+  let firstDay = new Date(year, month, 1).getDay();
+  firstDay = (firstDay === 0) ? 6 : firstDay - 1;
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  let cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push('<td class="empty"></td>');
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+    cells.push(`<td${isToday ? ' class="today"' : ''}>${d}</td>`);
+  }
+  while (cells.length % 7 !== 0) cells.push('<td class="empty"></td>');
+
+  let html = '';
+  for (let i = 0; i < cells.length; i += 7)
+    html += '<tr>' + cells.slice(i, i + 7).join('') + '</tr>';
+  document.getElementById('calBody').innerHTML = html;
+}
+
+function changeMonth(dir) {
+  calDate.setMonth(calDate.getMonth() + dir);
+  buildCalendar();
+}
+
+buildCalendar();
+
+/* ══════════════════════════════════════
+   CALENDAR COURSE DROPDOWN
+══════════════════════════════════════ */
+function selectCourse(el, name) {
+  document.querySelectorAll('#coursesDrop .drop-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('selectedCourse').textContent = name;
+  closeAllDrops();
+}
+
+/* ══════════════════════════════════════
+   TIMELINE DROPDOWNS
+══════════════════════════════════════ */
+function setTlFilter(el, label) {
+  document.querySelectorAll('#tlFilterDrop .drop-item').forEach(i => {
+    i.classList.remove('active');
+    i.textContent = i.textContent.replace('✓ ', '');
+  });
+  el.classList.add('active');
+  el.textContent = '✓ ' + label;
+  document.getElementById('tlFilterLabel').textContent = label;
+  closeAllDrops();
+}
+
+function setTlSort(el, label) {
+  document.querySelectorAll('#tlSortDrop .drop-item').forEach(i => {
+    i.classList.remove('active');
+    i.style.background = '';
+    i.style.color = '';
+    i.textContent = i.textContent.replace('✓ ', '');
+  });
+  el.classList.add('active');
+  el.style.background = 'var(--red)';
+  el.style.color = 'white';
+  el.textContent = '✓ ' + label;
+  document.getElementById('tlSortLabel').textContent = label;
+  closeAllDrops();
+}
+
+/* ══════════════════════════════════════
+   PROGRAMME DETAIL DATA
+══════════════════════════════════════ */
+const progData = {
+  bscit: {
+    colour: '#123f7a', level: 'Bachelor Degree · 3 Years · NQF Level 7',
+    title: 'BSc Information Technology',
+    desc: 'This programme teaches programming, networking, cybersecurity and data analysis. Students develop skills required for careers in software development, IT support and systems administration.',
+    modules: ['Introduction to Programming','Database Systems','Networking Fundamentals','Web Development','Cybersecurity Essentials','Data Structures & Algorithms','Systems Analysis & Design','Cloud Computing'],
+    careers: ['Software Developer','Network Administrator','IT Support Specialist','Systems Analyst','Cybersecurity Analyst']
+  },
+  bcom: {
+    colour: '#c0392b', level: 'Bachelor Degree · 3 Years · NQF Level 7', title: 'Bachelor of Commerce',
+    desc: 'Covers finance, marketing, human resources and strategic management. Prepares students for leadership roles across all industries.',
+    modules: ['Business Economics','Financial Accounting','Marketing Management','HR Management','Business Law','Strategic Management'],
+    careers: ['Business Manager','Marketing Manager','HR Officer','Financial Analyst']
+  },
+  bba: {
+    colour: '#1a9e8f', level: 'Bachelor Degree · 3 Years · NQF Level 7', title: 'Business Administration',
+    desc: 'Focuses on operations, entrepreneurship and project management. Ideal for students wanting to run or manage organisations.',
+    modules: ['Principles of Management','Operations Management','Project Management','Business Communication','Organisational Behaviour'],
+    careers: ['Operations Manager','Project Manager','Business Administrator']
+  },
+  dipit: {
+    colour: '#6b3fa0', level: 'Diploma · 3 Years · NQF Level 6', title: 'Diploma in IT',
+    desc: 'A practical IT diploma covering software development, databases and network administration.',
+    modules: ['Programming Fundamentals','Database Administration','Network Support','Web Technologies','IT Security'],
+    careers: ['Junior Developer','Database Admin','Network Technician','IT Support']
+  }
+};
+
+function showProgDetail(key) {
+  const d = progData[key]; if (!d) return;
+  document.getElementById('progDetailContent').innerHTML = `
+    <div class="prog-det-banner" style="background:${d.colour}">
+      <p>${d.level}</p><h1>${d.title}</h1>
+    </div>
+    <div class="prog-det-body">
+      <p>${d.desc}</p>
+      <strong style="font-size:.85rem;color:#123f7a;display:block;margin-bottom:8px;">Core Modules</strong>
+      <ul style="margin-bottom:18px;">${d.modules.map(m=>`<li>${m}</li>`).join('')}</ul>
+      <strong style="font-size:.85rem;color:#123f7a;display:block;margin-bottom:8px;">Career Outcomes</strong>
+      <ul>${d.careers.map(c=>`<li>${c}</li>`).join('')}</ul>
+    </div>
+    <button onclick="showPage('pg-apply')"
+      style="padding:12px 26px;background:#123f7a;color:white;border:none;border-radius:5px;
+             font-family:'Montserrat',Arial,sans-serif;font-size:.88rem;font-weight:800;
+             cursor:pointer;"
+      onmouseover="this.style.background='#0d2c56'"
+      onmouseout="this.style.background='#123f7a'">
+      Apply for This Programme
+    </button>`;
+  showPage('pg-progdetail');
+}
+
+/* ══════════════════════════════════════
+   FILE NAME DISPLAY
+══════════════════════════════════════ */
+function showFname(input, targetId) {
+  const el = document.getElementById(targetId);
+  if (input.files && input.files[0]) {
+    el.textContent = '✓ ' + input.files[0].name;
+    el.style.display = 'block';
+  }
+}
+
+/* ══════════════════════════════════════
+   STEP PROGRESS
+══════════════════════════════════════ */
+document.getElementById('applyForm').addEventListener('input', function () {
+  const personal = ['aFirst','aLast','aEmail','aPhone'].every(id => document.getElementById(id).value.trim() !== '');
+  const study    = document.getElementById('aProg').value !== '';
+  document.getElementById('sStep2').classList.toggle('active', personal);
+  document.getElementById('sLine1').classList.toggle('done',   personal);
+  document.getElementById('sStep3').classList.toggle('active', personal && study);
+  document.getElementById('sLine2').classList.toggle('done',   personal && study);
+});
+
+/* ══════════════════════════════════════
+   FORM SUBMIT
+══════════════════════════════════════ */
+document.getElementById('applyForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  let valid = true;
+  ['aFirst','aLast','aEmail','aPhone','aProg'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value || el.value.trim() === '') { el.classList.add('err'); valid = false; }
+    else el.classList.remove('err');
+  });
+  if (!document.getElementById('aDecl').checked) {
+    document.getElementById('aDecl').style.outline = '2px solid #c0392b'; valid = false;
+  } else document.getElementById('aDecl').style.outline = '';
+  if (valid) document.getElementById('successOv').classList.add('show');
+  else {
+    const first = document.querySelector('#applyForm input.err, #applyForm select.err');
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+
+document.querySelectorAll('#applyForm input, #applyForm select').forEach(el => {
+  el.addEventListener('input',  () => el.classList.remove('err'));
+  el.addEventListener('change', () => el.classList.remove('err'));
+});
+
+/* ══════════════════════════════════════
+   CLOSE OVERLAY
+══════════════════════════════════════ */
+function closeOverlay() {
+  document.getElementById('successOv').classList.remove('show');
+  document.getElementById('applyForm').reset();
+  document.querySelectorAll('.file-fname').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('#pg-apply .step').forEach(el => el.classList.remove('active','done'));
+  document.querySelector('#pg-apply .step').classList.add('active');
+  document.querySelectorAll('#pg-apply .step-line').forEach(el => el.classList.remove('done'));
+  showPage('pg-dashboard');
+}
+</script>
 </body>
 </html>

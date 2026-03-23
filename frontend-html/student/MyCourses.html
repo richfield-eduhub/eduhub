@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>My Courses — Richfield</title>
+  <link rel="stylesheet" href="../shared.css"/>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">MY COURSES</h1>
+  <p class="section-subtitle">Your enrolled courses and allocated modules</p>
+  <div id="content"></div>
+</div>
+<script src="../shared-local.js"></script>
+<script>
+const user = requireAuth('student');
+renderNavbar('student-mycourses');
+
+const apps = getApplications();
+const regs = getRegistrations();
+const myApp = apps.find(a => a.studentId === user.studentId && a.status === 'approved');
+const qual  = QUALIFICATIONS.find(q => q.code === myApp?.qualificationCode);
+const myAllocs = regs.filter(r => r.studentId === user.studentId && (r.status === 'allocated' || r.status === 'approved'))
+                     .sort((a,b) => a.studyYear !== b.studyYear ? a.studyYear-b.studyYear : a.semester-b.semester);
+
+if (!myApp) {
+  document.getElementById('content').innerHTML = `
+    <div style="text-align:center;padding:60px 20px;background:white;border-radius:12px;border:1px solid var(--rf-border)">
+      <div style="font-size:52px;margin-bottom:16px">📋</div>
+      <h2 style="color:var(--rf-navy);margin-bottom:10px">No Approved Application</h2>
+      <p style="color:var(--rf-gray);margin-bottom:24px">You need an approved application before courses are allocated to you.</p>
+      <a href="../public/Apply.html" class="btn btn-primary" style="text-decoration:none">Apply Now →</a>
+    </div>`;
+} else if (!myAllocs.length) {
+  document.getElementById('content').innerHTML = `
+    <div style="background:linear-gradient(135deg,#001A4D,#123f7a);color:white;border-radius:12px;padding:24px 28px;margin-bottom:20px">
+      <div style="font-size:12px;opacity:.65;margin-bottom:4px;letter-spacing:1px">ENROLLED IN</div>
+      <div style="font-weight:800;font-size:20px">${myApp.qualificationName}</div>
+      <div style="font-size:13px;opacity:.75;margin-top:4px">${qual?.faculty} · ${qual?.duration}</div>
+    </div>
+    <div style="text-align:center;padding:52px 20px;background:white;border-radius:12px;border:2px dashed #C7D2FE">
+      <div style="font-size:52px;margin-bottom:16px">⏳</div>
+      <h2 style="color:var(--rf-navy);margin-bottom:10px">Awaiting Module Allocation</h2>
+      <p style="color:var(--rf-gray);max-width:380px;margin:0 auto;line-height:1.6">The admissions office will assign your modules shortly. You'll receive a notification once they're ready.</p>
+    </div>`;
+} else {
+  const totalMods = myAllocs.reduce((s,r) => s + r.modules.length, 0);
+  const totalCreds = myAllocs.reduce((s,r) => r.modules.reduce((ms,m) => ms+m.credits, s), 0);
+  document.getElementById('content').innerHTML = `
+    <div style="background:linear-gradient(135deg,#001A4D,#123f7a);color:white;border-radius:12px;padding:24px 28px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+      <div>
+        <div style="font-size:12px;opacity:.65;margin-bottom:4px;letter-spacing:1px">ENROLLED IN</div>
+        <div style="font-weight:800;font-size:20px">${myApp.qualificationName}</div>
+        <div style="font-size:13px;opacity:.75;margin-top:4px">${qual?.faculty} · ${qual?.duration}</div>
+      </div>
+      <div style="display:flex;gap:24px;text-align:center">
+        <div><div style="font-size:24px">📚</div><div style="font-weight:900;font-size:26px">${totalMods}</div><div style="font-size:11px;opacity:.7">Modules</div></div>
+        <div><div style="font-size:24px">⭐</div><div style="font-weight:900;font-size:26px">${totalCreds}</div><div style="font-size:11px;opacity:.7">Credits</div></div>
+      </div>
+    </div>
+    ${myAllocs.map(reg => `
+    <div style="background:white;border-radius:12px;border:1px solid var(--rf-border);margin-bottom:20px;overflow:hidden">
+      <div style="background:#F4F6FB;padding:16px 20px;border-bottom:2px solid var(--rf-border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-weight:800;font-size:16px;color:#001A4D">Year ${reg.studyYear} — Semester ${reg.semester}</div>
+          <div style="font-size:13px;color:var(--rf-gray);margin-top:2px">${reg.year} · ${reg.modules.length} modules · ${reg.modules.reduce((s,m)=>s+m.credits,0)} credits</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge badge-approved">✅ ${reg.status}</span>
+          <span style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px;background:${reg.feePaid?'#D1FAE5':'#FEE2E2'};color:${reg.feePaid?'#065f46':'#dc2626'}">${reg.feePaid?'✓ Paid':'✗ Unpaid'}</span>
+        </div>
+      </div>
+      <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">
+        ${reg.modules.map((m,i) => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#F4F6FB;border-radius:8px;border:1px solid var(--rf-border)">
+          <div style="width:30px;height:30px;background:#123f7a;border-radius:7px;color:white;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:13px;color:#001A4D">${m.name}</div>
+            <div style="font-size:11px;color:var(--rf-gray);font-family:var(--font-mono)">${m.code} · ${m.credits}cr</div>
+          </div>
+        </div>`).join('')}
+      </div>
+      <div style="padding:12px 20px;border-top:1px solid var(--rf-border);background:#F4F6FB;font-size:14px">
+        Semester Fee: <strong>R${reg.totalFee.toLocaleString()}</strong>
+        ${reg.allocatedBy ? `<span style="float:right;color:var(--rf-gray);font-size:12px">Allocated by ${reg.allocatedBy} · ${fmtDate(reg.allocatedAt)}</span>` : ''}
+      </div>
+    </div>`).join('')}
+    <div class="alert alert-info"><span>📞</span><div>For queries about your course allocation, contact <strong>admissions@richfield.ac.za</strong> or call <strong>0860 742 434</strong>.</div></div>`;
+}
+</script>
+</body>
+</html>
