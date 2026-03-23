@@ -20,13 +20,33 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     container_name: eduhub_pgadmin
+    user: root
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@eduhub.co.za
       PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 10
+      PGADMIN_CONFIG_SERVER_MODE: 'True'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     ports:
       - "5050:80"
     volumes:
       - eduhub_pgadmin:/var/lib/pgadmin
+      - ./logs/pgadmin:/var/log/pgadmin
+      - ./pgadmin-config/servers.json:/pgadmin4/servers.json:ro
+      - ./pgadmin-config/pgpass:/tmp/pgpass:ro
+      - ./pgadmin-config/setup-pgadmin.sh:/docker-entrypoint-initdb.d/setup.sh:ro
+    entrypoint: >
+      /bin/sh -c "
+      cp /tmp/pgpass /pgpass &&
+      chmod 600 /pgpass &&
+      chown pgadmin:root /pgpass &&
+      /entrypoint.sh
+      "
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       db:
         condition: service_healthy
