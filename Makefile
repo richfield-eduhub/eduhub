@@ -5,7 +5,7 @@ up:
 	docker compose up -d db pgadmin
 	@echo "⏳ Waiting for PostgreSQL..."
 	@until docker compose exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
-	@echo "✅ PostgreSQL is ready at localhost:5432"
+	@echo "✅ PostgreSQL is ready at localhost:5433"
 	@echo "✅ pgAdmin is available at http://localhost:5050"
 	@echo ""
 	@echo "📝 pgAdmin login:"
@@ -24,7 +24,7 @@ db:
 	docker compose up -d db
 	@echo "⏳ Waiting for PostgreSQL..."
 	@until docker compose exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
-	@echo "✅ PostgreSQL is ready at localhost:5432"
+	@echo "✅ PostgreSQL is ready at localhost:5433"
 
 # View logs from PostgreSQL and pgAdmin
 logs:

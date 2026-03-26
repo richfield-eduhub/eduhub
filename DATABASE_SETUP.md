@@ -16,7 +16,7 @@ make db-full
 ```
 
 This command will:
-- Start PostgreSQL 16 on port 5432
+- Start PostgreSQL 16 on port 5433 (host) → 5432 (container)
 - Start pgAdmin 4 on port 5050
 - Wait for PostgreSQL to be ready
 - Display access information
@@ -36,8 +36,16 @@ Just click on it to connect - no manual setup needed!
 
 ## Database Connection Details
 
-- **Host:** `localhost` (from your machine) or `db` (from within Docker)
-- **Port:** `5432`
+### From Your Machine (Host)
+- **Host:** `localhost`
+- **Port:** `5433` ← **Note: Using 5433 to avoid conflict with local PostgreSQL**
+- **Database:** `eduhub`
+- **Username:** `postgres`
+- **Password:** `yourpassword`
+
+### From Within Docker Containers
+- **Host:** `db`
+- **Port:** `5432` (internal container port)
 - **Database:** `eduhub`
 - **Username:** `postgres`
 - **Password:** `yourpassword`
@@ -124,11 +132,13 @@ make db-full
 
 ### Port already in use
 
-If port 5432 or 5050 is already in use:
+**Note:** This project uses port **5433** for PostgreSQL to avoid conflicts with local PostgreSQL installations.
+
+If port 5433 or 5050 is already in use:
 
 ```bash
 # Check what's using the port
-lsof -i :5432
+lsof -i :5433
 lsof -i :5050
 
 # Stop the conflicting service or change ports in docker-compose.yml

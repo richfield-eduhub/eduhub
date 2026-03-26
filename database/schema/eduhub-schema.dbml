@@ -1,0 +1,490 @@
+// ════════════════════════════════════════════════════════════════
+// EduHub Student Management System - Database Schema
+// ════════════════════════════════════════════════════════════════
+// Design Principles:
+// - UUIDs for all primary keys
+// - Normalized design (no data duplication)
+// - Lifecycle-aware (applicant → student → alumni)
+// - Role-based extensions (Students, Lecturers separate from Users)
+// ════════════════════════════════════════════════════════════════
+
+Project EduHub {
+  database_type: 'PostgreSQL'
+  Note: 'EduHub Student Management System - Complete Schema'
+}
+
+// ════════════════════════════════════════════════════════════════
+// GROUP 1: Authentication & User Management
+// ════════════════════════════════════════════════════════════════
+
+Table Users {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  email varchar(255) [not null, unique]
+  password_hash varchar(255) [not null]
+  member_number varchar(20) [unique, note: 'Student# or Employee# for login']
+
+  // Role & Status
+  role varchar(20) [not null, note: 'student, lecturer, admin']
+  account_status varchar(20) [default: 'pending_verification', note: 'active, pending_verification, blocked, suspended, terminated']
+  status_reason text
+  status_changed_at timestamp
+  status_changed_by uuid [ref: > Users.id]
+
+  // Email Verification
+  is_verified boolean [default: false]
+  verification_token varchar(255)
+  verification_expires timestamp
+
+  // Password Management
+  is_default_password boolean [default: true]
+  password_reset_token varchar(255)
+  password_reset_expires timestamp
+  last_password_change timestamp
+  require_password_change boolean [default: false]
+
+  // Security Tracking
+  failed_login_attempts integer [default: 0]
+  last_failed_login timestamp
+  last_login timestamp
+  last_login_ip varchar(45)
+
+  // Timestamps
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Indexes {
+    email
+    member_number
+    role
+    account_status
+  }
+
+  Note: 'Core authentication & access control. Fast table for login queries.'
+}
+
+Table User_Details {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  user_id uuid [unique, not null, ref: - Users.id]
+
+  // Personal Info
+  first_name varchar(100) [not null]
+  last_name varchar(100) [not null]
+  date_of_birth date [not null]
+  gender varchar(20) [note: 'Male, Female, Non-binary, Prefer not to say']
+  nationality varchar(100) [default: 'South African']
+
+  // Identification
+  id_number varchar(13) [unique, note: 'SA ID (13 digits)']
+  passport_number varchar(20) [unique, note: 'For foreign nationals']
+
+  // Contact
+  phone varchar(20) [not null]
+  alt_phone varchar(20)
+  alt_email varchar(255)
+
+  // Address
+  street_address varchar(255)
+  suburb varchar(100)
+  city varchar(100)
+  province varchar(50)
+  postal_code varchar(10)
+
+  // Lifecycle (for students only)
+  lifecycle_status varchar(20) [note: 'applicant, applied, enrolled, alumni, dropped_out, rejected']
+
+  // Profile
+  profile_photo_url varchar(500)
+  bio text
+
+  // Timestamps
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Indexes {
+    user_id
+    id_number
+    lifecycle_status
+  }
+
+  Note: 'Personal information. Separate from Users for performance (accessed less frequently).'
+}
+
+// ════════════════════════════════════════════════════════════════
+// GROUP 2: Role-Specific Tables
+// ════════════════════════════════════════════════════════════════
+
+Table Students {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  user_id uuid [unique, not null, ref: - Users.id]
+
+  student_number varchar(20) [unique, not null, note: 'Format: YEAR-#### (e.g., 2026-0001)']
+  qualification_id uuid [ref: > Qualifications.id]
+  year_of_study integer [default: 1]
+  enrollment_date date [not null]
+
+  academic_status varchar(20) [default: 'active', note: 'active, on_leave, completed, withdrawn']
+
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Indexes {
+    user_id
+    student_number
+    qualification_id
+  }
+
+  Note: 'Student-specific data only. Created when application approved.'
+}
+
+Table Lecturers {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  user_id uuid [unique, not null, ref: - Users.id]
+
+  employee_number varchar(20) [unique, not null]
+  department varchar(100)
+  title varchar(50) [note: 'Dr., Prof., Mr., Mrs., etc.']
+  specialization text
+  hire_date date
+
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Indexes {
+    user_id
+    employee_number
+    department
+  }
+
+  Note: 'Lecturer-specific data only.'
+}
+
+Table Emergency_Contacts {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  user_id uuid [not null, ref: > Users.id]
+
+  name varchar(100) [not null]
+  relationship varchar(50) [not null, note: 'Parent, Spouse, Sibling, etc.']
+  phone varchar(20) [not null]
+  alt_phone varchar(20)
+  email varchar(255)
+  is_primary boolean [default: false]
+
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Indexes {
+    user_id
+  }
+
+  Note: 'Emergency contacts for users (max 3 per user enforced in app logic).'
+}
+
+// ════════════════════════════════════════════════════════════════
+// GROUP 3: Academic Structure
+// ════════════════════════════════════════════════════════════════
+
+Table Qualifications {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  code varchar(20) [unique, not null, note: 'e.g., BCOM-ACC, DIP-IT']
+  name varchar(255) [not null, note: 'e.g., Bachelor of Commerce in Accounting']
+  faculty varchar(100)
+  duration_years integer
+  total_fee decimal(10,2)
+  is_active boolean [default: true]
+
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Indexes {
+    code
+    is_active
+  }
+
+  Note: 'Academic programs/degrees offered by the institution.'
+}
+
+Table Modules {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  qualification_id uuid [not null, ref: > Qualifications.id]
+
+  code varchar(20) [unique, not null, note: 'e.g., CS101, ACC201']
+  name varchar(255) [not null, note: 'e.g., Introduction to Programming']
+  description text
+  credits integer [not null]
+
+  // Module placement
+  year integer [note: 'Year 1-6']
+  semester integer [note: 'Semester 1 or 2']
+
+  // Prerequisites
+  prerequisites jsonb [note: 'Array of prerequisite module codes']
+
+  is_active boolean [default: true]
+
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Indexes {
+    code
+    qualification_id
+    is_active
+  }
+
+  Note: 'Subjects/courses that belong to qualifications.'
+}
+
+Table Semesters {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  name varchar(100) [not null, note: 'e.g., 2026 Semester 1']
+  year integer [not null]
+  semester_number integer [not null, note: '1 or 2']
+
+  // Dates
+  start_date date
+  end_date date
+
+  // Registration windows
+  registration_open boolean [default: false]
+  registration_start_date date
+  registration_end_date date
+  add_drop_deadline date
+
+  is_active boolean [default: false]
+
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Indexes {
+    is_active
+    year
+    (year, semester_number) [unique]
+  }
+
+  Note: 'Academic periods for course offerings.'
+}
+
+Table Module_Lecturers {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  module_id uuid [not null, ref: > Modules.id]
+  lecturer_id uuid [not null, ref: > Lecturers.id]
+  semester_id uuid [not null, ref: > Semesters.id]
+  is_primary boolean [default: true, note: 'Primary vs assistant lecturer']
+
+  created_at timestamp [default: `now()`]
+
+  Indexes {
+    module_id
+    lecturer_id
+    semester_id
+    (module_id, lecturer_id, semester_id) [unique]
+  }
+
+  Note: 'Junction table: which lecturer teaches which module in which semester.'
+}
+
+// ════════════════════════════════════════════════════════════════
+// GROUP 4: Applications
+// ════════════════════════════════════════════════════════════════
+
+Table Applications {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  user_id uuid [not null, ref: > Users.id]
+  reference_number varchar(20) [unique, note: 'Auto-generated: APP-YYYY-####']
+
+  // Application target
+  qualification_id uuid [ref: > Qualifications.id]
+  admission_for varchar(30) [note: '1st Semester, 2nd Semester, 1st Year, etc.']
+  application_type varchar(20) [note: 'new, returning, transfer']
+
+  // Education Background
+  high_school varchar(255)
+  high_school_year integer
+  highest_grade varchar(50) [note: 'Grade 12, Matric, N3, etc.']
+  matric_subjects jsonb [note: 'Array of subjects and grades']
+
+  // Previous Tertiary (optional)
+  tertiary_institution varchar(255)
+  tertiary_qualification varchar(255)
+  tertiary_year integer
+
+  // Payer Information
+  payer_name varchar(255)
+  payer_relation varchar(50) [note: 'Self, Parent, Guardian, Sponsor, Employer']
+  payer_phone varchar(20)
+  payer_email varchar(255)
+  payer_address text
+
+  // Workflow
+  status varchar(20) [default: 'draft', note: 'draft, pending, under_review, approved, rejected, cancelled']
+
+  // Terms & Conditions
+  tc_accepted boolean [not null, default: false]
+  tc_accepted_at timestamp
+
+  // Review info
+  reviewed_by uuid [ref: > Users.id]
+  reviewed_at timestamp
+  rejection_reason text
+
+  // Timestamps
+  submitted_at timestamp
+  approved_at timestamp
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Indexes {
+    user_id
+    status
+    reference_number
+    qualification_id
+  }
+
+  Note: 'Student applications. Contains application-specific data not duplicated from Users.'
+}
+
+Table Application_Documents {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  application_id uuid [not null, ref: > Applications.id]
+
+  document_type varchar(50) [not null, note: 'id_document, matric_certificate, tertiary_transcript, proof_of_payment, passport_photo, study_permit, saqa_evaluation, other']
+  file_name varchar(255) [not null]
+  file_path varchar(500) [not null]
+  file_size integer [note: '5MB max (5242880 bytes)']
+  mime_type varchar(100)
+
+  // Verification
+  is_verified boolean [default: false]
+  verified_by uuid [ref: > Users.id]
+  verified_at timestamp
+
+  uploaded_at timestamp [default: `now()`]
+
+  Indexes {
+    application_id
+    document_type
+  }
+
+  Note: 'Documents uploaded with applications (ID, certificates, etc.).'
+}
+
+// ════════════════════════════════════════════════════════════════
+// GROUP 5: Registrations
+// ════════════════════════════════════════════════════════════════
+
+Table Registrations {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  student_id uuid [not null, ref: > Students.id]
+  module_id uuid [not null, ref: > Modules.id]
+  semester_id uuid [not null, ref: > Semesters.id]
+
+  // Registration workflow
+  status varchar(20) [default: 'pending', note: 'pending, approved, dropped, completed, failed, declined']
+
+  quotation_amount decimal(10,2)
+
+  // Approval
+  approved_by uuid [ref: > Users.id]
+  approved_at timestamp
+  decline_reason text
+
+  // Academic results
+  grade varchar(5) [note: 'A, B, C, etc.']
+  marks decimal(5,2) [note: '0-100']
+
+  // Timestamps
+  registration_date timestamp [default: `now()`]
+  dropped_at timestamp
+  completed_at timestamp
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Indexes {
+    student_id
+    module_id
+    semester_id
+    status
+    (student_id, module_id, semester_id) [unique]
+  }
+
+  Note: 'Student course registrations. Tracks full academic history including grades.'
+}
+
+// ════════════════════════════════════════════════════════════════
+// GROUP 6: System Tables
+// ════════════════════════════════════════════════════════════════
+
+Table Audit_Logs {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  user_id uuid [ref: > Users.id]
+
+  action varchar(100) [not null, note: 'e.g., USER_LOGIN, APPLICATION_APPROVED']
+  table_name varchar(100)
+  record_id uuid
+
+  old_data jsonb [note: 'Before state']
+  new_data jsonb [note: 'After state']
+
+  ip_address varchar(45)
+  user_agent text
+
+  created_at timestamp [default: `now()`]
+
+  Indexes {
+    user_id
+    table_name
+    created_at
+    action
+  }
+
+  Note: 'Audit trail for all system actions. Immutable log for compliance and debugging.'
+}
+
+Table Notifications {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  user_id uuid [not null, ref: > Users.id]
+
+  title varchar(200) [not null]
+  message text [not null]
+  type varchar(20) [note: 'info, success, warning, error']
+
+  is_read boolean [default: false]
+  link_url varchar(500)
+
+  created_at timestamp [default: `now()`]
+
+  Indexes {
+    user_id
+    is_read
+    created_at
+  }
+
+  Note: 'In-app notifications for users.'
+}
+
+// ════════════════════════════════════════════════════════════════
+// RELATIONSHIP SUMMARY
+// ════════════════════════════════════════════════════════════════
+//
+// Users (1) -- (1) User_Details
+// Users (1) -- (1) Students
+// Users (1) -- (1) Lecturers
+// Users (1) -- (N) Emergency_Contacts
+// Users (1) -- (N) Applications
+// Users (1) -- (N) Notifications
+// Users (1) -- (N) Audit_Logs
+//
+// Qualifications (1) -- (N) Modules
+// Qualifications (1) -- (N) Students
+// Qualifications (1) -- (N) Applications
+//
+// Modules (1) -- (N) Registrations
+// Modules (N) -- (N) Lecturers (via Module_Lecturers)
+//
+// Students (1) -- (N) Registrations
+//
+// Semesters (1) -- (N) Registrations
+// Semesters (1) -- (N) Module_Lecturers
+//
+// Applications (1) -- (N) Application_Documents
+//
+// ════════════════════════════════════════════════════════════════

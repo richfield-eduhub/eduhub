@@ -18,9 +18,11 @@ make up
 ```
 
 This will:
-- Start PostgreSQL 16 on port 5432
+- Start PostgreSQL 16 on port 5433 (host) → 5432 (container)
 - Start pgAdmin 4 on port 5050
 - Auto-configure the database connection
+
+**Note:** Using port 5433 to avoid conflicts with local PostgreSQL installations.
 
 ### Access pgAdmin
 
@@ -51,24 +53,34 @@ The **EduHub Database** connection is pre-configured under **Databases** → **E
 
 ## Database Connection Details
 
-### From Your Machine
+### From Your Machine (Host)
 
 ```
 Host:     localhost
-Port:     5432
+Port:     5433  ← Using 5433 to avoid conflict with local PostgreSQL
 Database: eduhub
 Username: postgres
 Password: yourpassword
 ```
 
-### From Docker Containers
+**Connection String:**
+```
+postgresql://postgres:yourpassword@localhost:5433/eduhub
+```
+
+### From Docker Containers (Internal)
 
 ```
 Host:     db
-Port:     5432
+Port:     5432  ← Internal container port
 Database: eduhub
 Username: postgres
 Password: yourpassword
+```
+
+**Connection String:**
+```
+postgresql://postgres:yourpassword@db:5432/eduhub
 ```
 
 ### Using psql
@@ -620,11 +632,13 @@ docker compose up -d pgadmin
 
 ### Port already in use
 
-If ports 5432 or 5050 are taken:
+**Note:** This project uses port **5433** for PostgreSQL (not the default 5432).
+
+If ports 5433 or 5050 are taken:
 
 ```bash
 # Check what's using the port
-lsof -i :5432
+lsof -i :5433
 lsof -i :5050
 
 # Option 1: Stop the conflicting service
