@@ -1,4 +1,4 @@
-.PHONY: up start db logs psql stop clean restart setup migrate schema
+.PHONY: up start db logs psql stop clean restart setup migrate seed schema
 
 # Start PostgreSQL and pgAdmin (default command)
 up:
@@ -55,7 +55,23 @@ migrate:
 		exit 1; \
 	fi
 	cd backend && npm run migrate
+	@echo "💡 Run 'make seed' to add test users (dev/test only)"
 	@echo "💡 Run 'make schema' to export schema for dbdiagram.io"
+
+# Seed test data (DEV/TEST ONLY - blocked in production)
+seed:
+	@echo "🌱 Seeding test data..."
+	@if [ ! -d "backend/node_modules" ]; then \
+		echo "❌ Backend dependencies not installed"; \
+		echo "💡 Run 'make setup' first"; \
+		exit 1; \
+	fi
+	@if [ "$$NODE_ENV" = "production" ]; then \
+		echo "❌ Cannot run seeds in production!"; \
+		echo "💡 Use migrations to modify production data"; \
+		exit 1; \
+	fi
+	cd backend && npm run seed
 
 # Export database schema to SQL file (for dbdiagram.io)
 schema:
