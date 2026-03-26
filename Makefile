@@ -1,4 +1,4 @@
-.PHONY: up start db logs psql stop clean restart setup migrate
+.PHONY: up start db logs psql stop clean restart setup migrate schema
 
 # Start PostgreSQL and pgAdmin (default command)
 up:
@@ -55,6 +55,20 @@ migrate:
 		exit 1; \
 	fi
 	cd backend && npm run migrate
+	@echo "💡 Run 'make schema' to export schema for dbdiagram.io"
+
+# Export database schema to SQL file (for dbdiagram.io)
+schema:
+	@echo "📋 Exporting database schema..."
+	@mkdir -p database/schema
+	docker exec eduhub_db pg_dump -U postgres -d eduhub \
+		--schema-only \
+		--no-owner \
+		--no-privileges \
+		--exclude-table=migrations \
+		> database/schema/schema.sql
+	@echo "✅ Schema exported to: database/schema/schema.sql"
+	@echo "💡 Import this file to https://dbdiagram.io for visualization"
 
 # Stop Docker containers
 stop:
