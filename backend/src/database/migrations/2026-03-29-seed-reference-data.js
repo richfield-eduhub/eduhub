@@ -80,7 +80,7 @@ module.exports = {
         },
       ];
 
-      await queryInterface.bulkInsert('Qualifications', qualifications, { transaction });
+      await queryInterface.bulkInsert('qualifications', qualifications, { transaction });
       console.log('   ✅ Seeded 6 Richfield qualifications');
 
       // ════════════════════════════════════════════════════════════════
@@ -581,7 +581,7 @@ module.exports = {
         },
       ];
 
-      await queryInterface.bulkInsert('Modules', modules, { transaction });
+      await queryInterface.bulkInsert('modules', modules, { transaction });
       console.log(`   ✅ Seeded ${modules.length} modules across programmes`);
 
       // ════════════════════════════════════════════════════════════════
@@ -636,7 +636,7 @@ module.exports = {
         },
       ];
 
-      await queryInterface.bulkInsert('Semesters', semesters, { transaction });
+      await queryInterface.bulkInsert('semesters', semesters, { transaction });
       console.log('   ✅ Seeded 3 semesters');
 
       console.log('');

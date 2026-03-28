@@ -6,7 +6,7 @@
  */
 
 const bcrypt = require('bcrypt');
-const sequelize = require('../src/config/database');
+const sequelize = require('../../config/database');
 
 module.exports = {
   async run() {

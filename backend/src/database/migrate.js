@@ -12,7 +12,7 @@
  */
 
 require('dotenv').config();
-const { migrator } = require('./src/db/migrator');
+const { migrator } = require('../db/migrator');
 
 console.log('🔄 Starting database migrations...\n');
 

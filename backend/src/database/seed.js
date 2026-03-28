@@ -12,7 +12,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const sequelize = require('./src/config/database');
+const sequelize = require('../config/database');
 
 // ════════════════════════════════════════════════════════════════
 // PRODUCTION SAFETY CHECK
@@ -26,7 +26,7 @@ if (process.env.NODE_ENV === 'production') {
   console.error('   In production, use migrations to modify the database.');
   console.error('');
   console.error('   To modify production data:');
-  console.error('     1. Create a migration file in backend/migrations/');
+  console.error('     1. Create a migration file in backend/src/database/migrations/');
   console.error('     2. Run: npm run migrate');
   console.error('');
   process.exit(1);
@@ -55,7 +55,7 @@ async function runSeeds() {
       .sort(); // Run seeds alphabetically
 
     if (seedFiles.length === 0) {
-      console.log('⚠️  No seed files found in backend/seeds/');
+      console.log('⚠️  No seed files found in backend/src/database/seeds/');
       console.log('');
       process.exit(0);
     }

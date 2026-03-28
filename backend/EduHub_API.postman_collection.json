@@ -1,0 +1,521 @@
+{
+	"info": {
+		"_postman_id": "eduhub-api-collection",
+		"name": "EduHub API",
+		"description": "Complete API collection for EduHub student management system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('access_token', jsonData.data.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"student@eduhub.co.za\",\n  \"password\": \"Student@123\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"role\": \"student\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						},
+						"description": "Register a new user. Role can be: student, lecturer, or admin"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('access_token', jsonData.data.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"testuser@eduhub.co.za\",\n  \"password\": \"Test@123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Login with email and password. Returns access token and refresh token."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "profile"]
+						},
+						"description": "Get authenticated user's profile"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('access_token', jsonData.data.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"your_refresh_token_here\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/refresh",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "refresh"]
+						},
+						"description": "Refresh access token using refresh token"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "logout"]
+						},
+						"description": "Logout user (client-side token removal)"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for user registration, login, and profile management"
+		},
+		{
+			"name": "Students",
+			"item": [
+				{
+					"name": "Get All Students (Staff Only)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/students?page=1&limit=20&status=enrolled&search=john",
+							"host": ["{{base_url}}"],
+							"path": ["students"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Items per page (max 100)"
+								},
+								{
+									"key": "status",
+									"value": "enrolled",
+									"description": "Filter by lifecycle_status",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "john",
+									"description": "Search by name, email, or student number",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all students with pagination. Admin/Lecturer only."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Student Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/students/me",
+							"host": ["{{base_url}}"],
+							"path": ["students", "me"]
+						},
+						"description": "Get current student's profile (students only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/students/:id",
+							"host": ["{{base_url}}"],
+							"path": ["students", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "student_uuid_here",
+									"description": "Student UUID"
+								}
+							]
+						},
+						"description": "Get student by ID. Owner or staff only."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Student (Staff Only)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"lifecycle_status\": \"enrolled\",\n  \"academic_status\": \"active\",\n  \"expected_graduation\": \"2026-12-31\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/students/:id",
+							"host": ["{{base_url}}"],
+							"path": ["students", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "student_uuid_here"
+								}
+							]
+						},
+						"description": "Update student information. Staff only."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student Registrations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/students/:id/registrations",
+							"host": ["{{base_url}}"],
+							"path": ["students", ":id", "registrations"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "student_uuid_here"
+								}
+							]
+						},
+						"description": "Get all module registrations for a student. Owner or staff only."
+					},
+					"response": []
+				}
+			],
+			"description": "Student management endpoints"
+		},
+		{
+			"name": "Qualifications",
+			"item": [
+				{
+					"name": "Get All Qualifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/qualifications?active_only=true",
+							"host": ["{{base_url}}"],
+							"path": ["qualifications"],
+							"query": [
+								{
+									"key": "active_only",
+									"value": "true",
+									"description": "Filter only active qualifications",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all qualifications with module and student counts"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Qualification by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/qualifications/:id",
+							"host": ["{{base_url}}"],
+							"path": ["qualifications", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "qualification_uuid_here"
+								}
+							]
+						},
+						"description": "Get qualification by ID with all its modules"
+					},
+					"response": []
+				}
+			],
+			"description": "Qualification management endpoints"
+		},
+		{
+			"name": "Modules",
+			"item": [
+				{
+					"name": "Get All Modules",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/modules?qualification_id=&level=1&active_only=true",
+							"host": ["{{base_url}}"],
+							"path": ["modules"],
+							"query": [
+								{
+									"key": "qualification_id",
+									"value": "",
+									"description": "Filter by qualification UUID",
+									"disabled": true
+								},
+								{
+									"key": "level",
+									"value": "1",
+									"description": "Filter by module level (1-10)",
+									"disabled": true
+								},
+								{
+									"key": "active_only",
+									"value": "true",
+									"description": "Filter only active modules",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all modules with optional filters"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Module by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/modules/:id",
+							"host": ["{{base_url}}"],
+							"path": ["modules", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "module_uuid_here"
+								}
+							]
+						},
+						"description": "Get module by ID with assigned lecturers"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Module Students (Staff Only)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/modules/:id/students?semester_id=",
+							"host": ["{{base_url}}"],
+							"path": ["modules", ":id", "students"],
+							"query": [
+								{
+									"key": "semester_id",
+									"value": "",
+									"description": "Filter by semester UUID",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "module_uuid_here"
+								}
+							]
+						},
+						"description": "Get all students enrolled in a module. Staff only."
+					},
+					"response": []
+				}
+			],
+			"description": "Module management endpoints"
+		},
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						},
+						"description": "Check API health status"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

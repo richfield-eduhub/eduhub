@@ -3,7 +3,7 @@ const fs = require('fs');
 const sequelize = require('../config/database');
 
 const MIGRATIONS_TABLE = 'migrations';
-const MIGRATIONS_DIR = path.join(__dirname, '../../migrations');
+const MIGRATIONS_DIR = path.join(__dirname, '../database/migrations');
 
 async function migrator() {
   const queryInterface = sequelize.getQueryInterface();
