@@ -10,7 +10,7 @@ services:
       - "5433:5432"  # Using 5433 to avoid conflict with local PostgreSQL
     volumes:
       - eduhub_pgdata:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -31,10 +31,10 @@ services:
       - "5050:80"
     volumes:
       - eduhub_pgadmin:/var/lib/pgadmin
-      - ./logs/pgadmin:/var/log/pgadmin
-      - ./pgadmin-config/servers.json:/pgadmin4/servers.json:ro
-      - ./pgadmin-config/pgpass:/tmp/pgpass:ro
-      - ./pgadmin-config/setup-pgadmin.sh:/docker-entrypoint-initdb.d/setup.sh:ro
+      - ../../logs/pgadmin:/var/log/pgadmin
+      - ../../pgadmin-config/servers.json:/pgadmin4/servers.json:ro
+      - ../../pgadmin-config/pgpass:/tmp/pgpass:ro
+      - ../../pgadmin-config/setup-pgadmin.sh:/docker-entrypoint-initdb.d/setup.sh:ro
     entrypoint: >
       /bin/sh -c "
       cp /tmp/pgpass /pgpass &&

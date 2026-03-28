@@ -194,12 +194,17 @@ eduhub/
 │   ├── seed.js                        # Seed runner ✨
 │   └── package.json                   # Updated with seed script
 ├── database/
-│   └── schema/
-│       ├── schema.sql                 # Exported PostgreSQL schema
-│       └── eduhub-schema.dbml         # DBML for dbdiagram.io
-├── Makefile                           # Updated with seed target
-└── docs/
-    └── database-setup-summary.md      # This file ✨
+│   ├── docker/
+│   │   └── docker-compose.yml         # PostgreSQL + pgAdmin containers ✨
+│   ├── docs/
+│   │   ├── DATABASE_SETUP.md          # Team onboarding guide ✨
+│   │   ├── database-setup-summary.md  # This file ✨
+│   │   └── team-update-whatsapp.txt   # Team update message ✨
+│   ├── schema/
+│   │   ├── schema.sql                 # Exported PostgreSQL schema
+│   │   └── eduhub-schema.dbml         # DBML for dbdiagram.io
+│   └── README.md                      # Database folder documentation ✨
+└── Makefile                           # Updated with seed target
 ```
 
 ---

@@ -100,17 +100,27 @@ docker exec -it eduhub_db psql -U postgres -d eduhub
 ```
 eduhub/
 ├── Makefile                      # Database commands
-├── docker-compose.yml            # PostgreSQL + pgAdmin containers
 ├── database/
-│   └── init.sql                  # Database initialization script
+│   ├── docker/
+│   │   └── docker-compose.yml    # PostgreSQL + pgAdmin containers
+│   ├── docs/
+│   │   └── DATABASE_SETUP.md     # Detailed setup guide for the team
+│   ├── schema/
+│   │   ├── schema.sql            # PostgreSQL schema export
+│   │   └── eduhub-schema.dbml    # DBML for visualization
+│   └── README.md                 # Database folder documentation
+├── backend/
+│   ├── migrations/               # Schema migrations + reference data
+│   ├── seeds/                    # Test data (dev/test only)
+│   ├── migrate.js                # Migration runner
+│   └── seed.js                   # Seed runner
 ├── pgadmin-config/
 │   ├── servers.json              # Auto-configures pgAdmin connection
 │   ├── pgpass                    # Password file
 │   └── setup-pgadmin.sh          # pgAdmin entrypoint script
 ├── logs/
 │   └── pgadmin/                  # pgAdmin log files
-├── README.md                     # This file
-└── DATABASE_SETUP.md             # Detailed setup guide for the team
+└── README.md                     # This file
 ```
 
 ---
@@ -547,7 +557,7 @@ This setup ensures **zero manual configuration**:
 - **Always use branches** - don't push directly to main
 - **Use `make clean`** when you need to test schema changes from scratch
 - **Check `make logs`** if something doesn't work
-- **Read DATABASE_SETUP.md** for detailed troubleshooting
+- **Read database/docs/DATABASE_SETUP.md** for detailed troubleshooting
 
 ### Branch Naming
 
@@ -570,7 +580,7 @@ This repository includes pre-configured pgAdmin setup so the entire team has con
 Configuration files:
 - `pgadmin-config/servers.json` - Server connection details
 - `pgadmin-config/pgpass` - Password file
-- `docker-compose.yml` - Environment variables and volumes
+- `database/docker/docker-compose.yml` - Environment variables and volumes
 
 ---
 
@@ -642,12 +652,12 @@ lsof -i :5433
 lsof -i :5050
 
 # Option 1: Stop the conflicting service
-# Option 2: Change ports in docker-compose.yml
+# Option 2: Change ports in database/docker/docker-compose.yml
 ```
 
 ### Need detailed help?
 
-See `DATABASE_SETUP.md` for comprehensive troubleshooting and team onboarding guide.
+See `database/docs/DATABASE_SETUP.md` for comprehensive troubleshooting and team onboarding guide.
 
 ---
 

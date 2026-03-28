@@ -1,10 +1,13 @@
 .PHONY: up start db logs psql stop clean restart setup migrate seed schema
 
+# Docker Compose file location
+DOCKER_COMPOSE := docker compose -f database/docker/docker-compose.yml
+
 # Start PostgreSQL and pgAdmin (default command)
 up:
-	docker compose up -d db pgadmin
+	$(DOCKER_COMPOSE) up -d db pgadmin
 	@echo "⏳ Waiting for PostgreSQL..."
-	@until docker compose exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
+	@until $(DOCKER_COMPOSE) exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
 	@echo "✅ PostgreSQL is ready at localhost:5433"
 	@echo "✅ pgAdmin is available at http://localhost:5050"
 	@echo ""
@@ -21,14 +24,14 @@ start: up
 
 # Start PostgreSQL only (no pgAdmin)
 db:
-	docker compose up -d db
+	$(DOCKER_COMPOSE) up -d db
 	@echo "⏳ Waiting for PostgreSQL..."
-	@until docker compose exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
+	@until $(DOCKER_COMPOSE) exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
 	@echo "✅ PostgreSQL is ready at localhost:5433"
 
 # View logs from PostgreSQL and pgAdmin
 logs:
-	docker compose logs -f db pgadmin
+	$(DOCKER_COMPOSE) logs -f db pgadmin
 
 # Connect to PostgreSQL via psql command line
 psql:
@@ -88,12 +91,12 @@ schema:
 
 # Stop Docker containers
 stop:
-	docker compose stop
+	$(DOCKER_COMPOSE) stop
 	@echo "🛑 Database containers stopped"
 
 # Restart containers (useful after config changes)
 restart:
-	docker compose restart
+	$(DOCKER_COMPOSE) restart
 	@echo "🔄 Containers restarted"
 
 # Stop containers and delete all data (fresh start)
@@ -101,6 +104,6 @@ clean:
 	@echo "⚠️  WARNING: This will delete ALL database data!"
 	@echo "Press Ctrl+C to cancel, or Enter to continue..."
 	@read confirm
-	docker compose down -v
+	$(DOCKER_COMPOSE) down -v
 	@echo "🧹 All containers and data removed"
 	@echo "💡 Run 'make up' to start fresh"
