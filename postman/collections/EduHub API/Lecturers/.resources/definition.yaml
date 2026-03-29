@@ -1,0 +1,4 @@
+$kind: collection
+name: Lecturers
+description: Lecturer management endpoints
+order: 7000

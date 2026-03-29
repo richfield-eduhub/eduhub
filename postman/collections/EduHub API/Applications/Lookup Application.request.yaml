@@ -1,0 +1,12 @@
+$kind: http-request
+name: Lookup Application
+method: GET
+url: '{{base_url}}/applications/lookup'
+order: 2000
+queryParams:
+  - key: reference_number
+    value: APP-000001
+    description: Application reference number
+  - key: email
+    value: jane.doe@example.com
+    description: Applicant email address

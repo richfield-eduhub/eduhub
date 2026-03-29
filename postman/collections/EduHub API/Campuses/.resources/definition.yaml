@@ -1,4 +1,4 @@
 $kind: collection
 name: Campuses
 description: 'Campus management endpoints - View Richfield campuses and their offerings'
-order: 965
+order: 2000
