@@ -13,7 +13,7 @@ module.exports = {
 
       const qualifications = [
         {
-          id: '11111111-1111-1111-1111-111111111111',
+          id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'BSC-IT',
           name: 'Bachelor of Science in Information Technology',
           faculty: 'Faculty of Information Technology',
@@ -24,7 +24,7 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '22222222-2222-2222-2222-222222222222',
+          id: '1ffc6bf4-cb65-4cac-919c-ab214915a01b',
           code: 'DIT',
           name: 'Diploma in Information Technology',
           faculty: 'Faculty of Information Technology',
@@ -35,7 +35,7 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '33333333-3333-3333-3333-333333333333',
+          id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'BCOM-ACC',
           name: 'Bachelor of Commerce in Accounting',
           faculty: 'Faculty of Business Science',
@@ -46,7 +46,7 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '44444444-4444-4444-4444-444444444444',
+          id: 'eb11dad8-0080-424c-8fe1-debf2ba9513d',
           code: 'BCOM-AGA-IT',
           name: 'Bachelor of Commerce (AGA-IT) - SAICA Endorsed',
           faculty: 'Faculty of Business Science',
@@ -57,7 +57,7 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '55555555-5555-5555-5555-555555555555',
+          id: 'a3dea4bb-f84f-444a-8913-129f50711af4',
           code: 'BBA',
           name: 'Bachelor of Business Administration',
           faculty: 'Faculty of Business Science',
@@ -68,7 +68,7 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '66666666-6666-6666-6666-666666666666',
+          id: '0b741d4c-ef66-4ace-b153-c796e709864a',
           code: 'DBA',
           name: 'Diploma in Business Administration',
           faculty: 'Faculty of Business Science',
@@ -94,8 +94,8 @@ module.exports = {
 
         // Year 1, Semester 1
         {
-          id: '00000001-0001-4000-8000-000000000001',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: 'e2213c05-7621-4c41-a384-9367a1f3b90a',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'IT511',
           name: 'Information Systems 511',
           description: 'Introduction to information systems and their role in business',
@@ -108,8 +108,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000002-0002-4000-8000-000000000002',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: 'a48dc0bb-0004-4b68-9135-cde4e233367b',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'MATH511',
           name: 'Mathematics 511',
           description: 'Fundamental mathematics for IT including algebra and calculus',
@@ -122,8 +122,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000003-0003-4000-8000-000000000003',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: 'ca3ceb85-5027-41cd-8d36-31aba49284b0',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'PROG511',
           name: 'Programming 511',
           description: 'Introduction to programming using Python/Java',
@@ -138,8 +138,8 @@ module.exports = {
 
         // Year 1, Semester 2
         {
-          id: '00000004-0004-4000-8000-000000000004',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: '6a25a805-eb36-4358-b1af-df4057f57f0a',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'WEB511',
           name: 'Web Technology 511',
           description: 'HTML, CSS, JavaScript fundamentals',
@@ -152,8 +152,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000005-0005-4000-8000-000000000005',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: 'c99f1b9f-88d7-425c-8621-d046b07de22f',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'DB600',
           name: 'Database Systems 600',
           description: 'Relational database design and SQL',
@@ -166,8 +166,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000006-0006-4000-8000-000000000006',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: 'fb4cf90d-4985-4c4b-89c7-b3c08ea7618f',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'CA600',
           name: 'Computer Architecture 600',
           description: 'Hardware fundamentals and system architecture',
@@ -182,8 +182,8 @@ module.exports = {
 
         // Year 2, Semester 1
         {
-          id: '00000007-0007-4000-8000-000000000007',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: 'e37ed59c-8a56-450b-af54-0199945cc37b',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'PROG731',
           name: 'Programming 731',
           description: 'Advanced programming concepts and OOP',
@@ -196,8 +196,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000008-0008-4000-8000-000000000008',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: 'f466b5e8-6fff-4110-ab6b-6b1fbd5bbbdc',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'NET731',
           name: 'Networks 731',
           description: 'Computer networking fundamentals',
@@ -210,8 +210,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000009-0009-4000-8000-000000000009',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: 'e95ca5c9-e4be-42ca-9d20-42cedcc3338c',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'OS700',
           name: 'Operating Systems 700',
           description: 'Operating system concepts and Linux/Unix',
@@ -226,8 +226,8 @@ module.exports = {
 
         // Year 2, Semester 2
         {
-          id: '00000010-0010-4000-8000-000000000010',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: 'bee2fb05-c4bc-43a4-88e2-7c1933fb2028',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'SE700',
           name: 'Software Engineering 700',
           description: 'Software development lifecycle and methodologies',
@@ -240,8 +240,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000011-0011-4000-8000-000000000011',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: '2e16ed7f-c51c-415a-ae47-1dc2da925655',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'CYBER700',
           name: 'Cyber Security 700',
           description: 'Information security principles and practices',
@@ -254,8 +254,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000012-0012-4000-8000-000000000012',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: 'c5db6817-8783-4219-8d18-c7759d3e1566',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'MOBILE700',
           name: 'Mobile App Development 700',
           description: 'Android and iOS app development',
@@ -270,8 +270,8 @@ module.exports = {
 
         // Year 3, Semester 1
         {
-          id: '00000013-0013-4000-8000-000000000013',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: '2b1e5be6-fc6c-4191-ad4c-f4fc506d972c',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'AI700',
           name: 'Artificial Intelligence 700',
           description: 'AI fundamentals and machine learning basics',
@@ -284,8 +284,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000014-0014-4000-8000-000000000014',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: '54bf0f5e-2455-4ad4-9d1c-0efe656dca25',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'ML700',
           name: 'Machine Learning 700',
           description: 'Advanced machine learning algorithms',
@@ -298,8 +298,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000015-0015-4000-8000-000000000015',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: 'eec6aeba-815a-4439-89e7-6f3ab797cc5d',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'CLOUD700',
           name: 'Cloud Computing 700',
           description: 'Cloud platforms (AWS, Azure) and deployment',
@@ -314,8 +314,8 @@ module.exports = {
 
         // Year 3, Semester 2
         {
-          id: '00000016-0016-4000-8000-000000000016',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: '3e308d64-4718-4838-ab38-29509a1a8c83',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'ITPROJ700',
           name: 'IT Project 700',
           description: 'Final year capstone project',
@@ -328,8 +328,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000017-0017-4000-8000-000000000017',
-          qualification_id: '11111111-1111-1111-1111-111111111111',
+          id: 'eab6d5a8-2068-4ad1-ad8f-69f09c826932',
+          qualification_id: '727ff8ae-0470-42a0-b8c6-58daf0ee564d',
           code: 'WIL700',
           name: 'Work Integrated Learning 700',
           description: 'Workplace experience and internship',
@@ -348,8 +348,8 @@ module.exports = {
 
         // Year 1
         {
-          id: '00000101-0101-4000-8000-000000000101',
-          qualification_id: '33333333-3333-3333-3333-333333333333',
+          id: '8803120f-c8bb-48b7-9e1b-40a5fa34c054',
+          qualification_id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'ACC511',
           name: 'Financial Accounting 511',
           description: 'Introduction to financial accounting principles',
@@ -362,8 +362,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000102-0102-4000-8000-000000000102',
-          qualification_id: '33333333-3333-3333-3333-333333333333',
+          id: '583bb43f-f4f7-43d8-941d-39b99bba2b80',
+          qualification_id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'ECON511',
           name: 'Economics 511',
           description: 'Microeconomics and macroeconomics fundamentals',
@@ -376,8 +376,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000103-0103-4000-8000-000000000103',
-          qualification_id: '33333333-3333-3333-3333-333333333333',
+          id: '8cea66e5-4d2e-425a-a58c-0e2716f592cd',
+          qualification_id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'BUS511',
           name: 'Business Management 511',
           description: 'Introduction to business management',
@@ -390,8 +390,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000104-0104-4000-8000-000000000104',
-          qualification_id: '33333333-3333-3333-3333-333333333333',
+          id: '3f5f7b28-2cf5-47ce-bc3e-e4c555960107',
+          qualification_id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'MACC521',
           name: 'Management Accounting 521',
           description: 'Cost and management accounting',
@@ -404,8 +404,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000105-0105-4000-8000-000000000105',
-          qualification_id: '33333333-3333-3333-3333-333333333333',
+          id: '80c4cb34-5f55-4468-aaed-f2c35e14cad0',
+          qualification_id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'TAX521',
           name: 'Taxation 521',
           description: 'Introduction to South African tax law',
@@ -418,8 +418,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000106-0106-4000-8000-000000000106',
-          qualification_id: '33333333-3333-3333-3333-333333333333',
+          id: 'c378e021-09de-4704-b89f-d146e672b01e',
+          qualification_id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'STAT521',
           name: 'Business Statistics 521',
           description: 'Statistical methods for business',
@@ -434,8 +434,8 @@ module.exports = {
 
         // Year 2
         {
-          id: '00000107-0107-4000-8000-000000000107',
-          qualification_id: '33333333-3333-3333-3333-333333333333',
+          id: '5f3d8092-d987-4fc2-9a72-eec15c53bd12',
+          qualification_id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'FACC731',
           name: 'Financial Accounting 731',
           description: 'Intermediate financial accounting',
@@ -448,8 +448,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000108-0108-4000-8000-000000000108',
-          qualification_id: '33333333-3333-3333-3333-333333333333',
+          id: 'c153fe67-27c4-42cf-aa42-9491e007b827',
+          qualification_id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'AUDIT731',
           name: 'Auditing 731',
           description: 'Introduction to auditing principles',
@@ -462,8 +462,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000109-0109-4000-8000-000000000109',
-          qualification_id: '33333333-3333-3333-3333-333333333333',
+          id: 'a451cbab-0415-4116-ae29-d6448f40d0ae',
+          qualification_id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'LAW731',
           name: 'Commercial Law 731',
           description: 'Business and commercial law',
@@ -478,8 +478,8 @@ module.exports = {
 
         // Year 3
         {
-          id: '00000110-0110-4000-8000-000000000110',
-          qualification_id: '33333333-3333-3333-3333-333333333333',
+          id: '288265c9-fbea-4d54-ada7-c249d071b579',
+          qualification_id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'FACC841',
           name: 'Financial Accounting 841',
           description: 'Advanced financial accounting',
@@ -492,8 +492,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000111-0111-4000-8000-000000000111',
-          qualification_id: '33333333-3333-3333-3333-333333333333',
+          id: 'dfe90550-4321-44c9-a8a3-d4905ddaacf4',
+          qualification_id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'MACC841',
           name: 'Management Accounting 841',
           description: 'Advanced management accounting',
@@ -506,8 +506,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000112-0112-4000-8000-000000000112',
-          qualification_id: '33333333-3333-3333-3333-333333333333',
+          id: '60d1deec-ab3a-423e-99a3-0d0cb27698e0',
+          qualification_id: 'ab63090d-b07f-492d-b766-023aca06cb89',
           code: 'FIN841',
           name: 'Financial Management 841',
           description: 'Corporate finance and investment decisions',
@@ -524,8 +524,8 @@ module.exports = {
         // Diploma IT Modules (Sample - fewer than degree)
         // ──────────────────────────────────────────────────────────────
         {
-          id: '00000201-0201-4000-8000-000000000201',
-          qualification_id: '22222222-2222-2222-2222-222222222222',
+          id: '94fd008d-c1e3-47c4-b2ea-662327930748',
+          qualification_id: '1ffc6bf4-cb65-4cac-919c-ab214915a01b',
           code: 'DIT101',
           name: 'Introduction to Computing',
           description: 'Computer fundamentals and digital literacy',
@@ -538,8 +538,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000202-0202-4000-8000-000000000202',
-          qualification_id: '22222222-2222-2222-2222-222222222222',
+          id: '48234aee-f18c-475b-b602-1190050620a3',
+          qualification_id: '1ffc6bf4-cb65-4cac-919c-ab214915a01b',
           code: 'DIT102',
           name: 'Programming Fundamentals',
           description: 'Introduction to programming',
@@ -552,8 +552,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000203-0203-4000-8000-000000000203',
-          qualification_id: '22222222-2222-2222-2222-222222222222',
+          id: '76b50fb8-e731-4788-9ccb-467fb9b3af10',
+          qualification_id: '1ffc6bf4-cb65-4cac-919c-ab214915a01b',
           code: 'DIT201',
           name: 'Web Development',
           description: 'HTML, CSS, JavaScript',
@@ -566,8 +566,8 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '00000204-0204-4000-8000-000000000204',
-          qualification_id: '22222222-2222-2222-2222-222222222222',
+          id: '9bb878ea-112b-42e4-96d3-93a4dce8456f',
+          qualification_id: '1ffc6bf4-cb65-4cac-919c-ab214915a01b',
           code: 'DIT202',
           name: 'Database Management',
           description: 'Database design and SQL',
@@ -590,7 +590,7 @@ module.exports = {
 
       const semesters = [
         {
-          id: '10000001-0000-4000-8000-000000000001',
+          id: '3c18624a-2e62-406d-9d56-94353b95fbb7',
           name: '2026 Semester 1',
           year: 2026,
           semester_number: 1,
@@ -605,7 +605,7 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '10000002-0000-4000-8000-000000000002',
+          id: '0ae6bf4f-af45-416f-a7c6-7b17f42c6016',
           name: '2026 Semester 2',
           year: 2026,
           semester_number: 2,
@@ -620,7 +620,7 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: '10000003-0000-4000-8000-000000000003',
+          id: 'ee58cda9-a99a-46ab-a84c-701aed3b16f5',
           name: '2027 Semester 1',
           year: 2027,
           semester_number: 1,

@@ -1,5 +1,4 @@
 $kind: http-request
-description: Get student by ID. Owner or staff only.
 url: "{{base_url}}/students/:id"
 method: GET
 headers:

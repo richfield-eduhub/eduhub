@@ -5,6 +5,8 @@ workspace:
 localResources:
   collections:
     - ../backend/postman/EduHub_API.postman_collection.json
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
 cloudResources:
   collections:
-    ../postman/collections/EduHub API: d96cb3ff-d18b-411d-ab20-4773900a762e
+    ../postman/collections/EduHub API: 49782819-4d18f47e-573e-4b42-97e4-4e34783b682c

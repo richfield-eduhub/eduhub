@@ -1,5 +1,4 @@
 $kind: http-request
-description: Get all students enrolled in a module. Staff only.
 url: "{{base_url}}/modules/:id/students"
 method: GET
 headers:
@@ -11,4 +10,4 @@ queryParams:
     description: Filter by semester UUID
 pathVariables:
   id: module_uuid_here
-order: 3000
+order: 4000

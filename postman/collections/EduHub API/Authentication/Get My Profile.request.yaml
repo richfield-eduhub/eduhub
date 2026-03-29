@@ -1,5 +1,4 @@
 $kind: http-request
-description: Get authenticated user's profile
 url: "{{base_url}}/auth/profile"
 method: GET
 headers:

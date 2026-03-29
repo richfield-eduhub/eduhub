@@ -5,7 +5,6 @@
 const express = require('express');
 const { query } = require('express-validator');
 const qualificationController = require('../controllers/qualification.controller');
-const { authenticateToken } = require('../middleware/auth.middleware');
 const { validate } = require('../middleware/validator.middleware');
 
 const router = express.Router();
@@ -24,19 +23,17 @@ const getAllQualificationsValidation = [
  * Routes
  */
 
-// GET /api/qualifications - Get all qualifications (authenticated users)
+// GET /api/qualifications - Get all qualifications (public)
 router.get(
   '/',
-  authenticateToken,
   getAllQualificationsValidation,
   validate,
   qualificationController.getAllQualifications
 );
 
-// GET /api/qualifications/:id - Get qualification by ID (authenticated users)
+// GET /api/qualifications/:id - Get qualification by ID (public)
 router.get(
   '/:id',
-  authenticateToken,
   qualificationController.getQualificationById
 );
 

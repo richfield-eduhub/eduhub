@@ -339,13 +339,7 @@
 					"name": "Get All Qualifications",
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "{{base_url}}/qualifications?active_only=true",
 							"host": ["{{base_url}}"],
@@ -359,7 +353,7 @@
 								}
 							]
 						},
-						"description": "Get all qualifications with module and student counts"
+						"description": "Get all qualifications with module and student counts (PUBLIC - no auth required)"
 					},
 					"response": []
 				},
@@ -367,13 +361,7 @@
 					"name": "Get Qualification by ID",
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "{{base_url}}/qualifications/:id",
 							"host": ["{{base_url}}"],
@@ -385,7 +373,7 @@
 								}
 							]
 						},
-						"description": "Get qualification by ID with all its modules"
+						"description": "Get qualification by ID with all its modules (PUBLIC - no auth required)"
 					},
 					"response": []
 				}
@@ -399,13 +387,7 @@
 					"name": "Get All Modules",
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "{{base_url}}/modules?qualification_id=&level=1&active_only=true",
 							"host": ["{{base_url}}"],
@@ -420,7 +402,7 @@
 								{
 									"key": "level",
 									"value": "1",
-									"description": "Filter by module level (1-10)",
+									"description": "Filter by year (1-10)",
 									"disabled": true
 								},
 								{
@@ -431,7 +413,48 @@
 								}
 							]
 						},
-						"description": "Get all modules with optional filters"
+						"description": "Get all modules with optional filters (PUBLIC - no auth required)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Modules by Qualification",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/modules/by-qualification/:qualificationId?year=&semester=&active_only=true",
+							"host": ["{{base_url}}"],
+							"path": ["modules", "by-qualification", ":qualificationId"],
+							"query": [
+								{
+									"key": "year",
+									"value": "",
+									"description": "Filter by academic year (1-10); omit for all years",
+									"disabled": true
+								},
+								{
+									"key": "semester",
+									"value": "",
+									"description": "Filter by semester (1-10); omit for all semesters",
+									"disabled": true
+								},
+								{
+									"key": "active_only",
+									"value": "true",
+									"description": "Filter only active modules",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "qualificationId",
+									"value": "727ff8ae-0470-42a0-b8c6-58daf0ee564d",
+									"description": "Qualification UUID (seed example: BSc IT)"
+								}
+							]
+						},
+						"description": "Get modules for a qualification. Optional year and/or semester narrow results; if omitted, returns all modules for that qualification. Returns 404 if qualification does not exist (PUBLIC - no auth required)"
 					},
 					"response": []
 				},
@@ -439,13 +462,7 @@
 					"name": "Get Module by ID",
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
 							"raw": "{{base_url}}/modules/:id",
 							"host": ["{{base_url}}"],
@@ -457,7 +474,7 @@
 								}
 							]
 						},
-						"description": "Get module by ID with assigned lecturers"
+						"description": "Get module by ID with assigned lecturers (PUBLIC - no auth required)"
 					},
 					"response": []
 				},
@@ -497,6 +514,104 @@
 				}
 			],
 			"description": "Module management endpoints"
+		},
+		{
+			"name": "Campuses",
+			"item": [
+				{
+					"name": "Get All Campuses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/campuses?active_only=true&include_online=true",
+							"host": ["{{base_url}}"],
+							"path": ["campuses"],
+							"query": [
+								{
+									"key": "active_only",
+									"value": "true",
+									"description": "Filter only active campuses",
+									"disabled": true
+								},
+								{
+									"key": "include_online",
+									"value": "true",
+									"description": "Include online campus (default: true)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all Richfield campuses (PUBLIC - no auth required)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Campus by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/campuses/:id",
+							"host": ["{{base_url}}"],
+							"path": ["campuses", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "campus_uuid_here",
+									"description": "Campus UUID"
+								}
+							]
+						},
+						"description": "Get campus details with qualifications offered and student/lecturer counts (PUBLIC - no auth required)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Campuses by Province",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/campuses/by-province?active_only=true",
+							"host": ["{{base_url}}"],
+							"path": ["campuses", "by-province"],
+							"query": [
+								{
+									"key": "active_only",
+									"value": "true",
+									"description": "Filter only active campuses",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get campuses grouped by province (PUBLIC - no auth required)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Campuses by Qualification",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/campuses/by-qualification/:qualificationId",
+							"host": ["{{base_url}}"],
+							"path": ["campuses", "by-qualification", ":qualificationId"],
+							"variable": [
+								{
+									"key": "qualificationId",
+									"value": "qualification_uuid_here",
+									"description": "Qualification UUID"
+								}
+							]
+						},
+						"description": "Get all campuses that offer a specific qualification (PUBLIC - no auth required)"
+					},
+					"response": []
+				}
+			],
+			"description": "Campus management endpoints - View Richfield campuses and their offerings"
 		},
 		{
 			"name": "Health Check",

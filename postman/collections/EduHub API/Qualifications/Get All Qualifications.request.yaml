@@ -1,5 +1,4 @@
 $kind: http-request
-description: Get all qualifications with module and student counts
 url: "{{base_url}}/qualifications"
 method: GET
 headers:

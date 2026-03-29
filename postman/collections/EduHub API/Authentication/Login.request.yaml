@@ -1,16 +1,11 @@
 $kind: http-request
-description: Login with email and password. Returns access token and refresh token.
 url: "{{base_url}}/auth/login"
 method: POST
 headers:
   Content-Type: application/json
 body:
   type: text
-  content: |-
-    {
-      "email": "testuser@eduhub.co.za",
-      "password": "Test@123456"
-    }
+  content: ""
 scripts:
   - type: afterResponse
     code: |-

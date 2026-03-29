@@ -129,7 +129,7 @@ Example:
 ## 11. GET /api/qualifications
 **Get All Qualifications**
 - Lists all degree programs with module counts
-- Requires: Any authenticated user
+- Public endpoint (no authentication required)
 - Supports active_only filter
 
 Query Params:
@@ -141,7 +141,7 @@ Query Params:
 **Get Qualification Details**
 - Returns program details + all its modules
 - Shows BSc IT, DIT, BCom, etc.
-- Requires: Any authenticated user
+- Public endpoint (no authentication required)
 
 ---
 
@@ -149,7 +149,7 @@ Query Params:
 **Get All Modules**
 - Lists all course modules with filters
 - Shows lecturer count, student count
-- Requires: Any authenticated user
+- Public endpoint (no authentication required)
 
 Query Params:
 - `qualification_id` - Filter by program
@@ -158,15 +158,28 @@ Query Params:
 
 ---
 
-## 14. GET /api/modules/:id
-**Get Module Details**
-- Returns module info + assigned lecturers
-- Shows credits, description, prerequisites
-- Requires: Any authenticated user
+## 14. GET /api/modules/by-qualification/:qualificationId
+**Get Modules by Qualification**
+- Returns all modules for a specific qualification
+- Optional filters by year and semester
+- Public endpoint (no authentication required)
+
+Query Params:
+- `year` - Filter by academic year (1-10); omit for all years
+- `semester` - Filter by semester (1-10); omit for all semesters
+- `active_only=true` - Filter only active modules
 
 ---
 
-## 15. GET /api/modules/:id/students (Staff Only)
+## 15. GET /api/modules/:id
+**Get Module Details**
+- Returns module info + assigned lecturers
+- Shows credits, description, prerequisites
+- Public endpoint (no authentication required)
+
+---
+
+## 16. GET /api/modules/:id/students (Staff Only)
 **Get Students in Module**
 - Lists all students enrolled in module
 - Filter by semester
@@ -177,8 +190,67 @@ Query Params:
 
 ---
 
+## 17. GET /api/campuses
+**Get All Campuses**
+- Lists all Richfield campuses (physical + online)
+- Filter by active campuses
+- Include/exclude online campus
+- Public endpoint (no authentication required)
+
+Query Params:
+- `active_only=true` - Show only active campuses
+- `include_online=false` - Exclude online campus
+
+---
+
+## 18. GET /api/campuses/:id
+**Get Campus Details**
+- Returns campus information with:
+  - Contact details (phone, WhatsApp, email)
+  - Student and lecturer counts
+  - List of qualifications offered at this campus
+- Public endpoint (no authentication required)
+
+---
+
+## 19. GET /api/campuses/by-province
+**Get Campuses Grouped by Province**
+- Returns physical campuses organized by province
+- Useful for displaying regional options
+- Public endpoint (no authentication required)
+
+Query Params:
+- `active_only=true` - Show only active campuses
+
+---
+
+## 20. GET /api/campuses/by-qualification/:qualificationId
+**Get Campuses Offering Qualification**
+- Returns all campuses that offer a specific qualification
+- Helps students find where they can study their chosen program
+- Public endpoint (no authentication required)
+
+---
+
 ## 🔐 Authentication
-All protected endpoints require:
+
+**Public Endpoints (no auth required):**
+- POST /api/auth/register
+- POST /api/auth/login
+- POST /api/auth/refresh
+- GET /api/qualifications
+- GET /api/qualifications/:id
+- GET /api/modules
+- GET /api/modules/by-qualification/:qualificationId
+- GET /api/modules/:id
+- GET /api/campuses
+- GET /api/campuses/:id
+- GET /api/campuses/by-province
+- GET /api/campuses/by-qualification/:qualificationId
+- GET /api/health
+
+**Protected Endpoints (require token):**
+All other endpoints require:
 ```
 Authorization: Bearer {access_token}
 ```
@@ -259,6 +331,18 @@ After running `npm run seed`:
 
 ---
 
-**Total Endpoints:** 15 + 1 health check = 16 endpoints
+**Total Endpoints:** 20 + 1 health check = 21 endpoints
 **Server:** Running on port 3000
 **Database:** PostgreSQL (localhost:5433)
+
+**Module Endpoints (4):**
+- GET /api/modules
+- GET /api/modules/by-qualification/:qualificationId
+- GET /api/modules/:id
+- GET /api/modules/:id/students (Staff Only)
+
+**Campus Endpoints (4):**
+- GET /api/campuses
+- GET /api/campuses/:id
+- GET /api/campuses/by-province
+- GET /api/campuses/by-qualification/:qualificationId

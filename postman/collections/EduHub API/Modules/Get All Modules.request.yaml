@@ -1,5 +1,4 @@
 $kind: http-request
-description: Get all modules with optional filters
 url: "{{base_url}}/modules"
 method: GET
 headers:

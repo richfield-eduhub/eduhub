@@ -1,19 +1,11 @@
 $kind: http-request
-description: "Register a new user. Role can be: student, lecturer, or admin"
 url: "{{base_url}}/auth/register"
 method: POST
 headers:
   Content-Type: application/json
 body:
   type: text
-  content: |-
-    {
-      "email": "student@eduhub.co.za",
-      "password": "Student@123",
-      "first_name": "John",
-      "last_name": "Doe",
-      "role": "student"
-    }
+  content: ""
 scripts:
   - type: afterResponse
     code: |-

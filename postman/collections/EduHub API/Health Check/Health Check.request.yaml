@@ -1,5 +1,4 @@
 $kind: http-request
-description: Check API health status
 url: "{{base_url}}/health"
 method: GET
 order: 1000

@@ -13,6 +13,7 @@ const authRoutes = require('./routes/auth.routes');
 const studentRoutes = require('./routes/student.routes');
 const qualificationRoutes = require('./routes/qualification.routes');
 const moduleRoutes = require('./routes/module.routes');
+const campusRoutes = require('./routes/campus.routes');
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/qualifications', qualificationRoutes);
 app.use('/api/modules', moduleRoutes);
+app.use('/api/campuses', campusRoutes);
 
 /**
  * Error Handling

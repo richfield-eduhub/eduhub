@@ -16,16 +16,16 @@ class QualificationService {
     }
 
     const qualifications = await sequelize.query(
-      `SELECT q.qualification_id, q.code, q.name, q.level, q.duration_years,
-              q.total_credits, q.description, q.is_active, q.created_at,
-              COUNT(DISTINCT s.student_id)::int as student_count,
-              COUNT(DISTINCT m.module_id)::int as module_count
+      `SELECT q.id, q.code, q.name, q.faculty, q.duration_years,
+              q.total_fee, q.is_active, q.created_at,
+              COUNT(DISTINCT s.id)::int as student_count,
+              COUNT(DISTINCT m.id)::int as module_count
        FROM qualifications q
-       LEFT JOIN students s ON q.qualification_id = s.qualification_id
-       LEFT JOIN modules m ON q.qualification_id = m.qualification_id
+       LEFT JOIN students s ON q.id = s.qualification_id
+       LEFT JOIN modules m ON q.id = m.qualification_id
        ${whereClause}
-       GROUP BY q.qualification_id
-       ORDER BY q.level ASC, q.name ASC`,
+       GROUP BY q.id
+       ORDER BY q.name ASC`,
       {
         type: sequelize.QueryTypes.SELECT,
       }
@@ -38,13 +38,13 @@ class QualificationService {
    * Get qualification by ID
    */
   async getQualificationById(qualificationId) {
-    const [qualifications] = await sequelize.query(
-      `SELECT q.qualification_id, q.code, q.name, q.level, q.duration_years,
-              q.total_credits, q.description, q.is_active, q.created_at, q.updated_at
+    const qualifications = await sequelize.query(
+      `SELECT q.id, q.code, q.name, q.faculty, q.duration_years,
+              q.total_fee, q.is_active, q.created_at, q.updated_at
        FROM qualifications q
-       WHERE q.qualification_id = $1`,
+       WHERE q.id = ?`,
       {
-        bind: [qualificationId],
+        replacements: [qualificationId],
         type: sequelize.QueryTypes.SELECT,
       }
     );
@@ -57,12 +57,12 @@ class QualificationService {
 
     // Get modules for this qualification
     const modules = await sequelize.query(
-      `SELECT module_id, code, name, level, credits, is_active
+      `SELECT id, code, name, year, semester, credits, is_active
        FROM modules
-       WHERE qualification_id = $1
-       ORDER BY level ASC, code ASC`,
+       WHERE qualification_id = ?
+       ORDER BY year ASC, semester ASC, code ASC`,
       {
-        bind: [qualificationId],
+        replacements: [qualificationId],
         type: sequelize.QueryTypes.SELECT,
       }
     );

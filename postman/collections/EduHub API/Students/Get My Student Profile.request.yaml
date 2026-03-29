@@ -1,5 +1,4 @@
 $kind: http-request
-description: Get current student's profile (students only)
 url: "{{base_url}}/students/me"
 method: GET
 headers:

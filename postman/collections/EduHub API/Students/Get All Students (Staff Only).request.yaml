@@ -1,5 +1,4 @@
 $kind: http-request
-description: Get all students with pagination. Admin/Lecturer only.
 url: "{{base_url}}/students?page=1&limit=20"
 method: GET
 headers:

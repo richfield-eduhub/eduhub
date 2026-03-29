@@ -1,5 +1,4 @@
 $kind: http-request
-description: Get all module registrations for a student. Owner or staff only.
 url: "{{base_url}}/students/:id/registrations"
 method: GET
 headers:

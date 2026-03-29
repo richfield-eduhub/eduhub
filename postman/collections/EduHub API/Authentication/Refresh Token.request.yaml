@@ -1,15 +1,11 @@
 $kind: http-request
-description: Refresh access token using refresh token
 url: "{{base_url}}/auth/refresh"
 method: POST
 headers:
   Content-Type: application/json
 body:
   type: text
-  content: |-
-    {
-      "refreshToken": "your_refresh_token_here"
-    }
+  content: ""
 scripts:
   - type: afterResponse
     code: |-
