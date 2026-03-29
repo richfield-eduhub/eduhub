@@ -1,0 +1,20 @@
+$kind: http-request
+description: Get all modules with optional filters
+url: "{{base_url}}/modules"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+queryParams:
+  - key: qualification_id
+    value: ""
+    disabled: true
+    description: Filter by qualification UUID
+  - key: level
+    value: "1"
+    disabled: true
+    description: Filter by module level (1-10)
+  - key: active_only
+    value: "true"
+    disabled: true
+    description: Filter only active modules
+order: 1000

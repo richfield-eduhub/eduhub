@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const morgan = require('morgan');
 const { migrator } = require('./db/migrator');
 
 // Middleware
@@ -23,12 +24,13 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(sanitizeInputs);
 
-// Log requests in development
+// HTTP Request Logging
 if (process.env.NODE_ENV === 'development') {
-  app.use((req, res, next) => {
-    console.log(`${req.method} ${req.path}`);
-    next();
-  });
+  // 'dev' format: :method :url :status :response-time ms - :res[content-length]
+  app.use(morgan('dev'));
+} else {
+  // 'combined' format for production (Apache-style logs)
+  app.use(morgan('combined'));
 }
 
 /**

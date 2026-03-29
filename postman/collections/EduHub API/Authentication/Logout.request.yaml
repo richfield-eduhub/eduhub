@@ -1,0 +1,7 @@
+$kind: http-request
+description: Logout user (client-side token removal)
+url: "{{base_url}}/auth/logout"
+method: POST
+headers:
+  Authorization: Bearer {{access_token}}
+order: 5000

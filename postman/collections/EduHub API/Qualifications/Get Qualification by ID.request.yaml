@@ -1,0 +1,9 @@
+$kind: http-request
+description: Get qualification by ID with all its modules
+url: "{{base_url}}/qualifications/:id"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+pathVariables:
+  id: qualification_uuid_here
+order: 2000

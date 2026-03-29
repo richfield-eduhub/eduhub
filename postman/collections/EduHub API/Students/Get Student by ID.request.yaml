@@ -1,0 +1,11 @@
+$kind: http-request
+description: Get student by ID. Owner or staff only.
+url: "{{base_url}}/students/:id"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+pathVariables:
+  - key: id
+    value: student_uuid_here
+    description: Student UUID
+order: 3000

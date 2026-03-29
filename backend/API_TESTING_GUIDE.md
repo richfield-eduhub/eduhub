@@ -5,7 +5,7 @@
 ### 1. Import Postman Collection
 - Open Postman
 - Click "Import" button
-- Select `EduHub_API.postman_collection.json`
+- Select `postman/EduHub_API.postman_collection.json`
 - The collection will be imported with all endpoints ready to test
 
 ### 2. Start the Server

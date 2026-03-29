@@ -1,0 +1,9 @@
+$kind: http-request
+description: Get module by ID with assigned lecturers
+url: "{{base_url}}/modules/:id"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+pathVariables:
+  id: module_uuid_here
+order: 2000

@@ -1,0 +1,10 @@
+# Use this workspace to collaborate
+workspace:
+  id: b7a9be20-989c-4fe4-bce3-978b5ea36252
+
+localResources:
+  collections:
+    - ../backend/postman/EduHub_API.postman_collection.json
+cloudResources:
+  collections:
+    ../postman/collections/EduHub API: d96cb3ff-d18b-411d-ab20-4773900a762e

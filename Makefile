@@ -1,4 +1,4 @@
-.PHONY: up start db logs psql stop clean restart setup migrate seed schema
+.PHONY: up start dev prod db logs psql stop clean restart setup migrate seed schema backend-stop
 
 # Docker Compose file location
 DOCKER_COMPOSE := docker compose -f database/docker/docker-compose.yml
@@ -21,6 +21,40 @@ up:
 
 # Alias for 'up' - more intuitive for junior devs
 start: up
+
+# Development mode: Start DB + Backend with nodemon (auto-reload)
+dev:
+	@echo "🚀 Starting development environment..."
+	@$(MAKE) up
+	@echo ""
+	@echo "🔧 Starting Node.js backend with nodemon (dev mode)..."
+	@if [ ! -d "backend/node_modules" ]; then \
+		echo "❌ Backend dependencies not installed"; \
+		echo "💡 Run 'make setup' first"; \
+		exit 1; \
+	fi
+	@echo "✅ Backend running at http://localhost:3000"
+	@echo "📊 Morgan logger enabled (dev format)"
+	@echo ""
+	@echo "💡 Press Ctrl+C to stop"
+	@cd backend && npm run dev
+
+# Production mode: Start DB + Backend in production mode
+prod:
+	@echo "🚀 Starting production environment..."
+	@$(MAKE) up
+	@echo ""
+	@echo "🏭 Starting Node.js backend (production mode)..."
+	@if [ ! -d "backend/node_modules" ]; then \
+		echo "❌ Backend dependencies not installed"; \
+		echo "💡 Run 'make setup' first"; \
+		exit 1; \
+	fi
+	@echo "✅ Backend running at http://localhost:3000"
+	@echo "📊 Morgan logger enabled (combined format)"
+	@echo ""
+	@echo "💡 Press Ctrl+C to stop"
+	@cd backend && NODE_ENV=production npm start
 
 # Start PostgreSQL only (no pgAdmin)
 db:
@@ -89,10 +123,18 @@ schema:
 	@echo "✅ Schema exported to: database/schema/schema.sql"
 	@echo "💡 Import this file to https://dbdiagram.io for visualization"
 
-# Stop Docker containers
+# Stop backend Node.js server
+backend-stop:
+	@echo "🛑 Stopping Node.js backend..."
+	@pkill -f "node src/app.js" || echo "No backend process found"
+	@pkill -f "nodemon" || true
+	@echo "✅ Backend stopped"
+
+# Stop Docker containers and backend
 stop:
+	@$(MAKE) backend-stop
 	$(DOCKER_COMPOSE) stop
-	@echo "🛑 Database containers stopped"
+	@echo "🛑 All services stopped"
 
 # Restart containers (useful after config changes)
 restart:
@@ -104,6 +146,8 @@ clean:
 	@echo "⚠️  WARNING: This will delete ALL database data!"
 	@echo "Press Ctrl+C to cancel, or Enter to continue..."
 	@read confirm
+	@$(MAKE) backend-stop
 	$(DOCKER_COMPOSE) down -v
 	@echo "🧹 All containers and data removed"
-	@echo "💡 Run 'make up' to start fresh"
+	@echo "💡 Run 'make dev' to start development environment"
+	@echo "💡 Run 'make up' to start database only"

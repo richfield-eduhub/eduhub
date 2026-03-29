@@ -1,0 +1,22 @@
+$kind: http-request
+description: Get all students with pagination. Admin/Lecturer only.
+url: "{{base_url}}/students?page=1&limit=20"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+queryParams:
+  - key: page
+    value: "1"
+    description: Page number
+  - key: limit
+    value: "20"
+    description: Items per page (max 100)
+  - key: status
+    value: enrolled
+    disabled: true
+    description: Filter by lifecycle_status
+  - key: search
+    value: john
+    disabled: true
+    description: Search by name, email, or student number
+order: 1000

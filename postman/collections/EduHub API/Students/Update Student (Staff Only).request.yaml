@@ -1,0 +1,18 @@
+$kind: http-request
+description: Update student information. Staff only.
+url: "{{base_url}}/students/:id"
+method: PATCH
+headers:
+  Authorization: Bearer {{access_token}}
+  Content-Type: application/json
+pathVariables:
+  id: student_uuid_here
+body:
+  type: text
+  content: |-
+    {
+      "lifecycle_status": "enrolled",
+      "academic_status": "active",
+      "expected_graduation": "2026-12-31"
+    }
+order: 4000

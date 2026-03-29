@@ -1,0 +1,5 @@
+$kind: collection
+description: Complete API collection for EduHub student management system
+variables:
+  base_url: http://localhost:3000/api
+  access_token: ""

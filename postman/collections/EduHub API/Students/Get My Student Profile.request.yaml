@@ -1,0 +1,7 @@
+$kind: http-request
+description: Get current student's profile (students only)
+url: "{{base_url}}/students/me"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+order: 2000

@@ -250,10 +250,12 @@ After running `npm run seed`:
 ---
 
 ## 🚀 Quick Start
-1. Import `EduHub_API.postman_collection.json` to Postman
+1. Import `postman/EduHub_API.postman_collection.json` to Postman
 2. Run server: `npm start`
 3. Test "Register User" → Token auto-saved
 4. Try other endpoints!
+
+📂 **All Postman files in:** `backend/postman/`
 
 ---
 

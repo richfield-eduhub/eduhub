@@ -1,0 +1,14 @@
+$kind: http-request
+description: Get all students enrolled in a module. Staff only.
+url: "{{base_url}}/modules/:id/students"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+queryParams:
+  - key: semester_id
+    value: ""
+    disabled: true
+    description: Filter by semester UUID
+pathVariables:
+  id: module_uuid_here
+order: 3000
