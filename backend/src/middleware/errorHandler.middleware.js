@@ -86,6 +86,13 @@ const errorHandler = (err, req, res, next) => {
 
   // Handle custom errors with statusCode property
   if (err.statusCode) {
+    if (err.data) {
+      return res.status(err.statusCode).json({
+        success: false,
+        message: err.message,
+        data: err.data,
+      });
+    }
     return ResponseHandler.error(res, err.message, err.statusCode);
   }
 

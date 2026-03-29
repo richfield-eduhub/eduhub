@@ -126,7 +126,78 @@ Example:
 
 ---
 
-## 11. GET /api/qualifications
+## 11. GET /api/lecturers
+**Get All Lecturers (Staff Only)**
+- Lists all lecturers with pagination
+- Supports search & filters
+- Requires: Admin or Lecturer role
+
+Query Params:
+- `page` - Page number (default: 1)
+- `limit` - Items per page (max: 100)
+- `campus_id` - Filter by campus
+- `search` - Search name, email, employee number
+
+---
+
+## 12. GET /api/lecturers/me
+**Get My Lecturer Profile**
+- Returns current lecturer's profile & details
+- Requires: Lecturer role + Bearer token
+- Lecturers can only view their own profile
+
+---
+
+## 13. GET /api/lecturers/me/modules
+**Get My Modules**
+- Returns lecturer's assigned modules
+- Shows student counts and semester info
+- Requires: Lecturer role + Bearer token
+
+Query Params:
+- `semester_id` - Filter by specific semester
+- `active_only=true` - Filter only active modules
+
+---
+
+## 14. GET /api/lecturers/:id
+**Get Lecturer by ID**
+- Returns specific lecturer with full details
+- Requires: Staff (Admin or Lecturer)
+- UUID required in URL
+
+---
+
+## 15. GET /api/lecturers/:id/modules
+**Get Lecturer's Modules by ID**
+- Returns lecturer's assigned modules by ID
+- Shows student counts and semester info
+- Requires: Staff (Admin or Lecturer)
+
+Query Params:
+- `semester_id` - Filter by specific semester
+- `active_only=true` - Filter only active modules
+
+---
+
+## 16. PATCH /api/lecturers/:id
+**Update Lecturer Info (Admin Only)**
+- Updates lecturer information
+- Requires: Admin role only
+- UUID required in URL
+
+Example:
+```json
+{
+  "department": "Computer Science",
+  "title": "Dr",
+  "campus_id": "campus_uuid_here"
+}
+```
+
+---
+
+## 17. GET /api/qualifications
 **Get All Qualifications**
 - Lists all degree programs with module counts
 - Public endpoint (no authentication required)
@@ -137,7 +208,7 @@ Query Params:
 
 ---
 
-## 12. GET /api/qualifications/:id
+## 18. GET /api/qualifications/:id
 **Get Qualification Details**
 - Returns program details + all its modules
 - Shows BSc IT, DIT, BCom, etc.
@@ -145,7 +216,7 @@ Query Params:
 
 ---
 
-## 13. GET /api/modules
+## 19. GET /api/modules
 **Get All Modules**
 - Lists all course modules with filters
 - Shows lecturer count, student count
@@ -158,7 +229,7 @@ Query Params:
 
 ---
 
-## 14. GET /api/modules/by-qualification/:qualificationId
+## 20. GET /api/modules/by-qualification/:qualificationId
 **Get Modules by Qualification**
 - Returns all modules for a specific qualification
 - Optional filters by year and semester
@@ -171,7 +242,7 @@ Query Params:
 
 ---
 
-## 15. GET /api/modules/:id
+## 21. GET /api/modules/:id
 **Get Module Details**
 - Returns module info + assigned lecturers
 - Shows credits, description, prerequisites
@@ -179,7 +250,7 @@ Query Params:
 
 ---
 
-## 16. GET /api/modules/:id/students (Staff Only)
+## 22. GET /api/modules/:id/students (Staff Only)
 **Get Students in Module**
 - Lists all students enrolled in module
 - Filter by semester
@@ -190,7 +261,7 @@ Query Params:
 
 ---
 
-## 17. GET /api/campuses
+## 23. GET /api/campuses
 **Get All Campuses**
 - Lists all Richfield campuses (physical + online)
 - Filter by active campuses
@@ -203,7 +274,7 @@ Query Params:
 
 ---
 
-## 18. GET /api/campuses/:id
+## 24. GET /api/campuses/:id
 **Get Campus Details**
 - Returns campus information with:
   - Contact details (phone, WhatsApp, email)
@@ -213,7 +284,7 @@ Query Params:
 
 ---
 
-## 19. GET /api/campuses/by-province
+## 25. GET /api/campuses/by-province
 **Get Campuses Grouped by Province**
 - Returns physical campuses organized by province
 - Useful for displaying regional options
@@ -224,7 +295,7 @@ Query Params:
 
 ---
 
-## 20. GET /api/campuses/by-qualification/:qualificationId
+## 26. GET /api/campuses/by-qualification/:qualificationId
 **Get Campuses Offering Qualification**
 - Returns all campuses that offer a specific qualification
 - Helps students find where they can study their chosen program
@@ -331,9 +402,17 @@ After running `npm run seed`:
 
 ---
 
-**Total Endpoints:** 20 + 1 health check = 21 endpoints
+**Total Endpoints:** 26 + 1 health check = 27 endpoints
 **Server:** Running on port 3000
 **Database:** PostgreSQL (localhost:5433)
+
+**Lecturer Endpoints (6):**
+- GET /api/lecturers (Staff Only)
+- GET /api/lecturers/me (Lecturer Only)
+- GET /api/lecturers/me/modules (Lecturer Only)
+- GET /api/lecturers/:id (Staff Only)
+- GET /api/lecturers/:id/modules (Staff Only)
+- PATCH /api/lecturers/:id (Admin Only)
 
 **Module Endpoints (4):**
 - GET /api/modules
