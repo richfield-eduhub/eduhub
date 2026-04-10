@@ -8,7 +8,6 @@ const MIGRATIONS_DIR = path.join(__dirname, '../database/migrations');
 async function migrator() {
   const queryInterface = sequelize.getQueryInterface();
 
-  // Create tracking table if it doesn't exist yet
   await queryInterface.createTable(
     MIGRATIONS_TABLE,
     {
@@ -18,22 +17,20 @@ async function migrator() {
     { ifNotExists: true }
   );
 
-  // Find out which migrations have already run
   const [ran] = await sequelize.query(`SELECT name FROM "${MIGRATIONS_TABLE}"`);
   const ranNames = new Set(ran.map((r) => r.name));
 
-  // Load migration files in alphabetical (chronological) order
   const files = fs
     .readdirSync(MIGRATIONS_DIR)
     .filter((f) => f.endsWith('.js'))
     .sort();
 
   for (const file of files) {
-    const { migration } = require(path.join(MIGRATIONS_DIR, file));
+    const mod = require(path.join(MIGRATIONS_DIR, file));
+    const migration = mod.migration || mod;
 
-    if (ranNames.has(migration.name)) {
-      continue; // already applied
-    }
+    if (!migration || !migration.name) continue;
+    if (ranNames.has(migration.name)) continue;
 
     const t = await sequelize.transaction();
     try {
