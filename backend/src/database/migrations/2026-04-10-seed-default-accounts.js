@@ -8,10 +8,9 @@ module.exports = {
       console.log('👥 Creating default accounts...');
       const sequelize = queryInterface.sequelize;
 
-      const [tables] = await sequelize.query(
-        `SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name='Users'`
-      );
-      if (tables.length === 0) {
+      try {
+        await sequelize.query(`SELECT 1 FROM "Users" LIMIT 1`);
+      } catch (e) {
         console.log('⚠️  Users table not found — skipping default accounts');
         return;
       }
