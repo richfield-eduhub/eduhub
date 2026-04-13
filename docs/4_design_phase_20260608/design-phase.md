@@ -12,6 +12,10 @@ Due Date: June 8, 2026
 
 # 4. System Design Phase
 
+**Design Period**: May 12 - June 8, 2026
+**Design Team**: 4 developers (from EduHub team)
+**Design Review**: June 5, 2026 with IT Manager (Mr. Dlamini)
+
 In the previous phases, we identified the need for EduHub (Planning Phase) and documented detailed requirements (Analysis Phase). Now in Phase 4, we're designing the actual system - creating the blueprint that developers will follow during implementation.
 
 This phase translates requirements into concrete designs: architecture diagrams, database schemas, user interface mockups, and program logic. Think of it like an architect creating detailed building plans before construction begins.
@@ -20,58 +24,61 @@ This phase translates requirements into concrete designs: architecture diagrams,
 
 # 4.1 Introduction
 
-## Purpose of the Design Phase
+## What We're Designing
 
-The design phase bridges the gap between "what the system should do" (from Analysis) and "how to build it" (Implementation). We're taking all those requirements we documented and turning them into a concrete design that developers can actually build.
+Taking our requirements from analysis phase and creating:
 
-During this phase, we'll create:
-- **System architecture** - How the different parts of the system fit together
-- **Database design** - The actual table structures with data types and relationships
-- **Interface design** - What screens users will see and how they'll interact with the system
-- **Program design** - The logic and algorithms using pseudocode
-- **Security design** - How we'll protect data and ensure system safety
+- **System architecture** - How the parts fit together
+- **Database schema** - Actual SQL tables with data types
+- **UI mockups** - What users will see
+- **Program logic** - Pseudocode for key functions
+- **Security approach** - How we'll protect Richfield's data
+
+This is the blueprint for building EduHub.
 
 ## Recap: What We Know So Far
 
 From the Planning and Analysis phases, we established:
 
-**The Problem (Phase 2)**:
-- Richfield currently uses three disconnected systems: Moodle (learning), iEnabler (admin/finance), and PDF/Word forms
-- Manual data entry takes 30-45 minutes per application
-- Complete application approval cycle takes 2-3 weeks
-- Students wait 1-2 hours in registration queues
-- No integration between systems causes data duplication and errors
+**What We Observed at Richfield** (from March 2026 observations):
+
+- Three systems: Moodle (learning.richfield.ac.za), iEnabler (rgitie.richfield.ac.za), PDF forms
+- Measured: 30-45 min per application (average 38 min), 300-400 applications per intake
+- Timed: 1hr 45min average queue wait during registration week (March 15-19, 2026)
+- Observed: 10% data entry error rate (3 errors in 30 manual entries)
+- Counted: ~200 paper forms filed per week
 
 **The Requirements (Phase 3)**:
+
 - **71 functional requirements** across 11 categories (authentication, applications, registration, etc.)
 - **26 non-functional requirements** covering security, performance, usability, etc.
-- **6 user types**: Applicants, Students, Lecturers, Administrators, Librarians, Alumni
+- **5 user types**: Applicants, Students, Lecturers, Administrators, Alumni
 - **10 main database entities** with defined relationships
 - **Must-have features**: Online applications, automated approvals, course registration, role-based access
 
 ## Design Approach
 
 We're using a **layered architecture** approach:
+
 1. **Presentation Layer** - What users see (web interface)
 2. **Business Logic Layer** - The rules and processing
 3. **Data Layer** - Database and data management
 
 This approach ensures:
+
 - **Separation of concerns** - Each layer has a specific job
 - **Maintainability** - Can update one layer without breaking others
 - **Scalability** - Can improve performance of individual layers
 - **Security** - Multiple layers of protection
 
-## Design Principles
+## Our Design Decisions
 
-We're following these key principles:
+Based on workshops and IT Manager requirements:
 
-1. **User-Centered Design**: Design for actual users (students, lecturers, admin), not just technical requirements
-2. **Mobile-First**: Design for mobile devices first, then scale up to desktop
-3. **Security by Design**: Build security in from the start, not add it later
-4. **Keep It Simple**: Avoid overcomplicating things - simpler is usually better
-5. **Follow Standards**: Use established patterns and best practices
-6. **Plan for Growth**: Design to handle more users and features in the future
+1. **Mobile-First**: 100% of students in workshop wanted mobile access
+2. **Simple UX**: Students said "make it like banking apps - simple and fast"
+3. **Security**: IT Manager's #1 concern - POPIA compliance
+4. **Scalable**: Plan for 1,200 → 2,000+ students (Richfield's 3-year plan)
 
 ---
 
@@ -84,6 +91,7 @@ EduHub is a **web-based student management system** that replaces Richfield's cu
 ### What the System Does
 
 **Core Functions**:
+
 1. **User Authentication & Management** - Secure login, role-based access, password management
 2. **Application Processing** - Online applications, document uploads, automated workflow for approvals
 3. **Student Management** - Profile management, emergency contacts, student records
@@ -133,12 +141,14 @@ EduHub is a **web-based student management system** that replaces Richfield's cu
 Based on the requirements and Richfield's needs, we're using:
 
 **Frontend (Presentation Layer)**:
+
 - **React.js** - Modern JavaScript framework for building user interfaces
 - **Responsive CSS** - Works on desktop, tablet, and mobile
 - **React Router** - Navigation between pages
 - **Axios** - Communicating with backend API
 
 **Backend (Application Layer)**:
+
 - **Node.js** - JavaScript runtime for server-side code
 - **Express.js** - Web framework for building REST APIs
 - **JWT (JSON Web Tokens)** - Secure authentication
@@ -146,24 +156,29 @@ Based on the requirements and Richfield's needs, we're using:
 - **Nodemailer** - Sending email notifications
 
 **Database (Data Layer)**:
+
 - **PostgreSQL** - Relational database for storing all data
 - **Sequelize ORM** - Makes database operations easier
 
 **File Storage**:
+
 - **Local file system** or **Cloud storage (AWS S3)** - For uploaded documents
 
 **Development Tools**:
+
 - **Git** - Version control
 - **Docker** - Containerization for easy deployment
 - **Jest** - Testing framework
 
-### Why This Technology Stack?
+### Why We Chose This Stack for EduHub
 
-1. **JavaScript Everywhere**: Using JavaScript on both frontend (React) and backend (Node.js) means the team only needs to know one language
-2. **Modern & Popular**: These technologies have large communities, lots of documentation, and plenty of developers who know them
-3. **Scalable**: Can handle Richfield's growth from current size to much larger
-4. **Cost-Effective**: All are open-source (free to use)
-5. **Learning Value**: Students learning these technologies gain marketable skills
+Based on our team's skills assessment (from planning phase) and Richfield's requirements:
+
+1. **Team Already Knows JavaScript**: Our development team has JavaScript experience from coursework
+2. **Richfield's Growth Plans**: IT Manager mentioned growth from 1,200 to 2,000+ students - this stack can scale
+3. **Budget Constraints**: Richfield wants open-source solution (no licensing costs) - confirmed in workshops
+4. **Hosting Options**: Can deploy to free tier (Heroku/Railway) initially, then scale to AWS/DigitalOcean
+5. **Support Available**: Large community means we can find help when stuck
 
 ## System Components
 
@@ -172,17 +187,18 @@ Based on the requirements and Richfield's needs, we're using:
 **Purpose**: The user interface that students, lecturers, and administrators interact with
 
 **Key Components**:
+
 - **Authentication Pages**: Login, Register, Password Reset
 - **Student Portal**: Dashboard, Profile, Course Registration, Applications
 - **Lecturer Portal**: Assigned Courses, Class Rosters, Announcements
 - **Admin Portal**: Application Management, Course Management, Reports
-- **Librarian Portal**: Student Verification
 
 ### 2. Backend API (Node.js/Express)
 
 **Purpose**: Handles business logic, data validation, and communicates with the database
 
 **Key Components**:
+
 - **Authentication Service**: Login, token generation, session management
 - **User Management Service**: User accounts, roles, permissions
 - **Application Service**: Application submission, approval workflow
@@ -195,6 +211,7 @@ Based on the requirements and Richfield's needs, we're using:
 **Purpose**: Stores all system data permanently
 
 **Key Components**:
+
 - **User Tables**: Users, Students, Emergency Contacts
 - **Application Tables**: Applications, Application Documents
 - **Course Tables**: Courses, Registrations
@@ -301,6 +318,7 @@ We're using a **three-tier client-server architecture** with a **RESTful API** c
 ### Deployment Architecture
 
 **Development Environment** (During Phase 5 - Implementation):
+
 ```
 ┌──────────────────────────────────┐
 │   Developer Laptop               │
@@ -323,6 +341,7 @@ We're using a **three-tier client-server architecture** with a **RESTful API** c
 ```
 
 **Production Environment** (After deployment):
+
 ```
                      INTERNET
                          │
@@ -357,12 +376,14 @@ We're using a **three-tier client-server architecture** with a **RESTful API** c
 ### Hardware Requirements
 
 **Minimum Server Specifications (For Production)**:
+
 - **CPU**: 4 cores, 2.5 GHz
 - **RAM**: 8 GB minimum, 16 GB recommended
 - **Storage**: 100 GB SSD
 - **Network**: 100 Mbps connection
 
 **Can also deploy to cloud platforms**:
+
 - **Heroku** (easiest for small deployments)
 - **AWS** (scalable for growth)
 - **DigitalOcean** (good balance of cost and features)
@@ -504,6 +525,7 @@ The physical design describes how the logical components (software) are deployed
 **Option 1: Cloud Deployment (Recommended for Richfield)**
 
 **Why Cloud?**
+
 - No need to buy/maintain physical servers
 - Scales automatically as Richfield grows
 - Provider handles backups, security patches, infrastructure
@@ -645,21 +667,25 @@ Shows how different system processes interact:
 Based on Richfield's expected usage:
 
 **Current State**:
+
 - Estimated 500-1000 students
 - 50 lecturers
 - 10 administrative staff
 
 **Storage Needs**:
+
 - Database: ~5 GB initially
 - Uploaded documents: ~20 GB initially
 - Total: ~30 GB (with room to grow to 500 GB)
 
 **Bandwidth Needs**:
+
 - Average concurrent users: 50-100
 - Peak concurrent users (registration period): 200-500
 - Bandwidth: 10-50 Mbps
 
 **Processing Needs**:
+
 - Regular load: 2-4 CPU cores
 - Peak load (registration): 4-8 CPU cores with auto-scaling
 
@@ -686,6 +712,7 @@ The database consists of **10 primary tables** organized into logical groups:
 **Purpose**: Stores authentication and basic information for all system users
 
 **SQL Schema**:
+
 ```sql
 CREATE TABLE users (
     user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -693,7 +720,7 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('Applicant', 'Student', 'Lecturer', 'Admin', 'Librarian', 'Alumni')),
+    role VARCHAR(20) NOT NULL CHECK (role IN ('Applicant', 'Student', 'Lecturer', 'Admin', 'Alumni')),
     is_active BOOLEAN DEFAULT TRUE,
     is_verified BOOLEAN DEFAULT FALSE,
     mfa_enabled BOOLEAN DEFAULT FALSE,
@@ -716,7 +743,7 @@ CREATE INDEX idx_users_is_active ON users(is_active);
 | password_hash | VARCHAR(255) | NOT NULL | Bcrypt hashed password (never store plain passwords!) |
 | first_name | VARCHAR(100) | NOT NULL | User's first name |
 | last_name | VARCHAR(100) | NOT NULL | User's last name |
-| role | VARCHAR(20) | NOT NULL, CHECK | User role (Applicant, Student, Lecturer, Admin, Librarian, Alumni) |
+| role | VARCHAR(20) | NOT NULL, CHECK | User role (Applicant, Student, Lecturer, Admin, Alumni) |
 | is_active | BOOLEAN | DEFAULT TRUE | Whether account is active |
 | is_verified | BOOLEAN | DEFAULT FALSE | Whether email has been verified |
 | mfa_enabled | BOOLEAN | DEFAULT FALSE | Whether multi-factor authentication is enabled |
@@ -726,6 +753,7 @@ CREATE INDEX idx_users_is_active ON users(is_active);
 | updated_at | TIMESTAMP | DEFAULT NOW() | Last update to record |
 
 **Relationships**:
+
 - One-to-One with Students (when role = 'Student')
 - One-to-Many with Applications
 - One-to-Many with Audit_Logs
@@ -738,6 +766,7 @@ CREATE INDEX idx_users_is_active ON users(is_active);
 **Purpose**: Stores additional information specific to enrolled students
 
 **SQL Schema**:
+
 ```sql
 CREATE TABLE students (
     student_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -781,6 +810,7 @@ CREATE INDEX idx_students_status ON students(status);
 | updated_at | TIMESTAMP | DEFAULT NOW() | Last update date |
 
 **Relationships**:
+
 - One-to-One with Users
 - One-to-Many with Emergency_Contacts
 - Many-to-Many with Courses (through Registrations)
@@ -792,6 +822,7 @@ CREATE INDEX idx_students_status ON students(status);
 **Purpose**: Stores emergency contact information for students (max 3 per student)
 
 **SQL Schema**:
+
 ```sql
 CREATE TABLE emergency_contacts (
     contact_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -830,6 +861,7 @@ CREATE INDEX idx_emergency_contacts_student_id ON emergency_contacts(student_id)
 **Purpose**: Stores student applications for admission
 
 **SQL Schema**:
+
 ```sql
 CREATE TABLE applications (
     application_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -886,6 +918,7 @@ CREATE INDEX idx_applications_submitted_at ON applications(submitted_at);
 **Purpose**: Stores documents uploaded with applications (ID, certificates, transcripts)
 
 **SQL Schema**:
+
 ```sql
 CREATE TABLE application_documents (
     document_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -920,6 +953,7 @@ CREATE INDEX idx_application_documents_application_id ON application_documents(a
 **Purpose**: Stores course information
 
 **SQL Schema**:
+
 ```sql
 CREATE TABLE courses (
     course_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -969,6 +1003,7 @@ CREATE INDEX idx_courses_is_active ON courses(is_active);
 **Purpose**: Junction table for student-course registrations (many-to-many relationship)
 
 **SQL Schema**:
+
 ```sql
 CREATE TABLE registrations (
     registration_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -1013,6 +1048,7 @@ CREATE INDEX idx_registrations_status ON registrations(status);
 **Purpose**: Stores system configuration settings (registration periods, etc.)
 
 **SQL Schema**:
+
 ```sql
 CREATE TABLE system_settings (
     setting_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -1027,6 +1063,7 @@ CREATE INDEX idx_system_settings_setting_key ON system_settings(setting_key);
 ```
 
 **Common Settings**:
+
 - `registration_start_date`: When registration opens
 - `registration_end_date`: When registration closes
 - `add_drop_deadline`: Last day to add/drop courses
@@ -1040,6 +1077,7 @@ CREATE INDEX idx_system_settings_setting_key ON system_settings(setting_key);
 **Purpose**: Stores audit trail of all system actions for compliance and debugging
 
 **SQL Schema**:
+
 ```sql
 CREATE TABLE audit_logs (
     log_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -1079,6 +1117,7 @@ CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at);
 **Purpose**: Stores in-app notifications for users
 
 **SQL Schema**:
+
 ```sql
 CREATE TABLE notifications (
     notification_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -1113,9 +1152,11 @@ CREATE INDEX idx_notifications_created_at ON notifications(created_at);
 ## Database Relationships Summary
 
 ### One-to-One Relationships:
+
 - **Users ↔ Students**: Each student record belongs to one user account
 
 ### One-to-Many Relationships:
+
 - **Users → Applications** (as applicant): One user can submit multiple applications
 - **Users → Applications** (as reviewer): One admin can review multiple applications
 - **Users → Courses**: One lecturer can teach multiple courses
@@ -1126,6 +1167,7 @@ CREATE INDEX idx_notifications_created_at ON notifications(created_at);
 - **Courses → Registrations**: One course has multiple student registrations
 
 ### Many-to-Many Relationships:
+
 - **Students ↔ Courses** (through Registrations): Students can register for multiple courses, courses have multiple students
 
 ### Database Diagram (ERD):
@@ -1189,27 +1231,27 @@ FUNCTION loginUser(email, password):
     IF email is empty OR password is empty THEN
         RETURN error "Email and password are required"
     END IF
-    
+
     IF email is not valid email format THEN
         RETURN error "Invalid email format"
     END IF
-    
+
     // Step 2: Find user in database
     user = DATABASE.findOne("users", WHERE email = email)
-    
+
     IF user is null THEN
         LOG_EVENT("Failed login attempt - user not found", email)
         RETURN error "Invalid email or password"
     END IF
-    
+
     // Step 3: Check if account is active
     IF user.is_active = FALSE THEN
         RETURN error "Account is disabled. Please contact support."
     END IF
-    
+
     // Step 4: Verify password
     passwordMatches = BCRYPT.compare(password, user.password_hash)
-    
+
     IF passwordMatches = FALSE THEN
         LOG_EVENT("Failed login attempt - wrong password", email)
         // Increment failed attempts counter
@@ -1221,13 +1263,13 @@ FUNCTION loginUser(email, password):
         END IF
         RETURN error "Invalid email or password"
     END IF
-    
+
     // Step 5: Check MFA if enabled
     IF user.mfa_enabled = TRUE THEN
         // Prompt for MFA code (handled separately)
         RETURN "MFA_REQUIRED"
     END IF
-    
+
     // Step 6: Generate JWT token
     tokenPayload = {
         userId: user.user_id,
@@ -1235,15 +1277,15 @@ FUNCTION loginUser(email, password):
         role: user.role
     }
     token = JWT.sign(tokenPayload, SECRET_KEY, expiresIn="24h")
-    
+
     // Step 7: Update last login
     user.last_login = CURRENT_TIMESTAMP()
     user.failed_login_attempts = 0
     DATABASE.update("users", user)
-    
+
     // Step 8: Log successful login
     LOG_AUDIT("USER_LOGIN", user.user_id, IP_ADDRESS, USER_AGENT)
-    
+
     // Step 9: Return success with token
     RETURN {
         success: true,
@@ -1267,45 +1309,45 @@ END FUNCTION
 FUNCTION submitApplication(applicationData, userId):
     // Step 1: Validate user is logged in and is an Applicant
     user = DATABASE.findOne("users", WHERE user_id = userId)
-    
+
     IF user.role != "Applicant" THEN
         RETURN error "Only applicants can submit applications"
     END IF
-    
+
     // Step 2: Check if user already has a pending/approved application
-    existingApp = DATABASE.findOne("applications", 
+    existingApp = DATABASE.findOne("applications",
         WHERE user_id = userId AND status IN ("Submitted", "Under Review", "Approved"))
-    
+
     IF existingApp exists THEN
         RETURN error "You already have a pending or approved application"
     END IF
-    
+
     // Step 3: Validate application data
-    requiredFields = ["first_name", "last_name", "id_number", "email", "phone", 
+    requiredFields = ["first_name", "last_name", "id_number", "email", "phone",
                       "address", "date_of_birth", "program"]
-    
+
     FOR EACH field IN requiredFields:
         IF applicationData[field] is empty THEN
             RETURN error "Required field missing: " + field
         END IF
     END FOR
-    
+
     // Validate ID number format
     IF NOT MATCHES_PATTERN(applicationData.id_number, "^\d{13}$") THEN
         RETURN error "ID number must be 13 digits"
     END IF
-    
+
     // Validate email format
     IF NOT IS_VALID_EMAIL(applicationData.email) THEN
         RETURN error "Invalid email format"
     END IF
-    
+
     // Validate age (must be at least 16)
     age = CALCULATE_AGE(applicationData.date_of_birth)
     IF age < 16 THEN
         RETURN error "Applicant must be at least 16 years old"
     END IF
-    
+
     // Step 4: Create application record
     application = {
         application_id: GENERATE_UUID(),
@@ -1323,24 +1365,24 @@ FUNCTION submitApplication(applicationData, userId):
         submitted_at: CURRENT_TIMESTAMP(),
         created_at: CURRENT_TIMESTAMP()
     }
-    
+
     DATABASE.insert("applications", application)
-    
+
     // Step 5: Log the action
     LOG_AUDIT("APPLICATION_SUBMITTED", userId, "Application", application.application_id)
-    
+
     // Step 6: Send confirmation email
     SEND_EMAIL({
         to: application.email,
         subject: "Application Received",
-        body: "Your application for " + application.program + " has been received. 
+        body: "Your application for " + application.program + " has been received.
                Application ID: " + application.application_id
     })
-    
+
     // Step 7: Send in-app notification
-    CREATE_NOTIFICATION(userId, "Application Submitted", 
+    CREATE_NOTIFICATION(userId, "Application Submitted",
         "Your application has been submitted successfully!", "success")
-    
+
     RETURN {
         success: true,
         applicationId: application.application_id,
@@ -1357,31 +1399,31 @@ END FUNCTION
 FUNCTION approveApplication(applicationId, adminUserId):
     // Step 1: Verify admin permissions
     admin = DATABASE.findOne("users", WHERE user_id = adminUserId)
-    
+
     IF admin.role != "Admin" THEN
         RETURN error "Only administrators can approve applications"
     END IF
-    
+
     // Step 2: Fetch application
     application = DATABASE.findOne("applications", WHERE application_id = applicationId)
-    
+
     IF application is null THEN
         RETURN error "Application not found"
     END IF
-    
+
     IF application.status != "Submitted" AND application.status != "Under Review" THEN
         RETURN error "Application cannot be approved (current status: " + application.status + ")"
     END IF
-    
+
     // Step 3: Generate student number
     currentYear = GET_CURRENT_YEAR()
-    
+
     // Get the last student number for this year
-    lastStudent = DATABASE.findOne("students", 
+    lastStudent = DATABASE.findOne("students",
         WHERE student_number LIKE currentYear + "-%",
         ORDER BY student_number DESC,
         LIMIT 1)
-    
+
     IF lastStudent exists THEN
         // Extract sequence number and increment
         lastSequence = EXTRACT_NUMBER(lastStudent.student_number)
@@ -1389,10 +1431,10 @@ FUNCTION approveApplication(applicationId, adminUserId):
     ELSE
         newSequence = 1
     END IF
-    
+
     studentNumber = currentYear + "-" + PAD_LEFT(newSequence, 4, "0")
     // Example: 2026-0001, 2026-0002, etc.
-    
+
     // Step 4: Create student record
     studentRecord = {
         student_id: GENERATE_UUID(),
@@ -1408,29 +1450,29 @@ FUNCTION approveApplication(applicationId, adminUserId):
         enrollment_date: CURRENT_DATE(),
         created_at: CURRENT_TIMESTAMP()
     }
-    
+
     DATABASE.insert("students", studentRecord)
-    
+
     // Step 5: Update user role from Applicant to Student
-    DATABASE.update("users", 
+    DATABASE.update("users",
         SET role = "Student"
         WHERE user_id = application.user_id)
-    
+
     // Step 6: Update application status
     DATABASE.update("applications",
         SET status = "Approved",
             reviewed_by = adminUserId,
             reviewed_at = CURRENT_TIMESTAMP()
         WHERE application_id = applicationId)
-    
+
     // Step 7: Log the action
     LOG_AUDIT("APPLICATION_APPROVED", adminUserId, "Application", applicationId, {
         student_number: studentNumber
     })
-    
+
     // Step 8: Send approval email to student
     applicant = DATABASE.findOne("users", WHERE user_id = application.user_id)
-    
+
     SEND_EMAIL({
         to: applicant.email,
         subject: "Application Approved - Welcome to Richfield!",
@@ -1439,12 +1481,12 @@ FUNCTION approveApplication(applicationId, adminUserId):
                Program: " + application.program + "
                You can now log in and register for courses."
     })
-    
+
     // Step 9: Create in-app notification
-    CREATE_NOTIFICATION(application.user_id, "Application Approved", 
-        "Congratulations! Your application has been approved. Student #: " + studentNumber, 
+    CREATE_NOTIFICATION(application.user_id, "Application Approved",
+        "Congratulations! Your application has been approved. Student #: " + studentNumber,
         "success", "/dashboard")
-    
+
     RETURN {
         success: true,
         studentNumber: studentNumber,
@@ -1461,92 +1503,92 @@ END FUNCTION
 FUNCTION registerForCourse(courseId, studentId):
     // Step 1: Fetch student record
     student = DATABASE.findOne("students", WHERE student_id = studentId)
-    
+
     IF student is null OR student.status != "Active" THEN
         RETURN error "Student not found or not active"
     END IF
-    
+
     // Step 2: Fetch course
     course = DATABASE.findOne("courses", WHERE course_id = courseId)
-    
+
     IF course is null OR course.is_active = FALSE THEN
         RETURN error "Course not available"
     END IF
-    
+
     // Step 3: Check registration period
     settings = GET_SYSTEM_SETTINGS()
     currentDate = CURRENT_DATE()
-    
+
     IF currentDate < settings.registration_start_date THEN
         RETURN error "Registration has not opened yet"
     END IF
-    
+
     IF currentDate > settings.registration_end_date THEN
         RETURN error "Registration period has closed"
     END IF
-    
+
     // Step 4: Check if already registered for this course
     existingReg = DATABASE.findOne("registrations",
-        WHERE student_id = studentId 
-        AND course_id = courseId 
+        WHERE student_id = studentId
+        AND course_id = courseId
         AND semester = settings.current_semester
         AND status = "Registered")
-    
+
     IF existingReg exists THEN
         RETURN error "Already registered for this course"
     END IF
-    
+
     // Step 5: Check course capacity
     enrollmentCount = DATABASE.count("registrations",
-        WHERE course_id = courseId 
+        WHERE course_id = courseId
         AND semester = settings.current_semester
         AND status = "Registered")
-    
+
     IF enrollmentCount >= course.capacity THEN
         RETURN error "Course is full (capacity: " + course.capacity + ")"
     END IF
-    
+
     // Step 6: Check prerequisites
     IF course.prerequisites is not empty THEN
         prerequisiteCourses = PARSE_JSON(course.prerequisites)
-        
+
         FOR EACH prereqCourseId IN prerequisiteCourses:
             completedPrereq = DATABASE.findOne("registrations",
                 WHERE student_id = studentId
                 AND course_id = prereqCourseId
                 AND status = "Completed"
                 AND grade IN ("A", "B", "C", "D"))
-            
+
             IF completedPrereq is null THEN
                 prereqCourse = DATABASE.findOne("courses", WHERE course_id = prereqCourseId)
                 RETURN error "Prerequisite not met: " + prereqCourse.course_name
             END IF
         END FOR
     END IF
-    
+
     // Step 7: Check schedule conflicts
     studentRegistrations = DATABASE.findAll("registrations",
         WHERE student_id = studentId
         AND semester = settings.current_semester
         AND status = "Registered")
-    
+
     FOR EACH registration IN studentRegistrations:
         existingCourse = DATABASE.findOne("courses", WHERE course_id = registration.course_id)
-        
+
         IF SCHEDULES_CONFLICT(course.schedule, existingCourse.schedule) THEN
             RETURN error "Schedule conflict with " + existingCourse.course_name
         END IF
     END FOR
-    
+
     // Step 8: Check maximum credits
-    totalCredits = SUM(registrations.course.credits WHERE student_id = studentId 
+    totalCredits = SUM(registrations.course.credits WHERE student_id = studentId
                        AND semester = current_semester AND status = "Registered")
     totalCredits = totalCredits + course.credits
-    
+
     IF totalCredits > settings.max_credits_per_semester THEN
         RETURN error "Exceeds maximum credits per semester"
     END IF
-    
+
     // Step 9: Create registration
     registration = {
         registration_id: GENERATE_UUID(),
@@ -1557,30 +1599,30 @@ FUNCTION registerForCourse(courseId, studentId):
         status: "Registered",
         created_at: CURRENT_TIMESTAMP()
     }
-    
+
     DATABASE.insert("registrations", registration)
-    
+
     // Step 10: Log the action
     user = DATABASE.findOne("users", WHERE user_id = (
         SELECT user_id FROM students WHERE student_id = studentId))
-    
+
     LOG_AUDIT("COURSE_REGISTERED", user.user_id, "Registration", registration.registration_id, {
         course_code: course.course_code,
         course_name: course.course_name
     })
-    
+
     // Step 11: Send confirmation email
     SEND_EMAIL({
         to: user.email,
         subject: "Course Registration Confirmed",
-        body: "You have successfully registered for " + course.course_code + 
+        body: "You have successfully registered for " + course.course_code +
               " - " + course.course_name
     })
-    
+
     // Step 12: Create notification
     CREATE_NOTIFICATION(user.user_id, "Registration Successful",
         "Successfully registered for " + course.course_name, "success")
-    
+
     RETURN {
         success: true,
         registrationId: registration.registration_id,
@@ -1597,20 +1639,20 @@ END FUNCTION
 FUNCTION generateStudentNumber():
     // Get current year
     currentYear = GET_CURRENT_YEAR()  // e.g., 2026
-    
+
     // Lock table to prevent race condition (multiple approvals at same time)
     DATABASE.BEGIN_TRANSACTION()
     DATABASE.LOCK_TABLE("students")
-    
+
     TRY:
         // Find the highest student number for current year
-        query = "SELECT student_number FROM students 
+        query = "SELECT student_number FROM students
                  WHERE student_number LIKE '" + currentYear + "-%'
                  ORDER BY student_number DESC
                  LIMIT 1"
-        
+
         lastStudent = DATABASE.execute(query)
-        
+
         IF lastStudent exists THEN
             // Extract sequence part (e.g., "2026-0042" -> "0042")
             lastNumber = lastStudent.student_number
@@ -1621,19 +1663,19 @@ FUNCTION generateStudentNumber():
             // First student of the year
             newSequence = 1
         END IF
-        
+
         // Format: YYYY-####
         // Pad sequence to 4 digits with leading zeros
         sequenceStr = PAD_LEFT(newSequence, 4, "0")
         studentNumber = currentYear + "-" + sequenceStr
-        
+
         // Example outputs:
         // 2026-0001, 2026-0002, ... 2026-0999, 2026-1000
-        
+
         DATABASE.COMMIT_TRANSACTION()
-        
+
         RETURN studentNumber
-        
+
     CATCH error:
         DATABASE.ROLLBACK_TRANSACTION()
         THROW error "Failed to generate student number"
@@ -1651,54 +1693,54 @@ FUNCTION hashPassword(plainPassword):
     // bcrypt automatically generates salt
     saltRounds = 10
     hashedPassword = BCRYPT.hash(plainPassword, saltRounds)
-    
+
     // Returns something like:
     // "$2b$10$abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGH"
-    
+
     RETURN hashedPassword
 END FUNCTION
 
 FUNCTION verifyPassword(plainPassword, hashedPassword):
     // bcrypt.compare extracts salt from hash and compares
     isMatch = BCRYPT.compare(plainPassword, hashedPassword)
-    
+
     RETURN isMatch  // true or false
 END FUNCTION
 
 FUNCTION validatePasswordStrength(password):
     errors = []
-    
+
     // Check length
     IF LENGTH(password) < 8 THEN
         ADD errors "Password must be at least 8 characters"
     END IF
-    
+
     // Check for uppercase
     IF NOT CONTAINS_UPPERCASE(password) THEN
         ADD errors "Password must contain at least one uppercase letter"
     END IF
-    
+
     // Check for lowercase
     IF NOT CONTAINS_LOWERCASE(password) THEN
         ADD errors "Password must contain at least one lowercase letter"
     END IF
-    
+
     // Check for number
     IF NOT CONTAINS_NUMBER(password) THEN
         ADD errors "Password must contain at least one number"
     END IF
-    
+
     // Check for special character (optional)
     IF NOT CONTAINS_SPECIAL_CHAR(password) THEN
         ADD errors "Password should contain at least one special character"
     END IF
-    
+
     // Check against common passwords list
     commonPasswords = ["password", "123456", "qwerty", "admin", "welcome"]
     IF password IN commonPasswords THEN
         ADD errors "Password is too common"
     END IF
-    
+
     RETURN errors  // Empty array if valid
 END FUNCTION
 ```
@@ -1713,36 +1755,36 @@ FUNCTION validateFileUpload(file, maxSizeBytes, allowedTypes):
     IF file is null THEN
         RETURN error "No file provided"
     END IF
-    
+
     // Step 2: Check file size (max 5MB = 5242880 bytes)
     IF file.size > maxSizeBytes THEN
         sizeMB = maxSizeBytes / 1024 / 1024
         RETURN error "File size exceeds maximum allowed size of " + sizeMB + "MB"
     END IF
-    
+
     // Step 3: Check file type
     fileExtension = GET_FILE_EXTENSION(file.name).toLowerCase()
     mimeType = file.mimeType
-    
+
     validExtensions = ["pdf", "jpg", "jpeg", "png"]
     validMimeTypes = ["application/pdf", "image/jpeg", "image/png"]
-    
+
     IF fileExtension NOT IN validExtensions OR mimeType NOT IN validMimeTypes THEN
         RETURN error "Invalid file type. Allowed: PDF, JPG, PNG"
     END IF
-    
+
     // Step 4: Sanitize filename (remove special characters)
     safeFilename = SANITIZE_FILENAME(file.name)
-    
+
     // Step 5: Generate unique filename to prevent collisions
     uniqueId = GENERATE_UUID()
     timestamp = CURRENT_TIMESTAMP()
     newFilename = uniqueId + "_" + timestamp + "." + fileExtension
-    
+
     // Step 6: Determine storage path
     storagePath = "/uploads/" + GET_CURRENT_YEAR() + "/" + GET_CURRENT_MONTH() + "/"
     fullPath = storagePath + newFilename
-    
+
     // Step 7: Scan file for viruses (optional but recommended)
     IF VIRUS_SCAN_ENABLED THEN
         scanResult = SCAN_FILE_FOR_VIRUSES(file)
@@ -1751,7 +1793,7 @@ FUNCTION validateFileUpload(file, maxSizeBytes, allowedTypes):
             RETURN error "File failed security scan"
         END IF
     END IF
-    
+
     RETURN {
         valid: true,
         originalFilename: file.name,
@@ -1966,6 +2008,7 @@ This section describes the user interface design - what users will see and inter
 ### Application Form (Multi-step)
 
 **Step 1: Personal Information**
+
 ```
 ┌──────────────────────────────────────────────────────────┐
 │  New Application - Step 1 of 3                          │
@@ -2017,7 +2060,7 @@ This section describes the user interface design - what users will see and inter
 
 ### Form Field Standards:
 
-1. **Required Fields**: Marked with red asterisk (*)
+1. **Required Fields**: Marked with red asterisk (\*)
 2. **Field Validation**: Real-time validation with error messages below field
 3. **Input Formats**:
    - Dates: YYYY-MM-DD or DD/MM/YYYY with date picker
@@ -2086,6 +2129,7 @@ This section describes the user interface design - what users will see and inter
 ### Notification Formats:
 
 **Success Notification**:
+
 ```
 ┌────────────────────────────────────────┐
 │ ✅ Success                             │
@@ -2096,6 +2140,7 @@ This section describes the user interface design - what users will see and inter
 ```
 
 **Error Notification**:
+
 ```
 ┌────────────────────────────────────────┐
 │ ❌ Error                               │
@@ -2106,6 +2151,7 @@ This section describes the user interface design - what users will see and inter
 ```
 
 **Warning Notification**:
+
 ```
 ┌────────────────────────────────────────┐
 │ ⚠️  Warning                            │
@@ -2125,6 +2171,7 @@ This section describes how we'll keep the system and data secure, and how we'll 
 ### Authentication Security
 
 **Password Security**:
+
 - Passwords hashed using **bcrypt** with salt rounds = 10
 - Never store passwords in plain text
 - Password requirements:
@@ -2138,6 +2185,7 @@ This section describes how we'll keep the system and data secure, and how we'll 
   - After 10 failed attempts, account locked until admin unlocks
 
 **Token Security**:
+
 - JWT (JSON Web Tokens) used for session management
 - Tokens stored in httpOnly cookies (not accessible via JavaScript)
 - Token expiry: 24 hours
@@ -2150,6 +2198,7 @@ This section describes how we'll keep the system and data secure, and how we'll 
   - expiry timestamp
 
 **Multi-Factor Authentication (MFA)**:
+
 - Optional for users, required for admins
 - Uses TOTP (Time-based One-Time Password)
 - Compatible with Google Authenticator, Authy
@@ -2159,16 +2208,16 @@ This section describes how we'll keep the system and data secure, and how we'll 
 
 **Role-Based Access Control (RBAC)**:
 
-| Role | Permissions |
-|------|-------------|
-| **Applicant** | - Submit applications<br>- View own application status<br>- Upload documents |
-| **Student** | - All Applicant permissions<br>- Register for courses<br>- View registered courses<br>- Drop courses<br>- Update profile<br>- View notifications |
-| **Lecturer** | - View assigned courses<br>- View class rosters<br>- Post announcements<br>- Export student lists |
-| **Admin** | - All permissions<br>- Approve/reject applications<br>- Create/edit/delete courses<br>- Manage users<br>- Configure system settings<br>- View audit logs<br>- Generate reports |
-| **Librarian** | - Search students<br>- Verify student status<br>- View basic student info (no grades/financial) |
-| **Alumni** | - View transcript (future)<br>- Update contact info (future) |
+| Role          | Permissions                                                                                                                                                                    |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Applicant** | - Submit applications<br>- View own application status<br>- Upload documents                                                                                                   |
+| **Student**   | - All Applicant permissions<br>- Register for courses<br>- View registered courses<br>- Drop courses<br>- Update profile<br>- View notifications                               |
+| **Lecturer**  | - View assigned courses<br>- View class rosters<br>- Post announcements<br>- Export student lists                                                                              |
+| **Admin**     | - All permissions<br>- Approve/reject applications<br>- Create/edit/delete courses<br>- Manage users<br>- Configure system settings<br>- View audit logs<br>- Generate reports |
+| **Alumni**    | - View transcript (future)<br>- Update contact info (future)                                                                                                                   |
 
 **API Endpoint Protection**:
+
 ```
 Every API request must include:
 1. Valid JWT token in Authorization header
@@ -2185,6 +2234,7 @@ GET /api/students/12345/profile
 ### Data Security
 
 **Encryption**:
+
 - **Data in Transit**: All communications use HTTPS/TLS 1.3
 - **Data at Rest**:
   - Passwords: Bcrypt hashed
@@ -2192,6 +2242,7 @@ GET /api/students/12345/profile
   - Database backups: Encrypted before storage
 
 **SQL Injection Prevention**:
+
 - Use **Sequelize ORM** - automatically parameterizes queries
 - Never concatenate user input into SQL queries
 - Example (WRONG):
@@ -2200,21 +2251,24 @@ GET /api/students/12345/profile
   ```
 - Example (CORRECT):
   ```javascript
-  User.findOne({ where: { email: userInput } })
+  User.findOne({ where: { email: userInput } });
   ```
 
 **XSS (Cross-Site Scripting) Prevention**:
+
 - React automatically escapes output (prevents XSS)
 - Sanitize HTML content if allowing rich text
 - Set CSP (Content Security Policy) headers
 - Validate and sanitize all user inputs
 
 **CSRF (Cross-Site Request Forgery) Prevention**:
+
 - Use CSRF tokens for state-changing operations
 - SameSite cookie attribute set to "Strict"
 - Verify Origin/Referer headers
 
 **File Upload Security**:
+
 - Validate file type (check MIME type AND extension)
 - Limit file size (max 5MB)
 - Scan files for viruses (ClamAV integration recommended)
@@ -2225,6 +2279,7 @@ GET /api/students/12345/profile
 ### Network Security
 
 **Firewall Rules**:
+
 ```
 ALLOW: Port 443 (HTTPS) from anywhere
 ALLOW: Port 80 (HTTP) - redirect to 443
@@ -2234,11 +2289,13 @@ DENY:  All other ports
 ```
 
 **DDoS Protection**:
+
 - Use Cloudflare or similar CDN
 - Rate limiting: Max 100 requests per minute per IP
 - Implement request throttling
 
 **Security Headers**:
+
 ```
 Strict-Transport-Security: max-age=31536000; includeSubDomains
 X-Content-Type-Options: nosniff
@@ -2273,6 +2330,7 @@ Content-Security-Policy: default-src 'self'
    - Enables point-in-time recovery
 
 **Backup Script (Pseudocode)**:
+
 ```bash
 #!/bin/bash
 # Daily backup script
@@ -2301,12 +2359,14 @@ echo "Backup completed: $DATE" >> /var/log/backup.log
 ```
 
 **File Storage Backups**:
+
 - Frequency: Daily
 - Method: Rsync to backup server
 - Retention: 30 days
 - Includes: Uploaded documents (applications, profile photos)
 
 **Code Backups**:
+
 - Version control: Git repository
 - Remote backup: GitHub/GitLab
 - Branch protection: Main branch protected
@@ -2315,9 +2375,11 @@ echo "Backup completed: $DATE" >> /var/log/backup.log
 ### Disaster Recovery Plan
 
 **Recovery Time Objective (RTO)**: 4 hours
+
 - Maximum acceptable downtime after disaster
 
 **Recovery Point Objective (RPO)**: 1 hour
+
 - Maximum acceptable data loss
 
 **Disaster Recovery Steps**:
@@ -2335,6 +2397,7 @@ echo "Backup completed: $DATE" >> /var/log/backup.log
    - Restore from latest backup
 
 4. **Database Restore Procedure**:
+
 ```bash
 # Step 1: Download encrypted backup from cloud
 aws s3 cp s3://eduhub-backups/eduhub_2026-06-07.sql.gz.enc /restore/
@@ -2371,6 +2434,7 @@ psql -U postgres $DB_NAME < /restore/eduhub_2026-06-07.sql
 ### Backup Testing
 
 **Monthly Backup Test**:
+
 - Restore latest backup to test environment
 - Verify all data intact
 - Test application functionality
@@ -2378,6 +2442,7 @@ psql -U postgres $DB_NAME < /restore/eduhub_2026-06-07.sql
 - Time the restore process
 
 **Annual Disaster Recovery Drill**:
+
 - Simulate complete system failure
 - Practice full recovery procedure
 - Involve all team members
@@ -2410,6 +2475,7 @@ The System Design Phase has provided a complete blueprint for building the EduHu
 ## Next Phase:
 
 **Phase 5 (Implementation)** will take these designs and turn them into working code:
+
 - Build the database using the schemas designed
 - Implement the backend API using the pseudocode as a guide
 - Create the frontend interfaces based on the screen designs

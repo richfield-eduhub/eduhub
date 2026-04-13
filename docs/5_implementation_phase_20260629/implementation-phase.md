@@ -12,6 +12,12 @@ Due Date: June 29, 2026
 
 # 5. Implementation Phase
 
+**Implementation Period**: June 9 - June 29, 2026 (3 weeks)
+**Team**: 4 developers (EduHub team)
+**Development Approach**: Agile, 1-week sprints
+**Code Repository**: GitHub (private repo)
+**Deployment**: Railway.app (free tier for testing)
+
 In the previous phases, we planned (Phase 2), analyzed requirements (Phase 3), and designed the system (Phase 4). Now in Phase 5, we implement the actual system - turning our designs into working software that Richfield can use.
 
 This phase involves building the database, writing the code for frontend and backend, testing everything thoroughly, and deploying the system so it's accessible to users.
@@ -36,6 +42,7 @@ The implementation phase is where our designs become reality. We're taking all t
 Based on Phase 4 designs, we implemented:
 
 **Backend (Node.js/Express)**:
+
 - RESTful API with 50+ endpoints
 - Authentication system with JWT tokens
 - User management (registration, login, password reset)
@@ -46,8 +53,9 @@ Based on Phase 4 designs, we implemented:
 - Audit logging for all actions
 
 **Frontend (React)**:
+
 - Responsive web application (works on desktop, tablet, mobile)
-- 6 different user portals (Applicant, Student, Lecturer, Admin, Librarian, Alumni)
+- 5 different user portals (Applicant, Student, Lecturer, Admin, Alumni)
 - 30+ pages/screens
 - Real-time form validation
 - Dashboard with statistics and quick actions
@@ -55,12 +63,14 @@ Based on Phase 4 designs, we implemented:
 - File upload interface
 
 **Database (PostgreSQL)**:
+
 - 10 tables as designed in Phase 4
 - All relationships, constraints, and indexes
 - Seed data for testing
 - Migration scripts for version control
 
 **Deployment Infrastructure**:
+
 - Docker containerization
 - CI/CD pipeline with automated testing
 - Production deployment on cloud platform
@@ -78,6 +88,7 @@ We used **Agile methodology** with 2-week sprints:
 **Sprint 9-10**: Testing, bug fixes, deployment
 
 Each sprint included:
+
 - Planning: What features to build
 - Development: Writing code
 - Testing: Unit tests + manual testing
@@ -97,6 +108,7 @@ For a student project, roles may overlap, but here's the general structure:
 ## Development Environment
 
 **Each developer set up**:
+
 - Git for version control
 - Node.js v18+ for backend
 - React v18+ for frontend
@@ -108,6 +120,7 @@ For a student project, roles may overlap, but here's the general structure:
 ## Version Control Strategy
 
 **Git Branching Model**:
+
 ```
 main (production-ready code)
   ├── develop (integration branch)
@@ -119,6 +132,7 @@ main (production-ready code)
 ```
 
 **Workflow**:
+
 1. Create feature branch from `develop`
 2. Write code, commit frequently with clear messages
 3. Push to GitHub/GitLab
@@ -187,12 +201,14 @@ eduhub/
 ### Technology Stack
 
 **Core Framework**:
+
 - **Node.js**: JavaScript runtime
 - **Express.js**: Web framework for building APIs
 - **Sequelize**: ORM for database operations
 - **PostgreSQL**: Database
 
 **Key Libraries**:
+
 - **bcrypt**: Password hashing
 - **jsonwebtoken**: JWT authentication
 - **express-validator**: Input validation
@@ -206,6 +222,7 @@ eduhub/
 ### API Structure
 
 **Authentication Endpoints**:
+
 ```
 POST   /api/auth/register         - Create new account
 POST   /api/auth/login            - Login user
@@ -216,6 +233,7 @@ GET    /api/auth/verify-email     - Verify email address
 ```
 
 **User Endpoints**:
+
 ```
 GET    /api/users/profile         - Get current user profile
 PUT    /api/users/profile         - Update profile
@@ -224,6 +242,7 @@ POST   /api/users/avatar          - Upload profile photo
 ```
 
 **Application Endpoints**:
+
 ```
 GET    /api/applications          - List applications (Admin: all, Student: own)
 POST   /api/applications          - Submit new application
@@ -237,6 +256,7 @@ POST   /api/applications/:id/documents - Upload document
 ```
 
 **Course Endpoints**:
+
 ```
 GET    /api/courses               - List available courses
 GET    /api/courses/:id           - Get course details
@@ -247,6 +267,7 @@ GET    /api/courses/:id/roster    - Get class roster (Lecturer)
 ```
 
 **Registration Endpoints**:
+
 ```
 GET    /api/registrations         - List student's registrations
 POST   /api/registrations         - Register for course
@@ -255,6 +276,7 @@ GET    /api/registrations/eligible - Get courses student can register for
 ```
 
 **Admin Endpoints**:
+
 ```
 GET    /api/admin/users           - List all users
 PUT    /api/admin/users/:id/role  - Change user role
@@ -264,6 +286,7 @@ GET    /api/admin/audit-logs      - View audit trail
 ```
 
 **Notification Endpoints**:
+
 ```
 GET    /api/notifications         - Get user's notifications
 PUT    /api/notifications/:id/read - Mark as read
@@ -305,51 +328,56 @@ DELETE /api/notifications/:id     - Delete notification
 Instead of writing raw SQL, we use Sequelize models:
 
 **Defining a Model** (e.g., User model):
+
 ```javascript
 // This is just for illustration - not the full implementation
-const User = sequelize.define('User', {
+const User = sequelize.define("User", {
   userId: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    primaryKey: true,
   },
   email: {
     type: DataTypes.STRING,
     unique: true,
-    allowNull: false
+    allowNull: false,
   },
   // ... other fields
 });
 ```
 
 **Creating a Record**:
+
 ```javascript
 // Create new user
 const user = await User.create({
-  email: 'student@example.com',
+  email: "student@example.com",
   passwordHash: hashedPassword,
-  firstName: 'John',
-  lastName: 'Doe',
-  role: 'Applicant'
+  firstName: "John",
+  lastName: "Doe",
+  role: "Applicant",
 });
 ```
 
 **Finding Records**:
+
 ```javascript
 // Find by email
-const user = await User.findOne({ where: { email: 'student@example.com' } });
+const user = await User.findOne({ where: { email: "student@example.com" } });
 
 // Find all active students
-const students = await Student.findAll({ where: { status: 'Active' } });
+const students = await Student.findAll({ where: { status: "Active" } });
 ```
 
 **Updating Records**:
+
 ```javascript
 // Update user
-await user.update({ lastName: 'Smith' });
+await user.update({ lastName: "Smith" });
 ```
 
 **Deleting Records**:
+
 ```javascript
 // Delete user
 await user.destroy();
@@ -371,6 +399,7 @@ await user.destroy();
 7. Return success with file info
 
 **Storage Structure**:
+
 ```
 uploads/
 ├── 2026/
@@ -391,6 +420,7 @@ uploads/
 Using Nodemailer to send transactional emails:
 
 **Email Templates**:
+
 - Welcome email (after registration)
 - Email verification
 - Password reset
@@ -400,6 +430,7 @@ Using Nodemailer to send transactional emails:
 - Course dropped confirmation
 
 **Email Service Configuration**:
+
 - SMTP server (Gmail, SendGrid, AWS SES, etc.)
 - From address: `noreply@richfield.edu`
 - HTML templates with institution branding
@@ -409,12 +440,14 @@ Using Nodemailer to send transactional emails:
 ### Technology Stack
 
 **Core Framework**:
+
 - **React 18**: UI library
 - **React Router**: Navigation
 - **Context API**: State management
 - **Axios**: HTTP client for API calls
 
 **UI Libraries**:
+
 - **Tailwind CSS**: Utility-first CSS framework
 - **React Icons**: Icon library
 - **React Toastify**: Toast notifications
@@ -423,6 +456,7 @@ Using Nodemailer to send transactional emails:
 ### Component Structure
 
 **Reusable Components** (`src/components/`):
+
 ```
 components/
 ├── layout/
@@ -455,6 +489,7 @@ components/
 ```
 
 **Pages** (`src/pages/`):
+
 ```
 pages/
 ├── public/
@@ -485,8 +520,6 @@ pages/
 │   ├── Reports.jsx         - Reports & analytics
 │   └── Settings.jsx        - System settings
 │
-└── librarian/
-    ├── Dashboard.jsx       - Librarian dashboard
     └── StudentLookup.jsx   - Student verification
 ```
 
@@ -495,6 +528,7 @@ pages/
 Using **React Context** for global state:
 
 **Contexts Created**:
+
 ```javascript
 // AuthContext - User authentication state
 - currentUser
@@ -519,6 +553,7 @@ Using **React Context** for global state:
 **API Service Layer** (`src/services/api.js`):
 
 Centralized API calls using Axios:
+
 ```javascript
 // Structure (not full code):
 api/
@@ -531,6 +566,7 @@ api/
 ```
 
 **How API Calls Work**:
+
 1. Component calls API function (e.g., `registerForCourse(courseId)`)
 2. API function makes HTTP request to backend
 3. Includes JWT token in Authorization header
@@ -541,6 +577,7 @@ api/
 ### Form Validation
 
 **Client-Side Validation**:
+
 - Real-time validation as user types
 - Display error messages below fields
 - Disable submit button if invalid
@@ -549,6 +586,7 @@ api/
 - Required field validation
 
 **Example Validation Rules**:
+
 ```
 Email:
 - Required
@@ -576,6 +614,7 @@ Phone Number:
 ### Routing
 
 **React Router Setup**:
+
 ```
 Routes:
 ├── / (Public)
@@ -606,12 +645,10 @@ Routes:
 │   ├── /admin/reports
 │   └── /admin/settings
 │
-└── /librarian (Protected - Librarian role)
-    ├── /librarian/dashboard
-    └── /librarian/lookup
 ```
 
 **Route Protection**:
+
 - Public routes: Anyone can access
 - Protected routes: Must be logged in
 - Role-based routes: Must have specific role (Student, Lecturer, Admin, etc.)
@@ -621,11 +658,13 @@ Routes:
 ### Responsive Design
 
 **Mobile-First Approach**:
+
 - Design for mobile first (320px - 768px)
 - Scale up for tablet (768px - 1024px)
 - Full features on desktop (1024px+)
 
 **Breakpoints Used**:
+
 ```
 Mobile:  < 768px   - Single column, hamburger menu
 Tablet:  768-1024px - 2 columns, collapsible sidebar
@@ -633,6 +672,7 @@ Desktop: > 1024px  - 3 columns, full sidebar
 ```
 
 **Responsive Features**:
+
 - Navigation: Hamburger menu on mobile, full menu on desktop
 - Tables: Scroll horizontally on mobile, full view on desktop
 - Forms: Single column on mobile, multi-column on desktop
@@ -646,6 +686,7 @@ Desktop: > 1024px  - 3 columns, full sidebar
 Using Sequelize migrations for version control:
 
 **Migration Files**:
+
 ```
 migrations/
 ├── 20260601-create-users-table.js
@@ -658,6 +699,7 @@ migrations/
 ```
 
 **Benefits**:
+
 - Version control for database schema
 - Easy to rollback changes
 - Team members can sync database structure
@@ -666,6 +708,7 @@ migrations/
 ### Seed Data
 
 **Test Data for Development**:
+
 ```
 seeders/
 ├── 20260601-demo-users.js         - Admin, lecturers, students
@@ -675,6 +718,7 @@ seeders/
 ```
 
 **Seed Data Includes**:
+
 - 1 Admin user
 - 3 Lecturer users
 - 10 Student users
@@ -683,6 +727,7 @@ seeders/
 - 30 Course registrations
 
 **Purpose**:
+
 - Testing without manual data entry
 - Demonstrating full system functionality
 - Validating relationships work correctly
@@ -690,6 +735,7 @@ seeders/
 ### Database Indexing
 
 **Indexes Created** (as designed in Phase 4):
+
 ```
 Users table:
 - Index on email (unique, for login lookup)
@@ -716,6 +762,7 @@ Registrations table:
 ```
 
 **Query Optimization**:
+
 - Use indexes for frequently queried fields
 - Avoid N+1 queries (use eager loading)
 - Pagination for large result sets
@@ -726,6 +773,7 @@ Registrations table:
 ### Coding Conventions
 
 **JavaScript/Node.js**:
+
 - Use ES6+ features (async/await, arrow functions, destructuring)
 - camelCase for variables and functions
 - PascalCase for classes and components
@@ -736,6 +784,7 @@ Registrations table:
 - Prettier for code formatting
 
 **File Naming**:
+
 - Components: PascalCase (e.g., `UserProfile.jsx`)
 - Utilities: camelCase (e.g., `formatDate.js`)
 - Constants: UPPER_CASE (e.g., `API_ENDPOINTS.js`)
@@ -743,6 +792,7 @@ Registrations table:
 ### Error Handling
 
 **Backend Error Handling**:
+
 ```javascript
 // Centralized error handler
 - Validation errors: 400 Bad Request
@@ -756,6 +806,7 @@ Registrations table:
 ```
 
 **Frontend Error Handling**:
+
 ```javascript
 // Try-catch blocks for API calls
 // Display error messages to user (toast notifications)
@@ -766,6 +817,7 @@ Registrations table:
 ### Security Implementations
 
 **Implemented Security Measures**:
+
 1. **Password Security**: Bcrypt hashing (10 rounds)
 2. **JWT Security**: httpOnly cookies, 24-hour expiry
 3. **Input Validation**: Server-side validation with express-validator
@@ -780,6 +832,7 @@ Registrations table:
 ### Environment Configuration
 
 **.env Files** (Not committed to Git):
+
 ```
 Backend .env:
 DATABASE_URL=postgresql://user:pass@localhost:5432/eduhub
@@ -798,6 +851,7 @@ REACT_APP_ENV=development
 ```
 
 **Environment-Specific Configuration**:
+
 - Development: Verbose logging, hot reload, debug tools
 - Testing: Test database, mock email, faster bcrypt rounds
 - Production: Minimal logging, optimized build, strict security
@@ -821,6 +875,7 @@ We implemented **three levels of testing**:
 ### Backend Unit Tests
 
 **Tools Used**:
+
 - **Jest**: Testing framework
 - **Supertest**: HTTP testing
 - **Sinon**: Mocking library
@@ -828,6 +883,7 @@ We implemented **three levels of testing**:
 **What We Tested**:
 
 **Authentication Functions**:
+
 ```
 ✓ hashPassword() - correctly hashes password
 ✓ verifyPassword() - correctly verifies password hash
@@ -837,6 +893,7 @@ We implemented **three levels of testing**:
 ```
 
 **Validation Functions**:
+
 ```
 ✓ validateEmail() - accepts valid email
 ✓ validateEmail() - rejects invalid email
@@ -846,6 +903,7 @@ We implemented **three levels of testing**:
 ```
 
 **Business Logic Functions**:
+
 ```
 ✓ generateStudentNumber() - generates unique student number
 ✓ checkPrerequisites() - validates course prerequisites
@@ -855,14 +913,15 @@ We implemented **three levels of testing**:
 ```
 
 **Example Test** (for illustration):
+
 ```javascript
-describe('Student Number Generation', () => {
-  test('generates student number in correct format', async () => {
+describe("Student Number Generation", () => {
+  test("generates student number in correct format", async () => {
     const studentNumber = await generateStudentNumber();
     expect(studentNumber).toMatch(/^\d{4}-\d{4}$/);
   });
 
-  test('generates unique student numbers', async () => {
+  test("generates unique student numbers", async () => {
     const number1 = await generateStudentNumber();
     const number2 = await generateStudentNumber();
     expect(number1).not.toBe(number2);
@@ -871,6 +930,7 @@ describe('Student Number Generation', () => {
 ```
 
 **Test Coverage**:
+
 - Target: >70% code coverage
 - Achieved: 75% overall
 - Critical paths: 90%+ coverage
@@ -878,6 +938,7 @@ describe('Student Number Generation', () => {
 ### Frontend Unit Tests
 
 **Tools Used**:
+
 - **Jest**: Testing framework
 - **React Testing Library**: Component testing
 - **Mock Service Worker (MSW)**: API mocking
@@ -885,6 +946,7 @@ describe('Student Number Generation', () => {
 **What We Tested**:
 
 **Components**:
+
 ```
 ✓ Button - renders correctly
 ✓ Button - calls onClick handler
@@ -897,6 +959,7 @@ describe('Student Number Generation', () => {
 ```
 
 **Hooks**:
+
 ```
 ✓ useAuth - returns current user
 ✓ useAuth - updates on login
@@ -906,6 +969,7 @@ describe('Student Number Generation', () => {
 ```
 
 **Utilities**:
+
 ```
 ✓ formatDate() - formats dates correctly
 ✓ formatStudentNumber() - formats student numbers
@@ -919,6 +983,7 @@ describe('Student Number Generation', () => {
 **What We Tested**:
 
 **Authentication Flow**:
+
 ```
 ✓ POST /api/auth/register - creates user account
 ✓ POST /api/auth/login - returns valid token
@@ -927,6 +992,7 @@ describe('Student Number Generation', () => {
 ```
 
 **Application Workflow**:
+
 ```
 ✓ POST /api/applications - creates draft application
 ✓ POST /api/applications/:id/submit - submits application
@@ -937,6 +1003,7 @@ describe('Student Number Generation', () => {
 ```
 
 **Course Registration Flow**:
+
 ```
 ✓ POST /api/registrations - registers for course
 ✓ Registration - checks prerequisites
@@ -948,6 +1015,7 @@ describe('Student Number Generation', () => {
 ```
 
 **Database Integration**:
+
 ```
 ✓ User creation - creates record in database
 ✓ Foreign keys - maintain referential integrity
@@ -959,6 +1027,7 @@ describe('Student Number Generation', () => {
 ### Frontend-Backend Integration
 
 **What We Tested**:
+
 ```
 ✓ Login - authenticates and redirects to dashboard
 ✓ Registration - creates account and sends verification email
@@ -980,6 +1049,7 @@ describe('Student Number Generation', () => {
 **Complete User Journeys**:
 
 **Scenario 1: New Applicant Journey**
+
 ```
 1. User visits homepage
 2. Clicks "Register" button
@@ -1000,6 +1070,7 @@ describe('Student Number Generation', () => {
 ```
 
 **Scenario 2: Admin Approval Workflow**
+
 ```
 1. Admin logs in
 2. Navigates to Applications page
@@ -1016,6 +1087,7 @@ describe('Student Number Generation', () => {
 ```
 
 **Scenario 3: Student Course Registration**
+
 ```
 1. Student logs in
 2. Navigates to "Courses" page
@@ -1032,6 +1104,7 @@ describe('Student Number Generation', () => {
 ```
 
 **Scenario 4: Complete Registration to Drop Flow**
+
 ```
 1. Student registers for course
 2. Logs out
@@ -1047,16 +1120,19 @@ describe('Student Number Generation', () => {
 ### Cross-Browser Testing
 
 **Tested On**:
+
 - ✓ Chrome (latest)
 - ✓ Firefox (latest)
 - ✓ Safari (latest)
 - ✓ Edge (latest)
 
 **Mobile Testing**:
+
 - ✓ iOS Safari (iPhone 12, iPhone 13)
 - ✓ Android Chrome (Samsung, Pixel)
 
 **Responsive Breakpoints**:
+
 - ✓ Mobile (375px)
 - ✓ Tablet (768px)
 - ✓ Desktop (1024px, 1920px)
@@ -1068,6 +1144,7 @@ describe('Student Number Generation', () => {
 **Tools Used**: Apache JMeter, Artillery
 
 **Test Scenarios**:
+
 ```
 Scenario 1: Normal Load
 - 50 concurrent users
@@ -1091,6 +1168,7 @@ Scenario 3: Stress Test
 ```
 
 **Performance Metrics Achieved**:
+
 - Page load time: < 3 seconds (95th percentile)
 - API response time: < 1 second (95th percentile)
 - Database queries: < 500ms (average)
@@ -1099,6 +1177,7 @@ Scenario 3: Stress Test
 ### Database Performance
 
 **Query Optimization**:
+
 ```
 Before Optimization:
 - Get student's registered courses: 850ms ✗
@@ -1114,6 +1193,7 @@ After Adding Index on course_code:
 ```
 
 **Connection Pooling**:
+
 - Min connections: 5
 - Max connections: 20
 - Idle timeout: 10 seconds
@@ -1124,6 +1204,7 @@ After Adding Index on course_code:
 ### Penetration Testing
 
 **Tests Performed**:
+
 ```
 ✓ SQL Injection - PROTECTED (Sequelize parameterized queries)
 ✓ XSS Attacks - PROTECTED (React escaping, CSP headers)
@@ -1137,11 +1218,13 @@ After Adding Index on course_code:
 ### Vulnerability Scanning
 
 **Tools Used**:
+
 - **npm audit**: Check for vulnerable dependencies
 - **OWASP ZAP**: Automated security scanning
 - **Snyk**: Continuous security monitoring
 
 **Results**:
+
 ```
 ✓ 0 High severity vulnerabilities
 ✓ 0 Medium severity vulnerabilities
@@ -1152,6 +1235,7 @@ After Adding Index on course_code:
 ## Accessibility Testing
 
 **WCAG 2.1 Level AA Compliance**:
+
 ```
 ✓ Keyboard navigation works throughout site
 ✓ Screen reader compatible (tested with NVDA, JAWS)
@@ -1163,6 +1247,7 @@ After Adding Index on course_code:
 ```
 
 **Tools Used**:
+
 - **Lighthouse**: Automated accessibility audit
 - **axe DevTools**: Accessibility testing
 - **Screen readers**: Manual testing
@@ -1176,6 +1261,7 @@ This section provides specific test cases and the results of our testing.
 ## Test Case Format
 
 Each test case includes:
+
 - **Test ID**: Unique identifier
 - **Feature**: What's being tested
 - **Description**: What the test does
@@ -1195,10 +1281,12 @@ Each test case includes:
 **Description**: Verify new users can create an account
 
 **Preconditions**:
+
 - User is on registration page
 - Email doesn't exist in database
 
 **Test Steps**:
+
 1. Navigate to /register
 2. Enter email: "newuser@example.com"
 3. Enter password: "Password123!"
@@ -1207,6 +1295,7 @@ Each test case includes:
 6. Click "Register" button
 
 **Expected Result**:
+
 - Account created successfully
 - User redirected to verification page
 - Verification email sent
@@ -1225,17 +1314,20 @@ Each test case includes:
 **Description**: Verify users can login with correct credentials
 
 **Preconditions**:
+
 - User account exists in database
 - Email: "student@example.com"
 - Password: "Password123!"
 
 **Test Steps**:
+
 1. Navigate to /login
 2. Enter email: "student@example.com"
 3. Enter password: "Password123!"
 4. Click "Login" button
 
 **Expected Result**:
+
 - Login successful
 - JWT token generated
 - User redirected to appropriate dashboard based on role
@@ -1254,16 +1346,19 @@ Each test case includes:
 **Description**: Verify login fails with wrong password
 
 **Preconditions**:
+
 - User account exists
 - Email: "student@example.com"
 
 **Test Steps**:
+
 1. Navigate to /login
 2. Enter email: "student@example.com"
 3. Enter password: "WrongPassword!"
 4. Click "Login" button
 
 **Expected Result**:
+
 - Login fails
 - Error message: "Invalid email or password"
 - No token generated
@@ -1283,10 +1378,12 @@ Each test case includes:
 **Description**: Verify account locks after 5 failed login attempts
 
 **Preconditions**:
+
 - User account exists
 - Email: "student@example.com"
 
 **Test Steps**:
+
 1. Attempt login with wrong password (1st attempt)
 2. Attempt login with wrong password (2nd attempt)
 3. Attempt login with wrong password (3rd attempt)
@@ -1295,6 +1392,7 @@ Each test case includes:
 6. Attempt login with CORRECT password (6th attempt)
 
 **Expected Result**:
+
 - First 5 attempts: Show "Invalid email or password"
 - 6th attempt: Show "Account locked due to multiple failed attempts"
 - User account is_active set to FALSE
@@ -1315,10 +1413,12 @@ Each test case includes:
 **Description**: Verify applicant can submit application
 
 **Preconditions**:
+
 - User logged in with role="Applicant"
 - User doesn't have pending application
 
 **Test Steps**:
+
 1. Navigate to /applications/new
 2. Fill personal information form:
    - First name: "Jane"
@@ -1334,6 +1434,7 @@ Each test case includes:
 6. Click "Submit Application"
 
 **Expected Result**:
+
 - Application saved with status="Submitted"
 - Application ID generated
 - Documents saved to file system
@@ -1355,11 +1456,13 @@ Each test case includes:
 **Description**: Verify admin can approve application
 
 **Preconditions**:
+
 - Admin logged in
 - Application exists with status="Submitted"
 - Application ID: "app-123"
 
 **Test Steps**:
+
 1. Navigate to /admin/applications
 2. Click on application "app-123"
 3. Review application details
@@ -1367,6 +1470,7 @@ Each test case includes:
 5. Confirm approval in modal
 
 **Expected Result**:
+
 - Student number generated (format: 2026-0001)
 - Student record created in database
 - User role changed from "Applicant" to "Student"
@@ -1390,10 +1494,12 @@ Each test case includes:
 **Description**: Verify admin can reject application with reason
 
 **Preconditions**:
+
 - Admin logged in
 - Application exists with status="Submitted"
 
 **Test Steps**:
+
 1. Navigate to /admin/applications
 2. Click on application
 3. Click "Reject" button
@@ -1401,6 +1507,7 @@ Each test case includes:
 5. Confirm rejection
 
 **Expected Result**:
+
 - Application status changed to "Rejected"
 - rejection_reason field updated
 - reviewed_by set to admin user ID
@@ -1425,6 +1532,7 @@ Each test case includes:
 **Description**: Verify student can register for available course
 
 **Preconditions**:
+
 - User logged in with role="Student"
 - Course exists with available seats
 - Student meets prerequisites
@@ -1432,6 +1540,7 @@ Each test case includes:
 - Within registration period
 
 **Test Steps**:
+
 1. Navigate to /student/courses
 2. Search for course "CS101"
 3. View course details
@@ -1441,6 +1550,7 @@ Each test case includes:
 7. Confirm registration
 
 **Expected Result**:
+
 - Registration record created
 - Registration status="Registered"
 - Course capacity updated to 16/50
@@ -1463,17 +1573,20 @@ Each test case includes:
 **Description**: Verify system prevents registration without prerequisites
 
 **Preconditions**:
+
 - Student logged in
 - Course "CS102" has prerequisite "CS101"
 - Student has NOT completed CS101
 
 **Test Steps**:
+
 1. Navigate to /student/courses
 2. Search for course "CS102"
 3. View course details
 4. Observe prerequisite status
 
 **Expected Result**:
+
 - Prerequisites shown as "Not Met: CS101"
 - "Register" button is DISABLED
 - Tooltip explains why registration not allowed
@@ -1492,16 +1605,19 @@ Each test case includes:
 **Description**: Verify system prevents registration when course is full
 
 **Preconditions**:
+
 - Student logged in
 - Course has 50 capacity
 - 50 students already registered
 
 **Test Steps**:
+
 1. Navigate to /student/courses
 2. Find course at capacity (50/50)
 3. Attempt to register
 
 **Expected Result**:
+
 - Capacity shown as "Full: 50/50"
 - "Register" button is DISABLED
 - Message: "Course is full"
@@ -1520,14 +1636,17 @@ Each test case includes:
 **Description**: Verify student cannot register for same course twice
 
 **Preconditions**:
+
 - Student already registered for CS101 in Fall 2026
 
 **Test Steps**:
+
 1. Navigate to /student/courses
 2. Find course CS101
 3. Attempt to register again
 
 **Expected Result**:
+
 - Button shows "Already Registered" and is disabled
 - Attempting direct API call returns 400 error
 - Error message: "Already registered for this course"
@@ -1545,15 +1664,18 @@ Each test case includes:
 **Description**: Verify system detects time conflicts
 
 **Preconditions**:
+
 - Student registered for CS101 (Mon/Wed 9:00-10:30)
 - Trying to register for MAT201 (Mon/Wed 9:30-11:00)
 
 **Test Steps**:
+
 1. Navigate to /student/courses
 2. Attempt to register for MAT201
 3. View registration attempt
 
 **Expected Result**:
+
 - System detects conflict
 - Error message: "Schedule conflict with CS101"
 - Registration blocked
@@ -1572,16 +1694,19 @@ Each test case includes:
 **Description**: Verify student can drop course before deadline
 
 **Preconditions**:
+
 - Student registered for CS101
 - Current date is BEFORE add/drop deadline
 
 **Test Steps**:
+
 1. Navigate to /student/my-courses
 2. Find CS101
 3. Click "Drop Course" button
 4. Confirm drop action
 
 **Expected Result**:
+
 - Registration status changed to "Dropped"
 - dropped_at timestamp set
 - Course removed from "My Courses" list
@@ -1603,15 +1728,18 @@ Each test case includes:
 **Description**: Verify system prevents drop after deadline
 
 **Preconditions**:
+
 - Student registered for CS101
 - Current date is AFTER add/drop deadline
 
 **Test Steps**:
+
 1. Navigate to /student/my-courses
 2. Find CS101
 3. Attempt to drop course
 
 **Expected Result**:
+
 - "Drop" button is DISABLED
 - Message: "Add/drop deadline has passed"
 - Attempting direct API call returns error
@@ -1631,15 +1759,18 @@ Each test case includes:
 **Description**: Verify user can upload valid document
 
 **Preconditions**:
+
 - User on application form page
 - File: "id_document.pdf" (2MB, PDF format)
 
 **Test Steps**:
+
 1. Click "Upload ID Document" button
 2. Select file "id_document.pdf"
 3. Confirm upload
 
 **Expected Result**:
+
 - Upload progress shown
 - File saved to /uploads/2026/06/ directory
 - Unique filename generated
@@ -1660,15 +1791,18 @@ Each test case includes:
 **Description**: Verify system rejects files over 5MB
 
 **Preconditions**:
+
 - User on application form
 - File: "large_document.pdf" (8MB)
 
 **Test Steps**:
+
 1. Click "Upload" button
 2. Select oversized file
 3. Attempt upload
 
 **Expected Result**:
+
 - Upload blocked immediately
 - Error message: "File size exceeds maximum of 5MB"
 - No file saved
@@ -1687,13 +1821,16 @@ Each test case includes:
 **Description**: Verify system rejects non-PDF/image files
 
 **Preconditions**:
+
 - User on application form
 - File: "document.exe" (executable file)
 
 **Test Steps**:
+
 1. Attempt to upload .exe file
 
 **Expected Result**:
+
 - Upload blocked
 - Error message: "Invalid file type. Allowed: PDF, JPG, PNG"
 - No file saved
@@ -1716,40 +1853,43 @@ Each test case includes:
 
 ### Test Results by Category
 
-| Category | Total | Passed | Failed | Pass Rate |
-|----------|-------|--------|--------|-----------|
-| Authentication | 18 | 18 | 0 | 100% |
-| User Management | 12 | 12 | 0 | 100% |
-| Applications | 15 | 15 | 0 | 100% |
-| Course Registration | 25 | 24 | 1 | 96% |
-| File Upload | 10 | 10 | 0 | 100% |
-| Notifications | 8 | 8 | 0 | 100% |
-| Admin Functions | 12 | 11 | 1 | 91.7% |
-| Lecturer Features | 8 | 8 | 0 | 100% |
-| Librarian Features | 5 | 5 | 0 | 100% |
-| Security | 14 | 12 | 0 | 100% |
+| Category            | Total | Passed | Failed | Pass Rate |
+| ------------------- | ----- | ------ | ------ | --------- |
+| Authentication      | 18    | 18     | 0      | 100%      |
+| User Management     | 12    | 12     | 0      | 100%      |
+| Applications        | 15    | 15     | 0      | 100%      |
+| Course Registration | 25    | 24     | 1      | 96%       |
+| File Upload         | 10    | 10     | 0      | 100%      |
+| Notifications       | 8     | 8      | 0      | 100%      |
+| Admin Functions     | 12    | 11     | 1      | 91.7%     |
+| Lecturer Features   | 8     | 8      | 0      | 100%      |
+| Security            | 14    | 12     | 0      | 100%      |
 
 ### Known Issues & Resolutions
 
 **Issue #1**: Course registration occasionally slow during peak load
+
 - **Severity**: Medium
 - **Status**: RESOLVED
 - **Resolution**: Added database indexes on registrations table
 - **Retest Result**: ✓ PASS
 
 **Issue #2**: Email notifications delayed by 2-3 minutes
+
 - **Severity**: Low
 - **Status**: RESOLVED
 - **Resolution**: Implemented email queue with background worker
 - **Retest Result**: ✓ PASS
 
 **Issue #3**: File upload progress not showing on Safari browser
+
 - **Severity**: Low
 - **Status**: OPEN (non-critical)
 - **Workaround**: Progress still works functionally, just visual issue
 - **Planned Fix**: Phase 5.1 update
 
 **Issue #4**: Admin dashboard statistics sometimes cache old data
+
 - **Severity**: Low
 - **Status**: RESOLVED
 - **Resolution**: Reduced cache TTL from 1 hour to 5 minutes
@@ -1758,11 +1898,13 @@ Each test case includes:
 ### Test Coverage Summary
 
 **Backend**:
+
 - **Unit Tests**: 75% coverage
 - **Integration Tests**: 85% coverage of API endpoints
 - **Critical Paths**: 95% coverage
 
 **Frontend**:
+
 - **Component Tests**: 68% coverage
 - **Integration Tests**: 80% of user flows
 - **E2E Tests**: 90% of critical journeys
@@ -1770,6 +1912,7 @@ Each test case includes:
 ### Performance Test Results
 
 **Load Testing Results**:
+
 ```
 50 Users:     ✓ 100% success rate, < 1s response time
 100 Users:    ✓ 100% success rate, < 1.5s response time
@@ -1779,6 +1922,7 @@ Each test case includes:
 ```
 
 **Database Performance**:
+
 ```
 Simple queries:   < 50ms   ✓
 Complex joins:    < 300ms  ✓
@@ -1802,20 +1946,21 @@ Concurrent load:  Stable   ✓
 
 ### Browser Compatibility Results
 
-| Browser | Version | Status |
-|---------|---------|--------|
-| Chrome  | 115+    | ✓ Full support |
-| Firefox | 110+    | ✓ Full support |
-| Safari  | 16+     | ✓ Full support |
-| Edge    | 115+    | ✓ Full support |
-| Mobile Safari | 15+ | ✓ Full support |
-| Chrome Mobile | 115+ | ✓ Full support |
+| Browser       | Version | Status         |
+| ------------- | ------- | -------------- |
+| Chrome        | 115+    | ✓ Full support |
+| Firefox       | 110+    | ✓ Full support |
+| Safari        | 16+     | ✓ Full support |
+| Edge          | 115+    | ✓ Full support |
+| Mobile Safari | 15+     | ✓ Full support |
+| Chrome Mobile | 115+    | ✓ Full support |
 
 ### Evaluation & Recommendations
 
 **System Readiness**: ✓ **READY FOR PRODUCTION**
 
 **Strengths**:
+
 - High test coverage (>95% on critical features)
 - Strong security posture
 - Good performance under load
@@ -1824,6 +1969,7 @@ Concurrent load:  Stable   ✓
 - Accessible to users with disabilities
 
 **Areas for Future Improvement**:
+
 1. Increase email sending speed (currently acceptable but could be faster)
 2. Add real-time updates using WebSockets (currently polling)
 3. Improve caching strategy for better performance
@@ -1842,12 +1988,14 @@ This section describes how to install and deploy the EduHub system.
 ### Hardware Requirements
 
 **Minimum** (Development/Testing):
+
 - CPU: 2 cores, 2.0 GHz
 - RAM: 4 GB
 - Storage: 20 GB available space
 - Network: Internet connection
 
 **Recommended** (Production):
+
 - CPU: 4 cores, 2.5 GHz+
 - RAM: 8 GB (16 GB recommended)
 - Storage: 100 GB SSD
@@ -1857,19 +2005,18 @@ This section describes how to install and deploy the EduHub system.
 ### Software Requirements
 
 **Required Software**:
+
 1. **Node.js**: Version 18.x or higher
 2. **PostgreSQL**: Version 14.x or higher
 3. **Git**: Version control
 4. **npm** or **yarn**: Package manager (comes with Node.js)
 
-**Optional But Recommended**:
-5. **Docker**: For containerized deployment
-6. **nginx**: Reverse proxy and static file serving
-7. **pm2**: Process manager for Node.js
+**Optional But Recommended**: 5. **Docker**: For containerized deployment 6. **nginx**: Reverse proxy and static file serving 7. **pm2**: Process manager for Node.js
 
 ### Operating System Support
 
 **Supported**:
+
 - ✓ Ubuntu 20.04 LTS or higher (recommended for production)
 - ✓ macOS 11+ (good for development)
 - ✓ Windows 10/11 (works for development, not recommended for production)
@@ -1889,6 +2036,7 @@ We provide three installation methods:
 ### Step 1: Install Prerequisites
 
 **Install Node.js**:
+
 ```bash
 # Ubuntu/Debian
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
@@ -1903,6 +2051,7 @@ npm --version   # Should show 9.x.x or higher
 ```
 
 **Install PostgreSQL**:
+
 ```bash
 # Ubuntu/Debian
 sudo apt-get update
@@ -1920,6 +2069,7 @@ psql --version  # Should show PostgreSQL 14.x
 ```
 
 **Install Git**:
+
 ```bash
 # Ubuntu/Debian
 sudo apt-get install git
@@ -1946,6 +2096,7 @@ ls -la
 ### Step 3: Setup Database
 
 **Create Database and User**:
+
 ```bash
 # Access PostgreSQL
 sudo -u postgres psql
@@ -1961,6 +2112,7 @@ psql -U eduhub_user -d eduhub -c "\dt"
 ```
 
 **Run Migrations**:
+
 ```bash
 cd backend
 
@@ -1981,6 +2133,7 @@ psql -U eduhub_user -d eduhub -c "\dt"
 ### Step 4: Configure Backend
 
 **Create Environment File**:
+
 ```bash
 cd backend
 cp .env.example .env
@@ -1990,6 +2143,7 @@ nano .env
 ```
 
 **Configure .env**:
+
 ```
 # Database
 DATABASE_URL=postgresql://eduhub_user:secure_password_here@localhost:5432/eduhub
@@ -2013,6 +2167,7 @@ PORT=5000
 ```
 
 **Install Backend Dependencies**:
+
 ```bash
 npm install
 ```
@@ -2020,6 +2175,7 @@ npm install
 ### Step 5: Configure Frontend
 
 **Create Environment File**:
+
 ```bash
 cd ../frontend
 cp .env.example .env
@@ -2029,6 +2185,7 @@ nano .env
 ```
 
 **Configure .env**:
+
 ```
 # API URL (adjust if different port)
 REACT_APP_API_URL=http://localhost:5000/api
@@ -2038,11 +2195,13 @@ REACT_APP_ENV=production
 ```
 
 **Install Frontend Dependencies**:
+
 ```bash
 npm install
 ```
 
 **Build Frontend**:
+
 ```bash
 npm run build
 
@@ -2052,6 +2211,7 @@ npm run build
 ### Step 6: Start Services
 
 **Start Backend**:
+
 ```bash
 cd ../backend
 
@@ -2066,6 +2226,7 @@ pm2 startup  # Follow instructions to enable auto-start
 ```
 
 **Serve Frontend**:
+
 ```bash
 # Option 1: Using serve package
 npm install -g serve
@@ -2078,6 +2239,7 @@ serve -s frontend/build -l 3000
 ### Step 7: Verify Installation
 
 **Check Backend**:
+
 ```bash
 # Test API is running
 curl http://localhost:5000/api/health
@@ -2088,6 +2250,7 @@ pm2 logs eduhub-backend
 ```
 
 **Check Frontend**:
+
 ```bash
 # Open browser
 http://localhost:3000
@@ -2096,6 +2259,7 @@ http://localhost:3000
 ```
 
 **Create Admin User**:
+
 ```bash
 # Access database
 psql -U eduhub_user -d eduhub
@@ -2127,6 +2291,7 @@ Docker simplifies deployment by packaging everything into containers.
 ### Prerequisites
 
 **Install Docker**:
+
 ```bash
 # Ubuntu
 curl -fsSL https://get.docker.com -o get-docker.sh
@@ -2144,12 +2309,14 @@ docker-compose --version
 ### Installation Steps
 
 **Step 1: Clone Repository**:
+
 ```bash
 git clone https://github.com/richfield/eduhub.git
 cd eduhub
 ```
 
 **Step 2: Configure Environment**:
+
 ```bash
 # Create .env files for both backend and frontend as described in Manual Installation
 
@@ -2159,6 +2326,7 @@ nano .env.docker
 ```
 
 **Step 3: Build and Start Containers**:
+
 ```bash
 # Build images
 docker-compose build
@@ -2173,6 +2341,7 @@ docker-compose up -d
 ```
 
 **Step 4: Run Migrations**:
+
 ```bash
 # Execute migrations in backend container
 docker-compose exec backend npm run migrate
@@ -2182,6 +2351,7 @@ docker-compose exec backend npm run seed
 ```
 
 **Step 5: Verify**:
+
 ```bash
 # Check running containers
 docker-compose ps
@@ -2197,6 +2367,7 @@ docker-compose logs -f frontend
 ```
 
 **Step 6: Access Application**:
+
 ```
 Frontend: http://localhost:3000
 Backend API: http://localhost:5000/api
@@ -2232,10 +2403,12 @@ docker-compose up -d
 ### Option A: Heroku Deployment
 
 **Prerequisites**:
+
 - Heroku account
 - Heroku CLI installed
 
 **Steps**:
+
 ```bash
 # Login to Heroku
 heroku login
@@ -2268,6 +2441,7 @@ heroku logs --tail
 ### Option B: DigitalOcean Deployment
 
 **Using DigitalOcean App Platform**:
+
 1. Connect GitHub repository
 2. Select branch (main)
 3. Configure build settings:
@@ -2278,6 +2452,7 @@ heroku logs --tail
 6. Deploy
 
 **Using Droplet (VPS)**:
+
 1. Create Ubuntu 22.04 droplet
 2. SSH into server
 3. Follow Manual Installation steps
@@ -2288,6 +2463,7 @@ heroku logs --tail
 ### Option C: AWS Deployment
 
 **Using AWS Elastic Beanstalk**:
+
 1. Install EB CLI
 2. Initialize Elastic Beanstalk: `eb init`
 3. Create environment: `eb create eduhub-prod`
@@ -2302,11 +2478,13 @@ heroku logs --tail
 ### nginx Configuration
 
 **Install nginx**:
+
 ```bash
 sudo apt-get install nginx
 ```
 
 **Configure nginx** (`/etc/nginx/sites-available/eduhub`):
+
 ```nginx
 server {
     listen 80;
@@ -2353,6 +2531,7 @@ server {
 ```
 
 **Enable site**:
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/eduhub /etc/nginx/sites-enabled/
 sudo nginx -t  # Test configuration
@@ -2390,6 +2569,7 @@ sudo ufw status
 ### Automated Backups
 
 **Backup Script** (`/opt/eduhub/backup.sh`):
+
 ```bash
 #!/bin/bash
 DATE=$(date +%Y-%m-%d_%H-%M-%S)
@@ -2408,6 +2588,7 @@ echo "Backup completed: $DATE"
 ```
 
 **Schedule with cron**:
+
 ```bash
 # Edit crontab
 crontab -e
@@ -2419,6 +2600,7 @@ crontab -e
 ### Monitoring
 
 **Install monitoring tools**:
+
 ```bash
 # PM2 monitoring
 pm2 install pm2-logrotate
@@ -2430,6 +2612,7 @@ sudo apt-get install htop
 ```
 
 **Check system health**:
+
 ```bash
 # Process status
 pm2 status
@@ -2458,6 +2641,7 @@ Already covered in "Verify Installation" section above.
 ### 2. Configure System Settings
 
 Login as admin and configure:
+
 - Registration periods
 - Current semester
 - Maximum credits per semester
@@ -2467,12 +2651,14 @@ Login as admin and configure:
 ### 3. Import Initial Data
 
 **Import Courses**:
+
 ```bash
 # Prepare CSV file with courses
 # Upload via admin panel: /admin/courses/import
 ```
 
 **Import Existing Students** (if migrating):
+
 ```bash
 # Use database import scripts
 # Or use admin panel bulk import
@@ -2491,12 +2677,14 @@ Login as admin and configure:
 ### 5. Train Users
 
 **Prepare training materials**:
+
 - User guides for each role
 - Video tutorials
 - FAQ document
 - Support contact information
 
 **Conduct training sessions**:
+
 - Admin staff training
 - Lecturer training
 - Student orientation
@@ -2508,6 +2696,7 @@ Login as admin and configure:
 ### Common Issues
 
 **Issue: Cannot connect to database**
+
 ```bash
 # Check PostgreSQL is running
 sudo systemctl status postgresql
@@ -2518,6 +2707,7 @@ psql -U eduhub_user -d eduhub -c "SELECT version();"
 ```
 
 **Issue: Backend won't start**
+
 ```bash
 # Check logs
 pm2 logs eduhub-backend
@@ -2535,6 +2725,7 @@ cd backend && cat .env
 ```
 
 **Issue: Frontend shows blank page**
+
 ```bash
 # Check browser console for errors
 # Verify API_URL is correct
@@ -2544,6 +2735,7 @@ npm run build
 ```
 
 **Issue: File uploads failing**
+
 ```bash
 # Check uploads directory exists
 mkdir -p backend/uploads
@@ -2556,6 +2748,7 @@ df -h
 ```
 
 **Issue: Emails not sending**
+
 ```bash
 # Check email configuration in .env
 # Test SMTP connection
@@ -2570,16 +2763,19 @@ pm2 logs eduhub-backend | grep "email"
 ### Regular Tasks
 
 **Daily**:
+
 - Monitor error logs
 - Check backup completion
 - Review system performance
 
 **Weekly**:
+
 - Review audit logs
 - Check database size
 - Update dependencies (if needed)
 
 **Monthly**:
+
 - Test backup restoration
 - Review and archive old data
 - Security updates
@@ -2587,6 +2783,7 @@ pm2 logs eduhub-backend | grep "email"
 ### Updates & Patches
 
 **Updating the Application**:
+
 ```bash
 # Pull latest code
 git pull origin main
@@ -2607,6 +2804,7 @@ sudo systemctl reload nginx
 ```
 
 **Database Maintenance**:
+
 ```bash
 # Vacuum database (reclaim space)
 psql -U eduhub_user -d eduhub -c "VACUUM ANALYZE;"
@@ -2640,11 +2838,11 @@ The Implementation Phase has successfully delivered a working EduHub system that
 ## System Capabilities
 
 The implemented system allows:
+
 - **Applicants** to submit applications online
 - **Students** to register for courses, manage profiles
 - **Lecturers** to view rosters, post announcements
 - **Administrators** to approve applications, manage courses
-- **Librarians** to verify student status
 - **All users** to receive notifications and updates
 
 ## Performance & Quality
@@ -2659,6 +2857,7 @@ The implemented system allows:
 ## Next Steps
 
 **For Richfield**:
+
 1. User acceptance testing with real users
 2. Import existing student/course data
 3. Train staff and students
@@ -2667,6 +2866,7 @@ The implemented system allows:
 6. Gather feedback for improvements
 
 **Future Enhancements** (Post-MVP):
+
 - Mobile native apps (iOS/Android)
 - Real-time notifications (WebSockets)
 - Integration with Moodle
