@@ -1,37 +1,31 @@
-// backend/src/middleware/auth.js
-const { sessions, users, safeUser } = require('../models/store');
+const jwt = require('jsonwebtoken');
+const { User } = require('../models');
 
-function authMiddleware(req, res, next) {
-  const header = req.headers.authorization || '';
-  const token  = header.startsWith('Bearer ') ? header.slice(7) : null;
-
-  if (!token) {
-    return res.status(401).json({ message: 'Authentication required. Please log in.' });
+const authenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'No token provided' });
   }
 
-  const userId = sessions[token];
-  if (!userId) {
-    return res.status(401).json({ message: 'Session expired or invalid. Please log in again.' });
-  }
-
-  const user = users.find(u => u.id === userId);
-  if (!user || user.status === 'inactive') {
-    return res.status(401).json({ message: 'Account not found or deactivated.' });
-  }
-
-  req.user  = user;
-  req.token = token;
-  next();
-}
-
-function requireRole(...roles) {
-  return (req, res, next) => {
-    if (!req.user) return res.status(401).json({ message: 'Not authenticated.' });
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: `Access denied. Required role: ${roles.join(' or ')}.` });
-    }
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findByPk(decoded.id, {
+      attributes: { exclude: ['password'] },
+    });
+    if (!user) return res.status(401).json({ message: 'User not found' });
+    req.user = user;
     next();
-  };
-}
+  } catch {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+};
 
-module.exports = { authMiddleware, requireRole };
+const requireRole = (...roles) => (req, res, next) => {
+  if (!roles.includes(req.user.role)) {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+  next();
+};
+
+module.exports = { authenticate, requireRole };
