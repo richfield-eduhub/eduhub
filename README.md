@@ -8,16 +8,17 @@ A digital system for managing student applications, profiles, and course registr
 
 EduHub provides a secure, role-based portal where different users can access and manage institutional information:
 
-| Role | Capabilities |
-|---|---|
-| **Applicant** | Submit applications online |
-| **Student** | Manage personal details, emergency contacts, register for courses, add/remove subjects within the allowed period |
-| **Alumni** | Access records |
-| **Lecturer** | View class lists and course information |
-| **Librarian** | Manage library-related records |
-| **Admin** | Approve new student applications, manage all users and data |
+| Role          | Capabilities                                                                                                     |
+| ------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Applicant** | Submit applications online                                                                                       |
+| **Student**   | Manage personal details, emergency contacts, register for courses, add/remove subjects within the allowed period |
+| **Alumni**    | Access records                                                                                                   |
+| **Lecturer**  | View class lists and course information                                                                          |
+| **Librarian** | Manage library-related records                                                                                   |
+| **Admin**     | Approve new student applications, manage all users and data                                                      |
 
 **Key features:**
+
 - Secure login with password reset and MFA
 - Role-based access control
 - Admin approval workflow — student numbers are auto-generated after approval
@@ -53,15 +54,15 @@ eduhub/
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 19, TypeScript, Vite |
-| Backend | Node.js, Express 5 |
-| Database | PostgreSQL 16 (Docker), Sequelize ORM |
+| Layer      | Technology                                             |
+| ---------- | ------------------------------------------------------ |
+| Frontend   | React 19, TypeScript, Vite                             |
+| Backend    | Node.js, Express 5                                     |
+| Database   | PostgreSQL 16 (Docker), Sequelize ORM                  |
 | Migrations | Custom migration runner (`backend/src/db/migrator.js`) |
-| Auth | JWT (jsonwebtoken), bcryptjs |
-| Email | Nodemailer |
-| Dev tools | nodemon, Docker, Make |
+| Auth       | JWT (jsonwebtoken), bcryptjs                           |
+| Email      | Nodemailer                                             |
+| Dev tools  | nodemon, Docker, Make                                  |
 
 ---
 
@@ -131,19 +132,20 @@ make dev
 ```
 
 This will:
+
 1. Start PostgreSQL in Docker
 2. Start pgAdmin (database GUI)
 3. Wait until the database is ready
 4. Start the backend — migrations run automatically on startup
 5. Start the frontend
 
-| Service | URL |
-|---|---|
-| Frontend | http://localhost:5173 |
-| Backend API | http://localhost:3000 |
+| Service      | URL                              |
+| ------------ | -------------------------------- |
+| Frontend     | http://localhost:5173            |
+| Backend API  | http://localhost:3000            |
 | Health check | http://localhost:3000/api/health |
-| PostgreSQL | `localhost:5432` |
-| pgAdmin | http://localhost:5050 |
+| PostgreSQL   | `localhost:5432`                 |
+| pgAdmin      | http://localhost:5050            |
 
 > **pgAdmin login:** `admin@eduhub.co.za` / `admin`
 >
@@ -153,13 +155,13 @@ This will:
 
 ## Makefile Commands
 
-| Command | What it does |
-|---|---|
-| `make setup` | Install npm dependencies for backend and frontend |
-| `make db` | Start PostgreSQL container and wait until ready |
-| `make dev` | Start DB + backend + frontend (main command) |
-| `make stop` | Stop Docker containers |
-| `make clean` | Stop containers and delete the DB volume (fresh slate) |
+| Command      | What it does                                               |
+| ------------ | ---------------------------------------------------------- |
+| `make setup` | Install npm dependencies for backend and frontend          |
+| `make db`    | Start PostgreSQL + pgAdmin containers and wait until ready |
+| `make dev`   | Start DB + backend + frontend (main command)               |
+| `make stop`  | Stop Docker containers                                     |
+| `make clean` | Stop containers and delete the DB volume (fresh slate)     |
 
 ---
 
@@ -168,6 +170,7 @@ This will:
 EduHub uses an explicit migration system instead of `sequelize.sync()`.
 
 **How it works:**
+
 - Migration files live in `backend/migrations/`, named by date: `YYYY-MM-DD-description.js`
 - On startup, the migrator checks which migrations have already run (tracked in a `migrations` table in the DB)
 - Any new migrations are applied once, in order, each wrapped in a transaction
@@ -199,14 +202,22 @@ backend/migrations/2026-04-01-add-payments-table.js
 ```js
 module.exports = {
   migration: {
-    name: '2026-04-01-add-payments-table',
+    name: "2026-04-01-add-payments-table",
     up: async (queryInterface, Sequelize, transaction) => {
-      await queryInterface.createTable('Payments', {
-        id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-        // ... your columns
-        createdAt: { type: Sequelize.DATE, allowNull: false },
-        updatedAt: { type: Sequelize.DATE, allowNull: false },
-      }, { transaction });
+      await queryInterface.createTable(
+        "Payments",
+        {
+          id: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+          },
+          // ... your columns
+          createdAt: { type: Sequelize.DATE, allowNull: false },
+          updatedAt: { type: Sequelize.DATE, allowNull: false },
+        },
+        { transaction },
+      );
     },
   },
 };
@@ -215,6 +226,7 @@ module.exports = {
 3. Restart the backend (`make dev`) — the migration runs automatically.
 
 **Rules:**
+
 - Never edit an existing migration file — always create a new one
 - Always wrap operations in the provided `transaction`
 - Always include `createdAt` and `updatedAt` when creating tables
@@ -223,15 +235,15 @@ module.exports = {
 
 ## API Endpoints
 
-| Prefix | Description |
-|---|---|
-| `/api/auth` | Login, register, password reset, MFA |
-| `/api/applications` | Submit and manage student applications |
-| `/api/users` | User profiles and emergency contacts |
-| `/api/qualifications` | Qualifications/programmes |
-| `/api/modules` | Subjects/modules |
-| `/api/semesters` | Semester configuration |
-| `/api/registrations` | Course registration and subject selection |
+| Prefix                | Description                               |
+| --------------------- | ----------------------------------------- |
+| `/api/auth`           | Login, register, password reset, MFA      |
+| `/api/applications`   | Submit and manage student applications    |
+| `/api/users`          | User profiles and emergency contacts      |
+| `/api/qualifications` | Qualifications/programmes                 |
+| `/api/modules`        | Subjects/modules                          |
+| `/api/semesters`      | Semester configuration                    |
+| `/api/registrations`  | Course registration and subject selection |
 
 ---
 

@@ -5,9 +5,9 @@ setup:
 	cd backend && npm install
 	cd frontend-react && npm install
 
-# Start PostgreSQL and wait until it's ready
+# Start PostgreSQL and pgAdmin and wait until they're ready
 db:
-	docker compose up -d db
+	docker compose up -d db pgadmin
 	@echo "Waiting for PostgreSQL..."
 	@until docker compose exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
 	@echo "PostgreSQL is ready."
