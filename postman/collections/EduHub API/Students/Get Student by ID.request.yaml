@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{base_url}}/students/:id"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+pathVariables:
+  - key: id
+    value: student_uuid_here
+    description: Student UUID
+order: 3000

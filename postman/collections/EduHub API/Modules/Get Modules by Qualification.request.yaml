@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{base_url}}/modules/by-qualification/:qualificationId"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+queryParams:
+  - key: year
+    value: "1"
+    disabled: true
+    description: Academic year (1-10); leave disabled for all years
+  - key: semester
+    value: "1"
+    disabled: true
+    description: Semester (1-10); leave disabled for all semesters
+  - key: active_only
+    value: "true"
+    disabled: true
+    description: Filter only active modules
+pathVariables:
+  qualificationId: 727ff8ae-0470-42a0-b8c6-58daf0ee564d
+order: 2000

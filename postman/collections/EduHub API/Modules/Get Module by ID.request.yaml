@@ -1,0 +1,9 @@
+$kind: http-request
+name: Get Module by ID
+url: "{{base_url}}/modules/:id"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+pathVariables:
+  id: 8803120f-c8bb-48b7-9e1b-40a5fa34c054
+order: 3000

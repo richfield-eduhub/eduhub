@@ -1,0 +1,9 @@
+$kind: http-request
+name: Get Campuses by Qualification
+method: GET
+url: "{{base_url}}/campuses/by-qualification/:qualificationId"
+order: 4000
+pathVariables:
+  - key: qualificationId
+    value: 07e967af-ac30-4358-837b-146325320cc2
+    description: Qualification UUID
