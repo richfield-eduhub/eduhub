@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Course Catalogue — Richfield</title>
+  <title>Course Catalogue — EduHub</title>
   <link rel="stylesheet" href="../shared.css"/>
   <style>
     .course-card{background:white;border-radius:12px;border:1px solid var(--rf-border);overflow:hidden;transition:transform .2s,box-shadow .2s}
@@ -15,13 +15,12 @@
 <div id="navbar-root"></div>
 <div class="main-content">
   <h1 class="section-title">COURSE CATALOGUE</h1>
-  <p class="section-subtitle">Browse all available qualifications offered by Richfield</p>
+  <p class="section-subtitle">Browse all available qualifications offered by EduHub</p>
 
   <div style="display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap" id="filters">
     <button class="filter-btn active" onclick="filterBy('all',this)">All Courses</button>
-    <button class="filter-btn" onclick="filterBy('ict',this)">Information Technology</button>
-    <button class="filter-btn" onclick="filterBy('business',this)">Business</button>
-    <button class="filter-btn" onclick="filterBy('creative',this)">Creative Arts</button>
+    <button class="filter-btn" onclick="filterBy('it',this)">Information Technology</button>
+    <button class="filter-btn" onclick="filterBy('business',this)">Business &amp; Management</button>
   </div>
 
   <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px"></div>
@@ -47,8 +46,13 @@
 requireAuth('student');
 renderNavbar('student-courses');
 
-const CAT_MAP = { BICT:'ict', NDIT:'ict', NDBS:'business', HDGD:'creative' };
-const COLORS  = { BICT:'#123f7a', NDIT:'#0369a1', NDBS:'#1e6b3c', HDGD:'#be185d' };
+// Map courses to categories based on faculty
+const PALETTE = ['#003DA5','#0369a1','#0891b2','#7c3aed','#be185d','#1e6b3c','#b45309','#155e75','#6d28d9','#0f766e','#92400e','#5b21b6','#065f46','#374151','#1e1b4b','#4338ca'];
+const COLORS  = Object.fromEntries(QUALIFICATIONS.map((q, i) => [q.code, PALETTE[i % PALETTE.length]]));
+const CAT_MAP = Object.fromEntries(QUALIFICATIONS.map(q => [
+  q.code,
+  q.faculty.toLowerCase().includes('information') ? 'it' : 'business'
+]));
 let current = 'all';
 
 function filterBy(cat, btn) {

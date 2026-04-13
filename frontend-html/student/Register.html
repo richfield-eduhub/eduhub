@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Module Registration — Richfield</title>
+  <title>Module Registration — EduHub</title>
   <link rel="stylesheet" href="../shared.css"/>
   <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </head>
@@ -29,7 +29,7 @@ if(!myApp){
     <div style="font-size:56px;margin-bottom:16px">⏳</div>
     <h2 style="color:#001A4D;font-weight:800;margin-bottom:10px">Application Pending</h2>
     <p style="color:#6b7280;font-size:15px;line-height:1.7">Your application is still being reviewed by the admissions team. Once approved, your modules will be allocated to you.</p>
-    <div style="margin-top:24px;font-size:13px;color:#9ca3af">Questions? Contact <strong style="color:#123f7a">admissions@richfield.ac.za</strong></div>`);
+    <div style="margin-top:24px;font-size:13px;color:#9ca3af">Questions? Contact <strong style="color:#123f7a">admissions@eduhub.ac.za</strong></div>`);
 }else if(myAllocs.length>0){
   const total=myAllocs.reduce((s,r)=>s+r.modules.length,0);
   document.getElementById('content').innerHTML=centre(`
@@ -72,7 +72,7 @@ if(!myApp){
       <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 18px;font-size:14px;color:#3730a3;display:inline-block;text-align:left;max-width:380px">
         🔔 <strong>Tip:</strong> Check the notification bell (🔔) in the top navbar — you'll see an alert the moment your modules are allocated.
       </div>
-      <div style="margin-top:20px;font-size:13px;color:#9ca3af">Need help? Contact <strong style="color:#123f7a">admissions@richfield.ac.za</strong> · <strong style="color:#123f7a">0860 742 434</strong></div>
+      <div style="margin-top:20px;font-size:13px;color:#9ca3af">Need help? Contact <strong style="color:#123f7a">admissions@eduhub.ac.za</strong> · <strong style="color:#123f7a">0860 742 434</strong></div>
     </div>`;
 }
 </script>

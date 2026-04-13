@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sign In — Richfield</title>
+  <title>Sign In — EduHub</title>
   <link rel="stylesheet" href="../shared.css" />
   <style>
     body { background: var(--rf-offwhite); }
@@ -21,20 +21,33 @@
   <div class="auth-wrap">
     <div class="auth-left">
       <div class="auth-inner">
-        <div style="font-family:var(--font-display);font-size:14px;letter-spacing:4px;opacity:.6;margin-bottom:32px">RICHFIELD GRADUATE INSTITUTE</div>
+        <div style="font-family:var(--font-display);font-size:14px;letter-spacing:4px;opacity:.6;margin-bottom:32px">EDUHUB GRADUATE INSTITUTE</div>
         <h1 style="font-family:var(--font-display);font-size:52px;letter-spacing:2px;line-height:1;margin-bottom:20px">WELCOME<br><span style="color:var(--rf-gold)">BACK.</span></h1>
         <p style="font-size:16px;opacity:.75;line-height:1.7;max-width:320px">Access your student portal, manage registrations, and track your academic journey.</p>
         <div style="margin-top:48px;border-top:1px solid rgba(255,255,255,.15);padding-top:32px">
           <div style="font-size:13px;opacity:.6;margin-bottom:16px">DEMO ACCOUNTS — click to fill</div>
-          <div class="demo-card" onclick="fillDemo('admin@richfield.ac.za','admin123')">
+          <div class="demo-card" onclick="fillDemo('admin@eduhub.ac.za','admin123')">
             <div style="font-weight:600;font-size:13px">Admin</div>
-            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">admin@richfield.ac.za / admin123</div>
+            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">admin@eduhub.ac.za / admin123</div>
           </div>
-          <div class="demo-card" onclick="fillDemo('smokoena@richfield.ac.za','lec123')">
+          <div class="demo-card" onclick="fillDemo('smokoena@eduhub.ac.za','lec123')">
             <div style="font-weight:600;font-size:13px">Lecturer</div>
-            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">smokoena@richfield.ac.za / lec123</div>
+            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">smokoena@eduhub.ac.za / lec123</div>
           </div>
-          <div style="font-size:12px;opacity:.5;margin-top:10px">Students are created when admin approves an application.</div>
+          <!-- Student login instructions — display only, not clickable -->
+          <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:13px 15px;margin-top:12px;user-select:none">
+            <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.88);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+              <span style="font-size:15px">🎓</span> Student Login
+            </div>
+            <div style="font-size:11.5px;color:rgba(255,255,255,0.62);line-height:1.75">
+              <strong style="color:rgba(255,255,255,0.82)">How to log in as a student:</strong><br/>
+              1. Your account is created once an admin <strong style="color:rgba(255,255,255,0.82)">approves your application</strong>.<br/>
+              2. You will receive your <strong style="color:rgba(255,255,255,0.82)">email &amp; temporary password</strong> by email.<br/>
+              3. Enter your credentials in the Sign In form on the right.<br/>
+              4. On first login you will be asked to <strong style="color:rgba(255,255,255,0.82)">set a new password</strong>.<br/><br/>
+              <span style="opacity:.75">No account yet? Click <em>Create an account</em> on the right to apply.</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Students — Richfield Admin</title>
+  <title>Students — EduHub Admin</title>
   <link rel="stylesheet" href="../shared.css"/>
 </head>
 <body>
@@ -36,7 +36,7 @@ if(students.length===0){
       <td style="font-family:var(--font-mono);font-size:12px;color:var(--rf-blue)">${s.studentId||'—'}</td>
       <td style="font-size:13px;color:var(--rf-gray)">${s.email}</td>
       <td style="font-size:13px">${app?.qualificationCode||'—'}</td>
-      <td>${badge(reg?reg.status:'pending')}<span style="font-size:11px;margin-left:4px;color:var(--rf-gray)">${!reg?'Not registered':''}</span></td>
+      <td>${badge(reg?(reg.status==='allocated'?'approved':reg.status):'pending')}<span style="font-size:11px;margin-left:4px;color:var(--rf-gray)">${!reg?'Not registered':reg.status==='allocated'?'Modules Allocated':''}</span></td>
       <td><span class="badge ${s.tempPassword?'badge-pending':'badge-approved'}">${s.tempPassword?'⚠ Temp password':'✓ Active'}</span></td>
     </tr>`;
   }).join('')}

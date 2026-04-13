@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Course Management — Richfield Admin</title>
+  <title>Course Management — EduHub Admin</title>
   <link rel="stylesheet" href="../shared.css"/>
   <style>.course-row{transition:background .15s}.course-row:hover{background:var(--rf-offwhite)!important}</style>
 </head>
@@ -35,7 +35,9 @@
 requireAuth('admin');
 renderNavbar('admin-courses');
 
-const COLORS = { BICT:'#123f7a', NDIT:'#0369a1', NDBS:'#1e6b3c', HDGD:'#be185d' };
+// Colour palette cycles through brand colours for all qualifications
+const PALETTE = ['#003DA5','#0369a1','#0891b2','#7c3aed','#be185d','#1e6b3c','#b45309','#155e75','#6d28d9','#0f766e','#92400e','#5b21b6','#065f46','#374151','#1e1b4b','#4338ca'];
+const COLORS = Object.fromEntries(QUALIFICATIONS.map((q, i) => [q.code, PALETTE[i % PALETTE.length]]));
 const regs   = getRegistrations();
 
 const totalStudents = new Set(regs.filter(r=>r.status==='allocated'||r.status==='approved').map(r=>r.studentId)).size;
