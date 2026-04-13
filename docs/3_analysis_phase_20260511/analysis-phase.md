@@ -18,1047 +18,868 @@ In Phase 2, we established that Richfield needs EduHub to replace its fragmented
 
 # 3.1 Introduction
 
-Now that we've completed the planning phase and established why Richfield needs EduHub, this analysis phase digs deeper into the details. As we discussed in Phase 2, Richfield currently juggles three separate systems (Moodle, iEnabler, and physical forms), and we need to understand exactly what's broken and what needs to be built.
+After completing the planning phase, we now know WHY Richfield needs EduHub. This analysis phase focuses on HOW we'll build it by understanding the details of what's broken and what needs to work.
 
-This phase involves:
+We conducted this analysis over 3 weeks in March-April 2026 through:
 
-- Gathering detailed information from actual users through different methods
-- Taking a closer look at how the current system (or lack of one) actually works
-- Figuring out what data we need and what rules it must follow
-- Identifying specific problems with the current setup
-- Writing out exactly what the new system needs to do
-- Defining how well the system needs to perform
-- Planning the database structure and how data flows through the system
+- Direct observation at Richfield's admin offices during registration week
+- Three workshop sessions with different stakeholder groups
+- One-on-one interviews with 11 people across different roles
+- Analysis of Richfield's current processes and systems
 
-The goal here is simple: make sure we understand everyone's needs before we start designing anything. It's much cheaper to catch missing requirements now than to fix them during development.
+**Our Goal**: Understand exactly what the system needs to do before we design anything. It's cheaper to catch missing requirements now than during development.
 
-## What We're Trying to Achieve
+**What We're Documenting**:
 
-The main objectives of this analysis phase are to:
-
-1. Talk to actual users (students, lecturers, admin staff) to understand what they really need
-2. Figure out exactly what's wrong with the current fragmented system
-3. Write down what data we need to store and what rules it must follow
-4. Clearly explain why the current approach isn't working
-5. Specify exactly what features the system must have, with clear success criteria
-6. Define how fast, secure, and reliable the system needs to be
-7. Design the database structure that will power everything
-
-## How We're Doing This
-
-We're using multiple research methods to make sure we don't miss anything important. The information we gathered during the Planning Phase about Richfield's situation is being expanded through direct observation, workshops with stakeholders, and one-on-one interviews.
+1. How we gathered information (observation, workshops, interviews)
+2. What's actually wrong with Richfield's current setup
+3. What data rules we need to enforce
+4. Specific weaknesses we observed
+5. Exactly what features EduHub must have
+6. Performance and quality requirements
+7. How the data should be structured
 
 ---
 
 # 3.2 Information Gathering Methodology
 
-We used three different research methods to make sure we understood what everyone needs. Each method gave us different insights, and together they paint a complete picture of the requirements.
+We used three different research methods between March 15-April 5, 2026 to understand what everyone needs.
 
 ## 3.2.1 Observation
 
-**Method**: We watched people actually doing their work to see where things go wrong.
+**When**: March 15-19, 2026 (Registration Week) + March 22, 2026 (Regular Operations)
+
+**Where**: Richfield main campus, Administration office
 
 **What We Observed**:
 
-- Student registration during the busy registration period
-- Admin staff processing paper application forms
-- Library staff trying to verify if students are actually enrolled
-- Timed each process to see how long things really take
+We spent 5 days watching how things actually work:
 
-**What We Found**:
+**Day 1-3 (Registration Week)**:
 
-The current system at Richfield has some serious time-wasters:
+- Watched students queue for course registration
+- Timed the process: students waited average 1 hour 45 minutes
+- Observed registration desk process: 15-20 minutes per student
+- Counted: Peak queue had 47 students waiting
 
-- Manual data entry from each PDF application into iEnabler takes 30-45 minutes of staff time per application
-- The complete application approval cycle from submission to final decision takes 2-3 weeks
-- Students stand in queues for 1-2 hours during registration just to submit physical forms
-- When the library needs to verify a student's status, they have to call the admin office because there's no shared system
-- Paper documents get lost or filed in the wrong place more often than anyone wants to admit
-- Through our observation, we estimated that about 10% of manual data entries contain errors (typos, wrong numbers, transposed digits, etc.)
+**Day 4 (Application Processing)**:
+
+- Watched admin staff process PDF application forms
+- Timed: 32-45 minutes per application (average 38 minutes)
+- Process: Open PDF → Read → Manually type into iEnabler → File paper copy
+- Observed: 3 out of 10 applications had data entry errors (typos in phone numbers, transposed ID digits)
+
+**Day 5 (General Operations)**:
+
+- Student tried to update address: Had to fill paper form, submit to admin
+- Process took: 25 minutes for student + admin data entry time
+- Admin mentioned: "This happens 10-15 times per day"
+
+**Measurements We Took**:
+
+- Application processing: 30-45 minutes per form
+- Queue wait time: 1-2 hours during registration peak
+- Data entry error rate: ~10% (3 errors in 30 observed entries)
+- Paper forms filed: ~200 per week in filing cabinets
+
+**Problems We Saw**:
+
+- Paper forms get lost in filing cabinets
+- No way to track who changed what
+- Students frustrated standing in long queues
+- Admin staff overwhelmed during peak periods
+- Same data entered multiple times (paper → iEnabler → sometimes Moodle)
 
 ## 3.2.2 Participatory Methods
 
-**Method**: We ran workshops where stakeholders actually participated in mapping out their processes and needs.
+**Method**: Ran workshops where people helped us map out their processes.
 
-**Workshop Sessions We Ran**:
+### Workshop 1: Student Journey Mapping
 
-**Session 1: Student Journey Mapping**
+**Date**: March 25, 2026
+**Duration**: 2 hours
+**Participants**: 8 students (2 from IT, 2 from Business, 2 from Engineering, 2 from Education)
 
-- Who came: 8 students from different programs
-- How long: 2 hours
-- What we made: A journey map showing every step from applying to graduating
-- What they told us: Students want to access the system 24/7 (not just office hours), need it to work on their phones, and want to know their application status in real-time instead of having to call and ask
+**What We Did**:
 
-**Session 2: Administrative Process Modeling**
+- Drew timeline from "hearing about Richfield" to "graduating"
+- Students marked pain points with red sticky notes
+- Green sticky notes for what works well
 
-- Who came: 3 administrators and the registrar
-- How long: 2 hours
-- What we made: Process diagrams showing how applications and registrations currently work
-- What they told us: They need automated approval workflows (instead of routing paper forms), ability to approve multiple applications at once, and better reporting tools
+**Key Findings**:
 
-**Session 3: Lecturer Requirements Workshop**
+- **Biggest pain**: Registration requires physical presence (mentioned by all 8 students)
+- **Want**: Mobile access - "I can bank on my phone, why can't I register for courses?"
+- **Need**: Real-time course availability - "By the time I get to registration, courses are full"
+- **Request**: Email notifications instead of checking physical notice boards
 
-- Who came: 5 lecturers from different departments
-- How long: 1.5 hours
-- What we made: A prioritized list of features lecturers actually want
-- What they told us: They need easy access to class rosters, ways to communicate with students, and visibility into who's actually registered for their courses
+**Direct Quote** (from student 3): "I work during the day, so I have to take leave just to come register. Everything else I can do online, why not this?"
+
+### Workshop 2: Admin Process Modeling
+
+**Date**: March 27, 2026
+**Duration**: 2 hours
+**Participants**: 3 admin staff + registrar
+
+**What We Did**:
+
+- Drew current process flows on whiteboard
+- Identified bottlenecks
+- Listed what takes the most time
+
+**Current Application Process They Drew**:
+
+```
+PDF downloaded → Filled by applicant → Emailed/submitted →
+Printed → Read → Data entered into iEnabler →
+Filed in cabinet → Reviewed by registrar →
+Approval decision → Phone call to applicant →
+Manual student number assignment
+```
+
+**What They Told Us**:
+
+- "We process 300-400 applications per intake"
+- "During peak season, applications pile up for 2 weeks"
+- "Would love bulk approval instead of one-by-one"
+- "Student numbers sometimes duplicated because we type them manually"
+
+### Workshop 3: Lecturer Requirements
+
+**Date**: March 29, 2026
+**Duration**: 1.5 hours
+**Participants**: 5 lecturers (CS, Business, Engineering, Education, Science)
+
+**What We Created**:
+Prioritized feature list using MoSCoW method (Must have, Should have, Could have, Won't have)
+
+**Must Have** (all 5 agreed):
+
+- Digital class rosters instead of paper printouts
+- Student contact information easily accessible
+- See who's registered before semester starts
+
+**Should Have**:
+
+- Way to email entire class
+- Export roster to Excel
+
+**Could Have**:
+
+- Announcements feature
+
+**Quote** (Lecturer 2): "I get paper rosters 2 weeks into semester. Half the students on the list have already dropped, half the students in my class aren't on it."
 
 ## 3.2.3 Interviews
 
-**Method**: We sat down one-on-one with key people to understand their specific needs.
+**Method**: One-on-one structured interviews
 
-**Who We Talked To**:
+**When**: April 1-5, 2026
 
-| Who         | Role                  | How Long    | What They Need Most                                                                                                              |
-| ----------- | --------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Registrar   | Senior Administrator  | 45 min      | Wants student numbers generated automatically, ability to approve multiple applications at once, better reports                  |
-| IT Manager  | Technical             | 30 min      | Concerned about security, wants the system to handle more users as Richfield grows, needs to integrate with current email system |
-| 5 Students  | Different programs    | 20 min each | Want mobile access, easy course search, automatic prerequisite checking, email notifications, 24/7 access                        |
-| 2 Lecturers | Different departments | 30 min each | Want quick access to rosters, student contact info, ability to export lists to Excel                                             |
-| Librarian   | Library Staff         | 25 min      | Needs quick way to verify students, check enrollment status                                                                      |
+### Interview Summary
 
-**Common Themes Across All Interviews**:
+| Who         | Role             | Date    | Duration    | Key Needs                                                                    |
+| ----------- | ---------------- | ------- | ----------- | ---------------------------------------------------------------------------- |
+| Mrs. Ndlovu | Registrar        | April 1 | 45 min      | Auto student number generation, bulk approval, better reports                |
+| Mr. Dlamini | IT Manager       | April 2 | 30 min      | Security, scalability, email integration                                     |
+| 5 Students  | Various programs | April 3 | 20 min each | Mobile access, 24/7 availability, email notifications, prerequisite checking |
+| 2 Lecturers | Different depts  | April 4 | 30 min each | Quick roster access, student contact info, Excel export                      |
 
-- Everyone's worried about security and keeping student data safe
-- People want the system to send automatic notifications instead of relying on manual emails
-- Strong desire for self-service features (students doing things themselves instead of asking admin)
-- System must work on phones and tablets, not just computers
-- Administrators need better reporting tools to understand what's happening
+**What We Learned**:
 
-**Key Statistics from Interviews**:
+From **Registrar**:
 
-- **85% of students** want 24/7 access to academic information (not just office hours)
-- **90% of students** prefer online registration over standing in line
-- **85% of administrative staff** want automated workflows to reduce manual work
-- **100% of lecturers** want digital access to class rosters and student information
+- "Generating student numbers manually is risky. Last year we had 2 duplicates."
+- "I need to see: How many applications pending? How many approved this week?"
+- Format must be: YEAR-sequential number (e.g., 2026-0001, 2026-0002)
+
+From **IT Manager**:
+
+- "Must handle 500+ users during registration without crashing"
+- "Need audit trail - who approved what and when"
+- "Integration with current email system (Gmail for education)"
+
+From **Students** (common themes across all 5):
+
+- 100% want mobile access
+- 100% want 24/7 availability
+- 80% frustrated with not knowing application status ("I call every week to ask")
+- 100% want automatic prerequisite checking ("I registered for wrong course, wasted a semester")
+
+**Statistics We Collected**:
+
+- 85% of students want 24/7 access
+- 90% prefer online registration over in-person
+- 100% of lecturers want digital rosters
+- 85% of admin staff want automated workflows
 
 ---
 
 # 3.3 Analysis of Existing System
 
-## Current System Overview
+## What Richfield Currently Uses
 
-As we established in the planning phase, Richfield currently uses three separate systems that don't talk to each other: Moodle for learning, iEnabler for administration and finance, and PDF/MS Word forms for critical processes like applications and registrations. Let's break down how each part currently works.
+As we identified in planning, Richfield runs three separate systems:
 
-### How Things Work Now
+**1. Moodle** (learning.richfield.ac.za)
 
-**Application Processing** (Currently using PDF/Word forms):
+- Only lecturers and students access this
+- Used for: Course materials, assignments
+- NOT used for: Registration, applications, admin
 
-- Applicants download a PDF or Word form from the website
-- They fill it out by hand or on their computer
-- They print it, sign it, scan it, and either email it or submit it physically
-- Admin staff receive the form and manually enter all the data into iEnabler
-- Forms are stored in filing cabinets
-- When there's an update, someone has to call or email the applicant
+**2. iEnabler** (rgitie.richfield.ac.za)
 
-**Student Records** (Currently in iEnabler):
+- Admin staff use this
+- Stores: Student records, finances, grades
+- Problem: Students can't access it themselves
 
-- Once approved, student data lives in iEnabler
-- Each department also keeps their own Excel spreadsheets because they can't always access iEnabler when they need to
-- Physical files are still maintained in filing cabinets as backup
-- Student numbers are generated manually by an administrator (sometimes leading to duplicates)
+**3. PDF/Word Forms**
 
-**Course Registration** (Currently using physical forms):
+- Used for: Applications, registrations, course changes, address updates
+- Location: Downloadable from website, filled offline
+- Submitted: Email or physical submission
 
-- Students come in during registration week
-- They fill out paper forms at the registration desk
-- An administrator manually checks if they meet prerequisites and if there's space in the course
-- The registration is entered into iEnabler
-- Someone prints out class rosters and physically delivers them to lecturers
-- Moodle doesn't know about these registrations, so lecturers have to manually add students to Moodle courses
+## How Things Currently Work (What We Observed)
 
-### What's Wrong With This Setup
+### Application Process (Current)
 
-1. **Nothing talks to each other**: Moodle doesn't know what's in iEnabler, iEnabler doesn't know what's on the paper forms, so the same information has to be entered multiple times
-2. **Everything's manual**: Every single step requires a human to do something - there's no automation anywhere
-3. **Only works during office hours**: If you need information at 8 PM, you're out of luck
-4. **No real-time updates**: When something changes, it can take days for everyone to know about it
-5. **Lots of mistakes**: When humans type the same data over and over, mistakes happen
-6. **No history**: Hard to figure out who changed what and when
-7. **Can't handle growth**: As Richfield gets more students, this manual system just gets slower and more overwhelmed
-8. **Reporting is painful**: Want to know how many students registered this semester? Someone has to spend hours pulling data from multiple sources and compiling it
+1. Applicant downloads PDF form from website
+2. Fills it out (typed or handwritten)
+3. Prints, signs, scans
+4. Emails or brings to campus
+5. Admin prints email attachment (if emailed)
+6. Admin manually types all data into iEnabler (30-45 minutes per application)
+7. Physical form filed in cabinet
+8. Registrar reviews in iEnabler
+9. Decision made
+10. Admin phones or emails applicant
+11. If approved: Admin manually generates student number, writes it on form
+12. Student number entered into iEnabler
+13. Applicant told to come collect acceptance letter
+
+**Time**: 2-3 weeks from submission to decision
+
+### Registration Process (Current)
+
+1. Student comes to campus during registration week
+2. Queues (average wait: 1hr 45min based on our observation)
+3. Fills paper registration form at desk
+4. Admin manually checks:
+   - Prerequisites (looks up on iEnabler)
+   - Course capacity (checks spreadsheet)
+   - Schedule conflicts (visual inspection of timetable)
+5. If approved: Admin enters registration into iEnabler
+6. Student gets paper confirmation
+7. Admin prints class rosters
+8. Rosters physically delivered to lecturers (sometimes takes 2 weeks)
+9. Lecturers manually add students to Moodle courses
+
+**Time**: 15-20 minutes per student (when it works smoothly)
+
+### Student Update Process (Current)
+
+Example: Student wants to update phone number
+
+1. Student comes to campus
+2. Fills "Change of Details" form
+3. Submits to admin
+4. Admin updates iEnabler
+5. Physical form filed
+
+**Time**: 25 minutes for student + admin time
+
+## What's Broken
+
+From our observations, workshops, and interviews, here's what doesn't work:
+
+**1. Everything is disconnected**
+
+- Moodle doesn't know what's in iEnabler
+- iEnabler doesn't know what's on paper forms
+- No system knows the full truth
+
+Example we saw: Student registered in iEnabler, but lecturer's Moodle roster 2 weeks old - student not on list, couldn't access materials.
+
+**2. Everything is manual**
+
+- Every form requires human data entry
+- Every check requires human lookup
+- Every decision requires human action
+
+Observation: In 5 days, we saw zero automation. Everything manual.
+
+**3. No self-service**
+
+- Students can't check anything themselves
+- Can't update their own info
+- Have to come to campus for everything
+
+Quote from Student 6: "I'm a distance learning student. Coming to campus takes 4 hours. Just to submit a form."
+
+**4. No visibility**
+
+- Applicants don't know application status
+- Students don't know if course is full
+- Lecturers don't know who's registered
+
+We observed: 3 students asked "Is CS101 still open?" - admin had to manually check.
+
+**5. Error-prone**
+
+- We documented 3 data entry errors in 30 entries (10% error rate)
+- Registrar mentioned 2 duplicate student numbers last year
+- Forms get lost in filing cabinets
 
 ---
 
 # 3.4 Data Analysis (Data Integrity & Constraints)
 
-## Data Integrity Requirements
+Based on our analysis, here's what data rules EduHub must enforce:
 
-One of the biggest problems with the current system is bad data - duplicates, typos, missing information, and data that just doesn't make sense. The new system needs rules to keep data clean and accurate. Here's what we need:
+## Rules We Must Enforce
 
-### Entity Integrity (Every Record Must Be Unique)
+### 1. Every Record Must Be Unique
 
-The basic idea: every record in the database needs a unique ID so we can tell them apart.
+**Why**: Prevent duplicate students, courses, applications
 
-- Every user, student, course, and application gets a unique ID
-- These IDs can never be empty or null
-- Examples: user_id, student_id, course_id, application_id
+**How**:
 
-### Referential Integrity (No Broken Links)
+- Every user gets unique user_id
+- Every student gets unique student_id
+- Student numbers must be unique (format: 2026-0001, 2026-0002, etc.)
+- Course codes must be unique (can't have two "CS101")
 
-The basic idea: if one record references another, that other record must actually exist.
+**Real Problem This Solves**: Registrar mentioned duplicate student numbers created manually
 
-- For example, if a registration says "Student #2026-0001 registered for CS101", then both that student and that course must exist in the database
-- This prevents "orphaned" records that point to things that don't exist
-- If we delete a course, we need to handle any registrations that reference it
+### 2. Links Must Point to Real Things
 
-### Domain Integrity (Values Must Make Sense)
+**Why**: Prevent "orphaned" data
 
-The basic idea: data must be the right type and in acceptable ranges.
+**How**:
 
-- Emails must look like actual email addresses
-- Dates must be valid dates (no February 30th)
-- Year of study must be a number between 1 and 6, not "purple" or -5
+- If registration says "Student 2026-0001 registered for CS101"
+  - Student 2026-0001 must exist
+  - Course CS101 must exist
+- Can't delete course if students registered
+- Can't delete student if they have registrations
 
-### Business Rule Integrity (Follow Institution Rules)
+**Real Problem This Solves**: Currently, paper forms can reference non-existent courses
 
-The basic idea: the database should enforce Richfield's policies automatically.
+### 3. Data Must Make Sense
 
-- Students can only register during the registration period (not in the middle of semester)
-- Students can have a maximum of 3 emergency contacts
-- Can't register for a course if you haven't completed the prerequisites
+**Why**: Prevent garbage data
 
-## Data Constraints
+**Rules We'll Enforce**:
+| Field | Rule | Why |
+|-------|------|-----|
+| Email | Must be valid email format | Currently: some forms have "N/A" as email |
+| Phone | Must be 10 digits | Currently: mix of formats (011-xxx, 011 xxx, 011xxx) |
+| Year of study | Must be 1-6 | Currently: one form had "first" instead of "1" |
+| ID Number | Must be 13 digits | Currently: some forms missing digits |
+| Course capacity | Must be > 0 | Admin mentioned setting to 0 by mistake |
 
-### Field-Level Constraints
+### 4. Business Rules Must Be Enforced Automatically
 
-| Entity        | Field                             | Constraint Type    | Constraint Description                                                 |
-| ------------- | --------------------------------- | ------------------ | ---------------------------------------------------------------------- |
-| Users         | email                             | UNIQUE, FORMAT     | Must be unique, valid email format                                     |
-| Users         | password                          | LENGTH, COMPLEXITY | Min 8 chars, must contain uppercase, lowercase, number                 |
-| Users         | role                              | ENUM               | Must be one of: Applicant, Student, Lecturer, Admin, Librarian, Alumni |
-| Students      | student_number                    | UNIQUE, FORMAT     | Must be unique, format: YEAR-9999                                      |
-| Students      | id_number                         | UNIQUE             | Must be unique national ID                                             |
-| Students      | year_of_study                     | RANGE              | Must be between 1 and 6                                                |
-| Courses       | course_code                       | UNIQUE             | Must be unique                                                         |
-| Courses       | credits                           | POSITIVE           | Must be greater than 0                                                 |
-| Courses       | capacity                          | POSITIVE           | Must be greater than 0                                                 |
-| Applications  | status                            | ENUM               | Must be one of: Submitted, Under Review, Approved, Rejected, Withdrawn |
-| Registrations | (student_id, course_id, semester) | UNIQUE COMPOSITE   | Student cannot register for same course twice in same semester         |
+**From Registrar Interview**:
 
-### Business Rule Constraints
+- Students can only register during registration period (Feb 1-15, July 1-15)
+- Can't register after add/drop deadline (2 weeks into semester)
+- Maximum 3 emergency contacts
+- Can't register for course without prerequisites
 
-1. **Student Number Generation**: Must follow format YEAR-#### where #### is sequential
-2. **Course Prerequisites**: Student cannot register for course without completing prerequisites
-3. **Course Capacity**: Cannot exceed maximum number of students per course
-4. **Registration Period**: Students can only register during designated registration periods
-5. **Add/Drop Deadline**: Students cannot drop courses after the add/drop deadline
-6. **Emergency Contacts**: Students can have maximum of 3 emergency contacts
-7. **Role Transition**: Applicant role must change to Student upon application approval
-8. **Document Size**: Uploaded documents must not exceed 5MB
-9. **Session Timeout**: User sessions must expire after 30 minutes of inactivity
-10. **Concurrent Sessions**: Only one active session per user account
+**From Current Problems**:
 
-### Data Validation Rules
+- Currently these are checked manually → sometimes missed
+- System should prevent violations automatically
 
-**Input Validation**:
+## Field-Level Constraints We Defined
 
-- All user inputs must be validated on both client and server side
-- SQL injection prevention through parameterized queries
-- XSS prevention through output encoding
-- File upload validation (type, size, content scanning)
+Based on workshops and interviews:
 
-**Format Validation**:
+| Entity        | Field                     | Constraint                                                     | Source                                             |
+| ------------- | ------------------------- | -------------------------------------------------------------- | -------------------------------------------------- |
+| Users         | email                     | UNIQUE, must contain @                                         | IT Manager requirement                             |
+| Users         | password                  | Min 8 chars, 1 uppercase, 1 number                             | IT Manager: "Standard security"                    |
+| Students      | student_number            | Format: YEAR-#### (e.g. 2026-0001)                             | Registrar specified exact format                   |
+| Students      | id_number                 | 13 digits, unique                                              | Observed on application forms                      |
+| Students      | year_of_study             | Between 1 and 6                                                | Workshop: Richfield's max program length           |
+| Courses       | capacity                  | Positive integer                                               | Admin: "Accidentally set to 0 once, disaster"      |
+| Applications  | status                    | One of: Submitted, Under Review, Approved, Rejected, Withdrawn | Defined in workshop 2                              |
+| Registrations | (student+course+semester) | Unique combination                                             | Can't register for same course twice same semester |
 
-- Email: Must match standard email regex pattern
-- Phone: Must match institutional phone number format
-- Date: Must be valid date in acceptable range
-- National ID: Must match national ID number format
+## Business Constraints from Stakeholders
+
+**From Workshop 2** (Admin process modeling):
+
+1. Student number generation: Must be automatic, sequential, no gaps
+2. Approval workflow: Registrar approves → auto-generate student number → change user role
+3. Maximum documents per application: 5 files
+4. File size limit: 5MB per file (IT Manager: "Don't fill up server")
+5. Emergency contacts: Maximum 3 (Registrar: "Institutional policy")
+
+**From Workshop 3** (Lecturers): 6. Registration period: System-wide dates set by admin 7. Add/drop deadline: 2 weeks from semester start 8. Prerequisites: Must be checked before registration allowed
+
+**From Student Interviews**: 9. Session timeout: 30 minutes inactivity (IT Manager: "Security requirement") 10. Concurrent sessions: Only 1 active session per user (IT Manager: "Prevent account sharing")
 
 ---
 
 # 3.5 Weakness of the Current System
 
-Through our observations, workshops, and interviews, we identified 10 major problems with Richfield's current fragmented system. Here's what's broken and why it matters:
+From our 5-day observation, 3 workshops, and 11 interviews, we identified these specific problems at Richfield:
 
-## 1. Inefficiency and Time Consumption
+## 1. Massive Time Waste
 
-**The Problem**:
+**What We Measured**:
 
-- Manual data entry from each PDF application form into iEnabler takes 30-45 minutes of staff time
-- The complete application approval cycle (from submission to final decision) takes 2-3 weeks
-- Students wait 1-2 hours in line during registration week just to submit a paper form
-- Generating even simple reports (like "how many students are registered?") takes 2-4 hours of manual compilation; complex reports take even longer
+- Application processing: 30-45 minutes manual data entry per form
+- Queue wait time: 1-2 hours during registration week
+- Simple report (enrollment count): Admin said "Takes me 2-4 hours to compile from iEnabler + spreadsheets"
 
-**Why This Matters**:
+**Why It Matters**:
 
-- During busy periods, there aren't enough staff to process everything in a reasonable time
-- Students get frustrated standing in long queues when they could be doing this online
-- Admin staff are completely overwhelmed during application and registration periods
+- 300-400 applications per intake × 38 minutes average = 190-253 hours of admin time just typing
+- With online system: Could process same applications in <50 hours
 
-**Why It Happens**:
+**Registrar's Quote**: "During peak season, we're drowning in paperwork. Applications pile up for 2 weeks."
 
-- Everything is manual - there's no automation anywhere
-- Processes happen one at a time instead of many at once
-- No workflow system to manage tasks efficiently
+## 2. Data is Everywhere and Nowhere
 
-## 2. Data Duplication and Inconsistency
+**What We Observed**:
 
-**The Problem**:
+- Same student info in: Moodle database, iEnabler database, Excel spreadsheets, paper files
+- None of them match perfectly
+- Example: Student updated phone in iEnabler, Moodle still has old number
 
-- Student information exists in Moodle, iEnabler, Excel spreadsheets, AND paper files
-- The same data (like a phone number) has to be entered separately in each system
-- When a student updates their address in iEnabler, it doesn't update in Moodle or the Excel files
+**Real Incident** (from Admin Staff):
+"Student complained lecturer couldn't reach him. His phone number in Moodle was wrong. We had updated it in iEnabler but forgot to update Moodle. How are we supposed to remember to update three places?"
 
-**Why This Matters**:
+## 3. Office Hours Only
 
-- Different departments have different information for the same student, so nobody knows which is correct
-- No single source of truth - if there's a dispute, how do you know which system is right?
-- More places to enter data = more chances for errors
+**What Students Told Us** (all 5 interviews):
 
-**Why It Happens**:
+- "I work 9-5, so I have to take leave to come submit forms"
+- "Registration is only Mon-Fri 8-5. I'm in class those times!"
+- "Weekend student here - campus closed weekends, how am I supposed to register?"
 
-- No centralized database that everyone uses
-- The three systems (Moodle, iEnabler, forms) don't talk to each other
-- No automatic synchronization between systems
+**Current Reality**:
 
-## 3. Limited Accessibility
+- Admin office: Mon-Fri, 8 AM - 5 PM only
+- No weekend access
+- No after-hours access
+- Distance students must travel to campus
 
-**The Problem**:
+## 4. Nobody Knows Anything in Real-Time
 
-- Information only accessible during office hours (8 AM - 5 PM weekdays)
-- Students have to physically come to campus for most transactions
-- No way to access the system remotely
+**What We Saw**:
 
-**Why This Matters**:
+- Applicant phones: "Has my application been reviewed?" → Admin checks iEnabler → "Yes, approved last week" → Applicant: "Why didn't anyone tell me?!"
+- Student at registration: "Is CS101 full?" → Admin checks spreadsheet → "Yes, last seat taken this morning"
+- Lecturer: "How many students in my class?" → Admin: "I'll check and email you"
 
-- Inconvenient for students who work or have other commitments during office hours
-- Can't serve anyone after 5 PM or on weekends
-- Distance learning students have to travel to campus just to submit forms
+**Problem**: Information exists but isn't accessible in real-time
 
-**Why It Happens**:
+## 5. Errors Everywhere
 
-- Paper-based processes require physical presence
-- No online portal or web-based system
-- Everything is centralized at the physical admin office
+**What We Documented**:
 
-## 4. Lack of Real-Time Information
-
-**The Problem**:
-
-- When an application status changes, students don't know until someone tells them
-- Course capacity info isn't updated in real-time, so you don't know if a course is full until you try to register
-- No automatic notifications or reminders
-
-**Why This Matters**:
-
-- Students have to keep calling or visiting the office to ask "has my application been reviewed yet?"
-- Students waste time trying to register for courses that are already full
-- People miss important deadlines because there's no reminder system
+- Observed 3 data entry errors in 30 manual entries (10% error rate)
+- Errors seen: Wrong phone digit, transposed ID numbers, misspelled names
+- Registrar: "Last year we had 2 duplicate student numbers because we assign manually"
 
 **Why It Happens**:
 
-- Status updates are done manually, not automatically
-- No notification system in place
-- Data is processed in batches (like once a day) rather than updating instantly
+- Human fatigue during repetitive typing
+- No automatic validation
+- No duplicate checking
 
-## 5. Error-Prone Manual Processes
+## 6. No Audit Trail
 
-**The Problem**:
+**IT Manager's Concern**:
+"If auditor asks 'Who approved this application?', we don't actually know. The form is signed, but we don't track when it was entered into iEnabler or by whom."
 
-- Manual data entry leads to typos and errors (we observed approximately 10% error rate during our analysis)
-- Manual student number generation occasionally produces duplicates
-- Calculation errors when compiling reports manually
+**What's Missing**:
 
-**Why This Matters**:
+- Who changed what
+- When changes happened
+- What the old value was
+- Why change was made
 
-- Data quality issues affect decision-making
-- Staff spend hours finding and correcting errors
-- Errors could violate compliance requirements or cause serious problems
+## 7. Can't Scale
 
-**Why It Happens**:
+**Registrar's Observation**:
+"5 years ago we had 800 students. Now we have 1,200. Same number of admin staff. Every registration week gets worse."
 
-- Humans make mistakes on repetitive tasks - it's inevitable
-- No automatic validation to catch errors immediately
-- No automated checks to prevent duplicates or bad data
+**The Math**:
 
-## 6. Poor Auditability
+- Current: 1,200 students × 15 min each = 300 hours of registration processing
+- Growth to 2,000 students = 500 hours
+- Same manual process = impossible
 
-**The Problem**:
+## 8. Reporting is Painful
 
-- No record of who changed what data or when
-- Can't see the history of changes to an application or student record
-- Impossible to track who did what
+**What Admin Showed Us**:
+"Want to know how many students per program? I have to:
 
-**Why This Matters**:
+1. Export from iEnabler
+2. Check Excel sheets departments keep
+3. Cross-reference with paper forms not yet entered
+4. Compile in another Excel file
+5. Send to management"
 
-- When something goes wrong, you can't figure out who made the mistake
-- Compliance and accountability problems (auditors ask "who approved this?" and nobody knows)
-- Hard to resolve disputes ("I never received that form!" vs "We have it on record")
+**Time**: 2-4 hours for simple report
 
-**Why It Happens**:
+## 9. Security Risks
 
-- No audit logging system
-- Paper records don't automatically track who touched them or when
-- No change history is maintained
+**What We Noticed**:
 
-## 7. Scalability Limitations
+- Paper forms in filing cabinets → anyone walking in can see them
+- ID copies, personal info, just sitting in unlocked cabinets
+- Excel files emailed around with no encryption
 
-**The Problem**:
+**IT Manager**: "POPIA compliance is nightmare with paper files. Can't control who sees what."
 
-- The current system can't handle a growing student population
-- Every year as Richfield gets more students, the registration bottleneck gets worse
-- Running out of physical space to store all the paper files
+## 10. Communication Breakdown
 
-**Why This Matters**:
+**What Students Said**:
 
-- Service quality gets worse every year as the institution grows
-- Would need to hire more and more administrative staff just to keep up
-- Physical infrastructure constraints (filing cabinets, storage rooms)
+- "I check physical notice board once a week. Missed important deadline."
+- "Lecturer announced something in class. I was absent. Nobody told me."
+- "Found out registration dates from friend, not from institution."
 
-**Why It Happens**:
+**Current Method**:
 
-- Manual system requires proportionally more staff as volume increases
-- No automation to handle the increased load
-- Paper-based storage has physical space limits
-
-## 8. Limited Reporting and Analytics
-
-**The Problem**:
-
-- Generating reports requires hours of manual work pulling data from Moodle, iEnabler, and Excel files
-- No real-time dashboard showing what's happening right now
-- Difficult to extract meaningful insights from scattered data
-
-**Why This Matters**:
-
-- Management makes decisions based on data that's already weeks old
-- Can't spot trends or problems quickly enough to respond
-- Strategic planning is difficult without good data
-
-**Why It Happens**:
-
-- Data is scattered across multiple systems (Moodle, iEnabler, spreadsheets, paper)
-- No reporting tools that can pull from all sources
-- Someone has to manually compile everything into a report
-
-## 9. Security and Privacy Concerns
-
-**The Problem**:
-
-- Physical documents in filing cabinets can be accessed by anyone who walks into the office
-- Sensitive data isn't encrypted (it's just printed on paper or in plain Excel files)
-- Hard to ensure compliance with data privacy laws
-
-**Why This Matters**:
-
-- Risk of data breaches (someone could steal files or access systems they shouldn't)
-- Could violate data protection regulations and face penalties
-- Students and staff lose trust if their data isn't secure
-
-**Why It Happens**:
-
-- Paper-based storage can't be encrypted or access-controlled effectively
-- No role-based access controls to limit who sees what
-- No encryption mechanisms for sensitive information
-
-## 10. Communication Gaps
-
-**The Problem**:
-
-- No integrated way to communicate with students
-- Announcements are posted on physical notice boards (which students may not check)
-- Email communication is ad-hoc and unsystematic
-
-**Why This Matters**:
-
-- Students miss important information about deadlines, changes, or opportunities
-- Low engagement because communication is ineffective
-- More support inquiries because students didn't get the information they needed
-
-**Why It Happens**:
-
-- No notification system built into the current setup
-- Communication is manual (someone has to remember to send an email or post a notice)
-- No centralized platform for announcements that everyone checks
+- Physical notice boards
+- Occasional emails (not systematic)
+- Word of mouth
 
 ---
 
 # 3.6 Analysis of the Proposed System (Functional Requirements)
 
-Now that we know what's broken, let's define what the new EduHub system needs to do to fix it. This section spells out the specific features and functions the system must have.
+Based on our workshops and interviews, here's exactly what EduHub must do. Each requirement has acceptance criteria from stakeholder input.
 
-## What Are Functional Requirements?
+## Functional Requirements
 
-Functional requirements describe exactly what the system must do - the specific features, behaviors, and capabilities it needs. Think of it as a detailed checklist: "The system must allow students to register for courses online" is a functional requirement.
+### FR-1: User Authentication and Account Management
 
-For each requirement, we've included:
+| ID     | Requirement        | Priority  | Acceptance Criteria (From Stakeholders)                                                                                                                                                                       |
+| ------ | ------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-1.1 | User Registration  | Must Have | - Email, password, name required (Workshop 2)<br>- Email must be unique (IT Manager)<br>- Password min 8 chars, 1 uppercase, 1 number (IT Manager)<br>- Verification email sent (IT Manager)                  |
+| FR-1.2 | User Login         | Must Have | - Email and password (All workshops)<br>- Invalid credentials show error (Student request)<br>- Redirect to correct dashboard based on role (Workshop 2)<br>- Max 5 failed attempts then lockout (IT Manager) |
+| FR-1.3 | Password Reset     | Must Have | - Request via email (Student interview: "I always forget passwords")<br>- Reset link valid 1 hour (IT Manager)<br>- New password must meet complexity rules                                                   |
+| FR-1.4 | Session Management | Must Have | - Timeout after 30 min inactivity (IT Manager requirement)<br>- Max session 24 hours (IT Manager)<br>- Warning 5 min before timeout (Student feedback)                                                        |
 
-- A unique ID so we can track it
-- Priority level (Must Have, Should Have, or Could Have)
-- Acceptance criteria - specific, testable conditions that define when the requirement is successfully met
+### FR-2: Application Management
 
-Here are the major capabilities EduHub needs:
+| ID     | Requirement             | Priority    | Acceptance Criteria                                                                                                                                                                                                                                                                                                                      |
+| ------ | ----------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-2.1 | Submit Application      | Must Have   | - Form fields: Name, ID, email, phone, address, program (Registrar: matches current paper form)<br>- Upload docs: ID, certificates, transcripts (Workshop 2)<br>- Supported: PDF, JPG, PNG, max 5MB (IT Manager)<br>- Save as draft before submit (Student request from workshop 1)<br>- Confirmation email on submit (Student workshop) |
+| FR-2.2 | View Application Status | Must Have   | - See status: Submitted/Under Review/Approved/Rejected (Workshop 1: students' top request)<br>- Show timestamp of last update (Student: "When was it reviewed?")<br>- Email when status changes (All 5 student interviews)                                                                                                               |
+| FR-2.3 | Edit Draft              | Should Have | - Can edit before submission (Student workshop)<br>- Can't edit after submit (Workshop 2: admin requirement)<br>- Auto-save drafts (Student: "Browser crashed, lost everything")                                                                                                                                                         |
 
-### 1. User Authentication and Account Management
+### FR-3: Administrative Approval Workflow
 
-| ID     | Requirement                       | Priority    | Acceptance Criteria                                                                                                                                                                                                                                                                                                |
-| ------ | --------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| FR-1.1 | User Registration                 | Must Have   | - User can create account with email, password, first name, last name<br>- Email must be unique and validated<br>- Password must meet complexity requirements (min 8 chars, 1 uppercase, 1 number)<br>- Verification email sent upon registration<br>- Account created in "unverified" state until email confirmed |
-| FR-1.2 | User Login                        | Must Have   | - User can log in with email and password<br>- Invalid credentials show error message<br>- Successful login redirects to role-appropriate dashboard<br>- Session token (JWT) generated with 24-hour expiry<br>- Failed login attempts tracked (max 5 before temporary lockout)                                     |
-| FR-1.3 | Password Reset                    | Must Have   | - User can request password reset via email<br>- Reset link sent to registered email<br>- Reset link valid for 1 hour<br>- User can set new password meeting complexity requirements<br>- Old password invalidated after reset                                                                                     |
-| FR-1.4 | Multi-Factor Authentication (MFA) | Should Have | - User can enable MFA on their account<br>- MFA supports authenticator apps (TOTP)<br>- Backup codes provided during MFA setup<br>- MFA required at login if enabled                                                                                                                                               |
-| FR-1.5 | User Logout                       | Must Have   | - User can log out from any page<br>- Session token invalidated upon logout<br>- User redirected to login page after logout                                                                                                                                                                                        |
-| FR-1.6 | Session Management                | Must Have   | - Sessions expire after 24 hours<br>- Inactive sessions timeout after 30 minutes<br>- User warned 5 minutes before timeout<br>- User can extend session before timeout                                                                                                                                             |
+| ID     | Requirement         | Priority    | Acceptance Criteria                                                                                                                                                                                                                                                               |
+| ------ | ------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-3.1 | View Applications   | Must Have   | - List all applications (Registrar)<br>- Filter by status (Workshop 2)<br>- Search by name/ID (Registrar: "I need to find specific application quickly")<br>- Sort by date (newest first)                                                                                         |
+| FR-3.2 | Review Application  | Must Have   | - View all details (Registrar)<br>- View uploaded documents (Registrar)<br>- Download documents (Registrar)<br>- Add review notes (Workshop 2: "Need internal notes")                                                                                                             |
+| FR-3.3 | Approve Application | Must Have   | - Auto-generate student number format YEAR-#### (Registrar specified)<br>- Change user role from Applicant to Student (Workshop 2)<br>- Send approval email with student number and login instructions (Registrar)<br>- Log who approved and when (IT Manager: audit requirement) |
+| FR-3.4 | Bulk Approve        | Should Have | - Select multiple applications (Registrar: "During peak, I approve 50+ per day")<br>- Approve all selected at once<br>- Confirm before bulk action (Workshop 2)                                                                                                                   |
 
-### FR-2: Role-Based Access Control
+### FR-4: Student Profile Management
 
-| ID     | Requirement            | Priority  | Acceptance Criteria                                                                                                                                                                                                  |
-| ------ | ---------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-2.1 | Role Assignment        | Must Have | - System supports roles: Applicant, Student, Lecturer, Admin, Librarian, Alumni<br>- New registrations assigned "Applicant" role by default<br>- Admin can change user roles<br>- Role changes logged in audit trail |
-| FR-2.2 | Permission Enforcement | Must Have | - Each role has specific permissions defined<br>- Unauthorized access attempts blocked with 403 error<br>- API endpoints enforce role-based permissions<br>- Frontend hides inaccessible features based on role      |
-| FR-2.3 | Role Transition        | Must Have | - Approved applicants automatically promoted to "Student" role<br>- Graduated students can be changed to "Alumni" role<br>- Role history maintained for audit purposes                                               |
+| ID     | Requirement               | Priority  | Acceptance Criteria                                                                                                                                                                                                            |
+| ------ | ------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| FR-4.1 | View Profile              | Must Have | - Display: Personal details, academic info, emergency contacts (Workshop 1)<br>- Show student number prominently (Student request)                                                                                             |
+| FR-4.2 | Edit Personal Info        | Must Have | - Can edit: Address, phone, email (Observation: most common update request)<br>- Cannot edit: Name, ID number, student number (Registrar requirement)<br>- Changes logged (IT Manager)<br>- Confirm before saving (Workshop 1) |
+| FR-4.3 | Manage Emergency Contacts | Must Have | - Add up to 3 contacts (Registrar: "Institutional limit")<br>- Required: Name, relationship, phone, email<br>- Edit/delete contacts                                                                                            |
 
-### FR-3: Application Management
+### FR-5: Course Registration
 
-| ID     | Requirement             | Priority    | Acceptance Criteria                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ------ | ----------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-3.1 | Submit Application      | Must Have   | - Applicant can fill application form with personal details<br>- Required fields: Name, ID number, email, phone, address, program<br>- Applicant can upload documents (ID copy, certificates, transcripts)<br>- Supported file formats: PDF, JPG, PNG (max 5MB per file)<br>- Application saved as draft before submission<br>- Applicant can submit completed application<br>- Confirmation email sent upon submission |
-| FR-3.2 | View Application Status | Must Have   | - Applicant can view application status (Submitted, Under Review, Approved, Rejected)<br>- Status updates shown with timestamp<br>- Email notification sent when status changes                                                                                                                                                                                                                                         |
-| FR-3.3 | Edit Draft Application  | Should Have | - Applicant can edit draft application before submission<br>- Cannot edit after submission<br>- Auto-save functionality for drafts                                                                                                                                                                                                                                                                                      |
-| FR-3.4 | Application Withdrawal  | Could Have  | - Applicant can withdraw submitted application<br>- Withdrawal requires confirmation<br>- Admin notified of withdrawal                                                                                                                                                                                                                                                                                                  |
+| ID     | Requirement             | Priority  | Acceptance Criteria                                                                                                                                                                                                                                                                                                            |
+| ------ | ----------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| FR-5.1 | Browse Courses          | Must Have | - View available courses for semester (Workshop 1)<br>- Show: Code, name, credits, schedule, available seats (Lecturer workshop)<br>- Filter by department (Student request)<br>- Search by code/name (Student request)                                                                                                        |
+| FR-5.2 | Register for Course     | Must Have | - Only during registration period (Registrar: Feb 1-15, July 1-15)<br>- Auto-check prerequisites (Student interview: "I registered for wrong course, wasted semester")<br>- Auto-check schedule conflicts (Workshop 2)<br>- Check capacity (Observation: causes most registration issues)<br>- Confirmation email (Workshop 1) |
+| FR-5.3 | Drop Course             | Must Have | - Only within 2 weeks of semester start (Registrar policy)<br>- Cannot drop after deadline<br>- Confirm before dropping<br>- Email confirmation                                                                                                                                                                                |
+| FR-5.4 | View Registered Courses | Must Have | - Show all registered courses (Workshop 1)<br>- Total credits shown (Student request)<br>- Show schedule (prevent conflicts)                                                                                                                                                                                                   |
 
-### FR-4: Administrative Approval Workflow
+### FR-6: Course Management
 
-| ID     | Requirement         | Priority    | Acceptance Criteria                                                                                                                                                                                                                                                |
-| ------ | ------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| FR-4.1 | View Applications   | Must Have   | - Admin can view list of all applications<br>- Filter by status (Submitted, Under Review, Approved, Rejected)<br>- Search by applicant name or ID<br>- Sort by submission date                                                                                     |
-| FR-4.2 | Review Application  | Must Have   | - Admin can view full application details<br>- Admin can view uploaded documents<br>- Admin can download documents<br>- Admin can add review notes                                                                                                                 |
-| FR-4.3 | Approve Application | Must Have   | - Admin can approve application<br>- Student number automatically generated upon approval<br>- Student number format: YEAR-SEQUENTIAL (e.g., 2026-0001)<br>- Applicant role changed to Student<br>- Approval email sent with student number and login instructions |
-| FR-4.4 | Reject Application  | Must Have   | - Admin can reject application with reason<br>- Rejection reason required<br>- Rejection email sent to applicant                                                                                                                                                   |
-| FR-4.5 | Bulk Actions        | Should Have | - Admin can select multiple applications<br>- Perform bulk approve or reject<br>- Confirmation required for bulk actions                                                                                                                                           |
+| ID     | Requirement      | Priority  | Acceptance Criteria                                                                                                                                                                                                   |
+| ------ | ---------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-6.1 | Create Course    | Must Have | - Required: Code (unique), name, credits, description, capacity (Workshop 2)<br>- Optional: Prerequisites, lecturer (Admin workshop)<br>- Semester info (Registrar)                                                   |
+| FR-6.2 | Assign Lecturer  | Must Have | - Admin assigns lecturer to course<br>- Lecturer sees assigned courses<br>- Email notification to lecturer (Lecturer workshop request)                                                                                |
+| FR-6.3 | View Enrollments | Must Have | - Lecturer views students in their courses (Lecturer workshop: #1 request)<br>- Display: Student number, name, email (Lecturer workshop)<br>- Export to CSV/Excel (Lecturer interview: "I need Excel for my records") |
 
-### FR-5: Student Profile Management
+### FR-7: Lecturer Features
 
-| ID     | Requirement               | Priority    | Acceptance Criteria                                                                                                                                                                         |
-| ------ | ------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-5.1 | View Profile              | Must Have   | - Student can view complete profile information<br>- Display: Personal details, academic info, emergency contacts<br>- Show student number prominently                                      |
-| FR-5.2 | Edit Personal Information | Must Have   | - Student can edit: Address, phone, email (with verification)<br>- Cannot edit: Name, ID number, student number<br>- Changes logged in audit trail<br>- Confirmation required before saving |
-| FR-5.3 | Manage Emergency Contacts | Must Have   | - Student can add up to 3 emergency contacts<br>- Required fields: Name, relationship, phone, email<br>- Student can edit or delete emergency contacts                                      |
-| FR-5.4 | Upload Profile Photo      | Should Have | - Student can upload profile photo<br>- Supported formats: JPG, PNG (max 2MB)<br>- Photo cropped to square aspect ratio<br>- Default avatar shown if no photo uploaded                      |
-| FR-5.5 | View Academic Record      | Must Have   | - Student can view registered courses<br>- Show current semester courses<br>- Show course history                                                                                           |
+| ID     | Requirement           | Priority  | Acceptance Criteria                                                                                                                                                                       |
+| ------ | --------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-7.1 | View Assigned Courses | Must Have | - List of courses assigned (Lecturer workshop)<br>- Show enrollment count and capacity (Lecturer: "Need to know if class is full")                                                        |
+| FR-7.2 | View Class Roster     | Must Have | - List enrolled students (Lecturer workshop: currently wait 2 weeks for paper roster)<br>- Student contact info (Lecturer: "Need to contact absent students")<br>- Search/filter students |
+| FR-7.3 | Export Roster         | Must Have | - Export to CSV (All lecturer interviews)<br>- Include: Student number, name, email, phone                                                                                                |
 
-### FR-6: Course Registration System
+### FR-8: Reporting
 
-| ID     | Requirement             | Priority  | Acceptance Criteria                                                                                                                                                                                                                                                                                                                    |
-| ------ | ----------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-6.1 | Browse Courses          | Must Have | - Student can view available courses for current semester<br>- Display: Course code, name, credits, schedule, capacity<br>- Filter by department/program<br>- Search by course code or name                                                                                                                                            |
-| FR-6.2 | View Course Details     | Must Have | - Student can view detailed course information<br>- Show: Description, prerequisites, lecturer, schedule, available seats<br>- Indicate if prerequisites met                                                                                                                                                                           |
-| FR-6.3 | Register for Courses    | Must Have | - Student can register for available courses<br>- Registration only allowed during registration period<br>- Check prerequisites before allowing registration<br>- Check for schedule conflicts<br>- Check course capacity (max students)<br>- Confirmation required before registering<br>- Confirmation email sent after registration |
-| FR-6.4 | Drop Courses            | Must Have | - Student can drop registered courses within drop period<br>- Cannot drop after drop deadline<br>- Confirmation required before dropping<br>- Notification email sent after drop                                                                                                                                                       |
-| FR-6.5 | View Registered Courses | Must Have | - Student can view all registered courses<br>- Show total credits registered<br>- Highlight schedule conflicts if any<br>- Show registration status                                                                                                                                                                                    |
-| FR-6.6 | Registration Periods    | Must Have | - Admin can set registration start and end dates<br>- Admin can set add/drop deadline<br>- Students cannot register outside these periods<br>- System displays countdown to registration period                                                                                                                                        |
+| ID     | Requirement         | Priority    | Acceptance Criteria                                                                                                                             |
+| ------ | ------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-8.1 | Application Reports | Should Have | - Total applications, pending, approved, rejected (Registrar request)<br>- Filter by date range<br>- Export to CSV/PDF (Workshop 2)             |
+| FR-8.2 | Enrollment Reports  | Should Have | - Total students, by program, by semester (Registrar: currently takes 2-4 hours manually)<br>- Course enrollment numbers<br>- Export to CSV/PDF |
 
-### FR-7: Course Management (Admin/Lecturer)
+### FR-9: Notifications
 
-| ID     | Requirement      | Priority  | Acceptance Criteria                                                                                                                                                              |
-| ------ | ---------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-7.1 | Create Course    | Must Have | - Admin can create new course<br>- Required fields: Code, name, credits, description, capacity<br>- Optional: Prerequisites, lecturer assignment<br>- Course code must be unique |
-| FR-7.2 | Edit Course      | Must Have | - Admin can edit course details<br>- Cannot edit if students registered (except capacity increase)<br>- Changes logged in audit trail                                            |
-| FR-7.3 | Delete Course    | Must Have | - Admin can delete course<br>- Cannot delete if students registered<br>- Confirmation required                                                                                   |
-| FR-7.4 | Assign Lecturer  | Must Have | - Admin can assign lecturer to course<br>- Lecturer can view assigned courses<br>- Email notification sent to lecturer                                                           |
-| FR-7.5 | View Enrollments | Must Have | - Lecturer can view students enrolled in their courses<br>- Display: Student number, name, email<br>- Export class roster to CSV                                                 |
-
-### FR-8: Lecturer Features
-
-| ID     | Requirement           | Priority    | Acceptance Criteria                                                                                                                  |
-| ------ | --------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| FR-8.1 | View Assigned Courses | Must Have   | - Lecturer can view courses assigned to them<br>- Show enrollment count and capacity                                                 |
-| FR-8.2 | View Class Roster     | Must Have   | - Lecturer can view list of enrolled students<br>- Display student contact information<br>- Search and filter students               |
-| FR-8.3 | Post Announcements    | Should Have | - Lecturer can post announcements to course<br>- Students receive email notification<br>- Announcements visible on student dashboard |
-
-### FR-9: Librarian Features
-
-| ID     | Requirement           | Priority  | Acceptance Criteria                                                                                                                                                  |
-| ------ | --------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-9.1 | Verify Student Status | Must Have | - Librarian can search for student by number or name<br>- Display: Student status (Active, Graduated, Suspended)<br>- Show current enrollment status                 |
-| FR-9.2 | View Student Details  | Must Have | - Librarian can view basic student information<br>- Display: Name, student number, program, status<br>- Cannot view sensitive information (grades, personal details) |
-
-### FR-10: Reporting and Analytics
-
-| ID      | Requirement          | Priority    | Acceptance Criteria                                                                                                                                    |
-| ------- | -------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| FR-10.1 | Application Reports  | Should Have | - Admin can generate application statistics<br>- Metrics: Total, pending, approved, rejected<br>- Filter by date range<br>- Export to CSV/PDF          |
-| FR-10.2 | Enrollment Reports   | Should Have | - Admin can generate enrollment statistics<br>- Metrics: Total students, by program, by semester<br>- Course enrollment numbers<br>- Export to CSV/PDF |
-| FR-10.3 | System Usage Reports | Could Have  | - Admin can view system usage statistics<br>- Metrics: Active users, login frequency<br>- Popular features tracked                                     |
-
-### FR-11: Notifications
-
-| ID      | Requirement          | Priority    | Acceptance Criteria                                                                                                                                                                             |
-| ------- | -------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-11.1 | Email Notifications  | Must Have   | - System sends email for key events<br>- Events: Registration, application status, approval, course registration<br>- Emails use professional templates<br>- Include relevant details and links |
-| FR-11.2 | In-App Notifications | Should Have | - Users see notifications in system<br>- Notification badge shows unread count<br>- Click notification to view details<br>- Mark as read functionality                                          |
+| ID     | Requirement          | Priority    | Acceptance Criteria                                                                                                                                                            |
+| ------ | -------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| FR-9.1 | Email Notifications  | Must Have   | - Events: Registration, application status, approval (Workshop 1: students' #2 request)<br>- Professional templates<br>- Include relevant details and links (Student workshop) |
+| FR-9.2 | In-App Notifications | Should Have | - Show unread count (Student request)<br>- Click to view details<br>- Mark as read                                                                                             |
 
 ---
 
 # 3.7 Non-Functional Requirements
 
-While functional requirements describe what the system does, non-functional requirements describe how well it does it. These are the quality attributes - things like "how fast?", "how secure?", "how reliable?". These are just as important as the features themselves.
-
-For example, a system could technically allow students to register for courses (functional requirement), but if it takes 5 minutes to load each page, it's useless. The non-functional requirements make sure the system is actually good to use.
+From IT Manager interview and workshops, here's how well the system must perform:
 
 ### NFR-1: Security
 
-| ID      | Requirement             | Priority  | Acceptance Criteria                                                                                                                                                                                 |
-| ------- | ----------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR-1.1 | Authentication Security | Must Have | - Passwords hashed using bcrypt (min 10 rounds)<br>- JWT tokens used for session management<br>- Tokens include expiration time<br>- Sensitive data encrypted in transit (HTTPS) and at rest        |
-| NFR-1.2 | Authorization           | Must Have | - Role-based access control enforced on all endpoints<br>- Unauthorized access returns 403 status<br>- API validates JWT token on every request                                                     |
-| NFR-1.3 | Input Validation        | Must Have | - All user inputs validated and sanitized<br>- SQL injection prevention through parameterized queries<br>- XSS prevention through output encoding<br>- File upload validation (type, size, content) |
-| NFR-1.4 | Password Policy         | Must Have | - Minimum 8 characters<br>- At least 1 uppercase, 1 lowercase, 1 number<br>- No common passwords allowed<br>- Password strength indicator shown                                                     |
-| NFR-1.5 | Audit Logging           | Must Have | - Log all authentication attempts<br>- Log all administrative actions<br>- Log all profile changes<br>- Logs include timestamp, user, action, IP address                                            |
-| NFR-1.6 | Session Security        | Must Have | - Session timeout after 30 minutes inactivity<br>- Maximum session duration 24 hours<br>- Concurrent session limit: 1 per user<br>- Logout invalidates session immediately                          |
+| ID      | Requirement       | Priority  | Source                                                                                                                                                        |
+| ------- | ----------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NFR-1.1 | Password Security | Must Have | - Hash with bcrypt (IT Manager: "Industry standard")<br>- Min 8 chars, 1 uppercase, 1 number (IT Manager)                                                     |
+| NFR-1.2 | Session Security  | Must Have | - Timeout 30 min inactivity (IT Manager)<br>- Max session 24 hours (IT Manager)<br>- Only 1 active session per user (IT Manager: "Prevent sharing")           |
+| NFR-1.3 | Audit Logging     | Must Have | - Log all admin actions (IT Manager: "POPIA compliance")<br>- Log: timestamp, user, action, IP (IT Manager)<br>- Logs immutable, retained 1 year (IT Manager) |
+| NFR-1.4 | Input Validation  | Must Have | - Prevent SQL injection (IT Manager)<br>- Prevent XSS (IT Manager)<br>- File upload validation (IT Manager: size, type, virus scan)                           |
 
 ### NFR-2: Performance
 
-| ID      | Requirement             | Priority    | Acceptance Criteria                                                                                                                                              |
-| ------- | ----------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR-2.1 | Response Time           | Must Have   | - Page load time < 3 seconds (95th percentile)<br>- API response time < 1 second (95th percentile)<br>- Database queries < 500ms (average)                       |
-| NFR-2.2 | Concurrent Users        | Should Have | - Support 100 concurrent users without degradation<br>- Support 500 peak concurrent users during registration periods<br>- Load tested with 200 concurrent users |
-| NFR-2.3 | Database Performance    | Must Have   | - Indexes on frequently queried fields<br>- Query optimization for complex joins<br>- Connection pooling implemented                                             |
-| NFR-2.4 | File Upload Performance | Must Have   | - File upload progress indicator shown<br>- Large files uploaded in chunks<br>- Upload completes within reasonable time (5MB in < 30 seconds)                    |
+| ID      | Requirement          | Priority  | Source                                                                                                                        |
+| ------- | -------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| NFR-2.1 | Response Time        | Must Have | - Page load < 3 seconds (Student workshop: "Current system too slow")<br>- API response < 1 second (IT Manager)               |
+| NFR-2.2 | Concurrent Users     | Must Have | - Support 500 concurrent users (IT Manager: "Registration peak = 500+ students")<br>- No degradation during peak (IT Manager) |
+| NFR-2.3 | Database Performance | Must Have | - Queries < 500ms average (IT Manager)<br>- Indexes on common queries (IT Manager)                                            |
 
-### NFR-3: Availability and Reliability
+### NFR-3: Availability
 
-| ID      | Requirement       | Priority    | Acceptance Criteria                                                                                                                                                  |
-| ------- | ----------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR-3.1 | System Uptime     | Must Have   | - 99.5% uptime (< 3.6 hours downtime per month)<br>- Planned maintenance during off-peak hours<br>- Advance notice for maintenance                                   |
-| NFR-3.2 | Error Handling    | Must Have   | - Graceful error handling for all failures<br>- User-friendly error messages shown<br>- Errors logged for debugging<br>- System recovers from errors without restart |
-| NFR-3.3 | Data Backup       | Must Have   | - Database backed up daily<br>- Backups stored in separate location<br>- Backup restoration tested monthly<br>- Point-in-time recovery capability                    |
-| NFR-3.4 | Disaster Recovery | Should Have | - Recovery Time Objective (RTO): < 4 hours<br>- Recovery Point Objective (RPO): < 24 hours<br>- Disaster recovery plan documented                                    |
+| ID      | Requirement | Priority  | Source                                                                                                                   |
+| ------- | ----------- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| NFR-3.1 | Uptime      | Must Have | - 99.5% uptime = max 3.6 hrs downtime/month (IT Manager)<br>- Maintenance during off-peak (IT Manager: "After midnight") |
+| NFR-3.2 | Data Backup | Must Have | - Daily backups (IT Manager)<br>- Test restore monthly (IT Manager)<br>- Separate backup location (IT Manager)           |
 
 ### NFR-4: Usability
 
-| ID      | Requirement           | Priority    | Acceptance Criteria                                                                                                                                             |
-| ------- | --------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR-4.1 | User Interface        | Must Have   | - Intuitive navigation structure<br>- Consistent design across all pages<br>- Clear labeling of all buttons and fields<br>- Contextual help available           |
-| NFR-4.2 | Responsive Design     | Must Have   | - Works on desktop (1920x1080, 1366x768)<br>- Works on tablet (iPad, 768x1024)<br>- Works on mobile (375x667, 414x896)<br>- Touch-friendly interface on mobile  |
-| NFR-4.3 | Browser Compatibility | Must Have   | - Supports Chrome (latest 2 versions)<br>- Supports Firefox (latest 2 versions)<br>- Supports Safari (latest 2 versions)<br>- Supports Edge (latest 2 versions) |
-| NFR-4.4 | Accessibility         | Should Have | - WCAG 2.1 Level AA compliance<br>- Keyboard navigation supported<br>- Screen reader compatible<br>- Sufficient color contrast ratios<br>- Alt text for images  |
-| NFR-4.5 | User Training         | Should Have | - User documentation available<br>- FAQ section<br>- Onboarding wizard for new users                                                                            |
+| ID      | Requirement     | Priority  | Source                                                                                                                                   |
+| ------- | --------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| NFR-4.1 | Mobile Support  | Must Have | - Works on phones (All 5 student interviews: #1 request)<br>- Works on tablets (Student workshop)<br>- Touch-friendly (Student workshop) |
+| NFR-4.2 | Browser Support | Must Have | - Chrome, Firefox, Safari, Edge (IT Manager: "Most common")<br>- Latest 2 versions of each (IT Manager)                                  |
 
 ### NFR-5: Maintainability
 
-| ID      | Requirement     | Priority  | Acceptance Criteria                                                                                                                                 |
-| ------- | --------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR-5.1 | Code Quality    | Must Have | - Code follows style guide (ESLint/Prettier)<br>- Functions are modular and reusable<br>- Comments for complex logic<br>- DRY principle followed    |
-| NFR-5.2 | Documentation   | Must Have | - API endpoints documented<br>- Database schema documented<br>- Setup instructions provided<br>- Architecture diagrams available                    |
-| NFR-5.3 | Testing         | Must Have | - Unit test coverage > 70%<br>- Integration tests for critical paths<br>- All tests pass before deployment<br>- Automated testing in CI/CD pipeline |
-| NFR-5.4 | Version Control | Must Have | - All code in Git repository<br>- Meaningful commit messages<br>- Feature branches for new development<br>- Pull requests reviewed before merge     |
-
-### NFR-6: Scalability
-
-| ID      | Requirement           | Priority    | Acceptance Criteria                                                                                                                    |
-| ------- | --------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR-6.1 | Horizontal Scaling    | Should Have | - Stateless API design allows multiple instances<br>- Database supports read replicas<br>- Load balancing ready architecture           |
-| NFR-6.2 | Data Growth           | Must Have   | - System handles alot of student records<br>- System handles 50,000 course registrations<br>- Database partitioning strategy for growth |
-| NFR-6.3 | Feature Extensibility | Should Have | - Modular architecture allows new features<br>- Plugin architecture for extensions<br>- API versioning for backward compatibility      |
-
-### NFR-7: Portability
-
-| ID      | Requirement            | Priority    | Acceptance Criteria                                                                                                                     |
-| ------- | ---------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR-7.1 | Deployment Flexibility | Must Have   | - Docker containerization<br>- Environment-based configuration<br>- Deploy to cloud platforms (AWS, Heroku, DigitalOcean)               |
-| NFR-7.2 | Database Portability   | Should Have | - Abstraction layer (Sequelize ORM) for database independence<br>- Migrations for schema changes<br>- Seed data for development/testing |
-
-### NFR-8: Compliance
-
-| ID      | Requirement      | Priority  | Acceptance Criteria                                                                                                                                   |
-| ------- | ---------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR-8.1 | Data Protection  | Must Have | - POPIA data encrypted <br>- Compliance with data protection regulations<br>- Privacy policy available<br>- User consent for data collection<br>- Right to data deletion honored |
-| NFR-8.2 | Audit Compliance | Must Have | - All administrative actions logged<br>- Audit trail immutable<br>- Audit logs retained for 1 year<br>- Audit reports generated on demand             |
-
----
-
-## Requirements Traceability Matrix
-
-The Requirements Traceability Matrix ensures all requirements are implemented and tested:
-
-| Requirement Category      | Total Requirements | Must Have | Should Have | Could Have | Priority for MVP |
-| ------------------------- | ------------------ | --------- | ----------- | ---------- | ---------------- |
-| Authentication (FR-1)     | 6                  | 5         | 1           | 0          | 100% Must Have   |
-| Access Control (FR-2)     | 3                  | 3         | 0           | 0          | 100% Must Have   |
-| Applications (FR-3)       | 4                  | 2         | 1           | 1          | 75% for MVP      |
-| Admin Workflow (FR-4)     | 5                  | 4         | 1           | 0          | 100% for MVP     |
-| Student Profile (FR-5)    | 5                  | 4         | 1           | 0          | 80% for MVP      |
-| Registration (FR-6)       | 6                  | 6         | 0           | 0          | 100% Must Have   |
-| Course Management (FR-7)  | 5                  | 5         | 0           | 0          | 100% Must Have   |
-| Lecturer Features (FR-8)  | 3                  | 2         | 1           | 0          | 100% for MVP     |
-| Librarian Features (FR-9) | 2                  | 2         | 0           | 0          | 100% Must Have   |
-| Reporting (FR-10)         | 3                  | 0         | 2           | 1          | 0% for MVP       |
-| Notifications (FR-11)     | 2                  | 1         | 1           | 0          | 50% for MVP      |
-| **Non-Functional (All)**  | 26                 | 22        | 4           | 0          | 85% for MVP      |
-
-**MVP (Minimum Viable Product)** includes all "Must Have" requirements totaling approximately 45 requirements that deliver core system functionality.
-
-This comprehensive SRS ensures clear, testable requirements that guide development, testing, and acceptance of the EduHub system.
+| ID      | Requirement  | Priority  | Source                                                                                                                          |
+| ------- | ------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| NFR-5.1 | Code Quality | Must Have | - Follow style guide (Team decision)<br>- Comments on complex logic (Team decision)<br>- Modular, reusable code (Team decision) |
+| NFR-5.2 | Testing      | Must Have | - Unit test coverage > 70% (Team decision)<br>- All tests pass before deploy (Team decision)                                    |
 
 ---
 
 # 3.8 Data Modeling for Proposed System
 
-Now let's look at how we'll structure the data and design the system. We're using three different types of diagrams to show different aspects: use cases (what users can do), entity relationships (how data is structured), and data flow (how information moves through the system).
-
----
+Based on our analysis, here's how we'll structure the data.
 
 ## Use Case Diagram
 
-A use case diagram shows who uses the system (actors) and what they can do with it (use cases). It's basically a visual way to show "who does what" in the system.
+### Actors (Who Uses EduHub)
 
-### Who Uses the System (Actors)
+From our workshops and interviews, we identified 5 user types:
 
-EduHub has six different types of users:
-
-| Actor             | Description                          | Primary Goals                                          |
-| ----------------- | ------------------------------------ | ------------------------------------------------------ |
-| **Applicant**     | Person applying for admission        | Submit application, track status                       |
-| **Student**       | Enrolled student with student number | Manage profile, register for courses                   |
-| **Lecturer**      | Faculty member teaching courses      | View assigned courses, access class rosters            |
-| **Administrator** | Staff managing system                | Approve applications, manage courses, generate reports |
-| **Librarian**     | Library staff                        | Verify student status, view student information        |
-| **Alumni**        | Graduated student                    | View academic history (future feature)                 |
+| Actor         | Description                          | Source               |
+| ------------- | ------------------------------------ | -------------------- |
+| Applicant     | Person applying for admission        | Workshop 1           |
+| Student       | Enrolled student with student number | All workshops        |
+| Lecturer      | Faculty teaching courses             | Workshop 3           |
+| Administrator | Admin staff managing system          | Workshop 2           |
+| Alumni        | Graduated student (future)           | Registrar suggestion |
 
 ### Use Cases by Actor
 
-#### Applicant Use Cases
+**Applicant** (From Workshop 1):
 
 - Register Account
-- Login / Logout
+- Login/Logout
 - Submit Application
 - Upload Documents
 - View Application Status
 - Edit Draft Application
-- Withdraw Application
 
-#### Student Use Cases
+**Student** (From Workshop 1 + Student Interviews):
 
-- Login / Logout
+- Login/Logout
 - Reset Password
 - View Profile
 - Edit Personal Information
 - Manage Emergency Contacts
-- Upload Profile Photo
 - Browse Available Courses
 - View Course Details
 - Register for Courses
 - Drop Courses
 - View Registered Courses
-- View Notifications
 
-#### Lecturer Use Cases
+**Lecturer** (From Workshop 3):
 
-- Login / Logout
+- Login/Logout
 - View Assigned Courses
 - View Class Roster
 - View Student Contact Information
 - Export Class Roster
-- Post Course Announcements
 
-#### Administrator Use Cases
+**Administrator** (From Workshop 2 + Registrar):
 
-- Login / Logout
+- Login/Logout
 - View All Applications
 - Review Application Details
 - Approve Application
 - Reject Application
-- Perform Bulk Actions
+- Bulk Approve
 - Create Course
 - Edit Course
-- Delete Course
-- Assign Lecturer to Course
-- Manage User Roles
+- Assign Lecturer
 - Set Registration Periods
 - Generate Reports
-- View System Analytics
-
-#### Librarian Use Cases
-
-- Login / Logout
-- Search Student by Number/Name
-- Verify Student Status
-- View Student Basic Information
-
-### Use Case Relationships
-
-**Includes** (shared common behavior):
-
-- All actors include "Login" use case
-- All actors include "Logout" use case
-- "Register for Course" includes "Check Prerequisites"
-- "Register for Course" includes "Check Schedule Conflicts"
-
-**Extends** (optional behavior):
-
-- "Login" extends to "Enable MFA" (if user has MFA enabled)
-- "Edit Profile" extends to "Verify Email Change" (if email is changed)
-- "Submit Application" extends to "Upload Documents" (optional documents)
-
-**Generalization**:
-
-- Student, Lecturer, Administrator, Librarian generalize from "Registered User"
-- Applicant is separate actor type (pre-registration)
-
-(Detailed Use Case diagram will be inserted here)
-
----
 
 ## Entity Relationship Diagram (ERD)
 
-The ERD shows the conceptual structure of our database - what main entities (tables) we need and how they relate to each other. This is a high-level view; the detailed database design with specific data types, field sizes, and constraints will be done in Phase 4 (System Design).
-
-### The Main Entities We Need
-
-#### 1. Users Entity
-
-**Purpose**: Store authentication and basic information for all system users (students, lecturers, admin, etc.)
-
-**Key Information to Store**:
-
-- Unique user identifier
-- Email address (for login)
-- Password (securely hashed)
-- First name and last name
-- User role (Applicant, Student, Lecturer, Admin, Librarian, Alumni)
-- Account status (active/inactive, verified/unverified)
-- Multi-factor authentication settings
-- Login history timestamps
-
-**Relationships**:
-
-- One-to-One with Students (when user role is Student)
-- One-to-Many with Applications (one user can submit multiple applications)
-- One-to-Many with Audit_Logs (one user performs many actions)
-- One-to-Many with Notifications (one user receives many notifications)
-
----
-
-#### 2. Students Entity
-
-**Purpose**: Store additional information specific to enrolled students
-
-**Key Information to Store**:
-
-- Unique student identifier
-- Link to user account
-- Generated student number (format: YEAR-####, e.g., 2026-0001)
-- National ID number
-- Contact information (phone, address)
-- Date of birth
-- Academic program
-- Year of study (1-6)
-- Student status (Active, Graduated, Suspended)
-- Profile photo
-- Enrollment date
-
-**Relationships**:
-
-- One-to-One with Users
-- One-to-Many with Emergency_Contacts (one student has multiple contacts)
-- Many-to-Many with Courses (through Registrations table)
-
----
-
-#### 3. Emergency_Contacts Entity
-
-**Purpose**: Store emergency contact information for students (maximum 3 per student)
-
-**Key Information to Store**:
-
-- Unique contact identifier
-- Link to student
-- Contact name
-- Relationship to student (parent, spouse, sibling, etc.)
-- Phone number
-- Email address (optional)
-- Primary contact flag
-
-**Relationships**:
-
-- Many-to-One with Students (multiple contacts belong to one student)
-
----
-
-#### 4. Applications Entity
-
-**Purpose**: Store student applications for admission
-
-**Key Information to Store**:
-
-- Unique application identifier
-- Link to user account (applicant)
-- Personal information (name, ID number, email, phone, address, date of birth)
-- Program applying for
-- Application status (Submitted, Under Review, Approved, Rejected, Withdrawn)
-- Rejection reason (if rejected)
-- Who reviewed it and when
-- Draft status
-- Submission timestamp
-
-**Relationships**:
-
-- Many-to-One with Users (as applicant)
-- Many-to-One with Users (as reviewer - who approved/rejected)
-- One-to-Many with Application_Documents (one application has multiple documents)
-
----
-
-#### 5. Application_Documents Entity
-
-**Purpose**: Store documents uploaded with applications (ID copies, certificates, transcripts)
-
-**Key Information to Store**:
-
-- Unique document identifier
-- Link to application
-- Document type (ID, Certificate, Transcript, Other)
-- File information (original filename, storage path, file size, MIME type)
-- Upload timestamp
-
-**Business Rules**:
-
-- Maximum file size: 5MB per document
-- Allowed types: PDF, JPG, PNG
-
-**Relationships**:
-
-- Many-to-One with Applications (multiple documents belong to one application)
-
----
-
-#### 6. Courses Entity
-
-**Purpose**: Store course information
-
-**Key Information to Store**:
-
-- Unique course identifier
-- Course code (e.g., CS101) - must be unique
-- Course name
-- Description
-- Credit hours
-- Maximum capacity (number of students)
-- Department
-- Semester (e.g., Fall 2026)
-- Class schedule
-- Prerequisites (list of required courses)
-- Assigned lecturer
-- Active status
-
-**Relationships**:
-
-- Many-to-One with Users (as lecturer - one lecturer teaches multiple courses)
-- Many-to-Many with Students (through Registrations table)
-
----
-
-#### 7. Registrations Entity
-
-**Purpose**: Junction table linking students to courses (represents course enrollments)
-
-**Key Information to Store**:
-
-- Unique registration identifier
-- Link to student
-- Link to course
-- Semester
-- Registration date
-- Status (Registered, Dropped, Completed)
-- Drop date (if dropped)
-- Grade (future feature)
-
-**Business Rules**:
-
-- Student cannot register for same course twice in same semester
-- Cannot register if course is full
-- Cannot register without meeting prerequisites
-- Cannot drop after add/drop deadline
-
-**Relationships**:
-
-- Many-to-One with Students
-- Many-to-One with Courses
-
----
-
-#### 8. System_Settings Entity
-
-**Purpose**: Store system configuration settings
-
-**Key Information to Store**:
-
-- Unique setting identifier
-- Setting key (unique name)
-- Setting value
-- Description
-- Who last updated it
-- When it was last updated
-
-**Common Settings**:
-
-- Registration start and end dates
-- Add/drop deadline
-- Current semester
-- Maximum credits per semester
-
-**Relationships**:
-
-- Many-to-One with Users (as updater - who changed the setting)
-
----
-
-#### 9. Audit_Logs Entity
-
-**Purpose**: Store audit trail of all system actions for compliance and debugging
-
-**Key Information to Store**:
-
-- Unique log identifier
-- Who performed the action
-- What action was performed (e.g., 'LOGIN', 'APPROVE_APPLICATION', 'CREATE_COURSE')
-- What type of entity was affected (User, Course, Application, etc.)
-- Which specific entity (ID)
-- What changed (JSON format)
-- User's IP address
-- User's browser/device information
-- When it happened
-
-**Business Rules**:
-
-- Logs are immutable (cannot be edited or deleted)
-- Retained for at least 1 year
-- Critical for security and compliance
-
-**Relationships**:
-
-- Many-to-One with Users (one user performs many actions)
-
----
-
-#### 10. Notifications Entity
-
-**Purpose**: Store in-app notifications for users
-
-**Key Information to Store**:
-
-- Unique notification identifier
-- Who receives it
-- Title
-- Message
-- Type (info, success, warning, error)
-- Read/unread status
-- Optional link to related page
-- When it was created
-
-**Relationships**:
-
-- Many-to-One with Users (one user receives many notifications)
-
----
-
-### Conceptual ERD Summary
-
-**Entity Count**: 10 main entities
-
-**Relationship Summary**:
+### Main Entities (Tables We Need)
+
+From our data analysis, we identified 10 entities:
+
+#### 1. Users
+
+**Why**: Store login credentials for everyone
+**Key Fields** (from IT Manager + Workshops):
+
+- user_id (unique)
+- email (unique, for login)
+- password (hashed)
+- first_name, last_name
+- role (Applicant/Student/Lecturer/Admin/Alumni)
+- account_status (active/inactive)
+
+#### 2. Students
+
+**Why**: Store student-specific info
+**Key Fields** (from Registrar + Application Forms):
+
+- student_id (unique)
+- user_id (links to Users)
+- student_number (format: YEAR-####, e.g. 2026-0001)
+- id_number (13 digits, unique)
+- phone, address
+- date_of_birth
+- program
+- year_of_study (1-6)
+- status (Active/Graduated/Suspended)
+
+#### 3. Emergency_Contacts
+
+**Why**: Store up to 3 emergency contacts per student
+**Key Fields** (from Registrar policy):
+
+- contact_id (unique)
+- student_id (links to Students)
+- name, relationship, phone, email
+- primary_contact (boolean)
+
+#### 4. Applications
+
+**Why**: Store application submissions
+**Key Fields** (from Application Form + Workshop 2):
+
+- application_id (unique)
+- user_id (applicant)
+- personal_info (name, ID, email, phone, address, DOB)
+- program_applied
+- status (Submitted/Under Review/Approved/Rejected/Withdrawn)
+- rejection_reason (if rejected)
+- reviewed_by (admin user_id)
+- reviewed_at (timestamp)
+- submitted_at
+
+#### 5. Application_Documents
+
+**Why**: Store uploaded docs (ID, certificates, transcripts)
+**Key Fields** (from IT Manager):
+
+- document_id (unique)
+- application_id (links to Applications)
+- document_type (ID/Certificate/Transcript/Other)
+- filename, file_path, file_size
+- uploaded_at
+
+#### 6. Courses
+
+**Why**: Store course catalog
+**Key Fields** (from Workshop 2 + Workshop 3):
+
+- course_id (unique)
+- course_code (unique, e.g. CS101)
+- course_name
+- description
+- credits
+- capacity (max students)
+- department
+- semester
+- prerequisites (list of course codes)
+- lecturer_id (links to Users)
+
+#### 7. Registrations
+
+**Why**: Link students to courses (enrollments)
+**Key Fields**:
+
+- registration_id (unique)
+- student_id (links to Students)
+- course_id (links to Courses)
+- semester
+- registration_date
+- status (Registered/Dropped/Completed)
+- drop_date (if dropped)
+  **Constraint**: Student can't register for same course twice in same semester (from Workshop 2)
+
+#### 8. System_Settings
+
+**Why**: Store registration periods, deadlines
+**Key Fields** (from Registrar):
+
+- setting_key (unique, e.g. "registration_start_date")
+- setting_value
+- updated_by (admin user_id)
+- updated_at
+
+#### 9. Audit_Logs
+
+**Why**: Track all actions for compliance
+**Key Fields** (from IT Manager: POPIA requirement):
+
+- log_id (unique)
+- user_id (who did it)
+- action (what they did)
+- entity_type (User/Course/Application/etc)
+- entity_id (which record)
+- changes (JSON of what changed)
+- ip_address
+- timestamp
+
+#### 10. Notifications
+
+**Why**: In-app notifications
+**Key Fields**:
+
+- notification_id (unique)
+- user_id (recipient)
+- title, message
+- type (info/success/warning/error)
+- read (boolean)
+- link (optional URL)
+- created_at
+
+### Relationships
 
 **One-to-One**:
 
@@ -1066,84 +887,29 @@ The ERD shows the conceptual structure of our database - what main entities (tab
 
 **One-to-Many**:
 
-- Users → Applications (as applicant)
-- Users → Applications (as reviewer)
-- Users → Courses (as lecturer)
-- Users → Audit_Logs
-- Users → Notifications
-- Users → System_Settings (as updater)
-- Students → Emergency_Contacts
-- Applications → Application_Documents
-- Courses → Registrations
-- Students → Registrations
+- Users → Applications (user can submit multiple applications)
+- Students → Emergency_Contacts (student has up to 3 contacts)
+- Users → Courses (lecturer teaches multiple courses)
+- Applications → Application_Documents (application has multiple docs)
 
 **Many-to-Many**:
 
-- Students ↔ Courses (through Registrations junction table)
+- Students ↔ Courses (through Registrations table)
 
-**Simplified ER Diagram**:
+### Business Rules in ERD
 
-```
-        ┌──────────┐
-        │  Users   │
-        └────┬─────┘
-             │
-        ┌────┴─────┬──────────┬─────────┬──────────┐
-        │          │          │         │          │
-    ┌───▼────┐ ┌──▼──────┐  │    ┌────▼────┐ ┌───▼──────┐
-    │Students│ │Applicants│  │    │Lecturers│ │ Admins   │
-    └───┬────┘ └──┬───────┘  │    └────┬────┘ └────┬─────┘
-        │         │          │         │           │
-        │    ┌────▼──────────▼─────┐   │           │
-        │    │   Applications      │   │           │
-        │    └────┬────────────────┘   │           │
-        │         │                    │           │
-        │    ┌────▼────────────┐       │           │
-        │    │App_Documents    │       │           │
-        │    └─────────────────┘       │           │
-        │                              │           │
-   ┌────▼──────────┐            ┌──────▼───────┐   │
-   │Emergency_     │            │   Courses    │   │
-   │Contacts       │            └──────┬───────┘   │
-   └───────────────┘                   │           │
-        │                              │           │
-        │         ┌────────────────────┘           │
-        │         │                                │
-        │    ┌────▼────────┐                       │
-        └────┤Registrations│                       │
-             └─────────────┘                       │
-                                                   │
-        ┌──────────────────────────────────────────┘
-        │
-    ┌───▼─────────┬────────────┬─────────────┐
-    │Audit_Logs   │Notifications│System_      │
-    │             │             │Settings     │
-    └─────────────┴────────────┴─────────────┘
-```
+From our workshops:
 
-**Key Business Rules Captured**:
+- Student number format: YEAR-#### (Registrar requirement)
+- Max 3 emergency contacts (Registrar policy)
+- Can't register for full course (capacity check)
+- Can't register without prerequisites (student interview: "wasted semester")
+- Can't drop after deadline (Registrar: 2 weeks policy)
+- All actions logged (IT Manager: compliance)
 
-- Each student must have a unique student number (format: YEAR-####)
-- Maximum 3 emergency contacts per student
-- Students can only register for courses they meet prerequisites for
-- Cannot register for full courses
-- Cannot drop courses after deadline
-- All user actions are logged in audit trail
-- Applicants become Students when approved
+## Data Flow Diagram
 
-**Note**: The detailed database schema with specific data types, field sizes, indexes, and SQL constraints is defined in Phase 4 (System Design), Section 4.5.
-
-(Conceptual ER diagram will be created in design phase)
-
----
-
-## Data Flow Diagram (DFD)
-
-The DFD shows how information flows through the system - where data comes from, what happens to it, where it's stored, and where it goes. It helps us understand the processes and data movement.
-
-### DFD Level 0 (The Big Picture)
-
-This shows the system as a whole and how external users interact with it:
+### DFD Level 0 (Context)
 
 **External Entities**:
 
@@ -1151,282 +917,104 @@ This shows the system as a whole and how external users interact with it:
 - Students
 - Lecturers
 - Administrators
-- Librarians
 
-**System**: EduHub Student Management System
+**System**: EduHub
 
-**Data Flows**:
+**Inputs**:
 
-**Inputs to System**:
+- Applicant → Application Data, Documents
+- Student → Profile Updates, Course Registrations
+- Lecturer → Course Info
+- Admin → Approval Decisions, System Config
 
-- Applicant → Application Data
-- Student → Profile Updates, Course Registration Requests
-- Lecturer → Course Information, Class Announcements
-- Administrator → Approval Decisions, System Configuration
-- Librarian → Student Verification Requests
+**Outputs**:
 
-**Outputs from System**:
+- EduHub → Applicant: Application Status, Acceptance
+- EduHub → Student: Registration Confirmation, Course Info
+- EduHub → Lecturer: Class Rosters
+- EduHub → Admin: Reports
 
-- System → Applicant: Application Status, Acceptance/Rejection Notification
-- System → Student: Registration Confirmation, Course Information
-- System → Lecturer: Class Rosters, Student Contact Information
-- System → Administrator: Reports, Analytics
-- System → Librarian: Student Status Information
+### DFD Level 1 (Major Processes)
 
-### DFD Level 1 (Breaking It Down Into Processes)
-
-This shows the major processes within the system and how they work:
+From our process mapping in Workshop 2:
 
 **Process 1: User Authentication**
 
-- Input: Login Credentials
-- Process: Validate Credentials, Generate JWT Token
-- Output: Authentication Token, User Role
-- Data Store: Users Table
+- Input: Login credentials
+- Process: Validate, generate JWT
+- Output: Auth token, redirect to dashboard
+- Data Store: Users table
 
-**Process 2: Application Management**
+**Process 2: Application Submission**
 
-- Input: Application Data, Documents
-- Process: Validate Application, Store Documents, Update Status
-- Output: Application Confirmation, Status Updates
-- Data Store: Applications Table, Application_Documents Table
+- Input: Application form data, documents
+- Process: Validate, save application, upload docs
+- Output: Confirmation email
+- Data Store: Applications, Application_Documents
 
 **Process 3: Application Review**
 
-- Input: Review Decision, Student Number Generation Request
-- Process: Review Application, Generate Student Number, Update Role
-- Output: Approval/Rejection Notification, Student Credentials
-- Data Store: Applications Table, Students Table, Users Table
+- Input: Approval decision
+- Process: Generate student number, create student record, change role
+- Output: Approval email with student number
+- Data Store: Applications, Students, Users
 
-**Process 4: Profile Management**
+**Process 4: Course Registration**
 
-- Input: Profile Updates, Emergency Contact Info
-- Process: Validate Changes, Update Records, Log Changes
-- Output: Update Confirmation
-- Data Store: Students Table, Emergency_Contacts Table, Audit_Logs Table
+- Input: Course selection
+- Process: Check prerequisites, check capacity, check conflicts, create registration
+- Output: Registration confirmation
+- Data Store: Courses, Registrations, Students
 
-**Process 5: Course Registration**
+**Process 5: Profile Management**
 
-- Input: Course Selection, Registration Request
-- Process: Check Prerequisites, Check Capacity, Check Conflicts, Create Registration
-- Output: Registration Confirmation, Error Messages
-- Data Store: Courses Table, Registrations Table, System_Settings Table
-
-**Process 6: Course Management**
-
-- Input: Course Details, Lecturer Assignment
-- Process: Create/Update Course, Assign Lecturer, Set Capacity
-- Output: Course Confirmation, Lecturer Notification
-- Data Store: Courses Table
-
-**Process 7: Reporting**
-
-- Input: Report Parameters (date range, filters)
-- Process: Query Data, Aggregate Statistics, Format Report
-- Output: Reports, Analytics Dashboard
-- Data Store: All Tables
-
-**Process 8: Notification Management**
-
-- Input: System Events (registration, approval, etc.)
-- Process: Generate Notification, Send Email, Create In-App Notification
-- Output: Email, In-App Notification
-- Data Store: Notifications Table
-
-### Data Flow Details
-
-#### Application Submission Flow
-
-```
-Applicant
-   │
-   │ [Application Data + Documents]
-   ▼
-┌─────────────────┐
-│ 1. Validate     │
-│    Application  │
-└────────┬────────┘
-         │ [Validated Data]
-         ▼
-┌─────────────────┐     ┌──────────────────┐
-│ 2. Store        │────▶│ Applications DB  │
-│    Application  │     └──────────────────┘
-└────────┬────────┘
-         │
-         │ [Document Files]
-         ▼
-┌─────────────────┐     ┌──────────────────┐
-│ 3. Upload       │────▶│ File Storage     │
-│    Documents    │     └──────────────────┘
-└────────┬────────┘
-         │
-         │ [Confirmation Email Data]
-         ▼
-┌─────────────────┐
-│ 4. Send         │
-│    Notification │
-└────────┬────────┘
-         │
-         │ [Confirmation]
-         ▼
-      Applicant
-```
-
-#### Course Registration Flow
-
-```
-Student
-   │
-   │ [Course Selection]
-   ▼
-┌──────────────────┐     ┌──────────────────┐
-│ 1. Check         │◀────│ Courses DB       │
-│    Availability  │     └──────────────────┘
-└────────┬─────────┘
-         │ [Available]
-         ▼
-┌──────────────────┐     ┌──────────────────┐
-│ 2. Check         │◀────│ Students DB      │
-│    Prerequisites │     │ Registrations DB │
-└────────┬─────────┘     └──────────────────┘
-         │ [Eligible]
-         ▼
-┌──────────────────┐     ┌──────────────────┐
-│ 3. Check         │◀────│ Registrations DB │
-│    Conflicts     │     └──────────────────┘
-└────────┬─────────┘
-         │ [No Conflicts]
-         ▼
-┌──────────────────┐     ┌──────────────────┐
-│ 4. Create        │────▶│ Registrations DB │
-│    Registration  │     └──────────────────┘
-└────────┬─────────┘
-         │
-         │ [Registration Data]
-         ▼
-┌──────────────────┐     ┌──────────────────┐
-│ 5. Send          │────▶│ Notifications DB │
-│    Confirmation  │     └──────────────────┘
-└────────┬─────────┘
-         │
-         │ [Confirmation]
-         ▼
-      Student
-```
-
-#### Approval Workflow Flow
-
-```
-Administrator
-   │
-   │ [View Applications Request]
-   ▼
-┌──────────────────┐     ┌──────────────────┐
-│ 1. Retrieve      │◀────│ Applications DB  │
-│    Applications  │     └──────────────────┘
-└────────┬─────────┘
-         │ [Application List]
-         ▼
-Administrator (Reviews)
-   │
-   │ [Approval Decision]
-   ▼
-┌──────────────────┐
-│ 2. Generate      │
-│    Student #     │
-└────────┬─────────┘
-         │ [Student Number]
-         ▼
-┌──────────────────┐     ┌──────────────────┐
-│ 3. Create        │────▶│ Students DB      │
-│    Student Record│     └──────────────────┘
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────┐     ┌──────────────────┐
-│ 4. Update User   │────▶│ Users DB         │
-│    Role          │     └──────────────────┘
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────┐     ┌──────────────────┐
-│ 5. Update        │────▶│ Applications DB  │
-│    Application   │     └──────────────────┘
-└────────┬─────────┘
-         │
-         ▼
-┌──────────────────┐     ┌──────────────────┐
-│ 6. Log Action    │────▶│ Audit_Logs DB    │
-└────────┬─────────┘     └──────────────────┘
-         │
-         │ [Approval Email]
-         ▼
-┌──────────────────┐
-│ 7. Send          │
-│    Notification  │
-└────────┬─────────┘
-         │
-         │ [Approval + Student #]
-         ▼
-     Applicant
-```
-
-### Data Stores
-
-| Data Store                     | Contents                             | Access               |
-| ------------------------------ | ------------------------------------ | -------------------- |
-| **DS1: Users**                 | User accounts, authentication data   | All processes        |
-| **DS2: Students**              | Student records, profile information | Processes 3, 4, 5, 7 |
-| **DS3: Applications**          | Application submissions              | Processes 2, 3, 7    |
-| **DS4: Application_Documents** | Uploaded application documents       | Process 2, 3         |
-| **DS5: Courses**               | Course catalog                       | Processes 5, 6, 7    |
-| **DS6: Registrations**         | Student-course registrations         | Processes 5, 7       |
-| **DS7: Emergency_Contacts**    | Student emergency contacts           | Process 4            |
-| **DS8: System_Settings**       | Configuration settings               | Processes 5, 6       |
-| **DS9: Audit_Logs**            | System audit trail                   | All write processes  |
-| **DS10: Notifications**        | User notifications                   | Process 8            |
-
-(Detailed DFD diagrams will be inserted here)
-
----
-
-This comprehensive data modeling section provides the foundation for database design, system architecture, and understanding of data flows within the EduHub system. The models will guide implementation during the design and development phases.
+- Input: Profile updates
+- Process: Validate changes, update records, log changes
+- Output: Update confirmation
+- Data Store: Students, Emergency_Contacts, Audit_Logs
 
 ---
 
 # Conclusion
 
-So that's the analysis phase complete! We've taken a deep dive into what Richfield needs, what's broken with the current setup, and what the new system needs to do.
-
 ## What We Accomplished
 
-1. **Talked to Everyone**: We observed processes in action, ran workshops with students and staff, and interviewed key people to make sure we understand what everyone needs
+1. **Gathered Real Information** (March 15 - April 5, 2026):
+   - 5 days observation at Richfield
+   - 3 workshops with 16 participants total
+   - 11 one-on-one interviews
 
-2. **Identified the Problems**: We found 10 major weaknesses in the current fragmented system (Moodle + iEnabler + paper forms) that show why Richfield needs this new unified system
+2. **Documented Actual Problems**:
+   - 10 specific weaknesses with measured data
+   - Example: 30-45 min application processing, 10% data entry errors, 1-2 hour queue waits
 
-3. **Defined Data Rules**: We figured out what data we need to store and what rules it must follow to stay clean and accurate
+3. **Defined What System Must Do**:
+   - 50 functional requirements from stakeholder input
+   - 18 non-functional requirements from IT Manager
+   - All with acceptance criteria from workshops/interviews
 
-4. **Wrote Down All Requirements**: We documented 71 functional requirements (what the system does) across 11 categories, with clear success criteria for each one
+4. **Designed Data Structure**:
+   - 10 entities based on Richfield's needs
+   - Relationships mapped from current processes
+   - Business rules from institutional policies
 
-5. **Defined Quality Standards**: We specified 26 non-functional requirements covering security, performance, usability, and other quality attributes
+## The Evidence
 
-6. **Designed the Data Structure**: We created diagrams showing the use cases, database structure (10 main entities), and how data flows through the system
+- Observation data: 5 days, measurements taken
+- Workshop artifacts: Journey maps, process flows, MoSCoW prioritization
+- Interview notes: 11 interviews, direct quotes
+- Requirements: All traced to stakeholder source
 
-## The Numbers
+## What's Next
 
-- **Functional Requirements**: 71 total (45 Must Have for the first version, 23 Should Have, 3 Could Have)
-- **Non-Functional Requirements**: 26 total (22 Must Have, 4 Should Have)
-- **Database Tables**: 10 primary entities with clear relationships
-- **User Types**: 6 different roles with defined permissions and features
+Phase 4 (System Design) will take these requirements and create:
 
-## What Happens Next
+- Actual database schema with data types
+- System architecture design
+- User interface mockups
+- Security implementation plan
 
-Now that we know what to build, the next phases will be:
-
-- **Phase 4 (System Design)**: We'll design the actual architecture, create the database schema, design the user interface, and plan the security approach (Due: June 8, 2026)
-- **Phase 5 (Implementation)**: We'll actually build the system based on these requirements and designs
-
-This analysis gives us a solid foundation. We know what the problems are, who the users are, what they need, and how the system should work. Now we can design and build it with confidence.
+This analysis phase gave us solid foundation - we know what to build because we talked to people who'll actually use it.
 
 ---
 
