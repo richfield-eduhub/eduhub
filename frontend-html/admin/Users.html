@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>User Management — EduHub Admin</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>.filter-btn{padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--rf-border);background:white;color:var(--rf-navy)}.filter-btn.active{background:var(--rf-blue);color:white;border-color:var(--rf-blue)}</style>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">USER MANAGEMENT</h1>
+  <p class="section-subtitle">Manage all system users — students, lecturers and admins</p>
+
+  <div class="grid-4 mb-24" id="stats"></div>
+
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+    <div id="role-filters" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    <input id="search" placeholder="🔍 Search by name or email..." oninput="render()"
+      style="flex:1;min-width:200px;padding:9px 14px;border:1.5px solid var(--rf-border);border-radius:8px;font-size:14px"/>
+  </div>
+
+  <div class="card" id="table-wrap"></div>
+</div>
+
+<!-- Edit role modal -->
+<div id="role-modal" class="modal-overlay hidden">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title">Change User Role</div>
+      <button class="modal-close" onclick="closeModal('role-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="role-alert"></div>
+      <div id="role-user-name" style="font-weight:700;font-size:15px;color:var(--rf-navy);margin-bottom:14px"></div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">New Role</label>
+        <select id="new-role" class="form-input" style="background:white">
+          <option value="student">Student</option>
+          <option value="lecturer">Lecturer</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('role-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRole()">Save Role</button>
+    </div>
+  </div>
+</div>
+
+<script src="../shared-local.js"></script>
+<script>
+const admin = requireAuth('admin');
+renderNavbar('admin-users');
+
+let roleFilter = 'all';
+let editingUserId = null;
+
+function renderStats() {
+  const users = getUsers();
+  document.getElementById('stats').innerHTML = [
+    {icon:'👥',label:'Total Users',value:users.length,bg:'#E0E7FF'},
+    {icon:'🎓',label:'Students',value:users.filter(u=>u.role==='student').length,bg:'#D1FAE5'},
+    {icon:'👨‍🏫',label:'Lecturers',value:users.filter(u=>u.role==='lecturer').length,bg:'#FEF3C7'},
+    {icon:'⚙️',label:'Admins',value:users.filter(u=>u.role==='admin').length,bg:'#FCE7F3'},
+  ].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span style="font-size:22px">${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
+}
+
+function renderFilters() {
+  document.getElementById('role-filters').innerHTML = ['all','student','lecturer','admin'].map(r=>`
+    <button class="filter-btn ${roleFilter===r?'active':''}" onclick="setRole('${r}',this)">${r==='all'?'All':r.charAt(0).toUpperCase()+r.slice(1)}s</button>`).join('');
+}
+
+function setRole(r,btn) {
+  roleFilter=r;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  let users = getUsers();
+  if (roleFilter!=='all') users=users.filter(u=>u.role===roleFilter);
+  if (q) users=users.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q));
+
+  const apps = getApplications();
+  const regs = getRegistrations();
+
+  document.getElementById('table-wrap').innerHTML = users.length===0
+    ? '<div style="padding:48px;text-align:center;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">👥</div><div>No users found</div></div>'
+    : `<table class="data-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Student ID</th><th>Status</th><th>Account</th><th>Actions</th></tr></thead><tbody>
+    ${users.map(u=>{
+      const app = apps.find(a=>a.studentId===u.studentId&&a.status==='approved');
+      const reg = regs.find(r=>r.studentId===u.studentId);
+      return `<tr>
+        <td><div style="font-weight:600">${u.name||'—'}</div><div style="font-size:12px;color:var(--rf-gray)">${fmtDate(u.createdAt)}</div></td>
+        <td style="font-size:13px">${u.email}</td>
+        <td><span class="badge ${u.role==='admin'?'badge-info':u.role==='lecturer'?'badge-pending':'badge-approved'}">${u.role}</span></td>
+        <td style="font-family:var(--font-mono);font-size:12px;color:var(--rf-blue)">${u.studentId||'—'}</td>
+        <td><span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:${(u.status||'active')==='active'?'#D1FAE5':'#FEE2E2'};color:${(u.status||'active')==='active'?'#065f46':'#dc2626'}">${(u.status||'active')==='active'?'✓ Active':'✗ Inactive'}</span></td>
+        <td>${u.tempPassword?'<span style="font-size:12px;color:#d97706;font-weight:700">⚠ Temp pwd</span>':'<span style="font-size:12px;color:#059669;font-weight:700">✓ Normal</span>'}</td>
+        <td>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${u.id!==admin.id?`<button class="btn btn-sm btn-secondary" onclick="openRoleModal('${u.id}')">Change Role</button>`:''}
+            ${u.id!==admin.id?`<button class="btn btn-sm ${(u.status||'active')==='active'?'btn-danger':'btn-success'}" onclick="toggleStatus('${u.id}')">${(u.status||'active')==='active'?'Deactivate':'Activate'}</button>`:''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+function openRoleModal(userId) {
+  const u = getUsers().find(x=>x.id===userId);
+  if (!u) return;
+  editingUserId = userId;
+  document.getElementById('role-user-name').textContent = u.name;
+  document.getElementById('new-role').value = u.role;
+  clearAlert('role-alert');
+  openModal('role-modal');
+}
+
+function saveRole() {
+  const newRole = document.getElementById('new-role').value;
+  const users = getUsers();
+  const idx = users.findIndex(u=>u.id===editingUserId);
+  if (idx===-1) return;
+  if (users[idx].id === admin.id && newRole !== 'admin') return showAlert('role-alert','You cannot change your own role.','error');
+  users[idx] = {...users[idx], role:newRole, updatedAt:new Date().toISOString()};
+  setUsers(users);
+  addAuditLog({ action:'role_change', description:`Changed ${users[idx].name}'s role to ${newRole}`, performedBy:admin.name });
+  closeModal('role-modal');
+  showToast(`Role updated to ${newRole}.`,'success');
+  renderStats(); render();
+}
+
+function toggleStatus(userId) {
+  const users = getUsers();
+  const idx = users.findIndex(u=>u.id===userId);
+  if (idx===-1) return;
+  const newStatus = (users[idx].status||'active')==='active'?'inactive':'active';
+  if (users[idx].id===admin.id&&newStatus==='inactive') return showToast('You cannot deactivate your own account.','error');
+  users[idx] = {...users[idx], status:newStatus, updatedAt:new Date().toISOString()};
+  setUsers(users);
+  addAuditLog({ action:newStatus==='inactive'?'deactivate':'activate', description:`${newStatus==='inactive'?'Deactivated':'Activated'} ${users[idx].name}`, performedBy:admin.name });
+  showToast(`Account ${newStatus==='inactive'?'deactivated':'activated'}.`,newStatus==='inactive'?'warning':'success');
+  renderStats(); render();
+}
+
+renderStats(); renderFilters(); render();
+</script>
+</body>
+</html>

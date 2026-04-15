@@ -112,9 +112,15 @@ Import schema files to visualize the database:
 
 Default password for all test users: **`Password123!`**
 
+<<<<<<< HEAD
 - Admin: `admin@richfield.ac.za`
 - Lecturers: `john.smith@richfield.ac.za`, `sarah.jones@richfield.ac.za`, `david.naidoo@richfield.ac.za`
 - Students: `thabo.molefe@student.richfield.ac.za`, `lerato.khumalo@student.richfield.ac.za`, `sipho.dlamini@student.richfield.ac.za`
+=======
+- Admin: `admin@eduhub.ac.za`
+- Lecturers: `john.smith@eduhub.ac.za`, `sarah.jones@eduhub.ac.za`, `david.naidoo@eduhub.ac.za`
+- Students: `thabo.molefe@student.eduhub.ac.za`, `lerato.khumalo@student.eduhub.ac.za`, `sipho.dlamini@student.eduhub.ac.za`
+>>>>>>> 531c062 (popi's changes)
 
 ---
 

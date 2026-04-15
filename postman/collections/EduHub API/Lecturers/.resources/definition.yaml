@@ -1,4 +1,8 @@
 $kind: collection
 name: Lecturers
 description: Lecturer management endpoints
+<<<<<<< HEAD
 order: 9000
+=======
+order: 7000
+>>>>>>> 531c062 (popi's changes)

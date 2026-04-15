@@ -44,7 +44,11 @@ Created a comprehensive database structure with proper dependency ordering:
 
 **File:** `backend/migrations/2026-03-29-seed-reference-data.js`
 
+<<<<<<< HEAD
 Created real Richfield academic data that runs in ALL environments:
+=======
+Created real EduHub academic data that runs in ALL environments:
+>>>>>>> 531c062 (popi's changes)
 
 - **6 Qualifications:**
   - BSc IT
@@ -54,7 +58,11 @@ Created real Richfield academic data that runs in ALL environments:
   - BBA
   - Diploma in Business Administration
 
+<<<<<<< HEAD
 - **33 Modules:** Real Richfield curriculum with:
+=======
+- **33 Modules:** Real EduHub curriculum with:
+>>>>>>> 531c062 (popi's changes)
   - Module codes (IT511, PROG511, ACC511, etc.)
   - Credits, year placement, semester
   - Prerequisites (JSON arrays)
@@ -75,7 +83,11 @@ Created real Richfield academic data that runs in ALL environments:
 
 Created development seed data with production safety blocks:
 
+<<<<<<< HEAD
 - **1 Admin:** admin@richfield.ac.za
+=======
+- **1 Admin:** admin@eduhub.ac.za
+>>>>>>> 531c062 (popi's changes)
 - **3 Lecturers:**
   - Dr. John Smith (Software Engineering & Cloud Computing)
   - Prof. Sarah Jones (Financial Accounting & Auditing)
@@ -279,6 +291,7 @@ postgresql://postgres:yourpassword@localhost:5433/eduhub
 All test users have the default password: **`Password123!`**
 
 ### Admin
+<<<<<<< HEAD
 - Email: `admin@richfield.ac.za`
 - Member Number: `ADMIN001`
 
@@ -291,6 +304,20 @@ All test users have the default password: **`Password123!`**
 - `thabo.molefe@student.richfield.ac.za` (2026-0001)
 - `lerato.khumalo@student.richfield.ac.za` (2026-0002)
 - `sipho.dlamini@student.richfield.ac.za` (2026-0003)
+=======
+- Email: `admin@eduhub.ac.za`
+- Member Number: `ADMIN001`
+
+### Lecturers
+- `john.smith@eduhub.ac.za` (EMP2024001)
+- `sarah.jones@eduhub.ac.za` (EMP2024002)
+- `david.naidoo@eduhub.ac.za` (EMP2024003)
+
+### Students
+- `thabo.molefe@student.eduhub.ac.za` (2026-0001)
+- `lerato.khumalo@student.eduhub.ac.za` (2026-0002)
+- `sipho.dlamini@student.eduhub.ac.za` (2026-0003)
+>>>>>>> 531c062 (popi's changes)
 
 ---
 
@@ -393,7 +420,11 @@ This database setup provides a solid foundation for the entire team:
 - **Frontend Devs:** Have test data to work with locally
 - **QA Team:** Consistent test environment with realistic data
 - **DevOps:** Production-safe migrations with clear separation
+<<<<<<< HEAD
 - **Product Team:** Real Richfield programmes and curriculum structure
+=======
+- **Product Team:** Real EduHub programmes and curriculum structure
+>>>>>>> 531c062 (popi's changes)
 
 ---
 

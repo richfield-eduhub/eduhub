@@ -87,7 +87,11 @@ class AuthService {
    */
   async login({ email, password }) {
     // Get user with password hash
+<<<<<<< HEAD
     const users = await sequelize.query(
+=======
+    const [users] = await sequelize.query(
+>>>>>>> 531c062 (popi's changes)
       `SELECT u.id as user_id, u.email, u.password_hash, u.role, u.account_status,
               ud.first_name, ud.last_name
        FROM users u
@@ -143,7 +147,11 @@ class AuthService {
    * Get user profile by ID
    */
   async getProfile(userId) {
+<<<<<<< HEAD
     const users = await sequelize.query(
+=======
+    const [users] = await sequelize.query(
+>>>>>>> 531c062 (popi's changes)
       `SELECT u.id as user_id, u.email, u.role, u.account_status, u.is_verified as email_verified, u.created_at,
               ud.first_name, ud.last_name, ud.date_of_birth, ud.phone, ud.id_number, ud.nationality, ud.gender
        FROM users u

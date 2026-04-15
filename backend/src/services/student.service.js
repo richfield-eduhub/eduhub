@@ -4,12 +4,16 @@
  */
 
 const sequelize = require('../config/database');
+<<<<<<< HEAD
 const {
   PAGINATION,
   LIFECYCLE_STATUS,
   ACADEMIC_STATUS,
   USER_ROLES,
 } = require('../utils/constants');
+=======
+const { PAGINATION, LIFECYCLE_STATUS, ACADEMIC_STATUS } = require('../utils/constants');
+>>>>>>> 531c062 (popi's changes)
 
 class StudentService {
   /**
@@ -263,6 +267,7 @@ class StudentService {
 
     return registrations;
   }
+<<<<<<< HEAD
 
   /**
    * Set linked user account status for a student (admin) — uses `users.account_status`.
@@ -332,6 +337,8 @@ class StudentService {
 
     return outRows[0];
   }
+=======
+>>>>>>> 531c062 (popi's changes)
 }
 
 module.exports = new StudentService();

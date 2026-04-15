@@ -90,7 +90,11 @@ async function runSeeds() {
     console.log('');
     console.log('💡 Next steps:');
     console.log('   - Start the backend: cd backend && npm start');
+<<<<<<< HEAD
     console.log('   - Test login with: admin@richfield.ac.za / Password123!');
+=======
+    console.log('   - Test login with: admin@eduhub.ac.za / Password123!');
+>>>>>>> 531c062 (popi's changes)
     console.log('');
 
     process.exit(0);

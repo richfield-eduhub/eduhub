@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>My Modules — EduHub</title>
+  <link rel="stylesheet" href="../shared.css"/>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">MY MODULES</h1>
+  <p class="section-subtitle">Modules allocated by the admissions office</p>
+  <div id="content"></div>
+</div>
+<script src="../shared-local.js"></script>
+<script>
+const user=requireAuth('student');
+renderNavbar('student-modules');
+
+const apps=getApplications();
+const regs=getRegistrations();
+const myApp=apps.find(a=>a.studentId===user.studentId&&a.status==='approved');
+const qual=QUALIFICATIONS.find(q=>q.code===myApp?.qualificationCode);
+const myAllocs=regs.filter(r=>r.studentId===user.studentId&&r.status==='allocated').sort((a,b)=>a.studyYear!==b.studyYear?a.studyYear-b.studyYear:a.semester-b.semester);
+const legacyApproved=regs.find(r=>r.studentId===user.studentId&&r.status==='approved');
+const allActive=[...myAllocs,...(legacyApproved?[legacyApproved]:[])];
+
+if(!myApp){
+  document.getElementById('content').innerHTML=`<div class="alert alert-warning"><span>⏳</span><div>Your application is still being reviewed. You'll be able to view your allocated modules once approved.</div></div>`;
+}else if(allActive.length===0){
+  document.getElementById('content').innerHTML=`
+    <div style="background:linear-gradient(135deg,#001A4D,#123f7a);color:white;border-radius:12px;padding:28px 32px;margin-bottom:24px">
+      <div style="font-size:13px;opacity:.7;margin-bottom:6px">ENROLLED IN</div>
+      <div style="font-weight:800;font-size:22px;margin-bottom:4px">${myApp.qualificationName}</div>
+      <div style="font-size:13px;opacity:.75">${qual?.faculty||''} · ${qual?.duration||''}</div>
+    </div>
+    <div style="text-align:center;padding:52px 20px;background:white;border-radius:12px;border:1px solid #e5e7eb">
+      <div style="font-size:52px;margin-bottom:16px">📭</div>
+      <div style="font-size:18px;font-weight:700;color:#001A4D;margin-bottom:8px">No modules allocated yet</div>
+      <div style="font-size:14px;color:#6b7280;max-width:380px;margin:0 auto;line-height:1.6">Your modules haven't been assigned yet. The admissions office will allocate your modules and you'll receive a notification once they're ready.</div>
+      <div style="margin-top:20px;font-size:13px;color:#6b7280">Questions? Contact us at <strong>admissions@eduhub.ac.za</strong></div>
+    </div>`;
+}else{
+  const totalModules=allActive.reduce((s,r)=>s+r.modules.length,0);
+  const totalCredits=allActive.reduce((s,r)=>r.modules.reduce((ms,m)=>ms+m.credits,s),0);
+  document.getElementById('content').innerHTML=`
+    <div style="background:linear-gradient(135deg,#001A4D,#123f7a);color:white;border-radius:12px;padding:24px 28px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+      <div>
+        <div style="font-size:12px;opacity:.65;margin-bottom:4px;letter-spacing:1px">ENROLLED IN</div>
+        <div style="font-weight:800;font-size:20px">${myApp.qualificationName}</div>
+        <div style="font-size:13px;opacity:.75;margin-top:4px">${qual?.faculty||''} · ${qual?.duration||''}</div>
+      </div>
+      <div style="display:flex;gap:20px;text-align:center">
+        ${[['📚',totalModules,'Total Modules'],['⭐',totalCredits,'Total Credits']].map(([icon,val,lbl])=>`<div><div style="font-size:24px">${icon}</div><div style="font-weight:900;font-size:26px">${val}</div><div style="font-size:11px;opacity:.7">${lbl}</div></div>`).join('')}
+      </div>
+    </div>
+    ${allActive.map(reg=>`
+    <div style="background:white;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:20px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:2px solid #e5e7eb;background:#F4F6FB">
+        <div>
+          <div style="font-weight:800;font-size:16px;color:#001A4D">Year ${reg.studyYear} — Semester ${reg.semester}</div>
+          <div style="font-size:13px;color:#6b7280;margin-top:2px">${reg.year} Academic Year &nbsp;·&nbsp; ${reg.modules.length} modules &nbsp;·&nbsp; ${reg.modules.reduce((s,m)=>s+m.credits,0)} credits</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px;background:#D1FAE5;color:#065f46">✅ Allocated</span>
+          ${reg.allocatedAt?`<span style="font-size:11px;color:#6b7280">${fmtDate(reg.allocatedAt)}</span>`:''}
+        </div>
+      </div>
+      <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+        ${reg.modules.map((m,i)=>`
+        <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:#F4F6FB;border-radius:8px;border:1px solid #e5e7eb">
+          <div style="width:32px;height:32px;background:#123f7a;border-radius:8px;color:white;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+          <div style="flex:1"><div style="font-weight:600;font-size:14px;color:#001A4D">${m.name}</div><div style="font-size:12px;color:#6b7280;font-family:monospace;margin-top:2px">${m.code}</div></div>
+          <div style="text-align:right;flex-shrink:0"><div style="font-weight:700;font-size:15px;color:#123f7a">${m.credits}</div><div style="font-size:11px;color:#6b7280">credits</div></div>
+        </div>`).join('')}
+      </div>
+      <div style="padding:14px 20px;border-top:1px solid #e5e7eb;background:#F4F6FB;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div style="font-size:14px;color:#374151">Semester Fee: <strong style="color:#001A4D">R${reg.totalFee.toLocaleString()}</strong></div>
+        <span style="font-size:13px;font-weight:700;padding:4px 12px;border-radius:99px;background:${reg.feePaid?'#D1FAE5':'#FEE2E2'};color:${reg.feePaid?'#065f46':'#dc2626'}">${reg.feePaid?'✓ Fee Paid':'✗ Fee Outstanding'}</span>
+      </div>
+    </div>`).join('')}
+    <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:10px;padding:14px 18px;font-size:14px;color:#3730a3;margin-top:8px">
+      📞 For queries about your module allocation, contact <strong>admissions@eduhub.ac.za</strong> or call <strong>0860 742 434</strong>.
+    </div>`;
+}
+</script>
+</body>
+</html>

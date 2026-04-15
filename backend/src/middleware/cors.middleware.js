@@ -52,9 +52,14 @@ const devCorsOptions = {
   ],
 };
 
+<<<<<<< HEAD
 // Use development CORS in development, production CORS in production
 const corsMiddleware = cors(
   process.env.NODE_ENV === 'production' ? corsOptions : devCorsOptions
 );
+=======
+// Allow all origins — frontend is served from the same Railway domain
+const corsMiddleware = cors(devCorsOptions);
+>>>>>>> 531c062 (popi's changes)
 
 module.exports = corsMiddleware;

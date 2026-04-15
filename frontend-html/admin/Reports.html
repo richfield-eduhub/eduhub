@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Reports & Analytics — EduHub Admin</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .tab-btn{padding:9px 20px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid var(--rf-border);background:white;color:var(--rf-navy);transition:all .15s}
+    .tab-btn.active{background:var(--rf-blue);color:white;border-color:var(--rf-blue)}
+    .bar{height:28px;border-radius:4px;transition:width .5s;display:flex;align-items:center;padding:0 10px;font-size:12px;font-weight:700;color:white;min-width:36px}
+  </style>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">REPORTS &amp; ANALYTICS</h1>
+  <p class="section-subtitle">System-wide statistics, trends and audit logs</p>
+
+  <!-- Summary stats -->
+  <div class="grid-4 mb-24" id="summary-stats"></div>
+
+  <!-- Tab nav -->
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+    <button class="tab-btn active" onclick="showTab('overview',this)">Overview</button>
+    <button class="tab-btn" onclick="showTab('applications',this)">Applications</button>
+    <button class="tab-btn" onclick="showTab('registrations',this)">Registrations</button>
+    <button class="tab-btn" onclick="showTab('audit',this)">Audit Log</button>
+  </div>
+
+  <div id="tab-content"></div>
+</div>
+
+<script src="../shared-local.js"></script>
+<script>
+requireAuth('admin');
+renderNavbar('admin-reports');
+
+const apps  = getApplications();
+const regs  = getRegistrations();
+const users = getUsers();
+const notifs= getNotifications();
+const logs  = getAuditLogs();
+
+// Summary
+const students  = users.filter(u=>u.role==='student').length;
+const pending   = apps.filter(a=>a.status==='pending').length;
+const approved  = apps.filter(a=>a.status==='approved').length;
+const allocated = regs.filter(r=>r.status==='allocated').length;
+
+document.getElementById('summary-stats').innerHTML = [
+  {icon:'👥',label:'Total Users',value:users.length,bg:'#E0E7FF'},
+  {icon:'📋',label:'Total Applications',value:apps.length,bg:'#FEF3C7'},
+  {icon:'🎓',label:'Students Enrolled',value:students,bg:'#D1FAE5'},
+  {icon:'📚',label:'Modules Allocated',value:allocated,bg:'#FCE7F3'},
+].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span style="font-size:22px">${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
+
+function pct(n,t){return t?Math.round(n/t*100):0;}
+
+function barRow(label, value, max, color) {
+  const w = max ? Math.max(4, Math.round(value/max*100)) : 0;
+  return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+    <div style="width:180px;font-size:13px;font-weight:600;color:var(--rf-navy);flex-shrink:0">${label}</div>
+    <div style="flex:1;background:#f3f4f6;border-radius:4px;overflow:hidden">
+      <div class="bar" style="width:${w}%;background:${color}">${value}</div>
+    </div>
+  </div>`;
+}
+
+function showTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+
+  if (tab === 'overview') {
+    const qualCounts = {};
+    apps.forEach(a=>{ qualCounts[a.qualificationCode]=(qualCounts[a.qualificationCode]||0)+1; });
+    const maxQual = Math.max(...Object.values(qualCounts),1);
+    const roleCounts = {};
+    users.forEach(u=>{ roleCounts[u.role]=(roleCounts[u.role]||0)+1; });
+
+    document.getElementById('tab-content').innerHTML = `
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><span style="font-weight:700">Application Status Breakdown</span></div>
+          <div class="card-body">
+            ${barRow('Pending',pending,apps.length,'#f59e0b')}
+            ${barRow('Approved',approved,apps.length,'#059669')}
+            ${barRow('Declined',apps.filter(a=>a.status==='declined').length,apps.length,'#dc2626')}
+            <div style="margin-top:12px;font-size:13px;color:var(--rf-gray)">Total: ${apps.length} applications · Approval rate: ${pct(approved,apps.length)}%</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span style="font-weight:700">Applications by Qualification</span></div>
+          <div class="card-body">
+            ${Object.entries(qualCounts).map(([k,v])=>barRow(k,v,maxQual,'#123f7a')).join('')}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span style="font-weight:700">User Roles</span></div>
+          <div class="card-body">
+            ${['student','lecturer','admin'].map(r=>barRow(r.charAt(0).toUpperCase()+r.slice(1)+'s',roleCounts[r]||0,users.length,r==='admin'?'#7c3aed':r==='lecturer'?'#d97706':'#059669')).join('')}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span style="font-weight:700">Registration Status</span></div>
+          <div class="card-body">
+            ${barRow('Allocated',regs.filter(r=>r.status==='allocated').length,regs.length,'#059669')}
+            ${barRow('Approved',regs.filter(r=>r.status==='approved').length,regs.length,'#3b82f6')}
+            ${barRow('Pending',regs.filter(r=>r.status==='pending').length,regs.length,'#f59e0b')}
+            ${barRow('Declined',regs.filter(r=>r.status==='declined').length,regs.length,'#dc2626')}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  else if (tab === 'applications') {
+    document.getElementById('tab-content').innerHTML = `
+      <div class="card">
+        <div class="card-header"><span style="font-weight:700">All Applications (${apps.length})</span></div>
+        ${apps.length===0?'<div style="padding:40px;text-align:center;color:var(--rf-gray)">No applications yet</div>':
+        `<table class="data-table"><thead><tr><th>Student</th><th>Type</th><th>Qualification</th><th>Year</th><th>Status</th><th>Submitted</th></tr></thead><tbody>
+        ${[...apps].sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt)).map(a=>`<tr>
+          <td><div style="font-weight:600">${a.firstName} ${a.lastName}</div><div style="font-size:12px;color:var(--rf-gray)">${a.email}</div></td>
+          <td><span style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;background:${a.applicationType==='returning'?'#FEF3C7':'#D1FAE5'};color:${a.applicationType==='returning'?'#92400e':'#065f46'}">${a.applicationType==='returning'?'Returning':'New'}</span></td>
+          <td style="font-size:13px">${a.qualificationCode}</td>
+          <td style="font-size:13px">Year ${a.studyYear}</td>
+          <td>${badge(a.status)}</td>
+          <td style="font-size:12px;color:var(--rf-gray)">${fmtDate(a.submittedAt)}</td>
+        </tr>`).join('')}</tbody></table>`}
+      </div>`;
+  }
+
+  else if (tab === 'registrations') {
+    document.getElementById('tab-content').innerHTML = `
+      <div class="card">
+        <div class="card-header"><span style="font-weight:700">All Registrations (${regs.length})</span></div>
+        ${regs.length===0?'<div style="padding:40px;text-align:center;color:var(--rf-gray)">No registrations yet</div>':
+        `<table class="data-table"><thead><tr><th>Student ID</th><th>Qualification</th><th>Year/Sem</th><th>Modules</th><th>Fee</th><th>Paid</th><th>Status</th></tr></thead><tbody>
+        ${regs.map(r=>`<tr>
+          <td style="font-family:var(--font-mono);font-size:12px;color:var(--rf-blue)">${r.studentId}</td>
+          <td style="font-size:13px">${r.qualificationCode}</td>
+          <td style="font-size:13px">Y${r.studyYear}S${r.semester}</td>
+          <td>${r.modules.length}</td>
+          <td style="font-weight:600">R${r.totalFee.toLocaleString()}</td>
+          <td><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:${r.feePaid?'#D1FAE5':'#FEE2E2'};color:${r.feePaid?'#065f46':'#dc2626'}">${r.feePaid?'Paid':'Unpaid'}</span></td>
+          <td>${badge(r.status)}</td>
+        </tr>`).join('')}</tbody></table>`}
+      </div>`;
+  }
+
+  else if (tab === 'audit') {
+    document.getElementById('tab-content').innerHTML = `
+      <div class="card">
+        <div class="card-header"><span style="font-weight:700">Audit Log (${logs.length} entries)</span></div>
+        ${logs.length===0?'<div style="padding:40px;text-align:center;color:var(--rf-gray)">No audit entries yet. Actions like role changes and user status updates appear here.</div>':
+        `<table class="data-table"><thead><tr><th>Action</th><th>Description</th><th>Performed By</th><th>Time</th></tr></thead><tbody>
+        ${logs.map(l=>`<tr>
+          <td><span class="badge badge-info">${l.action||'action'}</span></td>
+          <td style="font-size:13px">${l.description||'—'}</td>
+          <td style="font-size:13px;color:var(--rf-gray)">${l.performedBy||'System'}</td>
+          <td style="font-size:12px;color:var(--rf-gray)">${fmtDateTime(l.createdAt)}</td>
+        </tr>`).join('')}</tbody></table>`}
+      </div>`;
+  }
+}
+
+showTab('overview', document.querySelector('.tab-btn'));
+</script>
+</body>
+</html>

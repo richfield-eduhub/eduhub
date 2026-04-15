@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Students — EduHub Admin</title>
+  <link rel="stylesheet" href="../shared.css"/>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">STUDENTS</h1>
+  <p class="section-subtitle" id="subtitle"></p>
+  <div class="card" id="table-wrap"></div>
+</div>
+<script src="../shared-local.js"></script>
+<script>
+requireAuth('admin');
+renderNavbar('admin-students');
+
+const users=getUsers();
+const apps=getApplications();
+const regs=getRegistrations();
+const students=users.filter(u=>u.role==='student');
+
+document.getElementById('subtitle').textContent=`${students.length} enrolled students`;
+
+if(students.length===0){
+  document.getElementById('table-wrap').innerHTML=`<div style="padding:48px;text-align:center;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">🎓</div><div>No students enrolled yet. Approve applications to create student accounts.</div></div>`;
+}else{
+  document.getElementById('table-wrap').innerHTML=`<table class="data-table"><thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>Qualification</th><th>Registration</th><th>Account</th></tr></thead><tbody>
+  ${students.map(s=>{
+    const app=apps.find(a=>a.studentId===s.studentId&&a.status==='approved');
+    const reg=regs.find(r=>r.studentId===s.studentId);
+    return `<tr>
+      <td style="font-weight:600">${s.name}</td>
+      <td style="font-family:var(--font-mono);font-size:12px;color:var(--rf-blue)">${s.studentId||'—'}</td>
+      <td style="font-size:13px;color:var(--rf-gray)">${s.email}</td>
+      <td style="font-size:13px">${app?.qualificationCode||'—'}</td>
+      <td>${badge(reg?(reg.status==='allocated'?'approved':reg.status):'pending')}<span style="font-size:11px;margin-left:4px;color:var(--rf-gray)">${!reg?'Not registered':reg.status==='allocated'?'Modules Allocated':''}</span></td>
+      <td><span class="badge ${s.tempPassword?'badge-pending':'badge-approved'}">${s.tempPassword?'⚠ Temp password':'✓ Active'}</span></td>
+    </tr>`;
+  }).join('')}
+  </tbody></table>`;
+}
+</script>
+</body>
+</html>

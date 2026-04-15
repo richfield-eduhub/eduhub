@@ -18,10 +18,13 @@ const ADMISSION_FOR_VALUES = [
   '3rd Year',
 ];
 
+<<<<<<< HEAD
 const APPLICATION_TYPE_VALUES = ['new', 'returning', 'transfer', 'other'];
 
 const GENDER_VALUES = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
 
+=======
+>>>>>>> 531c062 (popi's changes)
 const createApplicationValidation = [
   body('campus_id').isUUID().withMessage('Valid campus_id is required'),
   body('qualification_id').isUUID().withMessage('Valid qualification_id is required'),
@@ -29,6 +32,7 @@ const createApplicationValidation = [
   body('last_name').trim().notEmpty().withMessage('last_name is required'),
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('phone').trim().notEmpty().withMessage('phone is required'),
+<<<<<<< HEAD
   body('id_number').optional().trim(),
   body('passport_number').optional().trim(),
   body('nationality').optional().trim(),
@@ -42,6 +46,9 @@ const createApplicationValidation = [
   body('postal_code').optional().trim(),
   body('study_year').optional().isInt({ min: 1, max: 3 }),
   body('docs_uploaded').optional(),
+=======
+  body('id_number').trim().notEmpty().withMessage('id_number is required'),
+>>>>>>> 531c062 (popi's changes)
   body('tc_accepted')
     .optional()
     .isBoolean()
@@ -52,7 +59,11 @@ const createApplicationValidation = [
     .withMessage(`status must be ${APPLICATION_STATUS.DRAFT} or ${APPLICATION_STATUS.PENDING}`),
   body('application_type')
     .optional()
+<<<<<<< HEAD
     .isIn(APPLICATION_TYPE_VALUES)
+=======
+    .isIn(['new', 'returning', 'transfer'])
+>>>>>>> 531c062 (popi's changes)
     .withMessage('Invalid application_type'),
   body('admission_for')
     .optional()
