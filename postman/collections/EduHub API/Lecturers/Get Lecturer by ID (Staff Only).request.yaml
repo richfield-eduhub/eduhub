@@ -1,0 +1,12 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/lecturers/:id'
+order: 4000
+description: 'Get lecturer by ID. Staff only.'
+headers:
+  - key: Authorization
+    value: 'Bearer {{access_token}}'
+pathVariables:
+  - key: id
+    value: lecturer_uuid_here
+    description: Lecturer UUID

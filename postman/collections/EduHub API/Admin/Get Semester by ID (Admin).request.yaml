@@ -1,0 +1,11 @@
+$kind: http-request
+name: Get Semester by ID (Admin)
+method: GET
+url: "{{base_url}}/admin/semesters/:id"
+headers:
+  Authorization: Bearer {{access_token}}
+pathVariables:
+  - key: id
+    value: "{{semester_id}}"
+    description: Semester UUID
+order: 1600

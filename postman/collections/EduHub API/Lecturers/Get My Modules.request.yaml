@@ -1,0 +1,17 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/lecturers/me/modules'
+order: 3000
+description: 'Get current lecturer''s assigned modules (lecturers only)'
+headers:
+  - key: Authorization
+    value: 'Bearer {{access_token}}'
+queryParams:
+  - key: semester_id
+    value: ''
+    description: Filter by semester UUID
+    disabled: true
+  - key: active_only
+    value: 'true'
+    description: Filter only active modules
+    disabled: true

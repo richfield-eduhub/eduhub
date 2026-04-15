@@ -1,0 +1,7 @@
+$kind: http-request
+name: List Semesters (Admin)
+method: GET
+url: "{{base_url}}/admin/semesters"
+headers:
+  Authorization: Bearer {{access_token}}
+order: 1500

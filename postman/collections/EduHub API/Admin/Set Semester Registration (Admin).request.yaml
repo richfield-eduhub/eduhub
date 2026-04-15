@@ -1,0 +1,18 @@
+$kind: http-request
+name: Set Semester Registration (Admin)
+method: PATCH
+url: "{{base_url}}/admin/semesters/:id/registration"
+headers:
+  Authorization: Bearer {{access_token}}
+  Content-Type: application/json
+pathVariables:
+  - key: id
+    value: "{{semester_id}}"
+    description: Semester UUID
+body:
+  type: json
+  content: |-
+    {
+      "registration_open": true
+    }
+order: 1900

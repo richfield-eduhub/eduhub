@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{base_url}}/students/:id/registrations"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+pathVariables:
+  id: student_uuid_here
+order: 5000

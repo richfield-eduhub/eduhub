@@ -1,0 +1,19 @@
+$kind: http-request
+name: Set Student Account Status (Admin)
+method: PATCH
+url: "{{base_url}}/admin/students/:id/account-status"
+headers:
+  Authorization: Bearer {{access_token}}
+  Content-Type: application/json
+pathVariables:
+  - key: id
+    value: "{{student_id}}"
+    description: Student record UUID (students.id)
+body:
+  type: json
+  content: |-
+    {
+      "account_status": "blocked",
+      "status_reason": "Academic misconduct — appeal pending"
+    }
+order: 2100

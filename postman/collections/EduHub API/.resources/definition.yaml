@@ -1,0 +1,8 @@
+$kind: collection
+description: Complete API collection for EduHub student management system
+variables:
+  base_url: ""
+  access_token: ""
+  application_id: ""
+  semester_id: ""
+  student_id: ""
