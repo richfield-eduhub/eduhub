@@ -1,75 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Programmes — EduHub</title>
-  <link rel="stylesheet" href="../shared.css" />
+  <link rel="stylesheet" href="../shared.css"/>
   <style>
-    .prog-header { background: linear-gradient(135deg, #123f7a 0%, #1a5fa8 100%); color: white; padding: 60px 40px; text-align: center; }
-    .prog-card { background: white; width: 320px; border-radius: 10px; box-shadow: var(--shadow-sm); overflow: hidden; border: 1px solid var(--rf-border); transition: transform .2s, box-shadow .2s; }
-    .prog-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(18,63,122,.15); }
-    .prog-top { padding: 20px 24px; color: white; }
-    .prog-body { padding: 20px 24px; }
+    .prog-card{background:white;width:340px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden;border:1px solid #e5e7eb;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}
+    .prog-card:hover{transform:translateY(-4px);box-shadow:0 8px 28px rgba(0,61,165,.18)}
+    .prog-body{padding:20px 24px;flex:1;display:flex;flex-direction:column}
+    .level-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 10px;border-radius:99px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+    .level-hc{background:#FEF3C7;color:#92400E}
+    .level-dip{background:#DBEAFE;color:#1e40af}
+    .level-deg{background:#D1FAE5;color:#065F46}
+    .level-pg{background:#EDE9FE;color:#5b21b6}
+    .module-list{margin-top:8px;font-size:12px;color:#374151}
+    .module-list li{padding:3px 0;border-bottom:1px dotted #e5e7eb;list-style:none}
+    .module-list li:last-child{border:none}
+    .expand-btn{background:none;border:none;color:var(--rf-blue);font-size:12px;font-weight:600;cursor:pointer;padding:4px 0;text-align:left}
+    .filter-btn{padding:8px 20px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+    .saqa-tag{font-size:11px;color:#6B7280;margin-top:auto;padding-top:10px;border-top:1px solid #f3f4f6}
   </style>
 </head>
-<body class="page-container">
-  <div id="navbar-placeholder"></div>
-
-  <div class="prog-header">
-    <h1 style="font-size:44px;font-weight:900;margin-bottom:12px;letter-spacing:1px">Our Programmes</h1>
-    <p style="font-size:18px;opacity:.85;max-width:560px;margin:0 auto">Nationally accredited qualifications designed to launch your career</p>
-  </div>
-
-  <div style="max-width:1100px;margin:0 auto;padding:48px 24px">
-    <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:40px">
-      <div style="padding:8px 20px;border-radius:99px;background:#123f7a;color:white;border:1.5px solid #123f7a;font-size:14px;font-weight:600">All</div>
-      <div style="padding:8px 20px;border-radius:99px;background:white;color:#123f7a;border:1.5px solid #123f7a;font-size:14px;font-weight:600;cursor:pointer">Information Technology</div>
-      <div style="padding:8px 20px;border-radius:99px;background:white;color:#123f7a;border:1.5px solid #123f7a;font-size:14px;font-weight:600;cursor:pointer">Business Science</div>
-      <div style="padding:8px 20px;border-radius:99px;background:white;color:#123f7a;border:1.5px solid #123f7a;font-size:14px;font-weight:600;cursor:pointer">Creative Arts</div>
+<body>
+  <div id="navbar-root"></div>
+  <div style="background:linear-gradient(135deg,#003DA5 0%,#001A4D 100%);color:white;padding:64px 40px;text-align:center">
+    <div style="font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;opacity:.7;margin-bottom:10px">2026 Prospectus</div>
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;margin-bottom:12px">Our Programmes</h1>
+    <p style="font-size:18px;opacity:.85;max-width:600px;margin:0 auto 24px">CHE-accredited qualifications across IT and Business — designed to launch your career in a changing world.</p>
+    <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;font-size:14px;opacity:.8">
+      <span>✅ &nbsp;140,000+ Graduates</span>
+      <span>✅ &nbsp;8 Nationwide Campuses</span>
+      <span>✅ &nbsp;Online &amp; On-campus</span>
     </div>
-
-    <div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center" id="prog-list"></div>
   </div>
 
-  <div style="background:#123f7a;color:white;padding:48px;text-align:center">
-    <h2 style="font-size:28px;font-weight:900;margin-bottom:12px">Ready to start your journey?</h2>
-    <p style="opacity:.85;margin-bottom:24px;font-size:16px">Apply online today — it only takes a few minutes.</p>
-    <a href="/apply" style="background:#ffc72c;color:#123f7a;padding:14px 36px;font-size:16px;font-weight:800;border-radius:4px;text-decoration:none">Apply Now →</a>
+  <!-- Faculty Tabs -->
+  <div style="background:white;border-bottom:2px solid #e5e7eb;padding:0 24px;position:sticky;top:64px;z-index:50">
+    <div style="max-width:1100px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:12px 0">
+      <button class="filter-btn" id="tab-all" onclick="setTab('all')" style="background:#003DA5;color:white;border:none">All Programmes</button>
+      <button class="filter-btn" id="tab-it" onclick="setTab('it')" style="background:white;color:#003DA5;border:1.5px solid #003DA5">💻 Information Technology</button>
+      <button class="filter-btn" id="tab-bms" onclick="setTab('bms')" style="background:white;color:#003DA5;border:1.5px solid #003DA5">📊 Business &amp; Management</button>
+      <button class="filter-btn" id="tab-ug" onclick="setTab('ug')" style="background:white;color:#003DA5;border:1.5px solid #003DA5">🎓 Undergraduate</button>
+      <button class="filter-btn" id="tab-pg" onclick="setTab('pg')" style="background:white;color:#003DA5;border:1.5px solid #003DA5">🏅 Postgraduate</button>
+      <button class="filter-btn" id="tab-hc" onclick="setTab('hc')" style="background:white;color:#003DA5;border:1.5px solid #003DA5">📜 Higher Certificates</button>
+    </div>
   </div>
 
-  <div id="footer-placeholder"></div>
+  <div style="max-width:1140px;margin:0 auto;padding:40px 24px">
+    <div id="progs-grid" style="display:flex;gap:24px;flex-wrap:wrap;justify-content:flex-start"></div>
+  </div>
 
-  <script src="../shared.js"></script>
+  <div style="background:#003DA5;color:white;padding:56px;text-align:center">
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:12px">Ready to start your journey?</h2>
+    <p style="opacity:.85;margin-bottom:28px;font-size:16px">Apply online today — it only takes a few minutes.</p>
+    <a href="Apply.html" style="background:#F5A623;color:#001A4D;padding:16px 40px;font-size:16px;font-weight:800;border-radius:6px;text-decoration:none">Apply Now →</a>
+  </div>
+
+  <script src="../shared-local.js"></script>
   <script>
-    await renderNavbar('programmes');
-    renderFooter();
+    renderNavbar('programmes');
 
     const PROGS = [
-      { code:'BICT', icon:'💻', color:'#123f7a', title:'Bachelor of ICT', faculty:'Faculty of IT', nqf:'NQF Level 7', duration:'3 Years', fee:45000, desc:'Learn programming, networking, cybersecurity and data science.' },
-      { code:'NDBS', icon:'📋', color:'#b45309', title:'National Diploma: Business Studies', faculty:'Business & Management', nqf:'NQF Level 6', duration:'3 Years', fee:38000, desc:'Core business disciplines: marketing, HR, finance and management.' },
-      { code:'HDGD', icon:'🎨', color:'#be185d', title:'Higher Certificate: Graphic Design', faculty:'Creative Arts & Design', nqf:'NQF Level 5', duration:'1 Year', fee:32000, desc:'Creative design, typography, branding and digital media production.' },
-      { code:'NDIT', icon:'🖥️', color:'#0369a1', title:'National Diploma: IT', faculty:'Faculty of IT', nqf:'NQF Level 6', duration:'3 Years', fee:42000, desc:'A practical programme developing core IT skills for the modern workplace.' },
+      // ── IT UNDERGRADUATE ───────────────────────────────────────────────────────
+      {
+        slug:'bscit', title:'Bachelor of Science in Information Technology', code:'BSc IT',
+        faculty:'Faculty of Information Technology', duration:'3 Years', nqf:'NQF 7', nqfNum:7,
+        saqa:'SAQA ID 50362 · 370 credits', icon:'💻', color:'#003DA5', cat:'it', level:'deg',
+        levelLabel:'Degree', delivery:'Contact & Distance',
+        desc:'Learn to automate business processes, ensure Cyber Security, build Cloud and IoT solutions, and develop Mobile & Digital Applications. A career-launching degree with real-world impact.',
+        careers:['Business Analyst','Application Developer','Information Security Analyst','Systems Analyst & Designer','Database Administrator','Data Analyst','Cyber Security Consultant','Software Engineer'],
+        modules:[
+          {yr:1,s:1,items:['Introduction to Programming','Computer Architecture & Organisation','Mathematics for Computing']},
+          {yr:1,s:2,items:['Web Development Fundamentals','Database Design & Management','Networking Fundamentals']},
+          {yr:2,s:1,items:['Object-Oriented Programming','Systems Analysis & Design','Data Structures & Algorithms']},
+          {yr:2,s:2,items:['Cyber Security Fundamentals','Cloud Computing','Internet of Things']},
+          {yr:3,s:1,items:['Business Intelligence & Data Analytics','Mobile Computing & Applications','IT Project Management']},
+          {yr:3,s:2,items:['Digital Applications Development','Work Integrated Learning','IT Research Project']},
+        ]
+      },
+      {
+        slug:'dit', title:'Diploma in Information Technology', code:'Dip IT',
+        faculty:'Faculty of Information Technology', duration:'3 Years', nqf:'NQF 6', nqfNum:6,
+        saqa:'SAQA ID 88322 · 360 credits', icon:'🖥️', color:'#0369a1', cat:'it', level:'dip',
+        levelLabel:'Diploma', delivery:'Contact & Distance',
+        desc:'A wide-spectrum IT diploma covering programming, networking, database administration, IT service management and emerging technologies — preparing you for a broad range of IT roles.',
+        careers:['IT Manager','Business Analyst','Database & Systems Administrator','Network Administrator','Application Programmer','Python Developer','Network Engineer'],
+        modules:[
+          {yr:1,s:1,items:['Introduction to IT','Programming Logic & Design','Computer Hardware & Software']},
+          {yr:1,s:2,items:['Database Fundamentals','Web Design & Development','Business Communication']},
+          {yr:2,s:1,items:['Network Administration','Application Programming','Operating Systems Administration']},
+          {yr:2,s:2,items:['IT Service Management','Python Development','Systems Security']},
+          {yr:3,s:1,items:['Advanced Networking & Infrastructure','Database Administration','Software Engineering']},
+          {yr:3,s:2,items:['Work Integrated Learning','IT Governance & Compliance','Emerging Technologies']},
+        ]
+      },
+      // ── IT HIGHER CERTIFICATES ──────────────────────────────────────────────
+      {
+        slug:'hcit', title:'Higher Certificate in Information Technology', code:'HC IT',
+        faculty:'Faculty of Information Technology', duration:'1 Year', nqf:'NQF 5', nqfNum:5,
+        saqa:'SAQA ID 82926 · 120 credits', icon:'🖱️', color:'#0891b2', cat:'it', level:'hc',
+        levelLabel:'Higher Certificate', delivery:'Contact & Distance',
+        desc:'Foundational knowledge in IT — systems development and technical support. Your gateway into higher IT study or an entry-level tech career.',
+        careers:['IT Technical Support','Junior Web Developer','Systems Developer'],
+        modules:[
+          {yr:1,s:1,items:['IT Fundamentals','Introduction to Programming','Computer Networks Basics']},
+          {yr:1,s:2,items:['Systems Development','Technical Support Fundamentals','Web Development Basics']},
+        ]
+      },
+      {
+        slug:'hccf', title:'Higher Certificate in Computer Forensics', code:'HC CF',
+        faculty:'Faculty of Information Technology', duration:'1 Year', nqf:'NQF 5', nqfNum:5,
+        saqa:'SAQA ID 111617 · 120 credits', icon:'🔍', color:'#7c3aed', cat:'it', level:'hc',
+        levelLabel:'Higher Certificate', delivery:'Distance Only',
+        desc:'Technical skills and reflective competencies to tackle cybercrime. Focus on information security and computer forensic investigation techniques.',
+        careers:['Computer Forensics Investigator','Cybercrime Prevention Analyst'],
+        modules:[
+          {yr:1,s:1,items:['Introduction to Cybercrime & Law','Digital Evidence & Acquisition','Computer Forensics Fundamentals']},
+          {yr:1,s:2,items:['Information Security Management','Cybercrime Investigation Techniques','Forensic Reporting & Documentation']},
+        ]
+      },
+      // ── IT POSTGRADUATE ─────────────────────────────────────────────────────
+      {
+        slug:'bschit', title:'BSc Honours in Information Technology', code:'BSc Hons IT',
+        faculty:'Faculty of Information Technology', duration:'1 Year', nqf:'NQF 8', nqfNum:8,
+        saqa:'SAQA ID 110089 · 120 credits', icon:'🏅', color:'#be185d', cat:'it', level:'pg',
+        levelLabel:'Postgraduate', delivery:'Distance Only',
+        desc:'Enhances BSc IT graduates with a practical and theoretical curriculum at managerial level — equipping you for senior roles in software engineering, business analysis and data analysis.',
+        careers:['Senior Software Engineer','Senior Business Analyst','Application Development Manager','Senior Data Analyst'],
+        modules:[
+          {yr:1,s:1,items:['Advanced Research Methodology','IT Leadership & Governance']},
+          {yr:1,s:2,items:['Advanced Software Engineering','Research Project & Dissertation']},
+        ]
+      },
+
+      // ── BMS UNDERGRADUATE ──────────────────────────────────────────────────
+      {
+        slug:'bcom', title:'Bachelor of Commerce', code:'BCom',
+        faculty:'Faculty of Business & Management Sciences', duration:'3 Years', nqf:'NQF 7', nqfNum:7,
+        saqa:'SAQA ID 84948 · 360 credits', icon:'📊', color:'#1e6b3c', cat:'bms', level:'deg',
+        levelLabel:'Degree', delivery:'Contact & Distance',
+        desc:'Prepares graduates for professional, business and commercial environments. Strong foundations in accounting, financial management, marketing, HR and strategic management.',
+        careers:['Accountant','General Management','Entrepreneurship','Marketing Management','Human Resource Management','Financial Management'],
+        modules:[
+          {yr:1,s:1,items:['Business Communication','Principles of Management','Financial Accounting']},
+          {yr:1,s:2,items:['Economics I','Business Mathematics & Statistics','Marketing Fundamentals']},
+          {yr:2,s:1,items:['Cost & Management Accounting','Human Resource Management','Business Law']},
+          {yr:2,s:2,items:['Financial Management','Marketing Management','Operations Management']},
+          {yr:3,s:1,items:['Strategic Management','Entrepreneurship & Innovation','Supply Chain Management']},
+          {yr:3,s:2,items:['Corporate Governance & Ethics','International Business','Business Research Project']},
+        ]
+      },
+      {
+        slug:'bba', title:'Bachelor of Business Administration', code:'BBA',
+        faculty:'Faculty of Business & Management Sciences', duration:'3 Years', nqf:'NQF 7', nqfNum:7,
+        saqa:'SAQA ID 88921 · 360 credits', icon:'🏢', color:'#b45309', cat:'bms', level:'deg',
+        levelLabel:'Degree', delivery:'Contact & Distance',
+        desc:'Develops knowledge and skills across all sub-sectors of business management — producing knowledgeable, skilled individuals who can improve productivity in public and private sectors.',
+        careers:['Operations Manager','Business Development Manager','Entrepreneur','HR Manager','Project Manager'],
+        modules:[
+          {yr:1,s:1,items:['Business Communication','Organisational Behaviour','Business Mathematics']},
+          {yr:1,s:2,items:['Introduction to Economics','Business Computing','Marketing Principles']},
+          {yr:2,s:1,items:['Financial Accounting','Human Resource Management','Business Law & Ethics']},
+          {yr:2,s:2,items:['Project Management','Operations & Supply Chain','Entrepreneurship']},
+          {yr:3,s:1,items:['Strategic Management','Leadership & Change Management','Digital Business & Innovation']},
+          {yr:3,s:2,items:['International Business Management','Corporate Governance','Business Research Project']},
+        ]
+      },
+      {
+        slug:'bpm', title:'Bachelor of Public Management', code:'BPM',
+        faculty:'Faculty of Business & Management Sciences', duration:'3 Years', nqf:'NQF 7', nqfNum:7,
+        saqa:'SAQA ID 94580 · 360 credits', icon:'🏛️', color:'#155e75', cat:'bms', level:'deg',
+        levelLabel:'Degree', delivery:'Distance Only',
+        desc:'Provides broad knowledge and skills for careers in the public sector, public administration, policy making and local government.',
+        careers:['Local Government Officer','Public Finance Specialist','Public Sector Economist','Public Sector HR Manager','Policy Advisor','Consultant'],
+        modules:[
+          {yr:1,s:1,items:['Introduction to Public Administration','Public Policy Fundamentals','Government & Governance']},
+          {yr:1,s:2,items:['Public Sector Economics','Public Finance & Budgeting','Communication for Public Sector']},
+          {yr:2,s:1,items:['Public Sector HR Management','Local Government Management','Public Law & Administration']},
+          {yr:2,s:2,items:['Service Delivery Management','Development Studies','Research Methods in Public Sector']},
+          {yr:3,s:1,items:['Public Sector Strategic Planning','Performance Management in Public Sector','Intergovernmental Relations']},
+          {yr:3,s:2,items:['Policy Implementation & Evaluation','Public Sector Entrepreneurship','Research Project']},
+        ]
+      },
+      {
+        slug:'dba', title:'Diploma in Business Administration', code:'DBA',
+        faculty:'Faculty of Business & Management Sciences', duration:'3 Years', nqf:'NQF 6', nqfNum:6,
+        saqa:'SAQA ID 88897 · 360 credits', icon:'📋', color:'#6d28d9', cat:'bms', level:'dip',
+        levelLabel:'Diploma', delivery:'Contact & Distance',
+        desc:'A vocational and industry-oriented qualification. Emphasises general business principles, application and technology. Provides access to the labour market with progression to degree-level study possible.',
+        careers:['Small Business Manager','Entrepreneur','Banking Professional','Financial Services','HR Coordinator','Procurement Officer','Supervisor'],
+        modules:[
+          {yr:1,s:1,items:['Business Communication','Principles of Management','Business Mathematics']},
+          {yr:1,s:2,items:['Introduction to Accounting','Marketing Basics','Business Computing']},
+          {yr:2,s:1,items:['Financial Management','Human Resources Fundamentals','Business Law']},
+          {yr:2,s:2,items:['Supply Chain & Procurement','Entrepreneurship','Operations Management']},
+          {yr:3,s:1,items:['Strategic Business Management','Leadership & Organisational Development','Business Research Methods']},
+          {yr:3,s:2,items:['Work Integrated Learning','Digital Business Transformation','Business Research Project']},
+        ]
+      },
+      {
+        slug:'dlgm', title:'Diploma in Local Government Management', code:'DLGM',
+        faculty:'Faculty of Business & Management Sciences', duration:'3 Years', nqf:'NQF 6', nqfNum:6,
+        saqa:'SAQA ID 99717 · 360 credits', icon:'🏙️', color:'#0f766e', cat:'bms', level:'dip',
+        levelLabel:'Diploma', delivery:'Distance Only',
+        desc:'Designed for local government cadres. Covers Integrated Development Planning, Service Delivery, Legislative and Policy Process, Local Government Finance and Performance Management.',
+        careers:['Local Government Manager','IDP Officer','Municipal Finance Officer','Service Delivery Coordinator','Ward Committee Facilitator'],
+        modules:[
+          {yr:1,s:1,items:['Introduction to Local Government','Public Administration Foundations','Municipal Finance Basics']},
+          {yr:1,s:2,items:['Local Government Legislation','Integrated Development Planning','Community Development']},
+          {yr:2,s:1,items:['Municipal HR Management','Service Delivery & Performance','Local Government Finance']},
+          {yr:2,s:2,items:['Policy Process & Implementation','Ward Committee Systems','Municipal Governance']},
+          {yr:3,s:1,items:['Advanced Municipal Management','Local Economic Development','Environmental Management in LGM']},
+          {yr:3,s:2,items:['Work Integrated Learning','Research Methods in Public Management','Applied Research Project']},
+        ]
+      },
+      // ── BMS HIGHER CERTIFICATES ────────────────────────────────────────────
+      {
+        slug:'hcba', title:'Higher Certificate in Business Administration', code:'HCBA',
+        faculty:'Faculty of Business & Management Sciences', duration:'1 Year', nqf:'NQF 5', nqfNum:5,
+        saqa:'SAQA ID 90864 · 120 credits', icon:'📁', color:'#92400e', cat:'bms', level:'hc',
+        levelLabel:'Higher Certificate', delivery:'Contact & Distance',
+        desc:'Vocational and industry-oriented with Work Integrated Learning. Provides basic management and administrative knowledge for service organisations. Counts as entry to degree or diploma programmes.',
+        careers:['Administrative Officer','Office Manager','Junior HR Coordinator','Customer Service Supervisor'],
+        modules:[
+          {yr:1,s:1,items:['Business Communication','Introduction to Management','Basic Financial Literacy']},
+          {yr:1,s:2,items:['Customer Service & Relations','Office Technology & Computing','Work Integrated Learning']},
+        ]
+      },
+      {
+        slug:'hcoa', title:'Higher Certificate in Office Administration', code:'HCOA',
+        faculty:'Faculty of Business & Management Sciences', duration:'1 Year', nqf:'NQF 5', nqfNum:5,
+        saqa:'SAQA ID 88901 · 120 credits', icon:'🗂️', color:'#5b21b6', cat:'bms', level:'hc',
+        levelLabel:'Higher Certificate', delivery:'Contact Only',
+        desc:'Provides knowledge and practical skills to perform effectively as an office administrator. Enables graduates to contribute to management activities and pursue entry-level administrative positions.',
+        careers:['Office Administrator','Records Officer','PA / Secretary','Management Support'],
+        modules:[
+          {yr:1,s:1,items:['Office Administration Principles','Business English & Communication','Computer Applications & Office Software']},
+          {yr:1,s:2,items:['Records & Information Management','Administrative Support Services','Work Integrated Learning']},
+        ]
+      },
+      {
+        slug:'hclgm', title:'Higher Certificate in Local Government Management', code:'HCLGM',
+        faculty:'Faculty of Business & Management Sciences', duration:'1 Year', nqf:'NQF 5', nqfNum:5,
+        saqa:'SAQA ID 94600 · 120 credits', icon:'🏘️', color:'#065f46', cat:'bms', level:'hc',
+        levelLabel:'Higher Certificate', delivery:'Distance Only',
+        desc:'Entry-level qualification for persons already employed in local government seeking formal qualification. Provides background for supervisory and management positions in the public sector.',
+        careers:['Local Government Officer','Municipal Support Staff','Community Liaison Officer'],
+        modules:[
+          {yr:1,s:1,items:['Introduction to Local Government','Public Sector Administration','Municipal Finance Fundamentals']},
+          {yr:1,s:2,items:['Community Engagement & Development','Service Delivery Basics','Work Integrated Learning']},
+        ]
+      },
+      {
+        slug:'hcrpla', title:'Higher Certificate in Recognition of Prior Learning Activities', code:'HC RPLA',
+        faculty:'Faculty of Business & Management Sciences', duration:'1 Year', nqf:'NQF 5', nqfNum:5,
+        saqa:'SAQA ID 93928 · 120 credits', icon:'📄', color:'#374151', cat:'bms', level:'hc',
+        levelLabel:'Higher Certificate', delivery:'Distance Only',
+        desc:'A vocational qualification for individuals in higher education practice. Develops practitioners who coordinate RPL activities — one of the first qualifications developed in this field in South Africa.',
+        careers:['RPL Facilitator','Assessment Coordinator','HE Practitioner','Portfolio Advisor'],
+        modules:[
+          {yr:1,s:1,items:['Principles of RPL in Higher Education','Portfolio Preparation & Assessment']},
+          {yr:1,s:2,items:['RPL Facilitation Practice','Work Integrated Learning in RPL']},
+        ]
+      },
+      // ── BMS POSTGRADUATE ───────────────────────────────────────────────────
+      {
+        slug:'mba', title:'Master of Business Administration', code:'MBA',
+        faculty:'Faculty of Business & Management Sciences', duration:'2 Years', nqf:'NQF 9', nqfNum:9,
+        saqa:'SAQA ID 117681 · 180 credits', icon:'🎓', color:'#1e1b4b', cat:'bms', level:'pg',
+        levelLabel:'Postgraduate', delivery:'Distance Only',
+        desc:'Transformative programme equipping students with business, leadership and modern IT skills for the 4th Industrial Revolution. Apply learnings immediately in your job and business.',
+        careers:['CEO / Director','Senior Manager','Business Consultant','Director General','Regional Manager','MBA Graduate roles across industry'],
+        modules:[
+          {yr:1,s:1,items:['Advanced Business Strategy','Leadership in the 4th Industrial Revolution','Advanced Financial Management']},
+          {yr:1,s:2,items:['Digital Transformation & Innovation','Research Methodology','Advanced Marketing Strategy']},
+          {yr:2,s:1,items:['Big Data & Analytics for Managers','Entrepreneurship & Venture Capital','Corporate Governance & Business Ethics']},
+          {yr:2,s:2,items:['MBA Research Project / Dissertation']},
+        ]
+      },
+      {
+        slug:'pgdm', title:'Postgraduate Diploma in Management', code:'PGDip Mgt',
+        faculty:'Faculty of Business & Management Sciences', duration:'1 Year', nqf:'NQF 8', nqfNum:8,
+        saqa:'SAQA ID 105754 · 120 credits', icon:'🏅', color:'#4338ca', cat:'bms', level:'pg',
+        levelLabel:'Postgraduate', delivery:'Distance Only',
+        desc:'Empowers employed graduates, career-changers and those seeking management advancement with advanced general management knowledge — manage teams and organisations more effectively.',
+        careers:['Operations Manager','Department Head','Senior Project Manager','Management Consultant','Team Leader'],
+        modules:[
+          {yr:1,s:1,items:['Management Principles & Practices','Organisational Leadership']},
+          {yr:1,s:2,items:['Strategic Human Resource Management','Applied Management Research Project']},
+        ]
+      },
     ];
 
-    document.getElementById('prog-list').innerHTML = PROGS.map(p => `
-      <div class="prog-card">
-        <div class="prog-top" style="background:${p.color}">
-          <div style="font-size:32px;margin-bottom:8px">${p.icon}</div>
-          <div style="font-weight:800;font-size:16px">${p.title}</div>
-          <div style="font-size:12px;opacity:.8;margin-top:4px">${p.faculty}</div>
-        </div>
-        <div class="prog-body">
-          <p style="font-size:14px;color:var(--rf-gray);line-height:1.6;margin-bottom:16px">${p.desc}</p>
-          <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-            <span style="background:#EEF2FF;color:#3730a3;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px">${p.nqf}</span>
-            <span style="background:#FEF3C7;color:#92400e;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px">⏱ ${p.duration}</span>
-            <span style="background:#D1FAE5;color:#065f46;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px">R${p.fee.toLocaleString()}/yr</span>
+    let currentTab = 'all';
+
+    function setTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.style.background = 'white'; b.style.color = '#003DA5'; b.style.border = '1.5px solid #003DA5';
+      });
+      const el = document.getElementById('tab-' + tab);
+      if (el) { el.style.background = '#003DA5'; el.style.color = 'white'; el.style.border = '1.5px solid #003DA5'; }
+      render();
+    }
+
+    function getLevelClass(level) {
+      return { hc:'level-hc', dip:'level-dip', deg:'level-deg', pg:'level-pg' }[level] || 'level-hc';
+    }
+
+    function toggleModules(slug) {
+      const el = document.getElementById('mods-' + slug);
+      const btn = document.getElementById('mbtn-' + slug);
+      if (!el || !btn) return;
+      const open = el.style.display !== 'none';
+      el.style.display = open ? 'none' : 'block';
+      btn.textContent = open ? '▶ Show modules' : '▲ Hide modules';
+    }
+
+    function render() {
+      let filtered = PROGS;
+      if (currentTab === 'it') filtered = PROGS.filter(p => p.cat === 'it');
+      else if (currentTab === 'bms') filtered = PROGS.filter(p => p.cat === 'bms');
+      else if (currentTab === 'ug') filtered = PROGS.filter(p => p.level === 'deg' || p.level === 'dip');
+      else if (currentTab === 'pg') filtered = PROGS.filter(p => p.level === 'pg');
+      else if (currentTab === 'hc') filtered = PROGS.filter(p => p.level === 'hc');
+
+      document.getElementById('progs-grid').innerHTML = filtered.map(p => {
+        const mods = p.modules.map(g =>
+          `<div style="margin-bottom:6px"><strong style="font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.5px">Year ${g.yr} · Semester ${g.s}</strong>
+           <ul class="module-list">${g.items.map(m => `<li>• ${m}</li>`).join('')}</ul></div>`
+        ).join('');
+        const careers = p.careers.slice(0,4).map(c => `<span style="background:#f3f4f6;font-size:11px;padding:2px 8px;border-radius:99px;display:inline-block;margin:2px">${c}</span>`).join('');
+        return `
+        <div class="prog-card">
+          <div style="background:${p.color};padding:22px 24px;color:white">
+            <div style="font-size:30px;margin-bottom:8px">${p.icon}</div>
+            <span class="level-badge ${getLevelClass(p.level)}">${p.levelLabel}</span>
+            <div style="font-weight:800;font-size:15px;line-height:1.3;margin-top:4px">${p.title}</div>
+            <div style="font-size:11px;opacity:.75;margin-top:4px">${p.faculty}</div>
           </div>
-          <div style="display:flex;gap:8px">
-            <a href="/apply" style="flex:1;text-align:center;background:#123f7a;color:white;padding:9px 0;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none">Apply Now</a>
+          <div class="prog-body">
+            <p style="font-size:13px;color:#374151;line-height:1.6;margin-bottom:12px">${p.desc}</p>
+            <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+              <span style="background:#EEF2FF;color:#3730a3;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px">${p.nqf}</span>
+              <span style="background:#FEF3C7;color:#92400e;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px">⏱ ${p.duration}</span>
+              <span style="background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px">🏫 ${p.delivery}</span>
+            </div>
+            <div style="margin-bottom:12px">${careers}</div>
+            <button class="expand-btn" id="mbtn-${p.slug}" onclick="toggleModules('${p.slug}')">▶ Show modules</button>
+            <div id="mods-${p.slug}" style="display:none;margin-top:8px">${mods}</div>
+            <div class="saqa-tag">${p.saqa}</div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <a href="Apply.html" style="flex:1;text-align:center;background:#F5A623;color:#001A4D;padding:10px 0;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none">Apply Now</a>
+            </div>
           </div>
-        </div>
-      </div>`).join('');
+        </div>`;
+      }).join('');
+    }
+
+    render();
   </script>
 </body>
 </html>

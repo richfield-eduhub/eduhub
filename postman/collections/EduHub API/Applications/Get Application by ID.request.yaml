@@ -1,0 +1,16 @@
+$kind: http-request
+name: Get Application by ID
+method: GET
+url: '{{base_url}}/applications/:id'
+order: 3000
+pathVariables:
+  - key: id
+    value: '{{application_id}}'
+    description: Application UUID
+queryParams:
+  - key: reference_number
+    value: APP-000001
+    description: Application reference number (required for access)
+  - key: email
+    value: jane.doe@example.com
+    description: Applicant email address (required for access)

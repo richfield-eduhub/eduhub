@@ -1,0 +1,9 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/campuses/by-province'
+order: 3000
+queryParams:
+  - key: active_only
+    value: 'true'
+    description: Filter only active campuses
+    disabled: true

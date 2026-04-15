@@ -1,0 +1,3 @@
+$kind: collection
+description: Authentication endpoints for user registration, login, and profile management
+order: 4000

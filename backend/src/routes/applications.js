@@ -198,7 +198,7 @@ router.put('/:id/approve', requireRole('admin'), (req, res) => {
   if (!existingUser) {
     // Create student account with temp password
     isNew = true;
-    tempPassword = `Richfield@${Math.floor(1000 + Math.random() * 9000)}`;
+    tempPassword = `EduHub@${Math.floor(1000 + Math.random() * 9000)}`;
     const newUser = {
       id:           uuidv4(),
       name:         `${app.firstName} ${app.lastName}`,

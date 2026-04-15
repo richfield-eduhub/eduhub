@@ -1,695 +1,647 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Apply — EduHub</title>
-  <link rel="stylesheet" href="../shared.css" />
+  <link rel="stylesheet" href="../shared.css"/>
   <style>
-    .apply-wrap { min-height: 100vh; background: var(--rf-offwhite); padding: 32px 24px; }
-    .apply-inner { max-width: 760px; margin: 0 auto; }
-    .type-card { flex: 1; min-width: 160px; border: 2px solid var(--rf-border); border-radius: 10px; padding: 16px 14px; cursor: pointer; background: white; transition: all .15s; text-align: center; }
-    .type-card.selected { border-color: #123f7a; background: #EEF2FF; }
-    .qual-card { border: 2px solid var(--rf-border); border-radius: 8px; padding: 14px 16px; cursor: pointer; background: white; transition: all .15s; }
-    .qual-card.selected { border-color: #123f7a; background: #EEF2FF; }
-    .doc-label { display: flex; align-items: center; gap: 12px; border: 1.5px solid var(--rf-border); border-radius: 8px; padding: 12px 16px; cursor: pointer; background: white; transition: all .15s; }
-    .doc-label.selected { border-color: #123f7a; background: #EEF2FF; }
-    .radio-option { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px 14px; border: 1.5px solid var(--rf-border); border-radius: 8px; background: white; transition: all .15s; }
-    .radio-option.selected { border-color: #123f7a; background: #EEF2FF; }
-    .nav-btns { display: flex; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--rf-border); margin-top: 20px; }
-    .form-section-header { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 2px solid var(--rf-border); margin-bottom: 20px; }
-    .confirmation-box { background: linear-gradient(135deg, var(--rf-navy) 0%, #123f7a 100%); color: white; border-radius: 16px; padding: 32px; text-align: center; margin-bottom: 20px; position: relative; overflow: hidden; }
-    .confirmation-box::before { content: ''; position: absolute; top: -40px; right: -40px; width: 160px; height: 160px; border-radius: 50%; background: rgba(255,255,255,0.05); }
+    body{background:#f4f4f4}
+    .step-panel{display:none}.step-panel.active{display:block}
+    .type-card{flex:1;min-width:160px;border:2px solid #e5e7eb;border-radius:10px;padding:16px 14px;cursor:pointer;background:white;transition:all .15s;text-align:center}
+    .type-card.selected{border-color:#123f7a;background:#EEF2FF}
+    .qual-card{border:2px solid #e5e7eb;border-radius:8px;padding:14px 16px;cursor:pointer;background:white;transition:all .15s;margin-bottom:10px}
+    .qual-card.selected{border-color:#123f7a;background:#EEF2FF}
+    .module-row{display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:8px;cursor:pointer;border:2px solid #e5e7eb;background:#fafafa;transition:all .12s;margin-bottom:8px}
+    .module-row.picked{border-color:#123f7a;background:#EEF2FF}
+    .chk{width:22px;height:22px;border-radius:5px;border:2px solid #d1d5db;background:white;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0}
+    .module-row.picked .chk{background:#123f7a;border-color:#123f7a;color:white;font-weight:700}
+    .form-section-header{display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:2px solid #e5e7eb;margin-bottom:16px}
   </style>
 </head>
 <body>
-  <div id="navbar-placeholder"></div>
-  <div class="apply-wrap">
-    <div class="apply-inner">
+<div id="navbar-root"></div>
+<div id="app" style="max-width:780px;margin:0 auto;padding:32px 24px;min-height:100vh"></div>
+<script src="../shared-local.js"></script>
+<script>
+const NATIONALITIES_LIST = ['South African','Zimbabwean','Mozambican','Zambian','Malawian','Botswanan','Namibian','Swazi','Lesothan','Congolese (DRC)','Nigerian','Ghanaian','Kenyan','Tanzanian','Ugandan','Rwandan','British','American','Canadian','Australian','German','French','Indian','Pakistani','Brazilian','Other'];
+const NEW_STEPS = ['Personal','Contact & Address','Education','Qualification','Documents','Review & Submit'];
+const RETURNING_STEPS = ['Verify Identity','Confirm Details','New Modules','Review & Submit'];
+// Re-enrolment from student dashboard: skip identity lookup, personal info & docs
+const REENROL_STEPS = ['New Modules','Review & Submit'];
 
-      <!-- STEP 0: Choose type (shown first) -->
-      <div id="type-screen">
-        <div style="text-align:center;margin-bottom:32px">
-          <h1 style="font-family:var(--font-display);font-size:32px;color:var(--rf-navy);letter-spacing:1px;margin-bottom:8px">APPLICATION FOR ADMISSION</h1>
-          <p style="color:var(--rf-gray);font-size:15px">Please tell us a bit about your application before we begin.</p>
-        </div>
-        <!-- Application Type -->
-        <div class="card mb-24">
-          <div class="card-body">
-            <div style="font-weight:700;font-size:15px;color:var(--rf-navy);margin-bottom:16px">Application Type <span class="required">*</span></div>
-            <div style="display:flex;gap:14px;flex-wrap:wrap">
-              <div class="type-card" id="type-new" onclick="selectType('new')">
-                <div style="font-size:20px;margin-bottom:6px">🆕</div>
-                <div style="font-weight:700;font-size:14px;color:var(--rf-navy)">New Student</div>
-                <div style="font-size:12px;color:var(--rf-gray);margin-top:4px">Applying for the first time</div>
-              </div>
-              <div class="type-card" id="type-returning" onclick="selectType('returning')">
-                <div style="font-size:20px;margin-bottom:6px">🔄</div>
-                <div style="font-weight:700;font-size:14px;color:var(--rf-navy)">Returning Student</div>
-                <div style="font-size:12px;color:var(--rf-gray);margin-top:4px">Previously enrolled, continuing</div>
-              </div>
-              <div class="type-card" id="type-other" onclick="selectType('other')">
-                <div style="font-size:20px;margin-bottom:6px">📋</div>
-                <div style="font-weight:700;font-size:14px;color:var(--rf-navy)">Other</div>
-                <div style="font-size:12px;color:var(--rf-gray);margin-top:4px">Transfer or re-admission</div>
-              </div>
-            </div>
-          </div>
-        </div>
+// ── Detect re-enrolment mode passed from student Dashboard ──
+const _urlParams = new URLSearchParams(window.location.search);
+const REENROL_MODE   = _urlParams.get('mode') === 'reenrol';
+const REENROL_CURRENT_YEAR = parseInt(_urlParams.get('currentYear') || '1', 10);
+const REENROL_NEXT_YEAR    = parseInt(_urlParams.get('nextYear')    || '2', 10);
+const REENROL_QUAL_CODE    = _urlParams.get('qualCode')  || '';
+const REENROL_STUDENT_ID   = _urlParams.get('studentId') || '';
 
-        <!-- Admission For -->
-        <div class="card mb-24">
-          <div class="card-body">
-            <div style="font-weight:700;font-size:15px;color:var(--rf-navy);margin-bottom:16px">Admission Application For <span class="required">*</span></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="admission-grid">
-              ${['1st Semester','2nd Semester','1st Year','2nd Year','3rd Year'].map(opt => `
-              <div class="radio-option" id="adm-${opt.replace(/\s/g,'-')}" onclick="selectAdmission('${opt}')">
-                <input type="radio" name="admissionFor" value="${opt}" style="accent-color:#123f7a;width:16px;height:16px">
-                <span style="font-weight:600;font-size:14px;color:var(--rf-navy)">${opt}</span>
-              </div>`).join('')}
-            </div>
-          </div>
-        </div>
+// Pre-fetch existing student record for re-enrolment
+let _reenrolStudent = null;
+if (REENROL_MODE && REENROL_STUDENT_ID) {
+  // Try to find by studentId from approved applications
+  const _allApps = getApplications ? getApplications() : [];
+  const _found = _allApps.find(a => a.studentId === REENROL_STUDENT_ID && a.status === 'approved');
+  if (_found) {
+    _reenrolStudent = { application: _found, user: { name: (_found.firstName||'') + ' ' + (_found.lastName||''), studentId: _found.studentId } };
+  }
+}
 
-        <!-- Course (for new/other) -->
-        <div class="card mb-24" id="course-select-card">
-          <div class="card-body">
-            <div style="font-weight:700;font-size:15px;color:var(--rf-navy);margin-bottom:12px">Course Applied For</div>
-            <select id="qual-select" class="form-select" onchange="selectQual(this.value)">
-              <option value="">Please Select</option>
-            </select>
-          </div>
-        </div>
+// Compute allowed admission-for options for this student
+// A 1st-year student can ONLY apply for 2nd Year (nextYear = currentYear + 1)
+function getAllowedAdmissionOptions() {
+  if (!REENROL_MODE) return ['1st Semester','2nd Semester','1st Year','2nd Year','3rd Year'];
+  const nextY = REENROL_NEXT_YEAR;
+  // Only allow the exact next year (no skipping, no going back)
+  if (nextY === 2) return ['2nd Year'];
+  if (nextY === 3) return ['3rd Year'];
+  return [`${nextY}th Year`];
+}
 
-        <button onclick="startApplication()" class="btn btn-gold btn-lg" style="width:100%;justify-content:center">
-          Start Application →
-        </button>
-      </div>
+let state = {
+  // In re-enrol mode: lock type to 'returning', pre-confirm type selection, auto-load student
+  appType: REENROL_MODE ? 'returning' : null,
+  admissionFor: REENROL_MODE ? (REENROL_NEXT_YEAR === 2 ? '2nd Year' : REENROL_NEXT_YEAR === 3 ? '3rd Year' : '2nd Year') : '',
+  studyYear: REENROL_NEXT_YEAR,
+  typeConfirmed: REENROL_MODE ? true : false,
+  step: REENROL_MODE ? 0 : 0,
+  submitted: false, submittedApp: null,
+  lookupValue: '', lookupError: '',
+  foundStudent: REENROL_MODE && _reenrolStudent ? _reenrolStudent : null,
+  reenrolMode: REENROL_MODE,
+  form: {
+    firstName:'',lastName:'',idNumber:'',passportNumber:'',
+    dateOfBirth:'',gender:'',nationality:'South African',
+    phone:'',email:'',altEmail:'',
+    streetAddress:'',suburb:'',city:'',province:'',postalCode:'',
+    highSchool:'',highSchoolYear:'',highestGrade:'',
+    tertiaryInstitution:'',tertiaryQualification:'',tertiaryYear:'',
+    payerName:'',payerRelation:'',payerPhone:'',payerEmail:'',payerAddress:'',
+    qualificationCode: REENROL_MODE ? REENROL_QUAL_CODE : '',
+    qualificationName:'',
+    docsUploaded:[],tcAccepted:false
+  },
+  errors: {}
+};
 
-      <!-- FORM (hidden until type selected) -->
-      <div id="form-screen" style="display:none">
-        <div style="margin-bottom:8px">
-          <button onclick="goBackToType()" style="background:none;border:none;color:#123f7a;font-weight:600;cursor:pointer;font-size:14px">← Back to Type Selection</button>
-        </div>
+// If re-enrol mode and student found, pre-fill form from existing record
+if (REENROL_MODE && _reenrolStudent) {
+  const a = _reenrolStudent.application;
+  state.form = {
+    ...state.form,
+    firstName: a.firstName||'', lastName: a.lastName||'',
+    idNumber: a.idNumber||'', passportNumber: a.passportNumber||'',
+    dateOfBirth: a.dateOfBirth||'', gender: a.gender||'',
+    nationality: a.nationality||'South African',
+    phone: a.phone||'', email: a.email||'', altEmail: a.altEmail||'',
+    streetAddress: a.streetAddress||'', suburb: a.suburb||'',
+    city: a.city||'', province: a.province||'', postalCode: a.postalCode||'',
+    highSchool: a.highSchool||'', highSchoolYear: a.highSchoolYear||'',
+    highestGrade: a.highestGrade||'',
+    payerName: a.payerName||'', payerRelation: a.payerRelation||'',
+    payerPhone: a.payerPhone||'', payerEmail: a.payerEmail||'',
+    payerAddress: a.payerAddress||'',
+    qualificationCode: a.qualificationCode||REENROL_QUAL_CODE,
+    qualificationName: a.qualificationName||'',
+    docsUploaded:[], tcAccepted:false
+  };
+  // In re-enrol mode, jump straight to modules step (step 0 of REENROL_STEPS = modules)
+  state.step = 0;
+}
 
-        <!-- Stepper -->
-        <div id="stepper" class="stepper" style="margin-bottom:32px"></div>
+// Update form field WITHOUT re-rendering (prevents focus/cursor loss on every keystroke)
+function set(k,v){ state.form[k]=v; }
+// Update field AND re-render (only for structural changes like nationality toggle)
+function setAndRender(k,v){ state.form[k]=v; render(); }
+function setState(patch){ Object.assign(state, patch); render(); }
+function isForeign(){ return state.form.nationality !== 'South African'; }
 
-        <div id="alert-box" class="mb-24"></div>
+// Returns the active step array depending on mode
+function getSteps() {
+  if (state.reenrolMode) return REENROL_STEPS;
+  if (state.appType === 'returning') return RETURNING_STEPS;
+  return NEW_STEPS;
+}
 
-        <!-- Form card -->
-        <div class="card" style="padding:28px;display:flex;flex-direction:column;gap:20px">
-          <div id="step-content"></div>
-          <div class="nav-btns">
-            <button id="back-btn" class="btn btn-secondary" onclick="prevStep()" style="opacity:.5;cursor:not-allowed" disabled>← Back</button>
-            <button id="next-btn" class="btn btn-primary" onclick="nextStep()">Continue →</button>
-          </div>
-        </div>
-      </div>
+function validate() {
+  const e={}, f=state.form, s=state.step, t=state.appType;
+  const STEPS = getSteps();
+  // Re-enrolment from dashboard: only T&C needed on last step, no personal/doc validation
+  if (!state.reenrolMode) {
+    if (t==='new'||t==='other') {
+      if(s===0){
+        if(!f.firstName)e.firstName='Required';
+        if(!f.lastName)e.lastName='Required';
+        if(!f.nationality)e.nationality='Required';
+        if(!isForeign()){
+          if(!f.idNumber||f.idNumber.length<13) e.idNumber='Enter a valid 13-digit SA ID';
+          else if(f.dateOfBirth && !validateSAIdDOB(f.idNumber, f.dateOfBirth))
+            e.idNumber='First 6 digits of your ID must match your date of birth (YYMMDD). E.g. born 2002-09-08 → ID starts with 020908';
+        }
+        if(isForeign()&&(!f.passportNumber||f.passportNumber.length<5))e.passportNumber='Valid passport required';
+        if(!f.dateOfBirth)e.dateOfBirth='Required';
+        if(!f.gender)e.gender='Required';
+      }
+      if(s===1){if(!f.phone)e.phone='Required';if(!f.email||!f.email.includes('@'))e.email='Enter a valid email';if(!f.streetAddress)e.streetAddress='Required';if(!f.city)e.city='Required';if(!f.province)e.province='Required';}
+      if(s===2){if(!f.highSchool)e.highSchool='Required';if(!f.highestGrade)e.highestGrade='Required';}
+      if(s===3){if(!f.qualificationCode)e.qualificationCode='Please select a qualification';if(!f.payerName)e.payerName='Required';if(!f.payerPhone)e.payerPhone='Required';}
+    }
+    if(t==='returning'&&s===1){if(!f.phone)e.phone='Required';if(!f.email||!f.email.includes('@'))e.email='Required';}
+  }
+  if(s===STEPS.length-1&&!f.tcAccepted)e.tcAccepted='You must accept the Terms and Conditions';
+  state.errors=e;
+  render();
+  return Object.keys(e).length===0;
+}
 
-      <!-- Returning student lookup screen -->
-      <div id="returning-screen" style="display:none">
-        <div style="margin-bottom:8px">
-          <button onclick="goBackToType()" style="background:none;border:none;color:#123f7a;font-weight:600;cursor:pointer;font-size:14px">← Back to Type Selection</button>
-        </div>
-        <div id="returning-stepper" class="stepper" style="margin-bottom:32px"></div>
-        <div class="card" style="padding:28px">
-          <div id="returning-content"></div>
-        </div>
-      </div>
+function admissionToYear(af){ if(af==='2nd Year')return 2;if(af==='3rd Year')return 3;return 1; }
 
-      <!-- CONFIRMATION -->
-      <div id="confirmation-screen" style="display:none">
-        <div class="confirmation-box">
-          <div style="font-size:56px;margin-bottom:12px" id="conf-icon">🎉</div>
-          <h2 style="font-family:var(--font-display);font-size:28px;letter-spacing:2px;margin-bottom:8px" id="conf-title">APPLICATION SUBMITTED!</h2>
-          <p style="opacity:.85;font-size:15px;margin-bottom:16px" id="conf-subtitle">Your application has been received and is being reviewed.</p>
+function handleSubmit(){
+  if(!validate())return;
+  const yr = state.reenrolMode ? REENROL_NEXT_YEAR
+    : (state.appType==='returning' ? admissionToYear(state.admissionFor) : state.studyYear);
+  const appType = state.reenrolMode ? 'returning'
+    : (state.appType==='returning' ? 'returning' : state.appType==='other' ? 'other' : 'new');
+  const admFor = state.reenrolMode
+    ? (REENROL_NEXT_YEAR===2?'2nd Year':REENROL_NEXT_YEAR===3?'3rd Year':'2nd Year')
+    : (state.admissionFor||'1st Semester');
+  const app = submitApplication({...state.form, applicationType:appType, admissionFor:admFor, studyYear:yr});
+  setState({submitted:true, submittedApp:{studentId:app.studentId||state.form.idNumber,id:app.id}});
+}
+
+function handleLookup(){
+  state.lookupError='';
+  if(!state.lookupValue.trim()){state.lookupError='Please enter your ID or passport number.';render();return;}
+  const result = findStudentByIdOrPassport(state.lookupValue.trim());
+  if(!result){state.lookupError='No approved student record found. Please contact admissions.';render();return;}
+  const a=result.application;
+  state.form={firstName:a.firstName,lastName:a.lastName,idNumber:a.idNumber,passportNumber:a.passportNumber,dateOfBirth:a.dateOfBirth,gender:a.gender,nationality:a.nationality,phone:a.phone,email:a.email,altEmail:a.altEmail||'',streetAddress:a.streetAddress,suburb:a.suburb,city:a.city,province:a.province,postalCode:a.postalCode,highSchool:a.highSchool,highSchoolYear:a.highSchoolYear,highestGrade:a.highestGrade,tertiaryInstitution:a.tertiaryInstitution||'',tertiaryQualification:a.tertiaryQualification||'',tertiaryYear:a.tertiaryYear||'',payerName:a.payerName,payerRelation:a.payerRelation,payerPhone:a.payerPhone,payerEmail:a.payerEmail,payerAddress:a.payerAddress,qualificationCode:a.qualificationCode,qualificationName:a.qualificationName,docsUploaded:[],tcAccepted:false};
+  state.foundStudent=result; state.step=1; render();
+}
+
+function toggleDoc(doc){
+  const docs=state.form.docsUploaded;
+  state.form.docsUploaded=docs.includes(doc)?docs.filter(d=>d!==doc):[...docs,doc];render();
+}
+
+function errSpan(k){ return state.errors[k]?`<div style="color:#dc2626;font-size:12px;margin-top:3px">⚠ ${state.errors[k]}</div>`:''; }
+function inp(key,placeholder,type='text',extra=''){
+  return `<input type="${type}" value="${(state.form[key]||'').replace(/"/g,'&quot;')}" placeholder="${placeholder}" oninput="set('${key}',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors[key]?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px" ${extra}/>`;
+}
+function selNat(){
+  return `<select onchange="setAndRender('nationality',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.nationality?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px;background:white">${NATIONALITIES_LIST.map(n=>`<option value="${n}" ${state.form.nationality===n?'selected':''}>${n}</option>`).join('')}</select>`;
+}
+
+function renderStepper(steps){
+  return `<div class="stepper" style="margin-bottom:32px">${steps.map((s,i)=>`
+    <div class="step ${i<state.step?'done':i===state.step?'active':''}">
+      <div class="step-num">${i<state.step?'✓':i+1}</div>
+      <div class="step-label">${s}</div>
+    </div>`).join('')}</div>`;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  const f=state.form;
+
+  // ── SUBMITTED ──
+  if(state.submitted && state.submittedApp){
+    app.innerHTML=`
+      <div style="max-width:620px;width:100%;margin:0 auto">
+        <div style="background:linear-gradient(135deg,#001A4D,#123f7a);color:white;border-radius:16px;padding:32px;text-align:center;margin-bottom:20px">
+          <div style="font-size:56px;margin-bottom:12px">${state.appType==='returning'?'🔄':'🎉'}</div>
+          <h2 style="font-size:28px;letter-spacing:2px;margin-bottom:8px">${state.appType==='returning'?'RE-ENROLMENT SUBMITTED!':'APPLICATION SUBMITTED!'}</h2>
+          <p style="opacity:.85;font-size:15px;margin-bottom:16px">Your application has been received and is under review.</p>
           <div style="font-size:13px;opacity:.7;margin-bottom:6px">YOUR STUDENT REFERENCE NUMBER</div>
-          <div id="conf-ref" style="font-family:var(--font-mono);font-size:22px;background:rgba(255,255,255,.15);padding:8px 20px;border-radius:8px;display:inline-block;letter-spacing:1px"></div>
+          <div style="font-family:monospace;font-size:22px;background:rgba(255,255,255,.15);padding:8px 20px;border-radius:8px;display:inline-block;letter-spacing:1px">${state.submittedApp.studentId}</div>
         </div>
-        <div class="card">
-          <div class="card-body">
-            <h3 style="font-weight:700;margin-bottom:16px;color:var(--rf-navy)">📋 What We Received</h3>
-            <div id="conf-details" style="display:flex;flex-direction:column"></div>
-            <div class="alert alert-info" style="margin-top:16px">
-              <span>⏱</span>
-              <div><strong>Next Steps:</strong> Our admissions team will review your application within <strong>3–5 business days</strong>. You'll be contacted via email.</div>
-            </div>
-            <a href="/" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px">← Back to Home</a>
+        <div style="background:white;border-radius:12px;border:1px solid #e5e7eb;padding:24px">
+          <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3;margin-bottom:16px">
+            ⏱ <strong>Next Steps:</strong> Our admissions team will review within <strong>3–5 business days</strong>. You'll be contacted at <strong>${f.email}</strong>.
+          </div>
+          <a href="#" onclick="window.location.href=rootPath('index.html')" style="display:block;background:#123f7a;color:white;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none">← Back to Home</a>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // ── TYPE SELECTION ──
+  if(!state.typeConfirmed){
+    // When accessed from student dashboard: hide New Student, restrict year options
+    const fromDashboard = REENROL_MODE;
+    // Available application types
+    const typeOptions = fromDashboard
+      ? [{v:'returning',l:'🔄 Returning Student',d:'Re-enrol for your next academic year'},{v:'other',l:'📋 Other',d:'Transfer, re-admission or special cases'}]
+      : [{v:'new',l:'🆕 New Student',d:'Applying to EduHub for the first time'},{v:'returning',l:'🔄 Returning Student',d:'Previously enrolled, continuing studies'},{v:'other',l:'📋 Other',d:'Transfer, re-admission or special cases'}];
+    // Available year/semester options — from dashboard: no 1st Year, and only allowed next year
+    const admissionOptions = getAllowedAdmissionOptions();
+    app.innerHTML=`
+      <div style="max-width:640px;width:100%;margin:0 auto">
+        <div style="text-align:center;margin-bottom:32px">
+          <h1 style="font-size:32px;color:#001A4D;letter-spacing:1px;margin-bottom:8px">APPLICATION FOR ADMISSION</h1>
+          <p style="color:#6b7280;font-size:15px">${fromDashboard?`You are currently in <strong>Year ${REENROL_CURRENT_YEAR}</strong>. You may apply for Year ${REENROL_NEXT_YEAR} below.`:'Please tell us about your application before we begin.'}</p>
+        </div>
+        ${fromDashboard?`<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:14px;color:#3730a3">
+          <strong>📋 Re-enrolment Notice:</strong> As an existing student, you may re-enrol as a <em>Returning Student</em> or apply under <em>Other</em> (e.g. re-admission). New Student applications are not available here since your record already exists in our system.
+        </div>`:''}
+        <div style="background:white;border-radius:12px;border:1px solid #e5e7eb;padding:28px;margin-bottom:20px">
+          <div style="font-weight:700;font-size:15px;color:#001A4D;margin-bottom:16px">Application Type <span style="color:#e8192c">*</span></div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap">
+            ${typeOptions.map(o=>`
+            <div class="type-card ${state.appType===o.v?'selected':''}" onclick="setState({appType:'${o.v}'})">
+              <div style="font-size:20px;margin-bottom:6px">${o.l.split(' ')[0]}</div>
+              <div style="font-weight:700;font-size:14px;color:#001A4D">${o.l.split(' ').slice(1).join(' ')}</div>
+              <div style="font-size:12px;color:#6b7280;margin-top:4px">${o.d}</div>
+            </div>`).join('')}
           </div>
         </div>
-      </div>
+        <div style="background:white;border-radius:12px;border:1px solid #e5e7eb;padding:28px;margin-bottom:20px">
+          <div style="font-weight:700;font-size:15px;color:#001A4D;margin-bottom:16px">Admission Application For <span style="color:#e8192c">*</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            ${admissionOptions.map(o=>`
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1.5px solid ${state.admissionFor===o?'#123f7a':'#e5e7eb'};border-radius:8px;background:${state.admissionFor===o?'#EEF2FF':'white'};transition:all .15s">
+              <input type="radio" name="af" value="${o}" ${state.admissionFor===o?'checked':''} onchange="setState({admissionFor:'${o}',studyYear:${o.includes('2nd Year')?2:o.includes('3rd Year')?3:1}})" style="accent-color:#123f7a;width:16px;height:16px"/>
+              <span style="font-weight:600;font-size:14px;color:#001A4D">${o}</span>
+            </label>`).join('')}
+          </div>
+          ${fromDashboard?`<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;margin-top:12px;font-size:13px;color:#92400e">⚠ You are in <strong>Year ${REENROL_CURRENT_YEAR}</strong>. You can only apply for <strong>Year ${REENROL_NEXT_YEAR}</strong> at this time.</div>`:''}
+        </div>
+        ${state.appType!=='returning'?`
+        <div style="background:white;border-radius:12px;border:1px solid #e5e7eb;padding:28px;margin-bottom:20px">
+          <div style="font-weight:700;font-size:15px;color:#001A4D;margin-bottom:12px">Course Applied For</div>
+          <select onchange="set('qualificationCode',this.value);set('qualificationName',QUALIFICATIONS.find(q=>q.code===this.value)?.name||'')" style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;color:#001A4D;background:white">
+            <option value="">Please Select</option>
+            ${QUALIFICATIONS.map(q=>`<option value="${q.code}" ${f.qualificationCode===q.code?'selected':''}>${q.name}</option>`).join('')}
+          </select>
+        </div>`:''}
+        <button onclick="confirmType()" style="width:100%;background:${state.appType?'#ffc72c':'#e5e7eb'};color:${state.appType?'#123f7a':'#9ca3af'};border:none;padding:14px;border-radius:8px;font-size:16px;font-weight:800;cursor:${state.appType?'pointer':'not-allowed'}">
+          ${state.appType==='returning'?'Continue as Returning Student →':'Start New Application →'}
+        </button>
+      </div>`;
+    return;
+  }
 
+  // ── RE-ENROLMENT FROM DASHBOARD (bypass all personal/doc steps) ──
+  if(state.reenrolMode){
+    const yr = REENROL_NEXT_YEAR;
+    const qualCode = state.form.qualificationCode || REENROL_QUAL_CODE;
+    const qual = QUALIFICATIONS.find(q=>q.code===qualCode);
+    const newMods = qual ? qual.modules.filter(m=>m.year===yr) : [];
+    const studentName = state.foundStudent ? state.foundStudent.user.name : (state.form.firstName ? state.form.firstName+' '+state.form.lastName : 'Student');
+    const studentId = state.foundStudent ? (state.foundStudent.user.studentId||REENROL_STUDENT_ID) : REENROL_STUDENT_ID;
+    const qualName = (qual ? qual.name : '') || state.form.qualificationName || '';
+    app.innerHTML=`
+      <div style="max-width:700px;width:100%;margin:0 auto">
+        <a href="../student/Dashboard.html" style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:#123f7a;font-weight:600;cursor:pointer;font-size:14px;margin-bottom:20px;text-decoration:none">← Back to Dashboard</a>
+        <div style="background:linear-gradient(135deg,#001A4D,#123f7a);color:white;border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
+          <div style="font-size:36px">🔄</div>
+          <div>
+            <div style="font-size:18px;font-weight:800;letter-spacing:.5px">YEAR ${yr} RE-ENROLMENT</div>
+            <div style="font-size:13px;opacity:.85;margin-top:2px">Welcome back, <strong>${studentName}</strong> · Student ID: ${studentId}</div>
+            <div style="font-size:12px;opacity:.7;margin-top:2px">${qualName}</div>
+          </div>
+        </div>
+        ${renderStepper(REENROL_STEPS)}
+        <div style="background:white;border-radius:12px;border:1px solid #e5e7eb;padding:28px">
+          ${state.step===0?`
+            <div class="form-section-header"><span style="font-size:22px">📚</span><h3 style="font-weight:700;font-size:17px;color:#001A4D">Your Year ${yr} Modules</h3></div>
+            <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:14px 16px;font-size:14px;color:#3730a3;margin-bottom:16px">
+              These modules will be assigned to your record upon re-enrolment for <strong>Year ${yr}</strong>. No action is needed — just review and proceed.
+            </div>
+            ${newMods.length===0
+              ?'<div style="text-align:center;padding:32px;color:#6b7280"><div style="font-size:40px;margin-bottom:12px">📭</div>No modules found for Year '+yr+'. Please contact admissions.</div>'
+              :[1,2].map(sem=>{const sm=newMods.filter(m=>m.semester===sem);if(!sm.length)return '';return `
+                <div style="font-weight:700;font-size:14px;color:#123f7a;margin:0 0 10px;display:flex;align-items:center;gap:8px"><span style="background:#123f7a;color:white;padding:2px 10px;border-radius:99px;font-size:12px">Semester ${sem}</span></div>
+                ${sm.map((m,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:#F4F6FB;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:8px">
+                  <div style="width:30px;height:30px;background:#123f7a;border-radius:7px;color:white;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+                  <div style="flex:1"><div style="font-weight:600;font-size:14px">${m.name}</div><div style="font-size:12px;color:#6b7280;font-family:monospace">${m.code} · ${m.credits} credits</div></div>
+                  <div style="background:#D1FAE5;color:#065f46;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;flex-shrink:0">Sem ${sem}</div>
+                </div>`).join('')}`;}).join('')}
+          `:''}
+          ${state.step===1?`
+            <div class="form-section-header"><span style="font-size:22px">✅</span><h3 style="font-weight:700;font-size:17px;color:#001A4D">Review & Confirm Re-enrolment</h3></div>
+            ${renderReviewSection('Your Details',[['Full Name',studentName],['Student ID',studentId],['Email',state.form.email||'—'],['Phone',state.form.phone||'—']])}
+            ${renderReviewSection('Re-enrolment Details',[['Qualification',qualName||'—'],['Applying For','Year '+yr],['Modules Assigned',newMods.length+' modules'],['Semesters','Semester 1 & 2']])}
+            <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3;margin-bottom:12px">
+              📧 Your Year ${yr} modules will be allocated automatically. No documents or personal info changes are required.
+            </div>
+            <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;margin-bottom:8px">
+              <input type="checkbox" ${f.tcAccepted?'checked':''} onchange="set('tcAccepted',this.checked)" style="width:16px;height:16px;margin-top:2px;accent-color:#123f7a;flex-shrink:0"/>
+              <span style="font-size:13px;color:#6b7280;line-height:1.6">I confirm that I wish to re-enrol for <strong>Year ${yr}</strong> and accept the <strong style="color:#123f7a">Terms and Conditions</strong>.</span>
+            </label>
+            ${errSpan('tcAccepted')}
+          `:''}
+          <div style="display:flex;justify-content:space-between;padding-top:20px;border-top:1px solid #e5e7eb;margin-top:12px">
+            <button onclick="if(state.step>0)setState({step:state.step-1})" ${state.step===0?'disabled':''} style="background:#f3f4f6;color:#374151;border:1.5px solid #e5e7eb;padding:10px 22px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;opacity:${state.step===0?.5:1}">← Back</button>
+            ${state.step<REENROL_STEPS.length-1
+              ?`<button onclick="if(validate())setState({step:state.step+1})" style="background:#123f7a;color:white;border:none;padding:10px 22px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer">Review & Confirm →</button>`
+              :`<button onclick="handleSubmit()" style="background:#ffc72c;color:#123f7a;border:none;padding:12px 28px;border-radius:8px;font-weight:800;font-size:15px;cursor:pointer">Confirm Re-enrolment 🔄</button>`}
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // ── RETURNING STUDENT FLOW ──
+  if(state.appType==='returning'){
+    const yr=admissionToYear(state.admissionFor);
+    const qual=state.foundStudent?QUALIFICATIONS.find(q=>q.code===state.foundStudent.application.qualificationCode):null;
+    const newMods=qual?qual.modules.filter(m=>m.year===yr):[];
+    app.innerHTML=`
+      <div style="max-width:700px;width:100%;margin:0 auto">
+        <button onclick="setState({typeConfirmed:false,step:0,foundStudent:null,lookupValue:'',lookupError:''})" style="background:none;border:none;color:#123f7a;font-weight:600;cursor:pointer;font-size:14px;margin-bottom:20px">← Back to Type Selection</button>
+        ${renderStepper(RETURNING_STEPS)}
+        <div style="background:white;border-radius:12px;border:1px solid #e5e7eb;padding:28px">
+          ${state.step===0?`
+            <div class="form-section-header"><span style="font-size:22px">🔍</span><h3 style="font-weight:700;font-size:17px;color:#001A4D">Verify Your Identity</h3></div>
+            <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:14px 16px;font-size:14px;color:#3730a3;margin-bottom:16px"><strong>Returning student?</strong> Enter your SA ID or passport number to retrieve your existing details.</div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label class="form-label">SA ID Number or Passport Number <span class="required">*</span></label>
+              <input value="${state.lookupValue}" oninput="state.lookupValue=this.value" onkeydown="if(event.key==='Enter')handleLookup()" placeholder="Enter your ID or passport number" style="width:100%;padding:10px 14px;border:1.5px solid ${state.lookupError?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px"/>
+              ${state.lookupError?`<div style="color:#dc2626;font-size:12px;margin-top:4px">⚠ ${state.lookupError}</div>`:''}
+            </div>
+            <button onclick="handleLookup()" style="background:#123f7a;color:white;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;width:100%">🔍 Find My Record</button>
+          `:''}
+          ${state.step===1&&state.foundStudent?`
+            <div class="form-section-header"><span style="font-size:22px">✅</span><h3 style="font-weight:700;font-size:17px;color:#001A4D">Confirm Your Details</h3></div>
+            <div style="background:#D1FAE5;border:1px solid #A7F3D0;border-radius:8px;padding:14px 18px;display:flex;gap:12px;margin-bottom:16px">
+              <span style="font-size:20px">👋</span>
+              <div><div style="font-weight:700;color:#065F46;font-size:15px">Welcome back, ${state.foundStudent.user.name}!</div>
+              <div style="font-size:13px;color:#065F46">Student ID: <strong>${state.foundStudent.user.studentId||''}</strong></div>
+              <div style="font-size:13px;color:#065F46">Applying for: <strong>${state.admissionFor}</strong></div></div>
+            </div>
+            <div class="form-row" style="margin-bottom:14px">
+              <div class="form-group"><label class="form-label">First Name</label>${inp('firstName','First Name')}</div>
+              <div class="form-group"><label class="form-label">Last Name</label>${inp('lastName','Last Name')}</div>
+            </div>
+            <div class="form-row" style="margin-bottom:14px">
+              <div class="form-group"><label class="form-label">Phone <span class="required">*</span></label>${inp('phone','+27 XX XXX XXXX','tel')}${errSpan('phone')}</div>
+              <div class="form-group"><label class="form-label">Email <span class="required">*</span></label>${inp('email','you@example.com','email')}${errSpan('email')}</div>
+            </div>
+            <div class="form-group"><label class="form-label">Residential Address</label>${inp('streetAddress','Street, Suburb, City')}</div>
+          `:''}
+          ${state.step===2&&state.foundStudent?`
+            <div class="form-section-header"><span style="font-size:22px">📚</span><h3 style="font-weight:700;font-size:17px;color:#001A4D">Your New Modules</h3></div>
+            <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:14px 16px;font-size:14px;color:#3730a3;margin-bottom:16px">
+              Based on your <strong>${state.admissionFor}</strong> re-enrolment for <strong>${state.foundStudent.application.qualificationName}</strong>, here are your <strong>Year ${yr}</strong> modules:
+            </div>
+            ${newMods.length===0?'<div style="text-align:center;padding:32px;color:#6b7280"><div style="font-size:40px;margin-bottom:12px">📭</div>No modules found for this year. Please contact admissions.</div>'
+            :[1,2].map(sem=>{const sm=newMods.filter(m=>m.semester===sem);if(!sm.length)return '';return `
+              <div style="font-weight:700;font-size:14px;color:#123f7a;margin-bottom:10px;display:flex;align-items:center;gap:8px"><span style="background:#123f7a;color:white;padding:2px 10px;border-radius:99px;font-size:12px">Semester ${sem}</span></div>
+              ${sm.map((m,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:#F4F6FB;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:8px">
+                <div style="width:30px;height:30px;background:#123f7a;border-radius:7px;color:white;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+                <div style="flex:1"><div style="font-weight:600;font-size:14px">${m.name}</div><div style="font-size:12px;color:#6b7280;font-family:monospace">${m.code}</div></div>
+                <div style="text-align:right;flex-shrink:0"><div style="font-weight:700;font-size:14px;color:#123f7a">${m.credits}</div><div style="font-size:11px;color:#9ca3af">credits</div></div>
+              </div>`).join('')}`;}).join('')}
+          `:''}
+          ${state.step===3&&state.foundStudent?`
+            <div class="form-section-header"><span style="font-size:22px">✅</span><h3 style="font-weight:700;font-size:17px;color:#001A4D">Review & Submit</h3></div>
+            ${renderReviewSection('Student Details',[['Name',f.firstName+' '+f.lastName],['Student ID',state.foundStudent.user.studentId||''],['Phone',f.phone],['Email',f.email]])}
+            ${renderReviewSection('Re-enrolment',[['Qualification',f.qualificationName],['Applying For',state.admissionFor],['Study Year','Year '+yr],['New Modules',newMods.length+' modules']])}
+            <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3;margin-bottom:12px">📧 A confirmation will be noted on your record.</div>
+            <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;margin-bottom:8px">
+              <input type="checkbox" ${f.tcAccepted?'checked':''} onchange="set('tcAccepted',this.checked)" style="width:16px;height:16px;margin-top:2px;accent-color:#123f7a;flex-shrink:0"/>
+              <span style="font-size:13px;color:#6b7280;line-height:1.6">I confirm all details are correct and accept the <strong style="color:#123f7a">Terms and Conditions</strong>.</span>
+            </label>
+            ${errSpan('tcAccepted')}
+          `:''}
+          <div style="display:flex;justify-content:space-between;padding-top:20px;border-top:1px solid #e5e7eb;margin-top:12px">
+            <button onclick="if(state.step>0)setState({step:state.step-1})" ${state.step===0?'disabled':''} style="background:#f3f4f6;color:#374151;border:1.5px solid #e5e7eb;padding:10px 22px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;opacity:${state.step===0?.5:1}">← Back</button>
+            ${state.step<RETURNING_STEPS.length-1
+              ?`<button onclick="if(validate())setState({step:state.step+1})" style="background:#123f7a;color:white;border:none;padding:10px 22px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer">Continue →</button>`
+              :`<button onclick="handleSubmit()" style="background:#ffc72c;color:#123f7a;border:none;padding:12px 28px;border-radius:8px;font-weight:800;font-size:15px;cursor:pointer">Submit Re-enrolment 🔄</button>`}
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // ── NEW/OTHER FULL FORM ──
+  const docList = isForeign()
+    ?['Certified copy of Passport (all pages)','Study permit / visa','Certified copy of highest qualification','Proof of payment / funding letter','Passport photo','SAQA evaluation letter']
+    :['Certified copy of SA ID document','Certified copy of Matric certificate','Certified copy of tertiary qualifications','Proof of payment / funding letter','Passport photo'];
+
+  app.innerHTML=`
+    <div style="max-width:760px;width:100%;margin:0 auto">
+      <button onclick="setState({typeConfirmed:false})" style="background:none;border:none;color:#123f7a;font-weight:600;cursor:pointer;font-size:14px;margin-bottom:8px">← Back to Type Selection</button>
+      <h1 style="font-size:28px;color:#001A4D;letter-spacing:1px;margin-bottom:4px">ONLINE APPLICATION FORM</h1>
+      <p style="font-size:14px;color:#6b7280;margin-bottom:24px">Complete all sections. Fields marked <span style="color:#e8192c">*</span> are required.</p>
+      ${renderStepper(NEW_STEPS)}
+      <div style="background:white;border-radius:12px;border:1px solid #e5e7eb;padding:28px;display:flex;flex-direction:column;gap:20px">
+        ${state.step===0?renderPersonal():''}
+        ${state.step===1?renderContact():''}
+        ${state.step===2?renderEducation():''}
+        ${state.step===3?renderQualification():''}
+        ${state.step===4?renderDocuments(docList):''}
+        ${state.step===5?renderReview():''}
+        <div style="display:flex;justify-content:space-between;padding-top:16px;border-top:1px solid #e5e7eb;margin-top:8px">
+          <button onclick="if(state.step>0)setState({step:state.step-1})" ${state.step===0?'disabled':''} style="background:#f3f4f6;color:#374151;border:1.5px solid #e5e7eb;padding:10px 22px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;opacity:${state.step===0?.5:1}">← Back</button>
+          ${state.step<NEW_STEPS.length-1
+            ?`<button onclick="if(validate())setState({step:state.step+1})" style="background:#123f7a;color:white;border:none;padding:10px 22px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer">Continue →</button>`
+            :`<button onclick="handleSubmit()" style="background:#ffc72c;color:#123f7a;border:none;padding:12px 28px;border-radius:8px;font-weight:800;font-size:15px;cursor:pointer">Submit Application 🎓</button>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderPersonal(){
+  const f=state.form;
+  return `<div class="form-section-header"><span style="font-size:20px">👤</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Personal Details</h3></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">First Name <span class="required">*</span></label>${inp('firstName','John')}${errSpan('firstName')}</div>
+    <div class="form-group"><label class="form-label">Last Name <span class="required">*</span></label>${inp('lastName','Doe')}${errSpan('lastName')}</div>
+  </div>
+  <div class="form-group"><label class="form-label">Nationality <span class="required">*</span></label>${selNat()}${errSpan('nationality')}</div>
+  <div class="form-row">
+    ${!isForeign()
+      ?`<div class="form-group"><label class="form-label">SA ID Number <span class="required">*</span></label><input value="${f.idNumber}" oninput="set('idNumber',this.value)" maxlength="13" placeholder="0001015009087" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.idNumber?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px"/>
+      ${errSpan('idNumber')}</div>`
+      :`<div class="form-group"><label class="form-label">Passport Number <span class="required">*</span></label><input value="${f.passportNumber}" oninput="set('passportNumber',this.value=this.value.toUpperCase())" maxlength="20" placeholder="A12345678" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.passportNumber?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px"/>
+      ${errSpan('passportNumber')}</div>`}
+    <div class="form-group"><label class="form-label">Date of Birth <span class="required">*</span></label><input type="date" value="${f.dateOfBirth}" oninput="set('dateOfBirth',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.dateOfBirth?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px"/>
+    ${errSpan('dateOfBirth')}</div>
+  </div>
+  <div class="form-group"><label class="form-label">Gender <span class="required">*</span></label>
+    <select onchange="set('gender',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.gender?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px;background:white">
+      <option value="">Select...</option>
+      ${['Male','Female','Non-binary','Prefer not to say'].map(g=>`<option value="${g}" ${f.gender===g?'selected':''}>${g}</option>`).join('')}
+    </select>${errSpan('gender')}</div>
+  ${isForeign()?`<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3">🌍 <strong>Foreign National:</strong> You'll need certified passport copy and valid study permit/visa.</div>`:''}`;
+}
+
+function renderContact(){
+  const f=state.form;
+  return `<div class="form-section-header"><span style="font-size:20px">📞</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Contact Details</h3></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Phone <span class="required">*</span></label>${inp('phone','+27 XX XXX XXXX','tel')}${errSpan('phone')}</div>
+    <div class="form-group"><label class="form-label">Email <span class="required">*</span></label>${inp('email','you@example.com','email')}${errSpan('email')}</div>
+  </div>
+  <div class="form-group"><label class="form-label">Alternative Email</label>${inp('altEmail','alt@example.com','email')}</div>
+  <div class="form-section-header" style="margin-top:8px"><span style="font-size:20px">🏠</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Residential Address</h3></div>
+  <div class="form-group"><label class="form-label">Street Address <span class="required">*</span></label>${inp('streetAddress','123 Main Street')}${errSpan('streetAddress')}</div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Suburb</label>${inp('suburb','Suburb')}</div>
+    <div class="form-group"><label class="form-label">City <span class="required">*</span></label>${inp('city','City')}${errSpan('city')}</div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Province <span class="required">*</span></label>
+      ${!isForeign()?`<select onchange="set('province',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.province?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px;background:white">
+        <option value="">Select...</option>
+        ${['Gauteng','Western Cape','KwaZulu-Natal','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'].map(p=>`<option value="${p}" ${f.province===p?'selected':''}>${p}</option>`).join('')}
+      </select>`:inp('province','Province/Region')}
+      ${errSpan('province')}</div>
+    <div class="form-group"><label class="form-label">Postal Code</label>${inp('postalCode','0001')}</div>
+  </div>`;
+}
+
+function renderEducation(){
+  const f=state.form;
+  return `<div class="form-section-header"><span style="font-size:20px">🎓</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">High School Education</h3></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">High School Name <span class="required">*</span></label>${inp('highSchool','School name')}${errSpan('highSchool')}</div>
+    <div class="form-group"><label class="form-label">Year Completed</label><input type="number" value="${f.highSchoolYear}" oninput="set('highSchoolYear',this.value)" placeholder="2023" style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px"/></div>
+  </div>
+  <div class="form-group"><label class="form-label">Highest Grade / Qualification <span class="required">*</span></label>
+    <select onchange="set('highestGrade',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.highestGrade?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px;background:white">
+      <option value="">Select...</option>
+      ${['Grade 12 / Matric','Grade 11','GED','N3',isForeign()?'Foreign equivalent':''].filter(Boolean).map(g=>`<option value="${g}" ${f.highestGrade===g?'selected':''}>${g}</option>`).join('')}
+    </select>${errSpan('highestGrade')}</div>
+  <div class="form-section-header" style="margin-top:8px"><span style="font-size:20px">🏛️</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Tertiary Education (if applicable)</h3></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Institution</label>${inp('tertiaryInstitution','Institution name')}</div>
+    <div class="form-group"><label class="form-label">Qualification</label>${inp('tertiaryQualification','Qualification name')}</div>
+  </div>`;
+}
+
+function renderQualification(){
+  const f=state.form;
+  return `<div class="form-section-header"><span style="font-size:20px">📚</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Qualification Selection</h3></div>
+  <p style="font-size:13px;color:#6b7280;margin-bottom:14px">Click a card to select your qualification. <span style="color:#e8192c">*</span></p>
+  ${QUALIFICATIONS.map(q=>{
+    const isSelected = f.qualificationCode===q.code;
+    return `<div onclick="setAndRender('qualificationCode','${q.code}');setAndRender('qualificationName','${q.name.replace(/'/g,"\'")}')"
+      style="border:2px solid ${isSelected?'#123f7a':'#e5e7eb'};border-radius:10px;padding:16px 18px;cursor:pointer;background:${isSelected?'#EEF2FF':'white'};transition:all .15s;margin-bottom:10px;position:relative">
+      ${isSelected?`<div style="position:absolute;top:12px;right:14px;width:22px;height:22px;background:#123f7a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:700">✓</div>`:''}
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-right:${isSelected?'32px':'0'}">
+        <div>
+          <span style="font-family:monospace;font-size:11px;font-weight:700;background:${isSelected?'#123f7a':'#e5e7eb'};color:${isSelected?'white':'#6b7280'};padding:2px 8px;border-radius:4px">${q.code}</span>
+          <div style="font-weight:700;font-size:15px;color:#001A4D;margin-top:6px">${q.name}</div>
+          <div style="font-size:13px;color:#6b7280;margin-top:2px">${q.faculty}</div>
+          <div style="font-size:12px;color:#9ca3af;margin-top:2px">⏱ ${q.duration}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:12px">
+          <div style="font-weight:800;font-size:18px;color:${isSelected?'#123f7a':'#374151'}">R${q.fee.toLocaleString()}</div>
+          <div style="font-size:12px;color:#6b7280">per year</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('')}
+  ${errSpan('qualificationCode')}
+  <div class="form-section-header" style="margin-top:8px"><span style="font-size:20px">💳</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Account Payer Details</h3></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Payer Full Name <span class="required">*</span></label>${inp('payerName','Full name')}${errSpan('payerName')}</div>
+    <div class="form-group"><label class="form-label">Relationship</label>
+      <select onchange="set('payerRelation',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;background:white">
+        <option value="">Select...</option>
+        ${['Self','Parent','Guardian','Sponsor','Employer'].map(r=>`<option value="${r}" ${f.payerRelation===r?'selected':''}>${r}</option>`).join('')}
+      </select>
     </div>
   </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Payer Phone <span class="required">*</span></label>${inp('payerPhone','+27 XX XXX XXXX','tel')}${errSpan('payerPhone')}</div>
+    <div class="form-group"><label class="form-label">Payer Email</label>${inp('payerEmail','payer@example.com','email')}</div>
+  </div>`;
+}
 
-  <script src="../shared.js"></script>
-  <script>
-    await renderNavbar('apply');
 
-    // ── State ──────────────────────────────────────────────
-    let appType = null;
-    let admissionFor = '';
-    let selectedQualCode = '';
-    let step = 0;
-    let returningStep = 0;
-    let foundStudent = null;
-    let form = {
-      firstName:'', lastName:'', idNumber:'', passportNumber:'',
-      dateOfBirth:'', gender:'', nationality:'South African',
-      phone:'', email:'', altEmail:'',
-      streetAddress:'', suburb:'', city:'', province:'', postalCode:'',
-      highSchool:'', highSchoolYear:'', highestGrade:'',
-      tertiaryInstitution:'', tertiaryQualification:'', tertiaryYear:'',
-      payerName:'', payerRelation:'', payerPhone:'', payerEmail:'', payerAddress:'',
-      qualificationCode:'', qualificationName:'',
-      docsUploaded:[], tcAccepted: false,
-    };
+function renderDocuments(docList){
+  const f=state.form;
+  const uploadedCount = f.docsUploaded.length;
+  const totalCount = docList.length;
+  const pct = totalCount > 0 ? Math.round(uploadedCount/totalCount*100) : 0;
+  let html = '';
+  html += '<div class="form-section-header"><span style="font-size:20px">&#128206;</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Required Documents</h3></div>';
+  html += '<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:10px;padding:14px 18px;margin-bottom:16px">';
+  html += '<div style="font-weight:700;color:#92400e;font-size:14px;margin-bottom:4px">&#9200; Important: Document Submission Deadline</div>';
+  html += '<div style="font-size:13px;color:#92400e;line-height:1.6">You may mark documents as ready now or submit them later. However, <strong>all documents must be received within 3&#8211;5 business working days</strong> of your application being approved. <strong>Failure to submit within this period will result in your application being cancelled</strong> and you will need to start a new application.</div>';
+  html += '</div>';
+  if(isForeign()){
+    html += '<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3;margin-bottom:12px">&#127757; As a foreign national, additional documents including a study permit and SAQA evaluation are required.</div>';
+  }
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">';
+  html += '<div style="font-size:13px;color:#6b7280">'+uploadedCount+' of '+totalCount+' documents ready</div>';
+  if(uploadedCount === totalCount && totalCount > 0){
+    html += '<button type="button" onclick="state.form.docsUploaded=[];render()" style="background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Clear All</button>';
+  }
+  html += '</div>';
+  html += '<div style="width:100%;background:#e5e7eb;border-radius:99px;height:6px;margin-bottom:16px">';
+  html += '<div style="background:#123f7a;height:6px;border-radius:99px;width:'+pct+'%;transition:width .3s"></div>';
+  html += '</div>';
+  docList.forEach(function(doc, i){
+    const isUploaded = f.docsUploaded.includes(doc);
+    const inputId = 'doc-file-'+i;
+    const safeDoc = doc.replace(/'/g, '&#39;');
+    html += '<div style="border:1.5px solid '+(isUploaded?'#123f7a':'#e5e7eb')+';border-radius:10px;padding:14px 16px;background:'+(isUploaded?'#EEF2FF':'white')+';margin-bottom:10px;transition:all .15s">';
+    html += '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">';
+    html += '<div style="width:28px;height:28px;border-radius:6px;background:'+(isUploaded?'#123f7a':'#e5e7eb')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;color:'+(isUploaded?'white':'#9ca3af')+';font-weight:700">'+(isUploaded?'&#10003;':(i+1))+'</div>';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div style="font-size:14px;font-weight:600;color:'+(isUploaded?'#001A4D':'#374151')+'">'+doc+'</div>';
+    html += '<div style="font-size:12px;color:'+(isUploaded?'#059669':'#9ca3af')+';margin-top:2px">'+(isUploaded?'&#10003; Marked as ready':'Not yet marked')+'</div>';
+    html += '</div>';
+    html += '<div style="display:flex;gap:8px;align-items:center;flex-shrink:0">';
+    html += '<label for="'+inputId+'" style="background:'+(isUploaded?'#f0fdf4':'#f4f6fb')+';color:'+(isUploaded?'#059669':'#374151')+';border:1px solid '+(isUploaded?'#86efac':'#e5e7eb')+';padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">&#128193; '+(isUploaded?'Replace':'Choose File')+'</label>';
+    html += '<input type="file" id="'+inputId+'" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleDocFile(this,\'' + safeDoc + '\')" />';
+    html += '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 10px;border:1px solid '+(isUploaded?'#86efac':'#e5e7eb')+';border-radius:6px;background:white;font-size:12px;color:#374151;white-space:nowrap">';
+    html += '<input type="checkbox" '+(isUploaded?'checked':'')+' onchange="toggleDoc(\'' + safeDoc + '\');render()" style="width:14px;height:14px;accent-color:#123f7a;cursor:pointer"/> Ready</label>';
+    html += '</div></div></div>';
+  });
+  html += '<div style="background:#F4F6FB;border:1px solid #e5e7eb;border-radius:8px;padding:13px 16px;font-size:13px;color:#6b7280;margin-top:4px;line-height:1.6">&#128161; <strong>Tip:</strong> Tick "Ready" to confirm you have the document available. You can also email documents to <strong>admissions@eduhub.ac.za</strong> quoting your student reference number after approval.</div>';
+  return html;
+}
 
-    // Populate qual select
-    QUALIFICATIONS.forEach(q => {
-      const o = document.createElement('option');
-      o.value = q.code; o.textContent = q.name;
-      document.getElementById('qual-select').appendChild(o);
-    });
+function renderReview(){
+  const f=state.form;
+  return `<div class="form-section-header"><span style="font-size:20px">✅</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Review Your Application</h3></div>
+  ${renderReviewSection('Personal',[['Name',f.firstName+' '+f.lastName],['Nationality',f.nationality],[isForeign()?'Passport':'SA ID',isForeign()?f.passportNumber:f.idNumber],['DOB',f.dateOfBirth],['Gender',f.gender]])}
+  ${renderReviewSection('Contact',[['Phone',f.phone],['Email',f.email],['Address',f.streetAddress+', '+f.city+', '+f.province]])}
+  ${renderReviewSection('Education',[['High School',f.highSchool],['Grade',f.highestGrade]])}
+  ${renderReviewSection('Qualification',[['Code',f.qualificationCode],['Name',f.qualificationName],['Payer',f.payerName],['Admission For',state.admissionFor]])}
+  <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3;margin-bottom:12px">📧 A confirmation will be noted upon submission.</div>
+  <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;margin-bottom:8px">
+    <input type="checkbox" ${f.tcAccepted?'checked':''} onchange="set('tcAccepted',this.checked)" style="width:16px;height:16px;margin-top:2px;accent-color:#123f7a;flex-shrink:0"/>
+    <span style="font-size:13px;color:#6b7280;line-height:1.6">I confirm all information is accurate and accept the <strong style="color:#123f7a">Terms and Conditions</strong>.</span>
+  </label>
+  ${errSpan('tcAccepted')}`;
+}
 
-    function selectType(t) {
-      appType = t;
-      ['new','returning','other'].forEach(x => document.getElementById(`type-${x}`)?.classList.remove('selected'));
-      document.getElementById(`type-${t}`)?.classList.add('selected');
-      document.getElementById('course-select-card').style.display = t === 'returning' ? 'none' : 'block';
+function renderReviewSection(title,rows){
+  return `<div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:12px">
+    <div style="background:#f9fafb;padding:9px 14px;font-weight:700;font-size:13px;border-bottom:1px solid #e5e7eb">${title}</div>
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      ${rows.map(([k,v])=>`<div style="display:flex;gap:12px;font-size:13px"><span style="color:#6b7280;min-width:130px">${k}</span><span style="font-weight:600;color:#001A4D">${v||'—'}</span></div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function confirmType(){
+  if(!state.appType){showToast('Please select an Application Type','error');return;}
+  if(!state.admissionFor){showToast('Please select what you are applying for','error');return;}
+  setState({typeConfirmed:true,step:0});
+}
+
+
+function handleDocFile(input, doc) {
+  if (input.files && input.files[0]) {
+    if (!state.form.docsUploaded.includes(doc)) {
+      state.form.docsUploaded = [...state.form.docsUploaded, doc];
     }
-
-    function selectAdmission(val) {
-      admissionFor = val;
-      document.querySelectorAll('.radio-option').forEach(el => el.classList.remove('selected'));
-      document.getElementById(`adm-${val.replace(/\s/g,'-')}`)?.classList.add('selected');
-      document.querySelector(`[value="${val}"]`)?.setAttribute('checked', true);
-    }
-
-    function selectQual(code) {
-      selectedQualCode = code;
-      const q = QUALIFICATIONS.find(q => q.code === code);
-      form.qualificationCode = code;
-      form.qualificationName = q?.name || '';
-    }
-
-    function goBackToType() {
-      document.getElementById('type-screen').style.display = 'block';
-      document.getElementById('form-screen').style.display = 'none';
-      document.getElementById('returning-screen').style.display = 'none';
-      step = 0; returningStep = 0; foundStudent = null;
-    }
-
-    function startApplication() {
-      if (!appType) return showAlert('alert-box', 'Please select an Application Type.', 'error');
-      if (!admissionFor) return showAlert('alert-box', 'Please select what you are applying for.', 'error');
-      clearAlert('alert-box');
-
-      if (appType === 'returning') {
-        document.getElementById('type-screen').style.display = 'none';
-        document.getElementById('returning-screen').style.display = 'block';
-        returningStep = 0;
-        renderReturningStep();
-      } else {
-        if (selectedQualCode) { form.qualificationCode = selectedQualCode; form.qualificationName = QUALIFICATIONS.find(q=>q.code===selectedQualCode)?.name||''; }
-        document.getElementById('type-screen').style.display = 'none';
-        document.getElementById('form-screen').style.display = 'block';
-        step = 0;
-        renderStepper();
-        renderStep();
-      }
-    }
-
-    // ── NEW STUDENT STEPS ──────────────────────────────────
-    const NEW_STEPS = ['Personal','Contact & Address','Education','Qualification','Documents','Review & Submit'];
-
-    function renderStepper() {
-      document.getElementById('stepper').innerHTML = NEW_STEPS.map((s,i) => `
-        <div class="step ${i < step ? 'done' : i === step ? 'active' : ''}">
-          <div class="step-num">${i < step ? '✓' : i+1}</div>
-          <div class="step-label">${s}</div>
-        </div>`).join('');
-    }
-
-    function get(id) { const el = document.getElementById(id); return el ? el.value : ''; }
-    function isForeign() { return form.nationality !== 'South African'; }
-
-    function renderStep() {
-      const cont = document.getElementById('step-content');
-      clearAlert('alert-box');
-
-      const backBtn = document.getElementById('back-btn');
-      const nextBtn = document.getElementById('next-btn');
-      backBtn.disabled = step === 0;
-      backBtn.style.opacity = step === 0 ? '.5' : '1';
-      backBtn.style.cursor = step === 0 ? 'not-allowed' : 'pointer';
-      nextBtn.textContent = step === NEW_STEPS.length - 1 ? 'Submit Application 🎓' : 'Continue →';
-
-      if (step === 0) cont.innerHTML = renderPersonalStep();
-      else if (step === 1) cont.innerHTML = renderContactStep();
-      else if (step === 2) cont.innerHTML = renderEducationStep();
-      else if (step === 3) cont.innerHTML = renderQualStep();
-      else if (step === 4) cont.innerHTML = renderDocsStep();
-      else if (step === 5) cont.innerHTML = renderReviewStep();
-
-      // Re-attach listeners
-      ['firstName','lastName','idNumber','passportNumber','dateOfBirth','gender','nationality',
-       'phone','email','altEmail','streetAddress','suburb','city','province','postalCode',
-       'highSchool','highSchoolYear','highestGrade','tertiaryInstitution','tertiaryQualification',
-       'payerName','payerRelation','payerPhone','payerEmail'].forEach(k => {
-        const el = document.getElementById(k);
-        if (el) el.addEventListener('input', () => { form[k] = el.value; });
-        if (el && el.tagName === 'SELECT') el.addEventListener('change', () => { form[k] = el.value; });
-      });
-      const natEl = document.getElementById('nationality');
-      if (natEl) natEl.addEventListener('change', () => { form.nationality = natEl.value; renderStep(); });
-      const tcEl = document.getElementById('tcAccepted');
-      if (tcEl) tcEl.addEventListener('change', () => { form.tcAccepted = tcEl.checked; });
-    }
-
-    function renderPersonalStep() {
-      const isForeign = form.nationality !== 'South African';
-      return `
-        <div class="form-section-header"><span style="font-size:20px">👤</span><h3 style="font-weight:700;font-size:16px;color:var(--rf-navy)">Personal Details</h3></div>
-        <div class="form-row" style="margin-bottom:16px">
-          <div class="form-group"><label class="form-label">First Name <span class="required">*</span></label><input id="firstName" class="form-input" value="${form.firstName}" placeholder="John"></div>
-          <div class="form-group"><label class="form-label">Last Name <span class="required">*</span></label><input id="lastName" class="form-input" value="${form.lastName}" placeholder="Doe"></div>
-        </div>
-        <div class="form-group" style="margin-bottom:16px">
-          <label class="form-label">Nationality <span class="required">*</span></label>
-          <select id="nationality" class="form-select">
-            ${NATIONALITIES.map(n => `<option value="${n}" ${form.nationality===n?'selected':''}>${n}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-row" style="margin-bottom:16px">
-          ${!isForeign
-            ? `<div class="form-group"><label class="form-label">SA ID Number <span class="required">*</span></label><input id="idNumber" class="form-input" value="${form.idNumber}" placeholder="0001015009087" maxlength="13"></div>`
-            : `<div class="form-group"><label class="form-label">Passport Number <span class="required">*</span></label><input id="passportNumber" class="form-input" value="${form.passportNumber}" placeholder="A12345678" maxlength="20"></div>`}
-          <div class="form-group"><label class="form-label">Date of Birth <span class="required">*</span></label><input type="date" id="dateOfBirth" class="form-input" value="${form.dateOfBirth}"></div>
-        </div>
-        <div class="form-group" style="margin-bottom:16px">
-          <label class="form-label">Gender <span class="required">*</span></label>
-          <select id="gender" class="form-select">
-            <option value="">Select...</option>
-            <option ${form.gender==='Male'?'selected':''}>Male</option>
-            <option ${form.gender==='Female'?'selected':''}>Female</option>
-            <option ${form.gender==='Non-binary'?'selected':''}>Non-binary</option>
-            <option ${form.gender==='Prefer not to say'?'selected':''}>Prefer not to say</option>
-          </select>
-        </div>
-        ${isForeign ? `<div class="alert alert-info"><span>🌍</span><div><strong>Foreign National:</strong> You'll need to submit a certified passport copy and valid study permit/visa.</div></div>` : ''}`;
-    }
-
-    function renderContactStep() {
-      return `
-        <div class="form-section-header"><span style="font-size:20px">📞</span><h3 style="font-weight:700;font-size:16px;color:var(--rf-navy)">Contact Details</h3></div>
-        <div class="form-row" style="margin-bottom:16px">
-          <div class="form-group"><label class="form-label">Phone <span class="required">*</span></label><input id="phone" class="form-input" value="${form.phone}" placeholder="+27 XX XXX XXXX"></div>
-          <div class="form-group"><label class="form-label">Email <span class="required">*</span></label><input type="email" id="email" class="form-input" value="${form.email}" placeholder="you@example.com"></div>
-        </div>
-        <div class="form-group" style="margin-bottom:16px">
-          <label class="form-label">Alternative Email</label><input type="email" id="altEmail" class="form-input" value="${form.altEmail}">
-        </div>
-        <div class="form-section-header" style="margin-top:20px"><span style="font-size:20px">🏠</span><h3 style="font-weight:700;font-size:16px;color:var(--rf-navy)">Residential Address</h3></div>
-        <div class="form-group" style="margin-bottom:16px">
-          <label class="form-label">Street Address <span class="required">*</span></label><input id="streetAddress" class="form-input" value="${form.streetAddress}" placeholder="123 Main Street">
-        </div>
-        <div class="form-row" style="margin-bottom:16px">
-          <div class="form-group"><label class="form-label">Suburb</label><input id="suburb" class="form-input" value="${form.suburb}"></div>
-          <div class="form-group"><label class="form-label">City <span class="required">*</span></label><input id="city" class="form-input" value="${form.city}"></div>
-        </div>
-        <div class="form-row" style="margin-bottom:16px">
-          <div class="form-group"><label class="form-label">Province <span class="required">*</span></label>
-            <select id="province" class="form-select">
-              <option value="">Select...</option>
-              ${['Gauteng','Western Cape','KwaZulu-Natal','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'].map(p=>`<option ${form.province===p?'selected':''}>${p}</option>`).join('')}
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">Postal Code</label><input id="postalCode" class="form-input" value="${form.postalCode}"></div>
-        </div>`;
-    }
-
-    function renderEducationStep() {
-      return `
-        <div class="form-section-header"><span style="font-size:20px">🎓</span><h3 style="font-weight:700;font-size:16px;color:var(--rf-navy)">High School Education</h3></div>
-        <div class="form-row" style="margin-bottom:16px">
-          <div class="form-group"><label class="form-label">High School Name <span class="required">*</span></label><input id="highSchool" class="form-input" value="${form.highSchool}"></div>
-          <div class="form-group"><label class="form-label">Year Completed</label><input type="number" id="highSchoolYear" class="form-input" value="${form.highSchoolYear}" placeholder="2023"></div>
-        </div>
-        <div class="form-group" style="margin-bottom:16px">
-          <label class="form-label">Highest Grade / Qualification <span class="required">*</span></label>
-          <select id="highestGrade" class="form-select">
-            <option value="">Select...</option>
-            <option ${form.highestGrade==='Grade 12 / Matric'?'selected':''}>Grade 12 / Matric</option>
-            <option ${form.highestGrade==='Grade 11'?'selected':''}>Grade 11</option>
-            <option>GED</option><option>N3</option>
-          </select>
-        </div>
-        <div class="form-section-header" style="margin-top:20px"><span style="font-size:20px">🏛️</span><h3 style="font-weight:700;font-size:16px;color:var(--rf-navy)">Tertiary Education (if applicable)</h3></div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Institution</label><input id="tertiaryInstitution" class="form-input" value="${form.tertiaryInstitution}"></div>
-          <div class="form-group"><label class="form-label">Qualification</label><input id="tertiaryQualification" class="form-input" value="${form.tertiaryQualification}"></div>
-        </div>`;
-    }
-
-    function renderQualStep() {
-      return `
-        <div class="form-section-header"><span style="font-size:20px">📚</span><h3 style="font-weight:700;font-size:16px;color:var(--rf-navy)">Qualification Selection</h3></div>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
-          ${QUALIFICATIONS.map(q => `
-            <div class="qual-card ${form.qualificationCode===q.code?'selected':''}" onclick="pickQual('${q.code}','${q.name}')">
-              <div style="display:flex;justify-content:space-between">
-                <div>
-                  <span style="font-family:var(--font-mono);font-size:12px;color:#123f7a;font-weight:700">${q.code}</span>
-                  <div style="font-weight:600;margin-top:2px">${q.name}</div>
-                  <div style="font-size:13px;color:var(--rf-gray)">${q.faculty} · ${q.duration}</div>
-                </div>
-                <div style="text-align:right"><div style="font-weight:700;color:#123f7a">R${q.fee.toLocaleString()}</div><div style="font-size:12px;color:var(--rf-gray)">per year</div></div>
-              </div>
-            </div>`).join('')}
-        </div>
-        <div class="form-section-header"><span style="font-size:20px">💳</span><h3 style="font-weight:700;font-size:16px;color:var(--rf-navy)">Account Payer Details</h3></div>
-        <div class="form-row" style="margin-bottom:16px">
-          <div class="form-group"><label class="form-label">Payer Full Name <span class="required">*</span></label><input id="payerName" class="form-input" value="${form.payerName}"></div>
-          <div class="form-group"><label class="form-label">Relationship</label>
-            <select id="payerRelation" class="form-select">
-              <option value="">Select...</option>
-              ${['Self','Parent','Guardian','Sponsor','Employer'].map(r=>`<option ${form.payerRelation===r?'selected':''}>${r}</option>`).join('')}
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Payer Phone <span class="required">*</span></label><input id="payerPhone" class="form-input" value="${form.payerPhone}"></div>
-          <div class="form-group"><label class="form-label">Payer Email</label><input type="email" id="payerEmail" class="form-input" value="${form.payerEmail}"></div>
-        </div>`;
-    }
-
-    function pickQual(code, name) {
-      form.qualificationCode = code; form.qualificationName = name;
-      document.querySelectorAll('.qual-card').forEach(el => el.classList.remove('selected'));
-      const cards = document.querySelectorAll('.qual-card');
-      QUALIFICATIONS.forEach((q,i) => { if (q.code === code) cards[i]?.classList.add('selected'); });
-    }
-
-    function renderDocsStep() {
-      const isForeign = form.nationality !== 'South African';
-      const docList = isForeign
-        ? ['Certified copy of Passport (all pages)', 'Study permit / visa', 'Certified copy of highest qualification', 'Proof of payment / funding letter', 'Passport photo', 'SAQA evaluation letter']
-        : ['Certified copy of SA ID document', 'Certified copy of Matric certificate', 'Certified copy of tertiary qualifications', 'Proof of payment / funding letter', 'Passport photo'];
-      return `
-        <div class="form-section-header"><span style="font-size:20px">📎</span><h3 style="font-weight:700;font-size:16px;color:var(--rf-navy)">Required Documents</h3></div>
-        ${isForeign ? `<div class="alert alert-warning" style="margin-bottom:16px"><span>🌍</span><div>As a foreign national, additional documents are required including study permit and SAQA evaluation.</div></div>` : ''}
-        <div style="display:flex;flex-direction:column;gap:10px">
-          ${docList.map(doc => `
-            <label class="doc-label ${form.docsUploaded.includes(doc)?'selected':''}" onclick="toggleDoc('${doc}')">
-              <input type="checkbox" ${form.docsUploaded.includes(doc)?'checked':''} style="width:16px;height:16px;accent-color:#123f7a">
-              <span style="font-size:14px;font-weight:500">${doc}</span>
-              ${form.docsUploaded.includes(doc) ? `<span style="margin-left:auto;color:#059669;font-weight:700;font-size:13px">✓</span>` : ''}
-            </label>`).join('')}
-        </div>`;
-    }
-
-    function toggleDoc(doc) {
-      if (form.docsUploaded.includes(doc)) form.docsUploaded = form.docsUploaded.filter(d => d !== doc);
-      else form.docsUploaded.push(doc);
-      renderStep();
-    }
-
-    function renderReviewStep() {
-      return `
-        <div class="form-section-header"><span style="font-size:20px">✅</span><h3 style="font-weight:700;font-size:16px;color:var(--rf-navy)">Review Your Application</h3></div>
-        ${[
-          { title:'Personal', rows:[['Name',`${form.firstName} ${form.lastName}`],['Nationality',form.nationality],[isForeign()?'Passport':'SA ID',isForeign()?form.passportNumber:form.idNumber],['DOB',form.dateOfBirth],['Gender',form.gender]] },
-          { title:'Contact', rows:[['Phone',form.phone],['Email',form.email],['Address',`${form.streetAddress}, ${form.city}, ${form.province}`]] },
-          { title:'Education', rows:[['High School',form.highSchool],['Grade',form.highestGrade]] },
-          { title:'Qualification', rows:[['Code',form.qualificationCode],['Name',form.qualificationName],['Payer',form.payerName],['Admission For',admissionFor]] },
-        ].map(sec => `
-          <div style="border:1px solid var(--rf-border);border-radius:8px;overflow:hidden;margin-bottom:12px">
-            <div style="background:var(--rf-offwhite);padding:9px 14px;font-weight:700;font-size:13px;border-bottom:1px solid var(--rf-border)">${sec.title}</div>
-            <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px">
-              ${sec.rows.map(([k,v]) => `<div style="display:flex;gap:12px;font-size:13px"><span style="color:var(--rf-gray);min-width:130px">${k}</span><span style="font-weight:600">${v||'—'}</span></div>`).join('')}
-            </div>
-          </div>`).join('')}
-        <div class="alert alert-info" style="margin-bottom:16px"><span>📧</span><div>A confirmation email will be sent to <strong>${form.email}</strong> upon submission.</div></div>
-        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer">
-          <input type="checkbox" id="tcAccepted" ${form.tcAccepted?'checked':''} style="width:16px;height:16px;margin-top:2px;accent-color:#123f7a;flex-shrink:0">
-          <span style="font-size:13px;color:var(--rf-gray);line-height:1.6">I confirm all information is accurate and accept the <strong style="color:#123f7a">Terms and Conditions</strong> of Richfield Graduate Institute of Technology.</span>
-        </label>`;
-    }
-
-    function validateStep() {
-      const e = [];
-      if (step === 0) {
-        if (!form.firstName) e.push('First name is required');
-        if (!form.lastName)  e.push('Last name is required');
-        if (!form.nationality) e.push('Nationality is required');
-        if (!isForeign() && (!form.idNumber || form.idNumber.length < 13)) e.push('Enter a valid 13-digit SA ID');
-        if (isForeign() && (!form.passportNumber || form.passportNumber.length < 5)) e.push('Enter a valid passport number');
-        if (!form.dateOfBirth) e.push('Date of birth is required');
-        if (!form.gender) e.push('Gender is required');
-      }
-      if (step === 1) {
-        if (!form.phone) e.push('Phone is required');
-        if (!form.email || !form.email.includes('@')) e.push('Valid email is required');
-        if (!form.streetAddress) e.push('Street address is required');
-        if (!form.city) e.push('City is required');
-        if (!form.province) e.push('Province is required');
-      }
-      if (step === 2) {
-        if (!form.highSchool) e.push('High school name is required');
-        if (!form.highestGrade) e.push('Highest grade is required');
-      }
-      if (step === 3) {
-        if (!form.qualificationCode) e.push('Please select a qualification');
-        if (!form.payerName) e.push('Payer name is required');
-        if (!form.payerPhone) e.push('Payer phone is required');
-      }
-      if (step === NEW_STEPS.length - 1) {
-        if (!form.tcAccepted) e.push('You must accept the Terms and Conditions');
-      }
-      return e;
-    }
-
-    function nextStep() {
-      // Sync form values from DOM
-      ['firstName','lastName','idNumber','passportNumber','dateOfBirth','gender','nationality',
-       'phone','email','altEmail','streetAddress','suburb','city','province','postalCode',
-       'highSchool','highSchoolYear','highestGrade','tertiaryInstitution','tertiaryQualification',
-       'payerName','payerRelation','payerPhone','payerEmail'].forEach(k => {
-        const el = document.getElementById(k);
-        if (el) form[k] = el.value;
-      });
-      const tcEl = document.getElementById('tcAccepted');
-      if (tcEl) form.tcAccepted = tcEl.checked;
-
-      const errors = validateStep();
-      if (errors.length) return showAlert('alert-box', errors[0], 'error');
-      clearAlert('alert-box');
-
-      if (step === NEW_STEPS.length - 1) {
-        handleSubmit();
-        return;
-      }
-      step++;
-      renderStepper();
-      renderStep();
-    }
-
-    function prevStep() {
-      if (step === 0) return;
-      step--;
-      renderStepper();
-      renderStep();
-    }
-
-    function handleSubmit() {
-      const yr = admissionFor.includes('Year') ? parseInt(admissionFor) : 1;
-      const app = submitApplication({
-        ...form,
-        applicationType: appType,
-        admissionFor: admissionFor || '1st Semester',
-        studyYear: yr,
-      });
-      showConfirmation(app, false);
-    }
-
-    function showConfirmation(app, isReturning) {
-      document.getElementById('form-screen').style.display = 'none';
-      document.getElementById('returning-screen').style.display = 'none';
-      document.getElementById('confirmation-screen').style.display = 'block';
-      document.getElementById('conf-icon').textContent = isReturning ? '🔄' : '🎉';
-      document.getElementById('conf-title').textContent = isReturning ? 'RE-ENROLMENT SUBMITTED!' : 'APPLICATION SUBMITTED!';
-      document.getElementById('conf-subtitle').textContent = isReturning
-        ? 'Your returning student application has been received and is under review.'
-        : 'Your application has been received and is being reviewed by our admissions team.';
-      document.getElementById('conf-ref').textContent = app.studentId;
-      document.getElementById('conf-details').innerHTML = [
-        ['Application Type', isReturning ? '🔄 Returning Student' : '🆕 New Student'],
-        ['Admission For', admissionFor || '1st Semester'],
-        ['Full Name', `${form.firstName} ${form.lastName}`],
-        ['Email', form.email],
-        ['Qualification', form.qualificationName],
-      ].map(([k,v]) => `
-        <div style="display:flex;gap:12px;font-size:14px;padding:9px 0;border-bottom:1px solid var(--rf-border)">
-          <span style="font-weight:600;color:var(--rf-gray);min-width:180px">${k}</span>
-          <span style="color:var(--rf-navy)">${v}</span>
-        </div>`).join('');
-    }
-
-    // ── RETURNING STUDENT FLOW ──────────────────────────
-    const RET_STEPS = ['Verify Identity','Confirm Details','New Modules','Review & Submit'];
-    let lookupValue = '';
-
-    function renderReturningStep() {
-      document.getElementById('returning-stepper').innerHTML = RET_STEPS.map((s,i) => `
-        <div class="step ${i < returningStep ? 'done' : i === returningStep ? 'active' : ''}">
-          <div class="step-num">${i < returningStep ? '✓' : i+1}</div>
-          <div class="step-label">${s}</div>
-        </div>`).join('');
-
-      const cont = document.getElementById('returning-content');
-      if (returningStep === 0) {
-        cont.innerHTML = `
-          <div class="form-section-header"><span style="font-size:22px">🔍</span><h3 style="font-weight:700;font-size:17px;color:var(--rf-navy)">Verify Your Identity</h3></div>
-          <div class="alert alert-info" style="margin-bottom:20px"><span>ℹ️</span><div><strong>Returning student?</strong> Enter your SA ID or passport number. We'll retrieve your existing details automatically.</div></div>
-          <div class="form-group" style="margin-bottom:16px">
-            <label class="form-label">SA ID Number or Passport Number <span class="required">*</span></label>
-            <input id="lookup-input" class="form-input" placeholder="Enter your ID or passport number" value="${lookupValue}" onkeydown="if(event.key==='Enter')handleLookup()">
-          </div>
-          <div id="lookup-error" style="color:var(--rf-error);font-size:12px;margin-bottom:12px"></div>
-          <button onclick="handleLookup()" class="btn btn-primary" style="width:100%;justify-content:center">🔍 Find My Record</button>`;
-      }
-      else if (returningStep === 1 && foundStudent) {
-        cont.innerHTML = `
-          <div class="form-section-header"><span style="font-size:22px">✅</span><h3 style="font-weight:700;font-size:17px;color:var(--rf-navy)">Confirm Your Details</h3></div>
-          <div class="alert alert-success" style="margin-bottom:20px">
-            <span>👋</span>
-            <div><div style="font-weight:700;font-size:15px">Welcome back, ${foundStudent.user.name}!</div>
-            <div style="font-size:13px;margin-top:2px">Student ID: <strong>${foundStudent.user.studentId}</strong> · ${foundStudent.application.qualificationName}</div>
-            <div style="font-size:13px">Applying for: <strong>${admissionFor}</strong></div></div>
-          </div>
-          <p style="font-size:14px;color:var(--rf-gray);margin-bottom:16px">Your information has been pre-filled. Please update anything that has changed:</p>
-          <div class="form-row" style="margin-bottom:16px">
-            <div class="form-group"><label class="form-label">First Name</label><input id="r-firstName" class="form-input" value="${form.firstName}"></div>
-            <div class="form-group"><label class="form-label">Last Name</label><input id="r-lastName" class="form-input" value="${form.lastName}"></div>
-          </div>
-          <div class="form-row" style="margin-bottom:16px">
-            <div class="form-group"><label class="form-label">Phone <span class="required">*</span></label><input id="r-phone" class="form-input" value="${form.phone}"></div>
-            <div class="form-group"><label class="form-label">Email <span class="required">*</span></label><input type="email" id="r-email" class="form-input" value="${form.email}"></div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Residential Address</label>
-            <input id="r-address" class="form-input" value="${form.streetAddress}" placeholder="Street, Suburb, City">
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid var(--rf-border)">
-            <button onclick="returningStep=0;renderReturningStep()" class="btn btn-secondary">← Back</button>
-            <button onclick="returningNext1()" class="btn btn-primary">Continue →</button>
-          </div>`;
-      }
-      else if (returningStep === 2 && foundStudent) {
-        const yr = admissionFor.includes('Year') ? parseInt(admissionFor) : 1;
-        const qual = QUALIFICATIONS.find(q => q.code === foundStudent.application.qualificationCode);
-        const newMods = qual ? qual.modules.filter(m => m.year === yr) : [];
-        const sem1 = newMods.filter(m => m.semester === 1);
-        const sem2 = newMods.filter(m => m.semester === 2);
-        cont.innerHTML = `
-          <div class="form-section-header"><span style="font-size:22px">📚</span><h3 style="font-weight:700;font-size:17px;color:var(--rf-navy)">Your New Modules</h3></div>
-          <div class="alert alert-info" style="margin-bottom:20px"><span>ℹ️</span><div>Based on your <strong>${admissionFor}</strong> re-enrolment for <strong>${foundStudent.application.qualificationName}</strong>, here are your <strong>Year ${yr}</strong> modules:</div></div>
-          ${newMods.length === 0 ? `<div style="text-align:center;padding:32px;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">📭</div>No modules found for this year.</div>` :
-            [1,2].map(sem => {
-              const mods = newMods.filter(m => m.semester === sem);
-              if (!mods.length) return '';
-              return `<div style="margin-bottom:20px">
-                <div style="font-weight:700;font-size:14px;color:#123f7a;margin-bottom:10px;display:flex;align-items:center;gap:8px">
-                  <span style="background:#123f7a;color:white;padding:2px 10px;border-radius:99px;font-size:12px">Semester ${sem}</span>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:8px">
-                  ${mods.map((m,i) => `
-                    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--rf-offwhite);border-radius:8px;border:1px solid var(--rf-border)">
-                      <div style="width:30px;height:30px;background:#123f7a;border-radius:7px;color:white;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-                      <div style="flex:1"><div style="font-weight:600;font-size:14px">${m.name}</div><div style="font-size:12px;color:var(--rf-gray);font-family:var(--font-mono)">${m.code}</div></div>
-                      <div style="text-align:right"><div style="font-weight:700;font-size:14px;color:#123f7a">${m.credits}</div><div style="font-size:11px;color:var(--rf-gray)">credits</div></div>
-                    </div>`).join('')}
-                </div>
-              </div>`;
-            }).join('')}
-          ${newMods.length > 0 ? `<div style="background:linear-gradient(135deg,var(--rf-navy),#123f7a);color:white;border-radius:10px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px">
-            <div><div style="font-size:12px;opacity:.75">TOTAL MODULES</div><div style="font-weight:900;font-size:28px">${newMods.length}</div></div>
-            <div><div style="font-size:12px;opacity:.75">TOTAL CREDITS</div><div style="font-weight:900;font-size:28px">${newMods.reduce((s,m)=>s+m.credits,0)}</div></div>
-            <div><div style="font-size:12px;opacity:.75">STUDY YEAR</div><div style="font-weight:900;font-size:28px">Year ${yr}</div></div>
-          </div>` : ''}
-          <div style="display:flex;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid var(--rf-border)">
-            <button onclick="returningStep=1;renderReturningStep()" class="btn btn-secondary">← Back</button>
-            <button onclick="returningStep=3;renderReturningStep()" class="btn btn-primary">Continue →</button>
-          </div>`;
-      }
-      else if (returningStep === 3 && foundStudent) {
-        const yr = admissionFor.includes('Year') ? parseInt(admissionFor) : 1;
-        const qual = QUALIFICATIONS.find(q => q.code === foundStudent.application.qualificationCode);
-        const newMods = qual ? qual.modules.filter(m => m.year === yr) : [];
-        cont.innerHTML = `
-          <div class="form-section-header"><span style="font-size:22px">✅</span><h3 style="font-weight:700;font-size:17px;color:var(--rf-navy)">Review & Submit</h3></div>
-          ${[
-            { title:'Student Details', rows:[['Name',`${form.firstName} ${form.lastName}`],['Student ID',foundStudent.user.studentId||''],['Phone',form.phone],['Email',form.email]] },
-            { title:'Re-enrolment', rows:[['Qualification',form.qualificationName],['Applying For',admissionFor],['Study Year',`Year ${yr}`],['New Modules',`${newMods.length} modules`]] },
-          ].map(sec => `
-            <div style="border:1px solid var(--rf-border);border-radius:8px;overflow:hidden;margin-bottom:12px">
-              <div style="background:var(--rf-offwhite);padding:9px 14px;font-weight:700;font-size:13px;border-bottom:1px solid var(--rf-border)">${sec.title}</div>
-              <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px">
-                ${sec.rows.map(([k,v])=>`<div style="display:flex;gap:12px;font-size:13px"><span style="color:var(--rf-gray);min-width:130px">${k}</span><span style="font-weight:600">${v||'—'}</span></div>`).join('')}
-              </div>
-            </div>`).join('')}
-          <div class="alert alert-info" style="margin-bottom:16px"><span>📧</span><div>A confirmation email will be sent to <strong>${form.email}</strong> once submitted.</div></div>
-          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;margin-bottom:16px">
-            <input type="checkbox" id="r-tc" style="width:16px;height:16px;margin-top:2px;accent-color:#123f7a;flex-shrink:0">
-            <span style="font-size:13px;color:var(--rf-gray);line-height:1.6">I confirm all details are correct and accept the <strong style="color:#123f7a">Terms and Conditions</strong>.</span>
-          </label>
-          <div style="display:flex;justify-content:space-between;padding-top:16px;border-top:1px solid var(--rf-border)">
-            <button onclick="returningStep=2;renderReturningStep()" class="btn btn-secondary">← Back</button>
-            <button onclick="submitReturning()" class="btn btn-gold" style="font-size:15px;font-weight:800">Submit Re-enrolment 🔄</button>
-          </div>`;
-      }
-    }
-
-    function handleLookup() {
-      lookupValue = document.getElementById('lookup-input').value.trim();
-      document.getElementById('lookup-error').textContent = '';
-      if (!lookupValue) { document.getElementById('lookup-error').textContent = '⚠ Please enter your ID or passport number.'; return; }
-      const result = findStudentByIdOrPassport(lookupValue);
-      if (!result) {
-        document.getElementById('lookup-error').textContent = '⚠ No approved student record found. Please contact admissions.';
-        return;
-      }
-      foundStudent = result;
-      const a = result.application;
-      Object.assign(form, { firstName:a.firstName, lastName:a.lastName, idNumber:a.idNumber, passportNumber:a.passportNumber, dateOfBirth:a.dateOfBirth, gender:a.gender, nationality:a.nationality, phone:a.phone, email:a.email, altEmail:a.altEmail||'', streetAddress:a.streetAddress, suburb:a.suburb, city:a.city, province:a.province, postalCode:a.postalCode, highSchool:a.highSchool, highSchoolYear:a.highSchoolYear, highestGrade:a.highestGrade, payerName:a.payerName, payerRelation:a.payerRelation, payerPhone:a.payerPhone, payerEmail:a.payerEmail, qualificationCode:a.qualificationCode, qualificationName:a.qualificationName, docsUploaded:[], tcAccepted:false });
-      returningStep = 1;
-      renderReturningStep();
-    }
-
-    function returningNext1() {
-      const phone = document.getElementById('r-phone')?.value;
-      const email = document.getElementById('r-email')?.value;
-      const address = document.getElementById('r-address')?.value;
-      if (!phone || !email) { alert('Phone and email are required.'); return; }
-      form.phone = phone; form.email = email;
-      if (address) form.streetAddress = address;
-      const fn = document.getElementById('r-firstName')?.value;
-      const ln = document.getElementById('r-lastName')?.value;
-      if (fn) form.firstName = fn;
-      if (ln) form.lastName = ln;
-      returningStep = 2;
-      renderReturningStep();
-    }
-
-    function submitReturning() {
-      const tcEl = document.getElementById('r-tc');
-      if (!tcEl?.checked) { alert('Please accept the Terms and Conditions.'); return; }
-      const yr = admissionFor.includes('Year') ? parseInt(admissionFor) : 1;
-      const app = submitApplication({ ...form, applicationType: 'returning', admissionFor, studyYear: yr });
-      document.getElementById('returning-screen').style.display = 'none';
-      showConfirmation(app, true);
-    }
-  </script>
+    render();
+    showToast(doc + ' — file selected ✓', 'success');
+  }
+}
+renderNavbar('apply');
+render();
+</script>
 </body>
 </html>
