@@ -4,7 +4,12 @@
  */
 
 const sequelize = require('../config/database');
-const { PAGINATION, LIFECYCLE_STATUS, ACADEMIC_STATUS } = require('../utils/constants');
+const {
+  PAGINATION,
+  LIFECYCLE_STATUS,
+  ACADEMIC_STATUS,
+  USER_ROLES,
+} = require('../utils/constants');
 
 class StudentService {
   /**
@@ -257,6 +262,75 @@ class StudentService {
     );
 
     return registrations;
+  }
+
+  /**
+   * Set linked user account status for a student (admin) — uses `users.account_status`.
+   */
+  async setStudentAccountStatus(studentId, adminUserId, { account_status, status_reason }) {
+    const allowed = new Set(['active', 'blocked', 'suspended']);
+    if (!allowed.has(account_status)) {
+      throw {
+        statusCode: 400,
+        message: 'account_status must be one of: active, blocked, suspended',
+      };
+    }
+
+    const rows = await sequelize.query(
+      `SELECT u.id AS user_id, u.role
+       FROM students s
+       INNER JOIN users u ON s.user_id = u.id
+       WHERE s.id = ?`,
+      {
+        replacements: [studentId],
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+    const row = rows[0];
+    if (!row) {
+      throw { statusCode: 404, message: 'Student not found' };
+    }
+    if (row.role !== USER_ROLES.STUDENT) {
+      throw {
+        statusCode: 403,
+        message: 'Only student accounts can be updated with this action',
+      };
+    }
+    if (row.user_id === adminUserId) {
+      throw { statusCode: 403, message: 'You cannot change your own account status' };
+    }
+
+    const reason =
+      status_reason != null && String(status_reason).trim()
+        ? String(status_reason).trim()
+        : null;
+
+    await sequelize.query(
+      `UPDATE users SET
+         account_status = ?,
+         status_reason = ?,
+         status_changed_at = NOW(),
+         status_changed_by = ?,
+         updated_at = NOW()
+       WHERE id = ?`,
+      {
+        replacements: [account_status, reason, adminUserId, row.user_id],
+      }
+    );
+
+    const outRows = await sequelize.query(
+      `SELECT s.id AS student_id, s.user_id, s.student_number,
+              u.email, u.account_status, u.status_reason, u.status_changed_at
+       FROM students s
+       INNER JOIN users u ON s.user_id = u.id
+       WHERE s.id = ?`,
+      {
+        replacements: [studentId],
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    return outRows[0];
   }
 }
 

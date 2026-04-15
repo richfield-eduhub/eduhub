@@ -52,6 +52,7 @@ const APPLICATION_TYPE = {
   NEW: 'new',
   RETURNING: 'returning',
   TRANSFER: 'transfer',
+  OTHER: 'other',
 };
 
 const DOCUMENT_TYPE = {

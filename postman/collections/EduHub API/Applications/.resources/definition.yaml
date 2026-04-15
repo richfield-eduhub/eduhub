@@ -1,3 +1,6 @@
 $kind: collection
 name: Applications
-description: Public admissions application endpoints — no authentication required. Prospective students can submit, look up, retrieve, and update their applications.
+description: Public admissions application endpoints — no authentication
+  required. Prospective students can submit, look up, retrieve, and update their
+  applications.
+order: 5000

@@ -16,6 +16,7 @@ const qualificationRoutes = require('./routes/qualification.routes');
 const moduleRoutes = require('./routes/module.routes');
 const campusRoutes = require('./routes/campus.routes');
 const applicationRoutes = require('./routes/application.routes');
+const adminRoutes = require('./routes/admin.routes');
 
 const app = express();
 
@@ -58,6 +59,7 @@ app.use('/api/qualifications', qualificationRoutes);
 app.use('/api/modules', moduleRoutes);
 app.use('/api/campuses', campusRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/admin', adminRoutes);
 
 /**
  * Error Handling

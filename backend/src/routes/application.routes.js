@@ -18,6 +18,10 @@ const ADMISSION_FOR_VALUES = [
   '3rd Year',
 ];
 
+const APPLICATION_TYPE_VALUES = ['new', 'returning', 'transfer', 'other'];
+
+const GENDER_VALUES = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
+
 const createApplicationValidation = [
   body('campus_id').isUUID().withMessage('Valid campus_id is required'),
   body('qualification_id').isUUID().withMessage('Valid qualification_id is required'),
@@ -25,7 +29,19 @@ const createApplicationValidation = [
   body('last_name').trim().notEmpty().withMessage('last_name is required'),
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('phone').trim().notEmpty().withMessage('phone is required'),
-  body('id_number').trim().notEmpty().withMessage('id_number is required'),
+  body('id_number').optional().trim(),
+  body('passport_number').optional().trim(),
+  body('nationality').optional().trim(),
+  body('date_of_birth').optional().isISO8601(),
+  body('gender').optional().isIn(GENDER_VALUES),
+  body('alt_email').optional().isEmail().normalizeEmail(),
+  body('street_address').optional().trim(),
+  body('suburb').optional().trim(),
+  body('city').optional().trim(),
+  body('province').optional().trim(),
+  body('postal_code').optional().trim(),
+  body('study_year').optional().isInt({ min: 1, max: 3 }),
+  body('docs_uploaded').optional(),
   body('tc_accepted')
     .optional()
     .isBoolean()
@@ -36,7 +52,7 @@ const createApplicationValidation = [
     .withMessage(`status must be ${APPLICATION_STATUS.DRAFT} or ${APPLICATION_STATUS.PENDING}`),
   body('application_type')
     .optional()
-    .isIn(['new', 'returning', 'transfer'])
+    .isIn(APPLICATION_TYPE_VALUES)
     .withMessage('Invalid application_type'),
   body('admission_for')
     .optional()
