@@ -249,7 +249,7 @@ function renderNavbar(activePage) {
         <div style="padding:20px;text-align:center;color:var(--rf-gray);font-size:13px">Loading...</div>
       </div>
     </div>` : '';
-  const ph = document.getElementById('navbar-placeholder');
+  const ph = document.getElementById('navbar-root');
   if (ph) {
     ph.innerHTML = `
       <nav class="navbar">
