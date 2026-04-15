@@ -1,54 +1,513 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Lecturer Dashboard — EduHub</title>
-  <link rel="stylesheet" href="../shared.css" />
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .tab-bar{display:flex;gap:4px;border-bottom:2px solid var(--rf-border);margin-bottom:20px}
+    .tab-btn{padding:10px 18px;font-size:.85rem;font-weight:700;color:var(--rf-gray);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+    .tab-btn.active{color:var(--rf-navy);border-bottom-color:#c0392b}
+    .tab-pane{display:none}
+    .tab-pane.active{display:block;animation:fadeUp .2s ease both}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    /* Calendar */
+    .cal-wrap{padding:18px 22px}
+    .cal-nav-row{display:flex;align-items:center;margin-bottom:12px}
+    .cal-arrow{color:var(--rf-blue);font-size:.82rem;font-weight:bold;cursor:pointer;padding:3px 7px}
+    .cal-arrow:hover{text-decoration:underline}
+    .cal-month-title{flex:1;text-align:center;font-weight:900;font-size:1.02rem;color:var(--rf-navy)}
+    table.lec-cal{width:100%;border-collapse:collapse}
+    table.lec-cal th{font-size:.7rem;font-weight:700;color:var(--rf-gray);padding:5px 0;text-align:center}
+    table.lec-cal td{text-align:center;padding:7px 3px;font-size:.82rem;color:var(--rf-blue);cursor:pointer;border-radius:5px;position:relative;transition:background .12s}
+    table.lec-cal td:hover:not(.empty):not(.today){background:rgba(26,93,181,.08)}
+    table.lec-cal td.today{background:#123f7a;color:white;border-radius:50%;font-weight:700}
+    table.lec-cal td.has-event{cursor:pointer}
+    table.lec-cal td.has-event:hover:not(.today){background:rgba(26,93,181,.08)}
+    table.lec-cal td.has-event::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:#1a9e8f}
+    table.lec-cal td.today.has-event::after{background:white}
+    table.lec-cal td.empty{color:transparent;cursor:default;pointer-events:none}
+
+    /* Messages */
+    .msg-item{background:white;border-radius:10px;border:1px solid var(--rf-border);padding:16px 18px;margin-bottom:12px}
+    .msg-item.unread{border-left:3px solid var(--rf-blue)}
+    .msg-subject{font-weight:700;font-size:.9rem;color:var(--rf-navy)}
+    .msg-from{font-size:.76rem;color:var(--rf-gray);margin-top:2px}
+    .msg-body-text{font-size:.84rem;color:#374151;line-height:1.65;margin-top:10px;padding-top:10px;border-top:1px solid var(--rf-border)}
+    .reply-box{margin-top:12px;padding-top:12px;border-top:1px solid var(--rf-border)}
+    .reply-box textarea{width:100%;padding:9px 11px;border:1.5px solid var(--rf-border);border-radius:7px;font-size:.84rem;font-family:inherit;resize:vertical;min-height:70px}
+    .reply-box textarea:focus{border-color:#123f7a;outline:none}
+    .btn-reply{padding:8px 18px;background:#123f7a;color:white;border:none;border-radius:6px;font-size:.82rem;font-weight:700;cursor:pointer;margin-top:8px}
+    .btn-reply:hover{background:#0d2c56}
+    .reply-bubble{padding:9px 12px;border-radius:7px;margin-bottom:7px;font-size:.83rem;background:#EEF2FF}
+    .reply-bubble.from-lec{background:#F0FDF4}
+
+    /* Assignments */
+    .asgn-item{background:white;border-radius:10px;border:1px solid var(--rf-border);padding:16px 18px;margin-bottom:12px}
+    .asgn-item.pending{border-left:3px solid #f59e0b}
+    .asgn-item.graded{border-left:3px solid #059669}
+    .asgn-title{font-weight:700;font-size:.9rem;color:var(--rf-navy)}
+    .asgn-meta{font-size:.76rem;color:var(--rf-gray);margin-top:2px}
+    .grade-form{margin-top:12px;padding-top:12px;border-top:1px solid var(--rf-border)}
+    .grade-form input,.grade-form textarea{width:100%;padding:9px 11px;border:1.5px solid var(--rf-border);border-radius:7px;font-family:inherit;font-size:.84rem;margin-bottom:8px}
+    .grade-form input:focus,.grade-form textarea:focus{border-color:#123f7a;outline:none}
+    .btn-grade{padding:9px 22px;background:#059669;color:white;border:none;border-radius:7px;font-size:.83rem;font-weight:700;cursor:pointer}
+    .btn-grade:hover{background:#047857}
+
+    /* day popup */
+    .day-popup{display:none;position:fixed;z-index:300;background:white;border-radius:12px;box-shadow:0 8px 36px rgba(0,0,0,.18);padding:18px 20px;min-width:250px;max-width:320px;border:1px solid #d4dbe8}
+    .day-popup.show{display:block;animation:popIn .2s cubic-bezier(.34,1.56,.64,1)}
+    @keyframes popIn{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+    .dp-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .dp-close-btn{background:none;border:none;cursor:pointer;color:#6b7a99;font-size:1rem;padding:2px 4px;border-radius:4px;line-height:1}
+    .dp-close-btn:hover{background:#f3f4f6}
+    .badge-count{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#c0392b;color:white;border-radius:50%;font-size:.68rem;font-weight:700;margin-left:5px}
+  </style>
 </head>
-<body class="page-container">
-  <div id="navbar-placeholder"></div>
-  <div class="main-content">
-    <h1 class="section-title">LECTURER PORTAL</h1>
-    <p class="section-subtitle" id="welcome-sub">Loading...</p>
-    <div class="grid-3 mb-24" id="stats-row"></div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">Enrolled Students by Programme</span></div>
-      <div id="students-table"><div style="padding:32px;text-align:center;color:var(--rf-gray)">Loading...</div></div>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">LECTURER PORTAL</h1>
+  <p class="section-subtitle" id="subtitle"></p>
+  <div class="grid-4 mb-24" id="stats"></div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab(this,'tab-overview')">📊 Overview</button>
+    <button class="tab-btn" onclick="switchTab(this,'tab-messages')" id="msgTabBtn">💬 Messages</button>
+    <button class="tab-btn" onclick="switchTab(this,'tab-assignments')" id="asgnTabBtn">📝 Assignments</button>
+    <button class="tab-btn" onclick="switchTab(this,'tab-calendar')">📅 Calendar</button>
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <div class="tab-pane active" id="tab-overview">
+    <div class="grid-2 mb-24">
+      <div class="card">
+        <div class="card-header"><span style="font-weight:700">Enrolled Students by Programme</span></div>
+        <div id="table-wrap"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span style="font-weight:700">Recent Submissions</span><a onclick="switchTab(document.getElementById('asgnTabBtn'),'tab-assignments')" style="color:var(--rf-blue);font-size:13px;cursor:pointer">View All</a></div>
+        <div id="recent-asgns" style="padding:4px 0"></div>
+      </div>
     </div>
   </div>
-  <script src="../shared.js"></script>
-  <script>
-    const user = requireAuth('lecturer');
-    if (user) { (async()=>{ await renderNavbar('dashboard'); await init(); })(); }
 
-    async function init() {
-      document.getElementById('welcome-sub').textContent = `Welcome, ${user.name}`;
-      const [adminUsers, regs] = await Promise.all([getAdminUsers(), getRegistrations()]);
-      const students = adminUsers.filter(u=>u.role==='student');
-      const approvedRegs = regs.filter(r=>r.status==='allocated');
-      const programmes = new Set(approvedRegs.map(r=>r.qualificationCode)).size;
+  <!-- ── MESSAGES ── -->
+  <div class="tab-pane" id="tab-messages">
+    <div class="grid-2">
+      <div>
+        <h3 style="font-weight:800;font-size:.95rem;color:var(--rf-navy);margin-bottom:14px">Inbox from Students</h3>
+        <div id="lecInbox"></div>
+      </div>
+      <div>
+        <h3 style="font-weight:800;font-size:.95rem;color:var(--rf-navy);margin-bottom:14px">Sent Messages</h3>
+        <div id="lecSent"></div>
+      </div>
+    </div>
+  </div>
 
-      document.getElementById('stats-row').innerHTML = [
-        {icon:'🎓',label:'Total Students',value:students.length,bg:'#E0E7FF'},
-        {icon:'📝',label:'Allocated Registrations',value:approvedRegs.length,bg:'#D1FAE5'},
-        {icon:'📚',label:'Programmes Running',value:programmes,bg:'#FEF3C7'},
-      ].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span>${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
+  <!-- ── ASSIGNMENTS ── -->
+  <div class="tab-pane" id="tab-assignments">
 
-      const tableEl = document.getElementById('students-table');
-      if (approvedRegs.length===0){tableEl.innerHTML='<div style="padding:32px;text-align:center;color:var(--rf-gray)">No enrolled students yet</div>';return;}
-      tableEl.innerHTML=`<table class="data-table">
-        <thead><tr><th>Student</th><th>Student ID</th><th>Programme</th><th>Year / Sem</th><th>Modules</th></tr></thead>
-        <tbody>${approvedRegs.map(r=>{
-          const s=adminUsers.find(u=>u.studentId===r.studentId);
-          return `<tr>
-            <td style="font-weight:600">${s?.name||'Unknown'}</td>
-            <td style="font-family:var(--font-mono);font-size:12px;color:var(--rf-blue)">${r.studentId}</td>
-            <td>${r.qualificationName}</td>
-            <td style="font-size:13px">Year ${r.studyYear}, Sem ${r.semester}</td>
-            <td>${r.modules.length} modules</td>
-          </tr>`;
-        }).join('')}</tbody></table>`;
-    }
-  </script>
+    <!-- Upload Assignment Brief -->
+    <div style="background:white;border-radius:12px;border:1px solid var(--rf-border);padding:22px 24px;margin-bottom:26px">
+      <div style="font-family:'Montserrat',sans-serif;font-size:.93rem;font-weight:900;color:var(--rf-navy);margin-bottom:3px">📤 Upload Assignment for Students</div>
+      <div style="width:40px;height:3px;background:#c0392b;border-radius:2px;margin-bottom:18px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:13px">
+        <div>
+          <label style="display:block;font-size:.81rem;font-weight:700;color:var(--rf-navy);margin-bottom:5px">Module</label>
+          <select id="uploadAsgnModule" style="width:100%;padding:9px 11px;border:1.5px solid var(--rf-border);border-radius:7px;font-size:.84rem;color:var(--rf-navy);background:white">
+            <option value="">— Select Module —</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:.81rem;font-weight:700;color:var(--rf-navy);margin-bottom:5px">Due Date (optional)</label>
+          <input type="date" id="uploadAsgnDue" style="width:100%;padding:9px 11px;border:1.5px solid var(--rf-border);border-radius:7px;font-size:.84rem;color:var(--rf-navy)"/>
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:.81rem;font-weight:700;color:var(--rf-navy);margin-bottom:5px">Assignment Title</label>
+        <input type="text" id="uploadAsgnTitle" placeholder="e.g. Assignment 1 – Variables and Loops" style="width:100%;padding:9px 11px;border:1.5px solid var(--rf-border);border-radius:7px;font-size:.84rem;font-family:inherit"/>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:.81rem;font-weight:700;color:var(--rf-navy);margin-bottom:5px">Instructions for Students</label>
+        <textarea id="uploadAsgnDesc" rows="4" placeholder="Describe what students need to complete..." style="width:100%;padding:9px 11px;border:1.5px solid var(--rf-border);border-radius:7px;font-size:.84rem;font-family:inherit;resize:vertical"></textarea>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:.81rem;font-weight:700;color:var(--rf-navy);margin-bottom:5px">File Name / Reference (optional)</label>
+        <input type="text" id="uploadAsgnFile" placeholder="e.g. Assignment1_Brief.pdf" style="width:100%;padding:9px 11px;border:1.5px solid var(--rf-border);border-radius:7px;font-size:.84rem;font-family:inherit"/>
+      </div>
+      <button onclick="doUploadAssignment()" style="padding:10px 26px;background:var(--rf-navy);color:white;border:none;border-radius:7px;font-family:'Montserrat',sans-serif;font-size:.84rem;font-weight:700;cursor:pointer">📤 Publish to Students</button>
+      <div id="uploadAsgnFeedback" style="margin-top:10px;font-size:.82rem"></div>
+    </div>
+
+    <!-- Published Assignments -->
+    <div style="margin-bottom:22px">
+      <div style="font-family:'Montserrat',sans-serif;font-size:.88rem;font-weight:900;color:var(--rf-navy);margin-bottom:10px">📋 Published Assignments</div>
+      <div id="publishedAsgnList"></div>
+    </div>
+
+    <!-- Student Submissions -->
+    <div style="font-family:'Montserrat',sans-serif;font-size:.88rem;font-weight:900;color:var(--rf-navy);margin-bottom:12px">📝 Student Submissions</div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap">
+      <select id="asgnModFilter" onchange="renderAssignments()" style="padding:9px 13px;border:1.5px solid var(--rf-border);border-radius:7px;font-size:.85rem;background:white;color:var(--rf-navy)">
+        <option value="all">All Modules</option>
+      </select>
+      <select id="asgnStatusFilter" onchange="renderAssignments()" style="padding:9px 13px;border:1.5px solid var(--rf-border);border-radius:7px;font-size:.85rem;background:white;color:var(--rf-navy)">
+        <option value="all">All Status</option>
+        <option value="submitted">⏳ Pending Grading</option>
+        <option value="graded">✅ Graded</option>
+      </select>
+    </div>
+    <div id="asgnList"></div>
+  </div>
+
+  <!-- ── CALENDAR ── -->
+  <div class="tab-pane" id="tab-calendar">
+    <div class="grid-2" style="align-items:start">
+      <div class="card">
+        <div class="card-header"><span style="font-weight:700;font-size:15px">📅 Event Calendar</span><span id="evCount" style="font-size:13px;color:var(--rf-gray)"></span></div>
+        <div class="cal-wrap">
+          <div class="cal-nav-row">
+            <span class="cal-arrow" onclick="changeMonth(-1)">◀ <span id="prevLbl"></span></span>
+            <span class="cal-month-title" id="calTitle"></span>
+            <span class="cal-arrow" onclick="changeMonth(1)"><span id="nextLbl"></span> ▶</span>
+          </div>
+          <table class="lec-cal">
+            <thead><tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr></thead>
+            <tbody id="calBody"></tbody>
+          </table>
+          <div style="margin-top:10px;font-size:.72rem;color:var(--rf-gray)">
+            <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:7px;height:7px;border-radius:50%;background:#1a9e8f;display:inline-block"></span>Event — click to view</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span style="font-weight:700;font-size:15px">Upcoming Events</span></div>
+        <div style="padding:4px 24px 20px;max-height:380px;overflow-y:auto" id="eventsList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Day popup -->
+<div class="day-popup" id="dayPopup">
+  <div class="dp-header-row">
+    <div style="font-family:'Montserrat',sans-serif;font-size:.9rem;font-weight:900;color:#123f7a" id="dayPopupTitle"></div>
+    <button class="dp-close-btn" onclick="document.getElementById('dayPopup').classList.remove('show')">✕</button>
+  </div>
+  <div id="dayPopupEvents"></div>
+</div>
+
+<script src="../shared-local.js"></script>
+<script>
+const user = requireAuth('lecturer');
+renderNavbar('lecturer-dashboard');
+
+const allUsers = getUsers();
+const regs = getRegistrations();
+const approvedRegs = regs.filter(r => r.status==='approved'||r.status==='allocated');
+const students = allUsers.filter(u => u.role === 'student');
+const progCount = new Set(approvedRegs.map(r => r.qualificationCode)).size;
+const inbox = getInboxFor(user.id);
+const unreadCount = inbox.filter(m => !m.read).length;
+const allAsgns = getAssignments();
+const pendingAsgns = allAsgns.filter(a => a.status === 'submitted');
+
+/* stats */
+document.getElementById('subtitle').textContent = `Welcome, ${user.name}`;
+document.getElementById('stats').innerHTML = [
+  { icon:'🎓', label:'Total Students',        value: students.length,    bg:'#E0E7FF' },
+  { icon:'📝', label:'Active Registrations',   value: approvedRegs.length, bg:'#D1FAE5' },
+  { icon:'💬', label:'Unread Messages',        value: unreadCount,        bg: unreadCount > 0 ? '#FEE2E2' : '#F3F4F6' },
+  { icon:'📤', label:'Pending Grading',        value: pendingAsgns.length, bg: pendingAsgns.length > 0 ? '#FEF3C7' : '#F3F4F6' },
+].map(s => `<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span>${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
+
+/* update tab badges */
+if (unreadCount > 0) document.getElementById('msgTabBtn').innerHTML += `<span class="badge-count">${unreadCount}</span>`;
+if (pendingAsgns.length > 0) document.getElementById('asgnTabBtn').innerHTML += `<span class="badge-count">${pendingAsgns.length}</span>`;
+
+/* overview table */
+document.getElementById('table-wrap').innerHTML = `<table class="data-table"><thead><tr><th>Student</th><th>Student ID</th><th>Programme</th><th>Semester</th><th>Modules</th></tr></thead><tbody>
+${approvedRegs.length === 0
+  ? `<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--rf-gray)">No enrolled students yet</td></tr>`
+  : approvedRegs.map(r => {
+      const s = allUsers.find(u => u.studentId === r.studentId);
+      return `<tr><td style="font-weight:600">${s?.name||'Unknown'}</td><td style="font-family:var(--font-mono);font-size:12px;color:var(--rf-blue)">${r.studentId}</td><td>${r.qualificationName}</td><td>Sem ${r.semester}, ${r.year}</td><td>${r.modules.length}</td></tr>`;
+    }).join('')}
+</tbody></table>`;
+
+/* recent assignments */
+const recent5 = [...allAsgns].sort((a,b) => new Date(b.submittedAt)-new Date(a.submittedAt)).slice(0,5);
+document.getElementById('recent-asgns').innerHTML = recent5.length === 0
+  ? '<div style="padding:20px;text-align:center;color:var(--rf-gray);font-size:13px">No assignments submitted yet</div>'
+  : `<table class="data-table"><thead><tr><th>Student</th><th>Module</th><th>Title</th><th>Status</th></tr></thead><tbody>
+  ${recent5.map(a => {
+    const stu = allUsers.find(u => u.studentId === a.studentId);
+    return `<tr><td style="font-weight:600">${stu?.name||a.studentId}</td><td style="font-family:var(--font-mono);font-size:12px">${a.moduleCode}</td><td style="font-size:13px">${a.title}</td><td>${a.status === 'graded' ? `<span style="color:#059669;font-weight:700">✅ ${a.mark}%</span>` : '<span style="color:#d97706;font-weight:700">⏳ Pending</span>'}</td></tr>`;
+  }).join('')}
+  </tbody></table>`;
+
+/* ── Tab switching ── */
+function switchTab(btn, tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (typeof btn === 'string') btn = document.querySelector(`[onclick*="${tabId}"]`);
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  if (tabId === 'tab-messages') renderMessages();
+  if (tabId === 'tab-assignments') { initAsgnFilters(); renderAssignments(); initUploadModuleSelect(); renderPublishedAssignments(); }
+  if (tabId === 'tab-calendar') { buildCal(); renderEventsList(); }
+}
+
+/* ── Messages ── */
+function renderMessages() {
+  const inboxMsgs = getInboxFor(user.id);
+  const sentMsgs = getSentBy(user.id);
+
+  document.getElementById('lecInbox').innerHTML = inboxMsgs.length === 0
+    ? '<p style="color:var(--rf-gray);font-size:.84rem">No messages yet.</p>'
+    : inboxMsgs.map(m => {
+        const fromU = allUsers.find(u => u.id === m.from);
+        const replies = m.replies || [];
+        return `<div class="msg-item ${m.read?'':'unread'}" id="lmsg_${m.id}">
+          <div class="msg-subject">${m.subject}</div>
+          <div class="msg-from">From: ${fromU?.name||'Student'} · ${fmtDateTime(m.sentAt)}</div>
+          <div class="msg-body-text">${m.body}</div>
+          ${replies.length ? `<div style="margin-top:10px">${replies.map(r => {
+            const ru = allUsers.find(u => u.id === r.from);
+            return `<div class="reply-bubble ${ru?.role==='lecturer'?'from-lec':''}"><strong style="font-size:.75rem">${ru?.name||'?'}:</strong> ${r.body}</div>`;
+          }).join('')}</div>` : ''}
+          <div class="reply-box">
+            <textarea id="replyText_${m.id}" placeholder="Type your reply..."></textarea>
+            <button class="btn-reply" onclick="sendReply('${m.id}')">↩ Reply</button>
+            <span id="replyFb_${m.id}" style="font-size:.78rem;margin-left:8px"></span>
+          </div>
+        </div>`;
+      }).join('');
+
+  document.getElementById('lecSent').innerHTML = sentMsgs.length === 0
+    ? '<p style="color:var(--rf-gray);font-size:.84rem">No sent messages.</p>'
+    : sentMsgs.map(m => {
+        const toU = allUsers.find(u => u.id === m.to);
+        return `<div class="msg-item"><div class="msg-subject">${m.subject}</div><div class="msg-from">To: ${toU?.name||'?'} · ${fmtDateTime(m.sentAt)}</div><div class="msg-body-text">${m.body}</div></div>`;
+      }).join('');
+}
+
+function sendReply(msgId) {
+  const text = document.getElementById(`replyText_${msgId}`).value.trim();
+  const fb = document.getElementById(`replyFb_${msgId}`);
+  if (!text) { fb.innerHTML = '<span style="color:#dc2626">Enter a reply first.</span>'; return; }
+  replyMessage(msgId, user.id, text);
+  markMessageRead(msgId);
+  fb.innerHTML = '<span style="color:#059669;font-weight:700">✅ Sent!</span>';
+  document.getElementById(`replyText_${msgId}`).value = '';
+  setTimeout(() => renderMessages(), 600);
+}
+
+/* ── Upload Assignment Brief ── */
+function initUploadModuleSelect() {
+  const regs = getRegistrations().filter(r => r.status==='approved'||r.status==='allocated');
+  const seen = {};
+  const mods = [];
+  regs.forEach(r => (r.modules||[]).forEach(m => { if (!seen[m.code]) { seen[m.code]=true; mods.push(m); } }));
+  const sel = document.getElementById('uploadAsgnModule');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Select Module —</option>';
+  mods.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.code;
+    opt.dataset.name = m.name;
+    opt.textContent = m.code + ' — ' + m.name;
+    sel.appendChild(opt);
+  });
+}
+
+function doUploadAssignment() {
+  const sel = document.getElementById('uploadAsgnModule');
+  const code = sel.value;
+  const name = sel.options[sel.selectedIndex]?.dataset.name || '';
+  const title = document.getElementById('uploadAsgnTitle').value.trim();
+  const desc  = document.getElementById('uploadAsgnDesc').value.trim();
+  const due   = document.getElementById('uploadAsgnDue').value;
+  const file  = document.getElementById('uploadAsgnFile').value.trim();
+  const fb    = document.getElementById('uploadAsgnFeedback');
+  if (!code)  { fb.innerHTML = '<span style="color:#dc2626">Please select a module.</span>'; return; }
+  if (!title) { fb.innerHTML = '<span style="color:#dc2626">Please enter a title.</span>'; return; }
+  if (!desc)  { fb.innerHTML = '<span style="color:#dc2626">Please add instructions for students.</span>'; return; }
+  uploadLecturerAssignment(user.id, user.name, code, name, title, desc, due||null, file||null);
+  fb.innerHTML = '<span style="color:#059669;font-weight:700">✅ Published! Students can now see and download this assignment.</span>';
+  document.getElementById('uploadAsgnTitle').value = '';
+  document.getElementById('uploadAsgnDesc').value  = '';
+  document.getElementById('uploadAsgnDue').value   = '';
+  document.getElementById('uploadAsgnFile').value  = '';
+  sel.value = '';
+  renderPublishedAssignments();
+}
+
+function renderPublishedAssignments() {
+  const el = document.getElementById('publishedAsgnList');
+  if (!el) return;
+  const all = getLecturerAssignments()
+    .filter(a => a.lecturerId === user.id)
+    .sort((a,b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+  if (!all.length) {
+    el.innerHTML = '<p style="color:var(--rf-gray);font-size:.84rem">No assignments published yet.</p>';
+    return;
+  }
+  el.innerHTML = all.map(a => {
+    const due = a.dueDate ? 'Due: ' + new Date(a.dueDate).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : 'No due date';
+    return `<div style="background:white;border-radius:9px;border:1px solid var(--rf-border);padding:13px 16px;margin-bottom:9px;display:flex;align-items:flex-start;gap:12px">
+      <span style="font-size:1.25rem;flex-shrink:0;margin-top:2px">📋</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.87rem;color:var(--rf-navy)">${a.title}</div>
+        <div style="font-size:.74rem;color:var(--rf-gray);margin-top:2px">${a.moduleCode} — ${a.moduleName} · ${due} · Published ${fmtDate(a.uploadedAt)}</div>
+        ${a.description ? `<div style="font-size:.8rem;color:#374151;margin-top:5px;line-height:1.5">${a.description}</div>` : ''}
+        ${a.fileName ? `<div style="font-size:.73rem;color:var(--rf-gray);margin-top:3px">📎 ${a.fileName}</div>` : ''}
+      </div>
+      <button onclick="removePublishedAsgn('${a.id}')" style="padding:5px 12px;background:white;border:1px solid #e5e7eb;border-radius:6px;font-size:.76rem;color:#dc2626;cursor:pointer;flex-shrink:0">Remove</button>
+    </div>`;
+  }).join('');
+}
+
+function removePublishedAsgn(id) {
+  if (!confirm('Remove this assignment? Students will no longer see it.')) return;
+  deleteLecturerAssignment(id);
+  renderPublishedAssignments();
+}
+
+/* ── Assignments ── */
+function initAsgnFilters() {
+  const modCodes = [...new Set(getAssignments().map(a => a.moduleCode))];
+  const sel = document.getElementById('asgnModFilter');
+  sel.innerHTML = '<option value="all">All Modules</option>';
+  modCodes.forEach(c => {
+    const asgn = getAssignments().find(a => a.moduleCode === c);
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c + (asgn ? ' — ' + asgn.moduleName : '');
+    sel.appendChild(opt);
+  });
+}
+
+function renderAssignments() {
+  const modFilter = document.getElementById('asgnModFilter').value;
+  const statusFilter = document.getElementById('asgnStatusFilter').value;
+  let asgns = getAssignments();
+  if (modFilter !== 'all') asgns = asgns.filter(a => a.moduleCode === modFilter);
+  if (statusFilter !== 'all') asgns = asgns.filter(a => a.status === statusFilter);
+  asgns.sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+  const el = document.getElementById('asgnList');
+  if (!asgns.length) {
+    el.innerHTML = '<div style="text-align:center;padding:52px;color:var(--rf-gray);font-size:14px;background:white;border-radius:12px;border:1px solid var(--rf-border)">No assignments found</div>';
+    return;
+  }
+  el.innerHTML = asgns.map(a => {
+    const stu = allUsers.find(u => u.studentId === a.studentId);
+    return `<div class="asgn-item ${a.status}" id="asgn_${a.id}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="asgn-title">${a.title}</div>
+          <div class="asgn-meta">${a.moduleCode} — ${a.moduleName} · Student: <strong>${stu?.name||a.studentId}</strong> · Submitted ${fmtDate(a.submittedAt)}</div>
+        </div>
+        <span style="font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:99px;background:${a.status==='graded'?'#D1FAE5':'#FEF3C7'};color:${a.status==='graded'?'#065f46':'#92400e'}">${a.status==='graded'?'✅ Graded: '+a.mark+'%':'⏳ Pending Grading'}</span>
+      </div>
+      <div style="margin-top:10px;font-size:.84rem;color:#374151;background:#f9fafb;border-radius:7px;padding:10px 12px;line-height:1.6">${a.content}</div>
+      ${a.fileName ? `<div style="font-size:.76rem;color:var(--rf-gray);margin-top:6px">📎 ${a.fileName}</div>` : ''}
+      ${a.status === 'graded'
+        ? `<div style="margin-top:10px;padding:10px 12px;background:#f0fdf4;border-radius:7px;font-size:.84rem;color:#065f46">💬 Feedback: ${a.feedback}<br/><span style="font-size:.74rem;color:var(--rf-gray)">Graded by ${a.gradedBy} on ${fmtDate(a.gradedAt)}</span></div>`
+        : `<div class="grade-form">
+            <label style="font-size:.8rem;font-weight:700;color:var(--rf-navy);display:block;margin-bottom:5px">Mark (0–100)</label>
+            <input type="number" id="mark_${a.id}" min="0" max="100" placeholder="e.g. 78" style="max-width:140px"/>
+            <label style="font-size:.8rem;font-weight:700;color:var(--rf-navy);display:block;margin-bottom:5px;margin-top:8px">Feedback</label>
+            <textarea id="feedback_${a.id}" placeholder="Write constructive feedback for the student..."></textarea>
+            <button class="btn-grade" onclick="gradeAsgn('${a.id}')">✅ Submit Grade</button>
+            <span id="gradeFb_${a.id}" style="font-size:.78rem;margin-left:10px"></span>
+          </div>`}
+    </div>`;
+  }).join('');
+}
+
+function gradeAsgn(id) {
+  const mark = parseInt(document.getElementById(`mark_${id}`).value);
+  const feedback = document.getElementById(`feedback_${id}`).value.trim();
+  const fb = document.getElementById(`gradeFb_${id}`);
+  if (isNaN(mark) || mark < 0 || mark > 100) { fb.innerHTML = '<span style="color:#dc2626">Enter a valid mark (0–100).</span>'; return; }
+  if (!feedback) { fb.innerHTML = '<span style="color:#dc2626">Please add feedback.</span>'; return; }
+  gradeAssignment(id, mark, feedback, user.name);
+  fb.innerHTML = '<span style="color:#059669;font-weight:700">✅ Grade saved!</span>';
+  setTimeout(() => renderAssignments(), 800);
+}
+
+/* ── Calendar ── */
+const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+let calDate = new Date();
+
+function buildCal() {
+  const year = calDate.getFullYear(), month = calDate.getMonth(), today = new Date();
+  const allEvents = getEvents();
+  document.getElementById('calTitle').textContent = monthNames[month] + ' ' + year;
+  document.getElementById('prevLbl').textContent = monthNames[(month+11)%12];
+  document.getElementById('nextLbl').textContent = monthNames[(month+1)%12];
+  let fd = new Date(year, month, 1).getDay(); fd = fd === 0 ? 6 : fd - 1;
+  const dim = new Date(year, month + 1, 0).getDate();
+  let cells = [];
+  for (let i = 0; i < fd; i++) cells.push('<td class="empty"></td>');
+  for (let d = 1; d <= dim; d++) {
+    const isToday = d===today.getDate()&&month===today.getMonth()&&year===today.getFullYear();
+    const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const hasEv = allEvents.some(e => e.date===ds&&(e.audience==='all'||e.audience==='lecturers'));
+    const cls = [isToday?'today':'',hasEv?'has-event':''].filter(Boolean).join(' ');
+    cells.push(`<td class="${cls}" onclick="showDayEvents('${ds}',event)">${d}</td>`);
+  }
+  while (cells.length%7!==0) cells.push('<td class="empty"></td>');
+  let html=''; for(let i=0;i<cells.length;i+=7) html+='<tr>'+cells.slice(i,i+7).join('')+'</tr>';
+  document.getElementById('calBody').innerHTML = html;
+}
+function changeMonth(dir){calDate.setMonth(calDate.getMonth()+dir);buildCal();}
+
+function renderEventsList() {
+  const evts = getUpcomingEvents('lecturer');
+  document.getElementById('evCount').textContent = evts.length + ' upcoming';
+  const el = document.getElementById('eventsList');
+  if (!evts.length) { el.innerHTML = '<div style="padding:32px;text-align:center;color:var(--rf-gray);font-size:13px">No upcoming events</div>'; return; }
+  el.innerHTML = evts.map(e => {
+    const d = new Date(e.date+'T00:00:00');
+    return `<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--rf-border)">
+      <div style="min-width:48px;text-align:center;background:#f4f6fb;border-radius:7px;padding:5px 3px">
+        <div style="font-size:1.3rem;font-weight:900;color:var(--rf-navy);line-height:1">${d.getDate()}</div>
+        <div style="font-size:.64rem;font-weight:700;color:var(--rf-gray);text-transform:uppercase">${monthNames[d.getMonth()].slice(0,3)}</div>
+      </div>
+      <div><div style="font-weight:700;font-size:.88rem;color:var(--rf-navy)">${e.title}</div>
+      ${e.description?`<div style="font-size:.78rem;color:var(--rf-gray);margin-top:2px">${e.description}</div>`:''}
+      ${e.time?`<div style="font-size:.72rem;color:var(--rf-gray)">⏰ ${e.time}</div>`:''}</div>
+    </div>`;
+  }).join('');
+}
+
+function showDayEvents(dateStr, event) {
+  event.stopPropagation(); // prevent document listener closing popup immediately
+  const evs = getEvents().filter(e => e.date===dateStr&&(e.audience==='all'||e.audience==='lecturers'));
+  const popup = document.getElementById('dayPopup');
+  const d = new Date(dateStr+'T00:00:00');
+  document.getElementById('dayPopupTitle').textContent = d.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long'});
+  const typeColors = { general:'#1a9e8f', academic:'#123f7a', exam:'#c0392b', holiday:'#f59e0b' };
+  document.getElementById('dayPopupEvents').innerHTML = evs.length
+    ? evs.map(e => `<div style="padding:9px 11px;background:#f4f6fb;border-radius:7px;margin-bottom:7px;border-left:3px solid ${typeColors[e.type]||'#1a9e8f'}">
+        <div style="font-size:.64rem;font-weight:700;color:#6b7a99;text-transform:uppercase;margin-bottom:2px">${e.type.toUpperCase()}${e.time?' · ⏰ '+e.time:''}</div>
+        <div style="font-size:.85rem;font-weight:700;color:#123f7a">${e.title}</div>
+        ${e.description?`<div style="font-size:.76rem;color:#6b7a99;margin-top:3px;line-height:1.5">${e.description}</div>`:''}
+      </div>`).join('')
+    : '<div style="color:#6b7a99;font-size:.82rem;text-align:center;padding:12px 0">📭 No events on this day.</div>';
+  const rect = event.target.getBoundingClientRect();
+  const left = Math.min(Math.max(rect.left, 8), window.innerWidth - 340);
+  popup.style.top=(window.scrollY+rect.bottom+8)+'px';
+  popup.style.left=left+'px';
+  popup.classList.add('show');
+}
+document.addEventListener('click',e=>{if(!e.target.closest('#dayPopup')&&!e.target.closest('.lec-cal')) document.getElementById('dayPopup').classList.remove('show');});
+</script>
 </body>
 </html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>My Applications — EduHub</title>
+  <link rel="stylesheet" href="../shared.css"/>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">MY APPLICATIONS</h1>
+  <p class="section-subtitle">Track the status of all your submitted applications</p>
+  <div id="content"></div>
+</div>
+
+<!-- Detail modal -->
+<div id="detail-modal" class="modal-overlay hidden">
+  <div class="modal modal-lg" style="max-height:90vh;overflow-y:auto">
+    <div class="modal-header">
+      <div class="modal-title" id="detail-title">Application Details</div>
+      <button class="modal-close" onclick="closeModal('detail-modal')">×</button>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('detail-modal')">Close</button></div>
+  </div>
+</div>
+
+<script src="../shared-local.js"></script>
+<script>
+const user = requireAuth('student');
+renderNavbar('student-applications');
+
+function render() {
+  const apps = getApplications().filter(a => a.studentId === user.studentId);
+  if (!apps.length) {
+    document.getElementById('content').innerHTML = `
+      <div style="text-align:center;padding:60px 20px;background:white;border-radius:12px;border:1px solid var(--rf-border)">
+        <div style="font-size:52px;margin-bottom:16px">📋</div>
+        <h2 style="color:var(--rf-navy);margin-bottom:10px">No Applications Yet</h2>
+        <p style="color:var(--rf-gray);margin-bottom:24px">You haven't submitted any applications. Start your journey today.</p>
+        <a href="../public/Apply.html" class="btn btn-primary" style="text-decoration:none">Start Application →</a>
+      </div>`;
+    return;
+  }
+  document.getElementById('content').innerHTML = apps.map(a => `
+    <div style="background:white;border-radius:12px;border:1px solid var(--rf-border);margin-bottom:16px;overflow:hidden">
+      <div style="padding:18px 22px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            ${badge(a.status)}
+            <span style="font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;background:${a.applicationType==='returning'?'#FEF3C7':'#D1FAE5'};color:${a.applicationType==='returning'?'#92400e':'#065f46'}">${a.applicationType==='returning'?'🔄 Returning':'🆕 New'}</span>
+          </div>
+          <div style="font-weight:700;font-size:16px;color:var(--rf-navy)">${a.qualificationName}</div>
+          <div style="font-size:13px;color:var(--rf-gray);margin-top:4px">${a.qualificationCode} · Year ${a.studyYear} · Submitted ${fmtDate(a.submittedAt)}</div>
+          ${a.declineReason ? `<div style="margin-top:8px;background:#FEE2E2;border-radius:6px;padding:8px 12px;font-size:13px;color:#991B1B">❌ ${a.declineReason}</div>` : ''}
+          ${a.status==='approved' ? `<div style="margin-top:8px;background:#D1FAE5;border-radius:6px;padding:8px 12px;font-size:13px;color:#065f46">✅ Your application has been approved. Check your notifications for login credentials.</div>` : ''}
+          ${a.status==='pending' ? `<div style="margin-top:8px;background:#FEF3C7;border-radius:6px;padding:8px 12px;font-size:13px;color:#92400e">⏳ Under review — our team will respond within 3–5 business days.</div>` : ''}
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="btn btn-sm btn-secondary" onclick="openDetail('${a.id}')">View Details</button>
+          ${a.status==='approved'?`<a href="MyCourses.html" class="btn btn-sm btn-primary" style="text-decoration:none">View Courses</a>`:''}
+        </div>
+      </div>
+      <div style="padding:10px 22px;background:var(--rf-offwhite);border-top:1px solid var(--rf-border);display:flex;gap:20px;font-size:12px;color:var(--rf-gray)">
+        <span>Ref: <strong style="font-family:var(--font-mono)">${a.id}</strong></span>
+        <span>Student ID: <strong style="font-family:var(--font-mono)">${a.studentId}</strong></span>
+        ${a.admissionFor ? `<span>For: <strong>${a.admissionFor}</strong></span>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function openDetail(id) {
+  const a = getApplications().find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('detail-title').textContent = `${a.qualificationName} — ${a.status.toUpperCase()}`;
+  document.getElementById('detail-body').innerHTML = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">${badge(a.status)}<span class="badge badge-info" style="font-family:var(--font-mono)">${a.studentId}</span></div>
+    ${[
+      {title:'Personal',rows:[['Name',a.firstName+' '+a.lastName],['Nationality',a.nationality],[a.nationality==='South African'?'SA ID':'Passport',a.nationality==='South African'?a.idNumber:a.passportNumber],['Gender',a.gender],['Date of Birth',a.dateOfBirth]]},
+      {title:'Contact',rows:[['Phone',a.phone],['Email',a.email],['Address',`${a.streetAddress}, ${a.city}, ${a.province}`]]},
+      {title:'Qualification',rows:[['Code',a.qualificationCode],['Name',a.qualificationName],['Admission For',a.admissionFor||'—'],['Study Year','Year '+a.studyYear]]},
+    ].map(sec=>`<div style="border:1px solid var(--rf-border);border-radius:8px;overflow:hidden;margin-bottom:12px">
+      <div style="background:var(--rf-offwhite);padding:8px 14px;font-weight:700;font-size:13px;border-bottom:1px solid var(--rf-border)">${sec.title}</div>
+      <div style="padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${sec.rows.map(([k,v])=>`<div style="font-size:13px"><div style="color:var(--rf-gray);font-size:11px;font-weight:600;text-transform:uppercase">${k}</div><div style="font-weight:500">${v||'—'}</div></div>`).join('')}
+      </div>
+    </div>`).join('')}
+    ${a.declineReason?`<div class="alert alert-error"><span>❌</span>${a.declineReason}</div>`:''}`;
+  openModal('detail-modal');
+}
+
+render();
+</script>
+</body>
+</html>

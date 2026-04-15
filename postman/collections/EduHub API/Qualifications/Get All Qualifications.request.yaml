@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{base_url}}/qualifications"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+queryParams:
+  - key: active_only
+    value: "true"
+    disabled: true
+    description: Filter only active qualifications
+order: 1000

@@ -1,0 +1,31 @@
+$kind: http-request
+name: Update Application
+method: PATCH
+url: '{{base_url}}/applications/:id'
+order: 4000
+pathVariables:
+  - key: id
+    value: '{{application_id}}'
+    description: Application UUID
+queryParams:
+  - key: reference_number
+    value: APP-000001
+    description: Application reference number (required for access)
+  - key: email
+    value: jane.doe@example.com
+    description: Applicant email address (required for access)
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "phone": "0829876543",
+      "tc_accepted": true,
+      "status": "pending",
+      "application_type": "new",
+      "admission_for": "1st Year"
+    }
