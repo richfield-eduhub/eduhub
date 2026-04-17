@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 63dc2d8 (WIP)
 # EduHub Database Design
 
 Database schema and setup for the EduHub Student Management System. This branch contains the PostgreSQL database design, pgAdmin configuration, and ERD documentation for managing student applications, registrations, and institutional data.
@@ -19,12 +22,19 @@ make up
 ```
 
 This will:
+<<<<<<< HEAD
 - Start PostgreSQL 16 on port 5433 (host) → 5432 (container)
 - Start pgAdmin 4 on port 5050
 - Auto-configure the database connection
 
 **Note:** Using port 5433 to avoid conflicts with local PostgreSQL installations.
 
+=======
+- Start PostgreSQL 16 on port 5432
+- Start pgAdmin 4 on port 5050
+- Auto-configure the database connection
+
+>>>>>>> 63dc2d8 (WIP)
 ### Access pgAdmin
 
 Open http://localhost:5050 and log in:
@@ -32,6 +42,60 @@ Open http://localhost:5050 and log in:
 - **Password:** `admin`
 
 The **EduHub Database** connection is pre-configured under **Databases** → **EduHub Database**. Just click to connect!
+<<<<<<< HEAD
+=======
+
+---
+
+## Make Commands
+
+| Command        | Description                                           |
+| -------------- | ----------------------------------------------------- |
+| `make up`      | Start PostgreSQL + pgAdmin (main command)             |
+| `make start`   | Alias for `make up`                                   |
+| `make setup`   | Install backend dependencies (needed for migrations)  |
+| `make migrate` | Run database migrations (no server needed)            |
+| `make db`      | Start PostgreSQL only (no pgAdmin)                    |
+| `make psql`    | Connect to database via command line                  |
+| `make logs`    | View container logs in real-time                      |
+| `make stop`    | Stop containers                                       |
+| `make restart` | Restart containers (after config changes)             |
+| `make clean`   | Stop containers and delete all data (fresh start)     |
+
+---
+
+## Database Connection Details
+
+### From Your Machine
+
+```
+Host:     localhost
+Port:     5432
+Database: eduhub
+Username: postgres
+Password: yourpassword
+```
+
+### From Docker Containers
+
+```
+Host:     db
+Port:     5432
+Database: eduhub
+Username: postgres
+Password: yourpassword
+```
+
+### Using psql
+
+```bash
+# Via Docker (recommended)
+make psql
+
+# Or manually
+docker exec -it eduhub_db psql -U postgres -d eduhub
+```
+>>>>>>> 63dc2d8 (WIP)
 
 ---
 
@@ -115,6 +179,7 @@ A full-stack educational institution portal with a PostgreSQL backend and multi-
 ```
 eduhub/
 <<<<<<< HEAD
+<<<<<<< HEAD
 ├── Makefile                      # Database commands
 ├── database/
 │   ├── docker/
@@ -130,13 +195,24 @@ eduhub/
 │   ├── seeds/                    # Test data (dev/test only)
 │   ├── migrate.js                # Migration runner
 │   └── seed.js                   # Seed runner
+=======
+├── Makefile                      # Database commands
+├── docker-compose.yml            # PostgreSQL + pgAdmin containers
+├── database/
+│   └── init.sql                  # Database initialization script
+>>>>>>> 63dc2d8 (WIP)
 ├── pgadmin-config/
 │   ├── servers.json              # Auto-configures pgAdmin connection
 │   ├── pgpass                    # Password file
 │   └── setup-pgadmin.sh          # pgAdmin entrypoint script
 ├── logs/
 │   └── pgadmin/                  # pgAdmin log files
+<<<<<<< HEAD
 └── README.md                     # This file
+=======
+├── README.md                     # This file
+└── DATABASE_SETUP.md             # Detailed setup guide for the team
+>>>>>>> 63dc2d8 (WIP)
 ```
 
 ---
@@ -552,6 +628,7 @@ cd backend && npm run dev
 ```
 
 Both use the **same migration files** and **same tracking table** - no duplication!
+<<<<<<< HEAD
 
 ---
 
@@ -757,11 +834,14 @@ Visit: **http://localhost:3000**
 | Lecturer | sarah.jones@eduhub.ac.za           | Password123!  |
 | Student  | thabo.molefe@student.eduhub.ac.za  | Password123!  |
 | Student  | lerato.khumalo@student.eduhub.ac.za | Password123! |
+=======
+>>>>>>> 63dc2d8 (WIP)
 
 ---
 
-## API Endpoints
+## Team Collaboration
 
+<<<<<<< HEAD
 | Method | Path                          | Description                   | Auth     |
 |--------|-------------------------------|-------------------------------|----------|
 | POST   | /api/auth/register            | Register new user             | Public   |
@@ -825,3 +905,130 @@ Visit: **http://localhost:3000**
 | JWT_REFRESH_SECRET | (optional)   | Refresh token secret            |
 | JWT_EXPIRES_IN     | 7d           | Token expiry                    |
 >>>>>>> 531c062 (popi's changes)
+=======
+### For Junior Developers
+
+This setup ensures **zero manual configuration**:
+
+1. Clone the repo
+2. Ensure Docker Desktop is running
+3. Run `make up`
+4. Access pgAdmin at http://localhost:5050
+5. Database connection is already configured!
+
+### Best Practices
+
+- **Never commit production passwords** to git
+- **Always use branches** - don't push directly to main
+- **Use `make clean`** when you need to test schema changes from scratch
+- **Check `make logs`** if something doesn't work
+- **Read DATABASE_SETUP.md** for detailed troubleshooting
+
+### Branch Naming
+
+Use descriptive branch names:
+- `db/add-enrollment-table`
+- `db/refactor-user-roles`
+- `db/seed-test-data`
+
+---
+
+## pgAdmin Configuration
+
+This repository includes pre-configured pgAdmin setup so the entire team has consistent access:
+
+- **Auto-configured server:** "EduHub Database" appears automatically
+- **Password stored:** No need to enter credentials
+- **Group name:** "Databases" (not "Development")
+- **Logging enabled:** Debug logs saved to `./logs/pgadmin/`
+
+Configuration files:
+- `pgadmin-config/servers.json` - Server connection details
+- `pgadmin-config/pgpass` - Password file
+- `docker-compose.yml` - Environment variables and volumes
+
+---
+
+## Database Design Resources
+
+### Recommended Tools
+
+- **ERD Design:** [dbdiagram.io](https://dbdiagram.io)
+- **Database Client:** pgAdmin (included) or [DBeaver](https://dbeaver.io/)
+- **Documentation:** [PostgreSQL Docs](https://www.postgresql.org/docs/16/)
+
+### Design Considerations
+
+This database is designed for an academic project. Current simplifications:
+
+- Single role per user (can be enhanced to many-to-many)
+- Plain text status fields (can be converted to lookup tables)
+- One lecturer per subject (can be many-to-many)
+- No audit trail tables (can be added for compliance)
+- No MFA/password reset tables yet
+- No academic year/intake tracking
+
+These are **intentional simplifications** suitable for Phase 2 of the project. Future phases can add:
+- Status lookup tables (`student_statuses`, `application_statuses`)
+- Many-to-many relationships (`user_roles`, `lecturer_subjects`)
+- Audit/compliance tables (`approval_logs`, `password_reset_tokens`)
+- Academic structure (`academic_years`, `intakes`, `faculties`, `departments`)
+
+---
+
+## Troubleshooting
+
+### Database won't start
+
+```bash
+# Check Docker is running
+docker ps
+
+# Check PostgreSQL health
+docker exec eduhub_db pg_isready -U postgres
+
+# View logs
+make logs
+
+# Fresh restart
+make clean
+make up
+```
+
+### pgAdmin won't connect
+
+```bash
+# Restart pgAdmin with clean state
+docker compose stop pgadmin
+docker compose rm -f pgadmin
+docker volume rm eduhub_eduhub_pgadmin
+docker compose up -d pgadmin
+```
+
+### Port already in use
+
+If ports 5432 or 5050 are taken:
+
+```bash
+# Check what's using the port
+lsof -i :5432
+lsof -i :5050
+
+# Option 1: Stop the conflicting service
+# Option 2: Change ports in docker-compose.yml
+```
+
+### Need detailed help?
+
+See `DATABASE_SETUP.md` for comprehensive troubleshooting and team onboarding guide.
+
+---
+
+## License
+
+This is an educational project for Richfield Graduate Institute of Technology.
+
+---
+
+**Happy database designing! 🗄️**
+>>>>>>> 63dc2d8 (WIP)
