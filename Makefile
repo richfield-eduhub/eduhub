@@ -1,153 +1,165 @@
-.PHONY: up start dev prod db logs psql stop clean restart setup migrate seed schema backend-stop
+.PHONY: help build up down restart logs ps clean frontend-link frontend-update test backup restore
 
-# Docker Compose file location
-DOCKER_COMPOSE := docker compose -f database/docker/docker-compose.yml
+# Colors for output
+BLUE := \033[0;34m
+GREEN := \033[0;32m
+YELLOW := \033[0;33m
+RED := \033[0;31m
+NC := \033[0m # No Color
 
-# Start PostgreSQL and pgAdmin (default command)
-up:
-	$(DOCKER_COMPOSE) up -d db pgadmin
-	@echo "⏳ Waiting for PostgreSQL..."
-	@until $(DOCKER_COMPOSE) exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
-	@echo "✅ PostgreSQL is ready at localhost:5433"
-	@echo "✅ pgAdmin is available at http://localhost:5050"
+help: ## Show this help message
+	@echo "$(BLUE)EduHub Docker Management$(NC)"
 	@echo ""
-	@echo "📝 pgAdmin login:"
-	@echo "   Email: admin@eduhub.co.za"
-	@echo "   Password: admin"
+	@echo "$(GREEN)Available commands:$(NC)"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(YELLOW)%-20s$(NC) %s\n", $$1, $$2}'
+
+build: ## Build all containers
+	@echo "$(BLUE)Building all containers...$(NC)"
+	docker-compose build
+
+up: ## Start all services
+	@echo "$(GREEN)Starting all services...$(NC)"
+	docker-compose up -d
+	@echo "$(GREEN)✓ Services started$(NC)"
+	@make ps
+
+down: ## Stop all services
+	@echo "$(YELLOW)Stopping all services...$(NC)"
+	docker-compose down
+	@echo "$(YELLOW)✓ Services stopped$(NC)"
+
+restart: ## Restart all services
+	@echo "$(YELLOW)Restarting all services...$(NC)"
+	docker-compose restart
+	@echo "$(GREEN)✓ Services restarted$(NC)"
+
+restart-backend: ## Restart backend only
+	@echo "$(YELLOW)Restarting backend...$(NC)"
+	docker-compose restart backend
+	@echo "$(GREEN)✓ Backend restarted$(NC)"
+
+restart-nginx: ## Restart nginx only
+	@echo "$(YELLOW)Restarting nginx...$(NC)"
+	docker-compose restart nginx
+	@echo "$(GREEN)✓ Nginx restarted$(NC)"
+
+logs: ## Show logs for all services (follow mode)
+	docker-compose logs -f
+
+logs-backend: ## Show backend logs only
+	docker-compose logs -f backend
+
+logs-nginx: ## Show nginx logs only
+	docker-compose logs -f nginx
+
+logs-db: ## Show database logs only
+	docker-compose logs -f db
+
+ps: ## Show running containers
+	@echo "$(BLUE)Running containers:$(NC)"
+	@docker-compose ps
+
+health: ## Check health of all services
+	@echo "$(BLUE)Checking service health...$(NC)"
 	@echo ""
-	@echo "💡 Use 'make psql' to connect via command line"
-	@echo "💡 Use 'make migrate' to run database migrations"
-	@echo "💡 Use 'make logs' to view container logs"
-
-# Alias for 'up' - more intuitive for junior devs
-start: up
-
-# Development mode: Start DB + Backend with nodemon (auto-reload)
-dev:
-	@echo "🚀 Starting development environment..."
-	@$(MAKE) up
+	@echo "$(YELLOW)Backend API:$(NC)"
+	@curl -s http://localhost/api/health | python3 -m json.tool || echo "$(RED)✗ Backend unreachable$(NC)"
 	@echo ""
-	@echo "🔧 Starting Node.js backend with nodemon (dev mode)..."
-	@if [ ! -d "backend/node_modules" ]; then \
-		echo "❌ Backend dependencies not installed"; \
-		echo "💡 Run 'make setup' first"; \
-		exit 1; \
-	fi
-	@echo "✅ Backend running at http://localhost:3000"
-	@echo "📊 Morgan logger enabled (dev format)"
+	@echo "$(YELLOW)Frontend:$(NC)"
+	@curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://localhost/ || echo "$(RED)✗ Frontend unreachable$(NC)"
 	@echo ""
-	@echo "💡 Press Ctrl+C to stop"
-	@cd backend && npm run dev
+	@echo "$(YELLOW)Docker Services:$(NC)"
+	@docker-compose ps
 
-# Production mode: Start DB + Backend in production mode
-prod:
-	@echo "🚀 Starting production environment..."
-	@$(MAKE) up
+clean: ## Remove all containers, volumes, and images
+	@echo "$(RED)Warning: This will remove all data!$(NC)"
+	@read -p "Are you sure? (yes/no): " confirm && [ "$$confirm" = "yes" ] || exit 1
+	docker-compose down -v --rmi all
+	@echo "$(GREEN)✓ Cleaned up$(NC)"
+
+frontend-link: ## Create symlink to frontend directory
+	@echo "$(BLUE)Creating symlink to frontend...$(NC)"
+	ln -sf /Users/tammynkuna/rnt/school/it_project_700/eduhub-popik-coder-patch/eduhub/frontend-html ./frontend
+	@echo "$(GREEN)✓ Symlink created: ./frontend -> frontend-html$(NC)"
+
+frontend-update: ## Update frontend to use shared.js instead of shared-local.js
+	@echo "$(BLUE)Updating frontend HTML files...$(NC)"
+	@if [ -d "./frontend" ]; then \
+		find ./frontend -name "*.html" -exec sed -i '' 's/shared-local\.js/shared.js/g' {} + && \
+		echo "$(GREEN)✓ Frontend updated to use shared.js$(NC)"; \
+	else \
+		echo "$(RED)✗ Frontend directory not found. Run 'make frontend-link' first.$(NC)"; \
+	fi
+
+shell-backend: ## Access backend container shell
+	docker-compose exec backend sh
+
+shell-db: ## Access database container shell
+	docker-compose exec db psql -U postgres -d eduhub
+
+shell-nginx: ## Access nginx container shell
+	docker-compose exec nginx sh
+
+test-api: ## Test API endpoints
+	@echo "$(BLUE)Testing API endpoints...$(NC)"
 	@echo ""
-	@echo "🏭 Starting Node.js backend (production mode)..."
-	@if [ ! -d "backend/node_modules" ]; then \
-		echo "❌ Backend dependencies not installed"; \
-		echo "💡 Run 'make setup' first"; \
-		exit 1; \
-	fi
-	@echo "✅ Backend running at http://localhost:3000"
-	@echo "📊 Morgan logger enabled (combined format)"
+	@echo "$(YELLOW)Health Check:$(NC)"
+	@curl -s http://localhost/api/health | python3 -m json.tool
 	@echo ""
-	@echo "💡 Press Ctrl+C to stop"
-	@cd backend && NODE_ENV=production npm start
+	@echo "$(YELLOW)Login Test (will fail without credentials):$(NC)"
+	@curl -s -X POST http://localhost/api/auth/login \
+		-H "Content-Type: application/json" \
+		-d '{"email":"test@test.com","password":"test"}' | python3 -m json.tool
 
-# Start PostgreSQL only (no pgAdmin)
-db:
-	$(DOCKER_COMPOSE) up -d db
-	@echo "⏳ Waiting for PostgreSQL..."
-	@until $(DOCKER_COMPOSE) exec db pg_isready -U postgres > /dev/null 2>&1; do sleep 1; done
-	@echo "✅ PostgreSQL is ready at localhost:5433"
+backup: ## Backup database to backup.sql
+	@echo "$(BLUE)Backing up database...$(NC)"
+	docker-compose exec -T db pg_dump -U postgres eduhub > backup_$$(date +%Y%m%d_%H%M%S).sql
+	@echo "$(GREEN)✓ Database backed up$(NC)"
 
-# View logs from PostgreSQL and pgAdmin
-logs:
-	$(DOCKER_COMPOSE) logs -f db pgadmin
+restore: ## Restore database from backup.sql
+	@echo "$(YELLOW)Restoring database...$(NC)"
+	@read -p "Enter backup file name: " filename && \
+	docker-compose exec -T db psql -U postgres eduhub < $$filename
+	@echo "$(GREEN)✓ Database restored$(NC)"
 
-# Connect to PostgreSQL via psql command line
-psql:
-	docker exec -it eduhub_db psql -U postgres -d eduhub
+dev: ## Start services in development mode
+	@echo "$(BLUE)Starting in development mode...$(NC)"
+	docker-compose -f docker-compose.yml up --build
 
-# Install backend dependencies (needed for migrations)
-setup:
-	@echo "📦 Installing backend dependencies..."
-	@if [ ! -f "backend/.env" ]; then \
-		echo "📝 Creating .env file from .env.example..."; \
-		cp backend/.env.example backend/.env; \
-		echo "✅ .env file created"; \
-	fi
-	cd backend && npm install
-	@echo "✅ Setup complete"
-	@echo "💡 Run 'make migrate' to apply database migrations"
+rebuild: ## Rebuild and restart all services
+	@echo "$(BLUE)Rebuilding all services...$(NC)"
+	docker-compose down
+	docker-compose build --no-cache
+	docker-compose up -d
+	@echo "$(GREEN)✓ Services rebuilt and started$(NC)"
 
-# Run database migrations (without starting the server)
-migrate:
-	@echo "🔄 Running database migrations..."
-	@if [ ! -d "backend/node_modules" ]; then \
-		echo "❌ Backend dependencies not installed"; \
-		echo "💡 Run 'make setup' first"; \
-		exit 1; \
-	fi
-	cd backend && npm run migrate
-	@echo "💡 Run 'make seed' to add test users (dev/test only)"
-	@echo "💡 Run 'make schema' to export schema for dbdiagram.io"
+rebuild-backend: ## Rebuild and restart backend only
+	@echo "$(BLUE)Rebuilding backend...$(NC)"
+	docker-compose build --no-cache backend
+	docker-compose up -d --force-recreate backend
+	@echo "$(GREEN)✓ Backend rebuilt and restarted$(NC)"
 
-# Seed test data (DEV/TEST ONLY - blocked in production)
-seed:
-	@echo "🌱 Seeding test data..."
-	@if [ ! -d "backend/node_modules" ]; then \
-		echo "❌ Backend dependencies not installed"; \
-		echo "💡 Run 'make setup' first"; \
-		exit 1; \
-	fi
-	@if [ "$$NODE_ENV" = "production" ]; then \
-		echo "❌ Cannot run seeds in production!"; \
-		echo "💡 Use migrations to modify production data"; \
-		exit 1; \
-	fi
-	cd backend && npm run seed
+stats: ## Show container resource usage
+	docker stats --no-stream
 
-# Export database schema to SQL file (for dbdiagram.io)
-schema:
-	@echo "📋 Exporting database schema..."
-	@mkdir -p database/schema
-	docker exec eduhub_db pg_dump -U postgres -d eduhub \
-		--schema-only \
-		--no-owner \
-		--no-privileges \
-		--exclude-table=migrations \
-		> database/schema/schema.sql
-	@echo "✅ Schema exported to: database/schema/schema.sql"
-	@echo "💡 Import this file to https://dbdiagram.io for visualization"
+prune: ## Remove unused Docker resources
+	@echo "$(YELLOW)Pruning unused Docker resources...$(NC)"
+	docker system prune -f
+	@echo "$(GREEN)✓ Pruned$(NC)"
 
-# Stop backend Node.js server
-backend-stop:
-	@echo "🛑 Stopping Node.js backend..."
-	@pkill -f "node src/app.js" || echo "No backend process found"
-	@pkill -f "nodemon" || true
-	@echo "✅ Backend stopped"
-
-# Stop Docker containers and backend
-stop:
-	@$(MAKE) backend-stop
-	$(DOCKER_COMPOSE) stop
-	@echo "🛑 All services stopped"
-
-# Restart containers (useful after config changes)
-restart:
-	$(DOCKER_COMPOSE) restart
-	@echo "🔄 Containers restarted"
-
-# Stop containers and delete all data (fresh start)
-clean:
-	@echo "⚠️  WARNING: This will delete ALL database data!"
-	@echo "Press Ctrl+C to cancel, or Enter to continue..."
-	@read confirm
-	@$(MAKE) backend-stop
-	$(DOCKER_COMPOSE) down -v
-	@echo "🧹 All containers and data removed"
-	@echo "💡 Run 'make dev' to start development environment"
-	@echo "💡 Run 'make up' to start database only"
+init: frontend-link build up ## Initial setup: link frontend, build, and start
+	@echo ""
+	@echo "$(GREEN)═══════════════════════════════════════════════$(NC)"
+	@echo "$(GREEN)  EduHub initialized successfully!$(NC)"
+	@echo "$(GREEN)═══════════════════════════════════════════════$(NC)"
+	@echo ""
+	@echo "$(BLUE)Services available at:$(NC)"
+	@echo "  Frontend:  $(YELLOW)http://localhost$(NC)"
+	@echo "  API:       $(YELLOW)http://localhost/api$(NC)"
+	@echo "  pgAdmin:   $(YELLOW)http://localhost:5050$(NC)"
+	@echo ""
+	@echo "$(BLUE)Next steps:$(NC)"
+	@echo "  1. Update frontend: $(YELLOW)make frontend-update$(NC)"
+	@echo "  2. Check health:    $(YELLOW)make health$(NC)"
+	@echo "  3. View logs:       $(YELLOW)make logs$(NC)"
+	@echo ""
