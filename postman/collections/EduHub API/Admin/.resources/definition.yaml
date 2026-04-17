@@ -1,0 +1,7 @@
+$kind: collection
+name: Admin
+description: Admin-only endpoints — applications, semesters (start/end, registration
+  window), student account status (block/unblock/suspend), and stats. Requires a JWT
+  for role `admin` (Authorization Bearer {{access_token}}). Optional collection
+  variables `semester_id` and `student_id` for path params.
+order: 7000

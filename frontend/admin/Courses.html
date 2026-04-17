@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Course Management — EduHub Admin</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>.course-row{transition:background .15s}.course-row:hover{background:var(--rf-offwhite)!important}</style>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:12px">
+    <h1 class="section-title" style="margin-bottom:0">COURSE MANAGEMENT</h1>
+  </div>
+  <p class="section-subtitle">View and manage all qualifications and their modules</p>
+
+  <div class="grid-4 mb-24" id="stats"></div>
+  <div id="courses-list"></div>
+</div>
+
+<!-- Module detail modal -->
+<div id="module-modal" class="modal-overlay hidden">
+  <div class="modal modal-lg" style="max-height:90vh;overflow-y:auto">
+    <div class="modal-header" id="mod-header">
+      <div class="modal-title" id="mod-title"></div>
+      <button class="modal-close" onclick="closeModal('module-modal')" style="color:white">×</button>
+    </div>
+    <div class="modal-body" id="mod-body"></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('module-modal')">Close</button></div>
+  </div>
+</div>
+
+<script src="../shared.js"></script>
+<script>
+requireAuth('admin');
+renderNavbar('admin-courses');
+
+// Colour palette cycles through brand colours for all qualifications
+const PALETTE = ['#003DA5','#0369a1','#0891b2','#7c3aed','#be185d','#1e6b3c','#b45309','#155e75','#6d28d9','#0f766e','#92400e','#5b21b6','#065f46','#374151','#1e1b4b','#4338ca'];
+const COLORS = Object.fromEntries(QUALIFICATIONS.map((q, i) => [q.code, PALETTE[i % PALETTE.length]]));
+const regs   = getRegistrations();
+
+const totalStudents = new Set(regs.filter(r=>r.status==='allocated'||r.status==='approved').map(r=>r.studentId)).size;
+
+document.getElementById('stats').innerHTML = [
+  {icon:'🏫',label:'Total Qualifications',value:QUALIFICATIONS.length,bg:'#E0E7FF'},
+  {icon:'📚',label:'Total Modules',value:QUALIFICATIONS.reduce((s,q)=>s+q.modules.length,0),bg:'#D1FAE5'},
+  {icon:'🎓',label:'Enrolled Students',value:totalStudents,bg:'#FEF3C7'},
+  {icon:'💰',label:'Avg Annual Fee',value:'R'+Math.round(QUALIFICATIONS.reduce((s,q)=>s+q.fee,0)/QUALIFICATIONS.length).toLocaleString(),bg:'#FCE7F3'},
+].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span style="font-size:22px">${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
+
+document.getElementById('courses-list').innerHTML = QUALIFICATIONS.map(q => {
+  const enrolled = new Set(regs.filter(r=>r.qualificationCode===q.code&&(r.status==='allocated'||r.status==='approved')).map(r=>r.studentId)).size;
+  const byYear = {};
+  q.modules.forEach(m => { if (!byYear[m.year]) byYear[m.year] = 0; byYear[m.year]++; });
+  return `
+  <div class="card mb-24" style="margin-bottom:20px">
+    <div style="background:${COLORS[q.code]||'#123f7a'};padding:18px 22px;border-radius:12px 12px 0 0;color:white;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+          <span style="font-family:var(--font-mono);font-size:12px;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:99px">${q.code}</span>
+          <span style="font-size:12px;opacity:.75">${q.duration}</span>
+        </div>
+        <div style="font-weight:800;font-size:18px">${q.name}</div>
+        <div style="font-size:13px;opacity:.75;margin-top:2px">${q.faculty}</div>
+      </div>
+      <div style="display:flex;gap:16px;text-align:center">
+        <div><div style="font-weight:900;font-size:22px">${q.modules.length}</div><div style="font-size:11px;opacity:.7">Modules</div></div>
+        <div><div style="font-weight:900;font-size:22px">${enrolled}</div><div style="font-size:11px;opacity:.7">Students</div></div>
+        <div><div style="font-weight:900;font-size:22px">R${(q.fee/1000).toFixed(0)}k</div><div style="font-size:11px;opacity:.7">Per Year</div></div>
+      </div>
+    </div>
+    <div style="padding:16px 20px">
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        ${Object.entries(byYear).map(([yr,cnt])=>`<span style="background:#EEF2FF;color:#3730a3;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px">Year ${yr}: ${cnt} modules</span>`).join('')}
+      </div>
+      <button onclick="openModules('${q.code}')" class="btn btn-secondary btn-sm">📋 View All Modules</button>
+    </div>
+  </div>`;
+}).join('');
+
+function openModules(code) {
+  const q = QUALIFICATIONS.find(x => x.code === code);
+  if (!q) return;
+  document.getElementById('mod-title').textContent = q.name;
+  document.getElementById('mod-header').style.background = COLORS[code] || '#123f7a';
+  document.getElementById('mod-header').style.color = 'white';
+  const byYear = {};
+  q.modules.forEach(m => { if (!byYear[m.year]) byYear[m.year] = []; byYear[m.year].push(m); });
+  document.getElementById('mod-body').innerHTML = Object.entries(byYear).map(([yr,mods]) => `
+    <div style="margin-bottom:16px">
+      <div style="font-weight:800;font-size:14px;color:${COLORS[code]||'#123f7a'};margin-bottom:8px">Year ${yr}</div>
+      <table class="data-table">
+        <thead><tr><th>Code</th><th>Module Name</th><th>Semester</th><th>Credits</th></tr></thead>
+        <tbody>${mods.map(m=>`<tr>
+          <td style="font-family:var(--font-mono);font-size:12px;color:var(--rf-blue)">${m.code}</td>
+          <td style="font-weight:600">${m.name}</td>
+          <td>Semester ${m.semester}</td>
+          <td>${m.credits}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>`).join('');
+  openModal('module-modal');
+}
+</script>
+</body>
+</html>

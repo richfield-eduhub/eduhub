@@ -1,0 +1,7 @@
+$kind: collection
+description: Student management endpoints
+<<<<<<< HEAD
+order: 8000
+=======
+order: 6000
+>>>>>>> 531c062 (popi's changes)

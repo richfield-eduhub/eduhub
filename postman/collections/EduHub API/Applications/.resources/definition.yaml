@@ -1,0 +1,10 @@
+$kind: collection
+name: Applications
+<<<<<<< HEAD
+description: Public admissions application endpoints — no authentication
+  required. Prospective students can submit, look up, retrieve, and update their
+  applications.
+order: 5000
+=======
+description: Public admissions application endpoints — no authentication required. Prospective students can submit, look up, retrieve, and update their applications.
+>>>>>>> 531c062 (popi's changes)

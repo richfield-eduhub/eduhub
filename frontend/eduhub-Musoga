@@ -1,0 +1,108 @@
+
+<div class="admin-dashboard">
+
+<h2>Student Applications</h2>
+
+<table class="application-table">
+<thead>
+<tr>
+<th>Name</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="applicationTable"></tbody>
+</table>
+
+</div>
+
+<script>
+
+const applications = [
+ {id:1, name:"Peter Tshang", status:"Pending", email:"peter@email.com"},
+ {id:2, name:"Kea Zim", status:"Pending", email:"kea@email.com"},
+ {id:3, name:"Michael Laurent", status:"Pending", email:"michael@email.com"}
+];
+
+function generateStudentNumber(){
+ return "STU" + Math.floor(100000 + Math.random()*900000);
+}
+
+function generatePassword(){
+ return Math.random().toString(36).slice(-8);
+}
+
+function renderApplications(){
+
+ const table = document.getElementById("applicationTable");
+ table.innerHTML = "";
+
+ applications.forEach(app => {
+
+  const row = document.createElement("tr");
+
+  row.innerHTML = `
+   <td>${app.name}</td>
+   <td id="status-${app.id}">${app.status}</td>
+   <td>
+    <button onclick="approveApplication(${app.id})">Approve</button>
+    <button onclick="rejectApplication(${app.id})">Reject</button>
+   </td>`;
+
+  table.appendChild(row);
+
+ });
+
+}
+
+function approveApplication(id){
+
+ const app = applications.find(a => a.id === id);
+
+ const studentNumber = generateStudentNumber();
+ const password = generatePassword();
+
+ app.status = "Approved";
+ app.studentNumber = studentNumber;
+ app.password = password;
+
+ document.getElementById(`status-${id}`).textContent = "Approved";
+
+ sendConfirmationLetter(app);
+
+}
+
+function rejectApplication(id){
+
+ const app = applications.find(a => a.id === id);
+ app.status = "Rejected";
+
+ document.getElementById(`status-${id}`).textContent = "Rejected";
+
+}
+
+function sendConfirmationLetter(student){
+
+ const message = `
+ Dear ${student.name},
+
+ Congratulations! Your application has been approved.
+
+ Student Number: ${student.studentNumber}
+ Password: ${student.password}
+
+ You can now log in to the student portal.
+
+ Regards,
+ University Admissions Office
+ `;
+
+ console.log("Sending email to:", student.email);
+ console.log(message);
+
+}
+
+renderApplications();
+
+</script>

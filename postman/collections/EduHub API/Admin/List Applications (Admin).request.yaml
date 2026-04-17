@@ -1,0 +1,30 @@
+$kind: http-request
+name: List Applications (Admin)
+method: GET
+url: "{{base_url}}/admin/applications"
+headers:
+  Authorization: Bearer {{access_token}}
+queryParams:
+  - key: page
+    value: "1"
+    description: Page number
+  - key: limit
+    value: "20"
+    description: Items per page (max 100)
+  - key: status
+    value: pending
+    disabled: true
+    description: Filter by application status
+  - key: campus_id
+    value: ""
+    disabled: true
+    description: Filter by campus UUID
+  - key: qualification_id
+    value: ""
+    disabled: true
+    description: Filter by qualification UUID
+  - key: search
+    value: ""
+    disabled: true
+    description: Search name, email, reference, or ID number
+order: 1000

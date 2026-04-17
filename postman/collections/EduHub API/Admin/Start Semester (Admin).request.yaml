@@ -1,0 +1,22 @@
+$kind: http-request
+name: Start Semester (Admin)
+method: POST
+url: "{{base_url}}/admin/semesters"
+headers:
+  Authorization: Bearer {{access_token}}
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "2026 Semester 2",
+      "year": 2026,
+      "semester_number": 2,
+      "start_date": "2026-07-01",
+      "end_date": "2026-11-30",
+      "registration_open": true,
+      "registration_start_date": "2026-05-01",
+      "registration_end_date": "2026-07-15",
+      "add_drop_deadline": "2026-08-15"
+    }
+order: 1700

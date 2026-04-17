@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Announcements — EduHub</title>
+  <link rel="stylesheet" href="../shared.css"/>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:12px">
+    <h1 class="section-title" style="margin-bottom:0">ANNOUNCEMENTS</h1>
+    <button class="btn btn-primary" onclick="openModal('compose-modal')">✏️ New Announcement</button>
+  </div>
+  <p class="section-subtitle">Post announcements to your students</p>
+  <div id="list"></div>
+</div>
+
+<!-- Compose modal -->
+<div id="compose-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">New Announcement</div>
+      <button class="modal-close" onclick="closeModal('compose-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="compose-alert"></div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Title <span class="required">*</span></label>
+        <input id="ann-title" class="form-input" placeholder="e.g. Assignment Due Date Extended"/>
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Target Audience</label>
+        <select id="ann-target" class="form-input" style="background:white">
+          <option value="all">All Students</option>
+          ${QUALIFICATIONS.map(q=>`<option value="${q.code}">${q.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Priority</label>
+        <select id="ann-priority" class="form-input" style="background:white">
+          <option value="info">ℹ️ Info</option>
+          <option value="warning">⚠️ Important</option>
+          <option value="success">✅ Good News</option>
+          <option value="error">🔴 Urgent</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Message <span class="required">*</span></label>
+        <textarea id="ann-body" class="form-textarea" style="min-height:120px" placeholder="Write your announcement here..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('compose-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="postAnnouncement()">Post Announcement</button>
+    </div>
+  </div>
+</div>
+
+<script src="../shared.js"></script>
+<script>
+const user = requireAuth('lecturer');
+renderNavbar('lecturer-announcements');
+
+const ICONS = { info:'ℹ️', warning:'⚠️', success:'✅', error:'🔴' };
+const BG    = { info:'#EEF2FF', warning:'#FEF3C7', success:'#D1FAE5', error:'#FEE2E2' };
+const TC    = { info:'#3730a3', warning:'#92400e', success:'#065f46', error:'#991B1B' };
+
+function render() {
+  const anns = getAnnouncements().filter(a => a.authorId === user.id);
+  if (!anns.length) {
+    document.getElementById('list').innerHTML = `
+      <div style="text-align:center;padding:60px;background:white;border-radius:12px;border:1px solid var(--rf-border)">
+        <div style="font-size:48px;margin-bottom:16px">📢</div>
+        <h3 style="color:var(--rf-navy);margin-bottom:8px">No Announcements Yet</h3>
+        <p style="color:var(--rf-gray)">Click "New Announcement" to post a message to your students.</p>
+      </div>`;
+    return;
+  }
+  document.getElementById('list').innerHTML = anns.map(a => `
+    <div style="background:white;border-radius:12px;border:1px solid var(--rf-border);margin-bottom:14px;overflow:hidden">
+      <div style="background:${BG[a.priority]||BG.info};padding:14px 20px;border-bottom:1px solid var(--rf-border);display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="font-size:20px">${ICONS[a.priority]||'ℹ️'}</span>
+          <div>
+            <div style="font-weight:700;font-size:15px;color:${TC[a.priority]||TC.info}">${a.title}</div>
+            <div style="font-size:12px;color:var(--rf-gray);margin-top:2px">${fmtDateTime(a.createdAt)} · To: ${a.target==='all'?'All Students':QUALIFICATIONS.find(q=>q.code===a.target)?.name||a.target}</div>
+          </div>
+        </div>
+        <button onclick="deleteAnn('${a.id}')" style="background:none;border:none;color:var(--rf-gray);cursor:pointer;font-size:18px" title="Delete">🗑</button>
+      </div>
+      <div style="padding:16px 20px;font-size:14px;color:var(--rf-navy);line-height:1.7;white-space:pre-wrap">${a.body}</div>
+    </div>`).join('');
+}
+
+function postAnnouncement() {
+  clearAlert('compose-alert');
+  const title  = document.getElementById('ann-title').value.trim();
+  const body   = document.getElementById('ann-body').value.trim();
+  const target = document.getElementById('ann-target').value;
+  const priority = document.getElementById('ann-priority').value;
+  if (!title || !body) return showAlert('compose-alert','Title and message are required.','error');
+
+  const ann = addAnnouncement({ title, body, target, priority, authorId:user.id, authorName:user.name });
+
+  // Also push as notifications to affected students
+  const regs = getRegistrations().filter(r => r.status==='allocated'||r.status==='approved');
+  const studentIds = target==='all'
+    ? [...new Set(regs.map(r=>r.studentId))]
+    : [...new Set(regs.filter(r=>r.qualificationCode===target).map(r=>r.studentId))];
+  const allUsers = getUsers();
+  studentIds.forEach(sid => {
+    const s = allUsers.find(u=>u.studentId===sid);
+    if (s) addNotification({ userId:s.id, title:`📢 ${title}`, message:body, type:priority });
+  });
+
+  closeModal('compose-modal');
+  document.getElementById('ann-title').value = '';
+  document.getElementById('ann-body').value = '';
+  showToast(`Announcement posted to ${studentIds.length} student${studentIds.length!==1?'s':''}!`, 'success');
+  render();
+}
+
+function deleteAnn(id) {
+  if (!confirm('Delete this announcement?')) return;
+  saveAnnouncements(getAnnouncements().filter(a => a.id !== id));
+  showToast('Announcement deleted.', 'info');
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Class Roster — EduHub</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>.filter-btn{padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--rf-border);background:white;color:var(--rf-navy)}.filter-btn.active{background:var(--rf-blue);color:white;border-color:var(--rf-blue)}</style>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">CLASS ROSTER</h1>
+  <p class="section-subtitle">All enrolled students across all programmes</p>
+
+  <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+    <input id="search" placeholder="🔍 Search by name, student ID or programme..." oninput="render()"
+      style="flex:1;min-width:240px;padding:10px 14px;border:1.5px solid var(--rf-border);border-radius:8px;font-size:14px"/>
+    <div id="qual-filter" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+  </div>
+
+  <div class="grid-3 mb-24" id="stats"></div>
+  <div class="card" id="table-wrap"></div>
+</div>
+
+<script src="../shared.js"></script>
+<script>
+requireAuth('lecturer');
+renderNavbar('lecturer-roster');
+
+const regs  = getRegistrations().filter(r => r.status==='allocated'||r.status==='approved');
+const users = getUsers();
+let qualFilter = 'all';
+
+// Stats
+const uniqueStudents = [...new Set(regs.map(r=>r.studentId))];
+const quals = [...new Set(regs.map(r=>r.qualificationCode))];
+
+document.getElementById('stats').innerHTML = [
+  {icon:'🎓',label:'Total Students',value:uniqueStudents.length,bg:'#E0E7FF'},
+  {icon:'📚',label:'Active Registrations',value:regs.length,bg:'#D1FAE5'},
+  {icon:'🏫',label:'Programmes',value:quals.length,bg:'#FEF3C7'},
+].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span>${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
+
+// Qual filter buttons
+document.getElementById('qual-filter').innerHTML = ['all',...quals].map(q=>`
+  <button class="filter-btn ${q==='all'&&qualFilter==='all'?'active':q===qualFilter?'active':''}" onclick="setQual('${q}',this)">${q==='all'?'All':q}</button>`).join('');
+
+function setQual(q,btn){
+  qualFilter=q;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  let rows = regs;
+  if (qualFilter !== 'all') rows = rows.filter(r=>r.qualificationCode===qualFilter);
+  if (q) rows = rows.filter(r=>{
+    const s = users.find(u=>u.studentId===r.studentId);
+    return (s?.name||'').toLowerCase().includes(q) || r.studentId.toLowerCase().includes(q) || r.qualificationName.toLowerCase().includes(q);
+  });
+
+  if (!rows.length) {
+    document.getElementById('table-wrap').innerHTML = '<div style="padding:48px;text-align:center;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">🔍</div><div>No students match your search.</div></div>';
+    return;
+  }
+
+  document.getElementById('table-wrap').innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>Student</th><th>Student ID</th><th>Programme</th><th>Year</th><th>Semester</th><th>Modules</th><th>Fee Status</th></tr></thead>
+      <tbody>${rows.map(r=>{
+        const s = users.find(u=>u.studentId===r.studentId);
+        return `<tr>
+          <td><div style="font-weight:600">${s?.name||'Unknown'}</div><div style="font-size:12px;color:var(--rf-gray)">${s?.email||'—'}</div></td>
+          <td style="font-family:var(--font-mono);font-size:12px;color:var(--rf-blue)">${r.studentId}</td>
+          <td><div style="font-weight:600;font-size:13px">${r.qualificationCode}</div><div style="font-size:12px;color:var(--rf-gray)">${r.qualificationName}</div></td>
+          <td>Year ${r.studyYear}</td>
+          <td>Sem ${r.semester}</td>
+          <td>${r.modules.length}</td>
+          <td><span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:${r.feePaid?'#D1FAE5':'#FEE2E2'};color:${r.feePaid?'#065f46':'#dc2626'}">${r.feePaid?'✓ Paid':'✗ Unpaid'}</span></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+}
+
+render();
+</script>
+</body>
+</html>

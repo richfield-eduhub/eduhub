@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin Dashboard — EduHub</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    /* ── Calendar styles ── */
+    .cal-wrap { padding: 20px 24px; }
+    .cal-nav-row { display:flex; align-items:center; margin-bottom:14px; }
+    .cal-arrow { color:var(--rf-blue); font-size:.82rem; font-weight:bold; cursor:pointer; padding:4px 8px; }
+    .cal-arrow:hover { text-decoration:underline; }
+    .cal-month-title { flex:1; text-align:center; font-weight:900; font-size:1.05rem; color:var(--rf-navy); }
+    table.admin-cal { width:100%; border-collapse:collapse; }
+    table.admin-cal th { font-size:.72rem; font-weight:700; color:var(--rf-gray); padding:6px 0; text-align:center; }
+    table.admin-cal td { text-align:center; padding:8px 4px; font-size:.84rem; color:var(--rf-blue); cursor:pointer; border-radius:5px; transition:background .12s; position:relative; }
+    table.admin-cal td:hover:not(.empty) { background:rgba(26,93,181,.08); }
+    table.admin-cal td.today { background:#123f7a; color:white; border-radius:50%; font-weight:700; }
+    table.admin-cal td.has-event::after { content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:6px; height:6px; border-radius:50%; background:#1a9e8f; }
+    table.admin-cal td.today.has-event::after { background:white; }
+    table.admin-cal td.empty { color:transparent; cursor:default; pointer-events:none; }
+
+    /* Event type badge */
+    .ev-type-badge { display:inline-block; font-size:.62rem; font-weight:700; padding:2px 7px; border-radius:999px; text-transform:uppercase; letter-spacing:.04em; }
+    .ev-type-general  { background:#E0E7FF; color:#3730a3; }
+    .ev-type-academic { background:#D1FAE5; color:#065f46; }
+    .ev-type-exam     { background:#FEE2E2; color:#991b1b; }
+    .ev-type-holiday  { background:#FEF3C7; color:#92400e; }
+
+    /* Event list */
+    .ev-row { display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid var(--rf-border); }
+    .ev-row:last-child { border-bottom:none; }
+    .ev-date-box { min-width:54px; text-align:center; background:#f4f6fb; border-radius:8px; padding:6px 4px; }
+    .ev-date-day { font-size:1.4rem; font-weight:900; color:var(--rf-navy); line-height:1; }
+    .ev-date-mon { font-size:.67rem; font-weight:700; text-transform:uppercase; color:var(--rf-gray); }
+    .ev-info { flex:1; }
+    .ev-title-row { display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }
+    .ev-title-text { font-weight:700; font-size:.9rem; color:var(--rf-navy); }
+    .ev-desc-text { font-size:.8rem; color:var(--rf-gray); }
+    .ev-audience { font-size:.7rem; color:var(--rf-gray); margin-top:3px; }
+    .ev-delete-btn { background:none; border:none; cursor:pointer; color:#c0392b; font-size:.85rem; padding:4px 8px; border-radius:5px; transition:background .15s; white-space:nowrap; }
+    .ev-delete-btn:hover { background:#FEE2E2; }
+
+    /* Day event popup */
+    .day-popup { display:none; position:fixed; z-index:500; background:white; border-radius:12px; box-shadow:0 8px 40px rgba(0,0,0,.22); padding:18px 20px; min-width:260px; max-width:340px; border:1px solid var(--rf-border); }
+    .day-popup.show { display:block; animation:popIn .2s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes popIn { from{transform:scale(.88);opacity:0} to{transform:scale(1);opacity:1} }
+    .dp-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+    .dp-title { font-family:'Montserrat',sans-serif; font-size:.9rem; font-weight:900; color:var(--rf-navy); }
+    .dp-close { cursor:pointer; color:var(--rf-gray); font-size:1rem; line-height:1; padding:2px 4px; border-radius:4px; border:none; background:none; }
+    .dp-close:hover { background:#f3f4f6; }
+    .dp-ev-item { padding:9px 11px; background:#f4f6fb; border-radius:7px; margin-bottom:7px; border-left:3px solid #1a9e8f; }
+    .dp-ev-item.exam { border-left-color:#c0392b; }
+    .dp-ev-item.academic { border-left-color:#123f7a; }
+    .dp-ev-item.holiday { border-left-color:#f59e0b; }
+    .dp-ev-type { font-size:.64rem; font-weight:700; text-transform:uppercase; color:var(--rf-gray); margin-bottom:2px; }
+    .dp-ev-title { font-size:.85rem; font-weight:700; color:var(--rf-navy); }
+    .dp-ev-title-text { font-size:.85rem; font-weight:700; color:var(--rf-navy); }
+    .dp-ev-desc { font-size:.76rem; color:var(--rf-gray); margin-top:3px; line-height:1.5; }
+    .dp-ev-desc-text { font-size:.76rem; color:var(--rf-gray); margin-top:3px; line-height:1.5; }
+    .dp-add-link { display:block; text-align:center; margin-top:10px; font-size:.78rem; color:var(--rf-blue); cursor:pointer; font-weight:600; border-top:1px solid var(--rf-border); padding-top:10px; }
+    .dp-add-link:hover { text-decoration:underline; }
+
+    /* Add event modal */
+    .modal-overlay { display:none; position:fixed; inset:0; z-index:400; background:rgba(18,63,122,.45); backdrop-filter:blur(4px); align-items:center; justify-content:center; }
+    .modal-overlay.show { display:flex; }
+    .modal-box { background:white; border-radius:12px; padding:30px 32px; width:90%; max-width:480px; box-shadow:0 8px 40px rgba(0,0,0,.2); animation:pop .3s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes pop { from{transform:scale(.85);opacity:0} to{transform:scale(1);opacity:1} }
+    .modal-title { font-weight:900; font-size:1.1rem; color:var(--rf-navy); margin-bottom:18px; }
+    .modal-field { margin-bottom:14px; }
+    .modal-field label { display:block; font-size:.82rem; font-weight:700; color:var(--rf-navy); margin-bottom:5px; }
+    .modal-field input, .modal-field select, .modal-field textarea { width:100%; padding:9px 11px; border:1px solid var(--rf-border); border-radius:6px; font-size:.86rem; font-family:inherit; color:var(--rf-navy); outline:none; transition:border-color .2s; }
+    .modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus { border-color:#123f7a; }
+    .modal-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .modal-actions { display:flex; gap:10px; margin-top:20px; justify-content:flex-end; }
+    .btn-cancel { padding:9px 20px; background:white; border:1px solid var(--rf-border); border-radius:6px; font-size:.85rem; font-weight:600; cursor:pointer; color:var(--rf-gray); }
+    .btn-cancel:hover { border-color:var(--rf-navy); }
+    .btn-save { padding:9px 24px; background:#123f7a; color:white; border:none; border-radius:6px; font-size:.85rem; font-weight:700; cursor:pointer; }
+    .btn-save:hover { background:#0d2c56; }
+  </style>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">ADMIN DASHBOARD</h1>
+  <p class="section-subtitle">Overview of applications, registrations and student activity</p>
+  <div class="grid-4 mb-24" id="stats"></div>
+  <div class="grid-2 mb-24">
+    <div class="card">
+      <div class="card-header"><span style="font-weight:700;font-size:15px">Recent Applications</span><a href="Applications.html" class="btn btn-sm btn-secondary">View All</a></div>
+      <div id="recent-apps"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span style="font-weight:700;font-size:15px">Quick Actions</span></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:12px" id="quick-actions"></div>
+    </div>
+  </div>
+
+  <!-- ── EVENT CALENDAR SECTION ── -->
+  <div class="grid-2 mb-24" style="align-items:start">
+
+    <!-- Calendar widget -->
+    <div class="card">
+      <div class="card-header">
+        <span style="font-weight:700;font-size:15px">📅 Event Calendar</span>
+        <button class="btn btn-sm" style="background:#123f7a;color:white;border:none;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer" onclick="openAddEvent()">+ Add Event</button>
+      </div>
+      <div class="cal-wrap">
+        <div class="cal-nav-row">
+          <span class="cal-arrow" onclick="changeMonth(-1)">◀ <span id="prevLbl"></span></span>
+          <span class="cal-month-title" id="calTitle"></span>
+          <span class="cal-arrow" onclick="changeMonth(1)"><span id="nextLbl"></span> ▶</span>
+        </div>
+        <table class="admin-cal">
+          <thead><tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr></thead>
+          <tbody id="calBody"></tbody>
+        </table>
+        <div style="margin-top:12px;font-size:.74rem;color:var(--rf-gray)">
+          <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:9px;height:9px;border-radius:50%;background:#1a9e8f;display:inline-block"></span> Event on this day</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming events list -->
+    <div class="card">
+      <div class="card-header">
+        <span style="font-weight:700;font-size:15px">Upcoming Events</span>
+        <span id="evCount" style="font-size:13px;color:var(--rf-gray)"></span>
+      </div>
+      <div style="padding:4px 24px 20px;max-height:420px;overflow-y:auto" id="eventsList">
+        <div style="padding:32px;text-align:center;color:var(--rf-gray);font-size:14px">No events yet. Add the first one!</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span style="font-weight:700;font-size:15px">Recent Activity</span></div>
+    <div id="activity"></div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <div class="card-header">
+      <span style="font-weight:700;font-size:15px">📧 Email Log <span style="font-size:12px;font-weight:400;color:var(--rf-gray)">(locally stored previews)</span></span>
+      <button onclick="clearSentEmails()" style="padding:5px 12px;background:white;border:1px solid var(--rf-border);border-radius:6px;font-size:12px;color:var(--rf-gray);cursor:pointer">Clear Log</button>
+    </div>
+    <div id="emailLog" style="padding:4px 24px 20px"></div>
+  </div>
+</div>
+
+<!-- ── DAY EVENT POPUP ── -->
+<div class="day-popup" id="adminDayPopup">
+  <div class="dp-header">
+    <div class="dp-title" id="adminDayPopupTitle"></div>
+    <button class="dp-close" onclick="document.getElementById('adminDayPopup').classList.remove('show')">✕</button>
+  </div>
+  <div id="adminDayPopupEvents"></div>
+  <a class="dp-add-link" id="adminDayAddLink" onclick="">+ Add another event on this day</a>
+</div>
+
+<!-- ── ADD EVENT MODAL ── -->
+<div class="modal-overlay" id="addEventModal">
+  <div class="modal-box">
+    <div class="modal-title">📅 Create New Event</div>
+    <div class="modal-field">
+      <label>Event Title *</label>
+      <input type="text" id="evTitle" placeholder="e.g. Mid-Semester Exams"/>
+    </div>
+    <div class="modal-row">
+      <div class="modal-field">
+        <label>Date *</label>
+        <input type="date" id="evDate"/>
+      </div>
+      <div class="modal-field">
+        <label>Time (optional)</label>
+        <input type="time" id="evTime"/>
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-field">
+        <label>Event Type</label>
+        <select id="evType">
+          <option value="general">General</option>
+          <option value="academic">Academic</option>
+          <option value="exam">Exam</option>
+          <option value="holiday">Holiday</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Show For</label>
+        <select id="evAudience">
+          <option value="all">Everyone</option>
+          <option value="students">Students Only</option>
+          <option value="lecturers">Lecturers Only</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>Description (optional)</label>
+      <textarea id="evDesc" rows="3" placeholder="Additional details..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeAddEvent()">Cancel</button>
+      <button class="btn-save" onclick="saveEvent()">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<script src="../shared.js"></script>
+<script>
+  const user = requireAuth('admin');
+  renderNavbar('admin-dashboard');
+
+  const apps  = getApplications();
+  const regs  = getRegistrations();
+  const users = getUsers();
+  const notifs= getNotifications();
+  const pending    = apps.filter(a=>a.status==='pending').length;
+  const approved   = apps.filter(a=>a.status==='approved').length;
+  const students   = users.filter(u=>u.role==='student').length;
+  const pendingReg = regs.filter(r=>r.status==='pending').length;
+
+  document.getElementById('stats').innerHTML = [
+    {icon:'📋',label:'Pending Applications',value:pending,bg:'#FEF3C7'},
+    {icon:'✅',label:'Approved Students',value:approved,bg:'#D1FAE5'},
+    {icon:'🎓',label:'Registered Students',value:students,bg:'#E0E7FF'},
+    {icon:'📝',label:'Pending Registrations',value:pendingReg,bg:'#FCE7F3'},
+  ].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span style="font-size:22px">${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
+
+  const recent = [...apps].sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt)).slice(0,5);
+  document.getElementById('recent-apps').innerHTML = recent.length===0
+    ?'<div style="padding:24px;text-align:center;color:var(--rf-gray);font-size:14px">No applications yet</div>'
+    :`<table class="data-table"><thead><tr><th>Name</th><th>Qualification</th><th>Status</th></tr></thead><tbody>
+    ${recent.map(a=>`<tr><td style="font-weight:600">${a.firstName} ${a.lastName}</td><td style="color:var(--rf-gray);font-size:13px">${a.qualificationCode}</td><td>${badge(a.status)}</td></tr>`).join('')}
+    </tbody></table>`;
+
+  document.getElementById('quick-actions').innerHTML = [
+    {href:'Applications.html',icon:'📋',label:'Review Applications',desc:`${pending} pending review`},
+    {href:'Registrations.html',icon:'📝',label:'Review Registrations',desc:`${pendingReg} pending approval`},
+    {href:'Students.html',icon:'🎓',label:'Manage Students',desc:`${students} enrolled students`},
+    {href:'Allocations.html',icon:'📚',label:'Allocate Modules',desc:'Assign modules to approved students'},
+  ].map(a=>`<a href="${a.href}" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--rf-border);border-radius:var(--radius);transition:all .15s;color:var(--rf-navy);text-decoration:none" onmouseover="this.style.borderColor='var(--rf-blue)';this.style.background='var(--rf-light)'" onmouseout="this.style.borderColor='var(--rf-border)';this.style.background=''"><span style="font-size:24px">${a.icon}</span><div><div style="font-weight:600;font-size:14px">${a.label}</div><div style="font-size:13px;color:var(--rf-gray)">${a.desc}</div></div><span style="margin-left:auto;color:var(--rf-blue)">→</span></a>`).join('');
+
+  const adminNotifs = notifs.filter(n=>n.userId===user.id).slice(0,6);
+  document.getElementById('activity').innerHTML = adminNotifs.length===0
+    ?'<div style="padding:24px;text-align:center;color:var(--rf-gray);font-size:14px">No activity yet</div>'
+    :`<table class="data-table"><thead><tr><th>Event</th><th>Message</th><th>Time</th></tr></thead><tbody>
+    ${adminNotifs.map(n=>`<tr><td>${badge(n.type==='success'?'approved':n.type==='error'?'declined':'info')}<br><span style="font-size:11px">${n.title}</span></td><td style="font-size:13px;color:var(--rf-gray);max-width:300px">${n.message.substring(0,80)}${n.message.length>80?'...':''}</td><td style="font-size:12px;color:var(--rf-gray)">${fmtDateTime(n.createdAt)}</td></tr>`).join('')}
+    </tbody></table>`;
+
+  /* ════════════════════════════════
+     EVENT CALENDAR
+  ════════════════════════════════ */
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let calDate = new Date();
+
+  function buildCal() {
+    const year = calDate.getFullYear(), month = calDate.getMonth();
+    const today = new Date();
+    const allEvents = getEvents();
+
+    document.getElementById('calTitle').textContent = monthNames[month] + ' ' + year;
+    document.getElementById('prevLbl').textContent = monthNames[(month+11)%12];
+    document.getElementById('nextLbl').textContent = monthNames[(month+1)%12];
+
+    let firstDay = new Date(year, month, 1).getDay();
+    firstDay = firstDay === 0 ? 6 : firstDay - 1;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    let cells = [];
+    for (let i = 0; i < firstDay; i++) cells.push('<td class="empty"></td>');
+    for (let d = 1; d <= daysInMonth; d++) {
+      const isToday = d===today.getDate() && month===today.getMonth() && year===today.getFullYear();
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const hasEv = allEvents.some(e => e.date === dateStr);
+      const cls = [isToday ? 'today' : '', hasEv ? 'has-event' : ''].filter(Boolean).join(' ');
+      cells.push(`<td class="${cls}" onclick="handleCalDayClick('${dateStr}', ${hasEv}, event)">${d}</td>`);
+    }
+    while (cells.length % 7 !== 0) cells.push('<td class="empty"></td>');
+    let html = '';
+    for (let i = 0; i < cells.length; i += 7) html += '<tr>' + cells.slice(i, i+7).join('') + '</tr>';
+    document.getElementById('calBody').innerHTML = html;
+  }
+
+  function changeMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); buildCal(); }
+  buildCal();
+
+  function handleCalDayClick(dateStr, hasEvent, ev) {
+    ev.stopPropagation(); // prevent document click from immediately closing popup
+    if (hasEvent) {
+      showAdminDayPopup(dateStr, ev);
+    } else {
+      openAddEventForDate(dateStr);
+    }
+  }
+
+  function showAdminDayPopup(dateStr, ev) {
+    const evs = getEvents().filter(e => e.date === dateStr);
+    const popup = document.getElementById('adminDayPopup');
+    const d = new Date(dateStr + 'T00:00:00');
+    document.getElementById('adminDayPopupTitle').textContent =
+      d.toLocaleDateString('en-ZA', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+    const typeLabels = { all:'Everyone', students:'Students', lecturers:'Lecturers' };
+    const typeColors = { general:'#1a9e8f', academic:'#123f7a', exam:'#c0392b', holiday:'#f59e0b' };
+    document.getElementById('adminDayPopupEvents').innerHTML = evs.map(e => {
+      const color = typeColors[e.type] || '#1a9e8f';
+      return `<div class="dp-ev-item ${e.type}" style="border-left-color:${color}">
+        <div class="dp-ev-type">${e.type.toUpperCase()}${e.time ? ' · ⏰ ' + e.time : ''} · 👥 ${typeLabels[e.audience] || 'Everyone'}</div>
+        <div class="dp-ev-title-text">${e.title}</div>
+        ${e.description ? `<div class="dp-ev-desc-text">${e.description}</div>` : ''}
+        <button style="margin-top:6px;background:none;border:none;cursor:pointer;color:#c0392b;font-size:.75rem;padding:0;font-weight:600" onclick="event.stopPropagation();removeEventFromPopup('${e.id}','${dateStr}')">🗑 Remove this event</button>
+      </div>`;
+    }).join('');
+
+    document.getElementById('adminDayAddLink').onclick = function(e) {
+      e.stopPropagation();
+      document.getElementById('adminDayPopup').classList.remove('show');
+      openAddEventForDate(dateStr);
+    };
+
+    // Position popup near clicked cell
+    const rect = ev.target.getBoundingClientRect();
+    popup.style.top = (window.scrollY + rect.bottom + 8) + 'px';
+    popup.style.left = Math.min(rect.left, window.innerWidth - 360) + 'px';
+    popup.classList.add('show');
+  }
+
+  function removeEventFromPopup(id, dateStr) {
+    if (!confirm('Remove this event?')) return;
+    deleteEvent(id);
+    buildCal();
+    renderEventsList();
+    // Refresh popup or close it if no more events
+    const remaining = getEvents().filter(e => e.date === dateStr);
+    if (!remaining.length) {
+      document.getElementById('adminDayPopup').classList.remove('show');
+    } else {
+      // Re-render popup content
+      const typeLabels = { all:'Everyone', students:'Students', lecturers:'Lecturers' };
+      document.getElementById('adminDayPopupEvents').innerHTML = remaining.map(e => {
+        return `<div class="dp-ev-item ${e.type}">
+          <div class="dp-ev-type">${e.type.toUpperCase()}${e.time ? ' · ⏰ ' + e.time : ''} · 👥 ${typeLabels[e.audience] || 'Everyone'}</div>
+          <div class="dp-ev-title">${e.title}</div>
+          ${e.description ? `<div class="dp-ev-desc">${e.description}</div>` : ''}
+          <button style="margin-top:6px;background:none;border:none;cursor:pointer;color:#c0392b;font-size:.75rem;padding:0;font-weight:600" onclick="event.stopPropagation();removeEventFromPopup('${e.id}','${dateStr}')">🗑 Remove this event</button>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // Close popup when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#adminDayPopup') && !e.target.closest('.admin-cal')) {
+      document.getElementById('adminDayPopup').classList.remove('show');
+    }
+  });
+
+  function renderEventsList() {
+    const evts = getUpcomingEvents('admin');
+    document.getElementById('evCount').textContent = evts.length + ' upcoming';
+    const el = document.getElementById('eventsList');
+    if (evts.length === 0) {
+      el.innerHTML = '<div style="padding:32px;text-align:center;color:var(--rf-gray);font-size:14px">No upcoming events. Click "+ Add Event" to create one.</div>';
+      return;
+    }
+    el.innerHTML = evts.map(e => {
+      const d = new Date(e.date + 'T00:00:00');
+      const audLabel = {all:'Everyone', students:'Students', lecturers:'Lecturers'}[e.audience] || 'Everyone';
+      return `<div class="ev-row">
+        <div class="ev-date-box">
+          <div class="ev-date-day">${d.getDate()}</div>
+          <div class="ev-date-mon">${monthNames[d.getMonth()].slice(0,3)}</div>
+        </div>
+        <div class="ev-info">
+          <div class="ev-title-row">
+            <span class="ev-title-text">${e.title}</span>
+            <span class="ev-type-badge ev-type-${e.type}">${e.type}</span>
+          </div>
+          ${e.description ? `<div class="ev-desc-text">${e.description}</div>` : ''}
+          <div class="ev-audience">👥 ${audLabel}${e.time ? ' · ⏰ ' + e.time : ''}</div>
+        </div>
+        <button class="ev-delete-btn" onclick="removeEvent('${e.id}')">🗑 Remove</button>
+      </div>`;
+    }).join('');
+  }
+  renderEventsList();
+
+  function openAddEvent(dateStr) {
+    document.getElementById('evTitle').value = '';
+    document.getElementById('evDate').value = dateStr || new Date().toISOString().slice(0,10);
+    document.getElementById('evTime').value = '';
+    document.getElementById('evType').value = 'general';
+    document.getElementById('evAudience').value = 'all';
+    document.getElementById('evDesc').value = '';
+    document.getElementById('addEventModal').classList.add('show');
+    document.getElementById('evTitle').focus();
+  }
+
+  function openAddEventForDate(dateStr) {
+    openAddEvent(dateStr);
+  }
+
+  function closeAddEvent() {
+    document.getElementById('addEventModal').classList.remove('show');
+  }
+
+  document.getElementById('addEventModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddEvent();
+  });
+
+  function saveEvent() {
+    const title = document.getElementById('evTitle').value.trim();
+    const date  = document.getElementById('evDate').value;
+    if (!title) { document.getElementById('evTitle').style.borderColor='#c0392b'; document.getElementById('evTitle').focus(); return; }
+    if (!date)  { document.getElementById('evDate').style.borderColor='#c0392b'; document.getElementById('evDate').focus(); return; }
+    createEvent({
+      title,
+      date,
+      time: document.getElementById('evTime').value,
+      type: document.getElementById('evType').value,
+      audience: document.getElementById('evAudience').value,
+      description: document.getElementById('evDesc').value.trim(),
+      createdBy: user.id
+    });
+    closeAddEvent();
+    buildCal();
+    renderEventsList();
+    // refresh stats
+    const updatedEvents = getUpcomingEvents('admin');
+    document.getElementById('evCount').textContent = updatedEvents.length + ' upcoming';
+  }
+
+  function removeEvent(id) {
+    if (!confirm('Remove this event?')) return;
+    deleteEvent(id);
+    buildCal();
+    renderEventsList();
+  }
+
+  /* ════════════════════════════════
+     EMAIL LOG
+  ════════════════════════════════ */
+  function renderEmailLog() {
+    const emails = getSentEmails();
+    const el = document.getElementById('emailLog');
+    if (!emails.length) {
+      el.innerHTML = '<div style="padding:20px 0;text-align:center;color:var(--rf-gray);font-size:13px">No emails logged yet. Emails are stored here when applications are approved.</div>';
+      return;
+    }
+    el.innerHTML = emails.map((e, i) => {
+      const d = new Date(e.sentAt);
+      const dateStr = d.toLocaleDateString('en-ZA', { day:'numeric', month:'short', year:'numeric' });
+      const timeStr = d.toLocaleTimeString('en-ZA', { hour:'2-digit', minute:'2-digit' });
+      return `<div style="border:1px solid var(--rf-border);border-radius:9px;margin-bottom:10px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:#f9fafb;cursor:pointer" onclick="toggleEmailPreview(${i})">
+          <span style="font-size:1.1rem">📧</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:.85rem;color:var(--rf-navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.subject}</div>
+            <div style="font-size:.74rem;color:var(--rf-gray);margin-top:2px">To: <strong>${e.toName}</strong> &lt;${e.to}&gt; · ${dateStr} ${timeStr}</div>
+          </div>
+          <span style="font-size:.8rem;color:var(--rf-blue);font-weight:600;flex-shrink:0">Preview ▾</span>
+        </div>
+        <div id="emailPreview_${i}" style="display:none;padding:0;border-top:1px solid var(--rf-border)">
+          <iframe srcdoc="${e.html.replace(/"/g, '&quot;')}" style="width:100%;height:500px;border:none;display:block" title="Email preview"></iframe>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleEmailPreview(i) {
+    const pane = document.getElementById('emailPreview_' + i);
+    pane.style.display = pane.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function clearSentEmails() {
+    if (!confirm('Clear the email log? This cannot be undone.')) return;
+    localStorage.removeItem('sentEmails');
+    renderEmailLog();
+  }
+
+  renderEmailLog();
+</script>
+</body>
+</html>
