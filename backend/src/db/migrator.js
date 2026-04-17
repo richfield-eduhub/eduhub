@@ -1,9 +1,9 @@
-const path = require('path');
-const fs = require('fs');
-const sequelize = require('../config/database');
+const path = require("path");
+const fs = require("fs");
+const sequelize = require("../config/database");
 
-const MIGRATIONS_TABLE = 'migrations';
-const MIGRATIONS_DIR = path.join(__dirname, '../database/migrations');
+const MIGRATIONS_TABLE = "migrations";
+const MIGRATIONS_DIR = path.join(__dirname, "../database/migrations");
 
 async function migrator() {
   const queryInterface = sequelize.getQueryInterface();
@@ -12,10 +12,13 @@ async function migrator() {
   await queryInterface.createTable(
     MIGRATIONS_TABLE,
     {
-      name: { type: 'VARCHAR(255)', primaryKey: true },
-      runAt: { type: 'TIMESTAMP WITH TIME ZONE', defaultValue: sequelize.literal('NOW()') },
+      name: { type: "VARCHAR(255)", primaryKey: true },
+      runAt: {
+        type: "TIMESTAMP WITH TIME ZONE",
+        defaultValue: sequelize.literal("NOW()"),
+      },
     },
-    { ifNotExists: true }
+    { ifNotExists: true },
   );
 
   // Find out which migrations have already run
@@ -25,7 +28,7 @@ async function migrator() {
   // Load migration files in alphabetical (chronological) order
   const files = fs
     .readdirSync(MIGRATIONS_DIR)
-    .filter((f) => f.endsWith('.js'))
+    .filter((f) => f.endsWith(".js"))
     .sort();
 
   for (const file of files) {
@@ -39,10 +42,13 @@ async function migrator() {
     try {
       console.log(`[migrator] running: ${migration.name}`);
       await migration.up(queryInterface, sequelize.constructor, t);
-      await sequelize.query(`INSERT INTO "${MIGRATIONS_TABLE}" (name) VALUES (:name)`, {
-        replacements: { name: migration.name },
-        transaction: t,
-      });
+      await sequelize.query(
+        `INSERT INTO "${MIGRATIONS_TABLE}" (name) VALUES (:name)`,
+        {
+          replacements: { name: migration.name },
+          transaction: t,
+        },
+      );
       await t.commit();
       console.log(`[migrator] done:    ${migration.name}`);
     } catch (err) {
