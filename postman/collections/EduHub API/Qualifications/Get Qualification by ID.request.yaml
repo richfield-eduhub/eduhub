@@ -1,8 +1,0 @@
-$kind: http-request
-url: "{{base_url}}/qualifications/:id"
-method: GET
-headers:
-  Authorization: Bearer {{access_token}}
-pathVariables:
-  id: a3dea4bb-f84f-444a-8913-129f50711af4
-order: 2000

@@ -1,8 +1,0 @@
-$kind: http-request
-method: GET
-url: '{{base_url}}/lecturers/me'
-order: 2000
-description: 'Get current lecturer''s profile (lecturers only)'
-headers:
-  - key: Authorization
-    value: 'Bearer {{access_token}}'
