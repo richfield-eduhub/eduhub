@@ -37,6 +37,16 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/eduhub-nginx:latest
 
+      - name: Copy compose files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "docker-compose.yml,docker-compose.prod.yml"
+          target: "~/prod/eduhub"
+
       - name: Deploy to server
         uses: appleboy/ssh-action@v1
         with:
@@ -45,7 +55,18 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd ~/eduhub
+            mkdir -p ~/prod/eduhub
+            cat > ~/prod/eduhub/.env << EOF
+            DB_NAME=eduhub
+            DB_USER=postgres
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_PORT=5433
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+            PGADMIN_EMAIL=admin@eduhub.co.za
+            PGADMIN_PASSWORD=${{ secrets.PGADMIN_PASSWORD }}
+            NODE_ENV=production
+            EOF
             echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
