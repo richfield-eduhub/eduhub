@@ -54,6 +54,7 @@ jobs:
       - name: Deploy to server
         uses: appleboy/ssh-action@v1
         with:
+          request_pty: true
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
