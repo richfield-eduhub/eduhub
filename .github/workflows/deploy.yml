@@ -23,6 +23,13 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
 
+      - name: Debug network
+        run: |
+          echo "Tailscale status:"
+          tailscale status
+          echo "Testing connection to server:"
+          nc -zv ${{ secrets.SSH_HOST }} ${{ secrets.SSH_PORT }} || echo "Connection failed"
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
