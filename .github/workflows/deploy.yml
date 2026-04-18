@@ -60,6 +60,12 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             mkdir -p ~/prod/eduhub
+            cat > ~/prod/eduhub/docker-compose.yml << 'COMPOSEFILE'
+            $(cat docker-compose.yml)
+            COMPOSEFILE
+            cat > ~/prod/eduhub/docker-compose.prod.yml << 'PRODFILE'
+            $(cat docker-compose.prod.yml)
+            PRODFILE
             cat > ~/prod/eduhub/.env << EOF
             DB_NAME=eduhub
             DB_USER=postgres
