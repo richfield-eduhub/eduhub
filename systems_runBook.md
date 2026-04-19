@@ -167,7 +167,7 @@ tailscale status
 - [ ] Fix missing `morgan` dependency in `backend/package.json`
 - [ ] Get all containers healthy (`db`, `pgadmin`, `backend`, `nginx`)
 - [ ] Verify `edu-hub.duckdns.org` loads in browser
-- [ ] Set up SSL/HTTPS with Let's Encrypt (certbot)
+- [x] Set up SSL/HTTPS with Let's Encrypt (certbot)
 - [ ] Set up automated database backups
 - [ ] Configure log rotation
 - [ ] Set up monitoring (Uptime Robot or similar)
