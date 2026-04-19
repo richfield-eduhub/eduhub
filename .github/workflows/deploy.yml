@@ -235,13 +235,14 @@ jobs:
 
             deploy_service() {
               SERVICE=$1
+              CONTAINER="eduhub_${SERVICE}"
               echo "Deploying $SERVICE..."
               
               # Pull new image
               docker compose -f docker-compose.yml -f docker-compose.prod.yml pull $SERVICE
               
               # Store current image as rollback point
-              CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' eduhub_${SERVICE} 2>/dev/null || echo "none")
+              CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' "$CONTAINER" 2>/dev/null || echo "none")
               
               # Update only this service
               docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps $SERVICE
@@ -249,18 +250,26 @@ jobs:
               # Wait for health check
               echo "Waiting for $SERVICE health check..."
               RETRIES=0
-              MAX_RETRIES=5
-              until [ $RETRIES -eq $MAX_RETRIES ] || [ "$(docker inspect --format='{{.State.Health.Status}}' eduhub_${SERVICE} 2>/dev/null)" = "healthy" ]; do
+              MAX_RETRIES=24
+              until [ $RETRIES -eq $MAX_RETRIES ] || [ "$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' "$CONTAINER" 2>/dev/null)" = "healthy" ]; do
                 sleep 5
                 RETRIES=$((RETRIES+1))
-                echo "Attempt $RETRIES/$MAX_RETRIES..."
+                STATUS=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' "$CONTAINER" 2>/dev/null || echo "missing")
+                echo "Attempt $RETRIES/$MAX_RETRIES... status=$STATUS"
               done
               
               if [ $RETRIES -eq $MAX_RETRIES ]; then
                 echo "❌ $SERVICE failed health check — rolling back!"
+                echo "----- Debug: container state -----"
+                docker ps -a --filter "name=$CONTAINER" || true
+                docker inspect --format='{{json .State}}' "$CONTAINER" || true
+                echo "----- Debug: recent container logs -----"
+                docker logs --tail=200 "$CONTAINER" || true
                 if [ "$CURRENT_IMAGE" != "none" ]; then
-                  docker stop eduhub_${SERVICE}
-                  docker run -d --name eduhub_${SERVICE}_rollback $CURRENT_IMAGE
+                  ROLLBACK_CONTAINER="${CONTAINER}_rollback"
+                  docker rm -f "$ROLLBACK_CONTAINER" >/dev/null 2>&1 || true
+                  docker stop "$CONTAINER" || true
+                  docker run -d --name "$ROLLBACK_CONTAINER" "$CURRENT_IMAGE" || true
                 fi
                 exit 1
               fi
