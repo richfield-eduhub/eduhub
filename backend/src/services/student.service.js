@@ -3,27 +3,27 @@
  * Handles business logic for student operations
  */
 
-const sequelize = require('../config/database');
-<<<<<<< HEAD
+const sequelize = require("../config/database");
 const {
   PAGINATION,
   LIFECYCLE_STATUS,
   ACADEMIC_STATUS,
-  USER_ROLES,
-} = require('../utils/constants');
-=======
-const { PAGINATION, LIFECYCLE_STATUS, ACADEMIC_STATUS } = require('../utils/constants');
->>>>>>> 531c062 (popi's changes)
+} = require("../utils/constants");
 
 class StudentService {
   /**
    * Get all students with pagination and filtering
    */
-  async getAllStudents({ page = PAGINATION.DEFAULT_PAGE, limit = PAGINATION.DEFAULT_LIMIT, status, search }) {
+  async getAllStudents({
+    page = PAGINATION.DEFAULT_PAGE,
+    limit = PAGINATION.DEFAULT_LIMIT,
+    status,
+    search,
+  }) {
     const offset = (page - 1) * limit;
     const limitValue = Math.min(limit, PAGINATION.MAX_LIMIT);
 
-    let whereClause = '';
+    let whereClause = "";
     const bindings = [];
     let bindIndex = 1;
 
@@ -54,7 +54,7 @@ class StudentService {
       {
         bind: bindings,
         type: sequelize.QueryTypes.SELECT,
-      }
+      },
     );
 
     // Get students
@@ -75,7 +75,7 @@ class StudentService {
       {
         bind: bindings,
         type: sequelize.QueryTypes.SELECT,
-      }
+      },
     );
 
     return {
@@ -110,13 +110,13 @@ class StudentService {
       {
         bind: [studentId],
         type: sequelize.QueryTypes.SELECT,
-      }
+      },
     );
 
     const student = students[0];
 
     if (!student) {
-      throw { statusCode: 404, message: 'Student not found' };
+      throw { statusCode: 404, message: "Student not found" };
     }
 
     // Get emergency contacts
@@ -129,7 +129,7 @@ class StudentService {
       {
         bind: [studentId],
         type: sequelize.QueryTypes.SELECT,
-      }
+      },
     );
 
     return {
@@ -155,13 +155,13 @@ class StudentService {
       {
         bind: [userId],
         type: sequelize.QueryTypes.SELECT,
-      }
+      },
     );
 
     const student = students[0];
 
     if (!student) {
-      throw { statusCode: 404, message: 'Student record not found' };
+      throw { statusCode: 404, message: "Student record not found" };
     }
 
     return student;
@@ -174,7 +174,13 @@ class StudentService {
     const transaction = await sequelize.transaction();
 
     try {
-      const { lifecycle_status, academic_status, qualification_id, expected_graduation, graduation_date } = updateData;
+      const {
+        lifecycle_status,
+        academic_status,
+        qualification_id,
+        expected_graduation,
+        graduation_date,
+      } = updateData;
 
       // Build update query dynamically
       const updates = [];
@@ -213,7 +219,7 @@ class StudentService {
 
       if (updates.length === 0) {
         await transaction.rollback();
-        throw { statusCode: 400, message: 'No valid update fields provided' };
+        throw { statusCode: 400, message: "No valid update fields provided" };
       }
 
       updates.push(`updated_at = CURRENT_TIMESTAMP`);
@@ -221,19 +227,19 @@ class StudentService {
 
       const [result] = await sequelize.query(
         `UPDATE students
-         SET ${updates.join(', ')}
+         SET ${updates.join(", ")}
          WHERE student_id = $${bindIndex}
          RETURNING student_id, lifecycle_status, academic_status, qualification_id`,
         {
           bind: bindings,
           type: sequelize.QueryTypes.UPDATE,
           transaction,
-        }
+        },
       );
 
       if (!result) {
         await transaction.rollback();
-        throw { statusCode: 404, message: 'Student not found' };
+        throw { statusCode: 404, message: "Student not found" };
       }
 
       await transaction.commit();
@@ -262,22 +268,24 @@ class StudentService {
       {
         bind: [studentId],
         type: sequelize.QueryTypes.SELECT,
-      }
+      },
     );
 
     return registrations;
   }
-<<<<<<< HEAD
-
   /**
    * Set linked user account status for a student (admin) — uses `users.account_status`.
    */
-  async setStudentAccountStatus(studentId, adminUserId, { account_status, status_reason }) {
-    const allowed = new Set(['active', 'blocked', 'suspended']);
+  async setStudentAccountStatus(
+    studentId,
+    adminUserId,
+    { account_status, status_reason },
+  ) {
+    const allowed = new Set(["active", "blocked", "suspended"]);
     if (!allowed.has(account_status)) {
       throw {
         statusCode: 400,
-        message: 'account_status must be one of: active, blocked, suspended',
+        message: "account_status must be one of: active, blocked, suspended",
       };
     }
 
@@ -289,20 +297,23 @@ class StudentService {
       {
         replacements: [studentId],
         type: sequelize.QueryTypes.SELECT,
-      }
+      },
     );
     const row = rows[0];
     if (!row) {
-      throw { statusCode: 404, message: 'Student not found' };
+      throw { statusCode: 404, message: "Student not found" };
     }
     if (row.role !== USER_ROLES.STUDENT) {
       throw {
         statusCode: 403,
-        message: 'Only student accounts can be updated with this action',
+        message: "Only student accounts can be updated with this action",
       };
     }
     if (row.user_id === adminUserId) {
-      throw { statusCode: 403, message: 'You cannot change your own account status' };
+      throw {
+        statusCode: 403,
+        message: "You cannot change your own account status",
+      };
     }
 
     const reason =
@@ -320,7 +331,7 @@ class StudentService {
        WHERE id = ?`,
       {
         replacements: [account_status, reason, adminUserId, row.user_id],
-      }
+      },
     );
 
     const outRows = await sequelize.query(
@@ -332,13 +343,11 @@ class StudentService {
       {
         replacements: [studentId],
         type: sequelize.QueryTypes.SELECT,
-      }
+      },
     );
 
     return outRows[0];
   }
-=======
->>>>>>> 531c062 (popi's changes)
 }
 
 module.exports = new StudentService();

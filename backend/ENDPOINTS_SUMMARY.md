@@ -263,15 +263,11 @@ Query Params:
 
 ## 23. GET /api/campuses
 **Get All Campuses**
-<<<<<<< HEAD
 - Lists all Richfield campuses (physical + online)
-=======
-- Lists all EduHub campuses (physical + online)
->>>>>>> 531c062 (popi's changes)
 - Filter by active campuses
 - Include/exclude online campus
 - Public endpoint (no authentication required)
-
+    
 Query Params:
 - `active_only=true` - Show only active campuses
 - `include_online=false` - Exclude online campus

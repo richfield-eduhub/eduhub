@@ -750,11 +750,7 @@
 								}
 							]
 						},
-<<<<<<< HEAD
-						"description": "Get all Richfield campuses (PUBLIC - no auth required)"
-=======
 						"description": "Get all EduHub campuses (PUBLIC - no auth required)"
->>>>>>> 531c062 (popi's changes)
 					},
 					"response": []
 				},
@@ -823,11 +819,7 @@
 					"response": []
 				}
 			],
-<<<<<<< HEAD
-			"description": "Campus management endpoints - View Richfield campuses and their offerings"
-=======
 			"description": "Campus management endpoints - View EduHub campuses and their offerings"
->>>>>>> 531c062 (popi's changes)
 		},
 		{
 			"name": "Health Check",

@@ -1,10 +1,7 @@
 /**
  * Migration: Add Campuses System
-<<<<<<< HEAD
- * - Creates campuses table with Richfield campus data
-=======
  * - Creates campuses table with EduHub campus data
->>>>>>> 531c062 (popi's changes)
+
  * - Creates campus_qualifications junction table (many-to-many)
  * - Adds campus_id to students and lecturers tables
  */
@@ -177,11 +174,7 @@ module.exports = {
       name: 'idx_lecturers_campus_id',
     });
 
-<<<<<<< HEAD
     // Seed Richfield campuses data with proper UUIDs
-=======
-    // Seed EduHub campuses data with proper UUIDs
->>>>>>> 531c062 (popi's changes)
     const campuses = [
       {
         id: crypto.randomUUID(),
@@ -192,11 +185,7 @@ module.exports = {
         address: 'In the heart of Sandton\'s tech corridor',
         phone: '011 029 8371',
         whatsapp: '082 888 8675',
-<<<<<<< HEAD
         email: 'richfieldbryanston@richfield.ac.za',
-=======
-        email: 'eduhubbryanston@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
         is_online: false,
         is_active: true,
         created_at: new Date(),
@@ -211,11 +200,7 @@ module.exports = {
         address: 'From Gautrain links to rooftop views',
         phone: '012 745 8113',
         whatsapp: '072 084 4664',
-<<<<<<< HEAD
         email: 'centurion@richfield.ac.za',
-=======
-        email: 'centurion@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
         is_online: false,
         is_active: true,
         created_at: new Date(),
@@ -230,11 +215,7 @@ module.exports = {
         address: 'Study in the heart of Newtown surrounded by history, creativity, and career possibilities',
         phone: '011 595 4300',
         whatsapp: '066 257 2755',
-<<<<<<< HEAD
         email: 'newtown@richfield.ac.za',
-=======
-        email: 'newtown@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
         is_online: false,
         is_active: true,
         created_at: new Date(),
@@ -249,11 +230,7 @@ module.exports = {
         address: 'Opposite Sammy Marks Square',
         phone: '012 765 1700',
         whatsapp: '083 648 5563',
-<<<<<<< HEAD
         email: 'pretoria@richfield.ac.za',
-=======
-        email: 'pretoria@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
         is_online: false,
         is_active: true,
         created_at: new Date(),
@@ -268,11 +245,7 @@ module.exports = {
         address: 'Library Gardens - state-of-the-art learning with the energy of a city centre',
         phone: '015 817 2600',
         whatsapp: '066 257 2749',
-<<<<<<< HEAD
         email: 'richfieldpolokwane@richfield.ac.za',
-=======
-        email: 'eduhubpolokwane@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
         is_online: false,
         is_active: true,
         created_at: new Date(),
@@ -287,11 +260,7 @@ module.exports = {
         address: 'Navigating your future in a supportive, modern campus experience',
         phone: '021 831 0701',
         whatsapp: '066 240 8728',
-<<<<<<< HEAD
         email: 'capetown@richfield.ac.za',
-=======
-        email: 'capetown@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
         is_online: false,
         is_active: true,
         created_at: new Date(),
@@ -306,11 +275,7 @@ module.exports = {
         address: 'Focused learning with easy access to shopping, dining, and green spaces',
         phone: '031 831 2200',
         whatsapp: '081 344 0634',
-<<<<<<< HEAD
         email: 'Musgrave@richfield.ac.za',
-=======
-        email: 'Musgrave@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
         is_online: false,
         is_active: true,
         created_at: new Date(),
@@ -325,11 +290,7 @@ module.exports = {
         address: 'Located in Park Square, this modern campus combines convenience, community, and career-focused energy',
         phone: '031 834 7500',
         whatsapp: '081 344 0634',
-<<<<<<< HEAD
         email: 'umhlanga@richfield.ac.za',
-=======
-        email: 'umhlanga@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
         is_online: false,
         is_active: true,
         created_at: new Date(),
@@ -344,11 +305,7 @@ module.exports = {
         address: null,
         phone: '0861 321 321',
         whatsapp: '082 332 1321',
-<<<<<<< HEAD
         email: 'admissions@richfield.ac.za',
-=======
-        email: 'admissions@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
         is_online: true,
         is_active: true,
         created_at: new Date(),
@@ -358,11 +315,7 @@ module.exports = {
 
     await queryInterface.bulkInsert('campuses', campuses);
 
-<<<<<<< HEAD
     console.log(`✅ Inserted ${campuses.length} Richfield campuses`);
-=======
-    console.log(`✅ Inserted ${campuses.length} EduHub campuses`);
->>>>>>> 531c062 (popi's changes)
     console.log('✅ Campus system setup complete');
     },
 

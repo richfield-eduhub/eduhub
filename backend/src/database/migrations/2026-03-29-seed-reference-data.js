@@ -8,11 +8,7 @@ module.exports = {
       console.log('   ⚠️  This runs in ALL environments (dev, test, prod)');
 
       // ════════════════════════════════════════════════════════════════
-<<<<<<< HEAD
       // 1. SEED QUALIFICATIONS (Real Richfield programmes)
-=======
-      // 1. SEED QUALIFICATIONS (Real EduHub programmes)
->>>>>>> 531c062 (popi's changes)
       // ════════════════════════════════════════════════════════════════
 
       const qualifications = [
@@ -85,26 +81,15 @@ module.exports = {
       ];
 
       await queryInterface.bulkInsert('qualifications', qualifications, { transaction });
-<<<<<<< HEAD
       console.log('   ✅ Seeded 6 Richfield qualifications');
 
       // ════════════════════════════════════════════════════════════════
       // 2. SEED MODULES (Real Richfield module structure)
-=======
-      console.log('   ✅ Seeded 6 EduHub qualifications');
-
-      // ════════════════════════════════════════════════════════════════
-      // 2. SEED MODULES (Real EduHub module structure)
->>>>>>> 531c062 (popi's changes)
       // ════════════════════════════════════════════════════════════════
 
       const modules = [
         // ──────────────────────────────────────────────────────────────
-<<<<<<< HEAD
         // BSc IT Modules (Based on Richfield BSc IT curriculum)
-=======
-        // BSc IT Modules (Based on EduHub BSc IT curriculum)
->>>>>>> 531c062 (popi's changes)
         // ──────────────────────────────────────────────────────────────
 
         // Year 1, Semester 1

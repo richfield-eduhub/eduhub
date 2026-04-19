@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 version: "3.8"
 
 services:
@@ -133,90 +132,13 @@ services:
       start_period: 5s
     networks:
       - eduhub_network
-=======
-services:
-  db:
-    image: postgres:16
-    container_name: eduhub_db
-    environment:
-      POSTGRES_DB: eduhub
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: yourpassword
-    ports:
-      - "5433:5432"
-    volumes:
-      - eduhub_pgdata:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d eduhub"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    restart: unless-stopped
-
-  backend:
-    image: node:20-alpine
-    container_name: eduhub_backend
-    working_dir: /app
-    env_file:
-      - ./backend/.env
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    ports:
-      - "3000:3000"
-    command: sh /app/docker-start.sh
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: unless-stopped
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: eduhub_pgadmin
-    user: root
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@eduhub.ac.za
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 10
-      PGADMIN_CONFIG_SERVER_MODE: 'True'
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
-    ports:
-      - "5050:80"
-    volumes:
-      - eduhub_pgadmin:/var/lib/pgadmin
-      - ./logs/pgadmin:/var/log/pgadmin
-      - ./pgadmin-config/servers.json:/pgadmin4/servers.json:ro
-      - ./pgadmin-config/pgpass:/tmp/pgpass:ro
-      - ./pgadmin-config/setup-pgadmin.sh:/docker-entrypoint-initdb.d/setup.sh:ro
-    entrypoint: >
-      /bin/sh -c "
-      cp /tmp/pgpass /pgpass &&
-      chmod 600 /pgpass &&
-      chown pgadmin:root /pgpass &&
-      /entrypoint.sh
-      "
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: unless-stopped
->>>>>>> 531c062 (popi's changes)
 
 volumes:
   eduhub_pgdata:
     driver: local
   eduhub_pgadmin:
     driver: local
-<<<<<<< HEAD
 
 networks:
   eduhub_network:
     driver: bridge
-=======
->>>>>>> 531c062 (popi's changes)

@@ -3,9 +3,6 @@ description: Complete API collection for EduHub student management system
 variables:
   base_url: ""
   access_token: ""
-<<<<<<< HEAD
   application_id: ""
   semester_id: ""
   student_id: ""
-=======
->>>>>>> 531c062 (popi's changes)

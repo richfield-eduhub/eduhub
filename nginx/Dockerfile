@@ -1,10 +1,10 @@
 FROM nginx:alpine
 
 # Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
 
-# Create directory for frontend files
-RUN mkdir -p /usr/share/nginx/html
+# Copy frontend static files into image
+COPY frontend/ /usr/share/nginx/html/
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

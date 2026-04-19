@@ -6,28 +6,34 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  # ─── Detect Changes ───────────────────────────────────────────────────────
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      nginx: ${{ steps.filter.outputs.nginx }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            nginx:
+              - 'nginx/**'
+              - 'frontend/**'
+
+  # ─── Build Backend ────────────────────────────────────────────────────────
+  build-backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Tailscale
-        uses: tailscale/github-action@v2
-        with:
-          authkey: ${{ secrets.TS_AUTH_KEY }}
-          tags: tag:ci
-
-      - name: Debug network
-        run: |
-          echo "Tailscale status:"
-          tailscale status
-          echo "Testing connection to server:"
-          nc -zv ${{ secrets.SSH_HOST }} ${{ secrets.SSH_PORT }} || echo "Connection failed"
+      - uses: actions/checkout@v4
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -43,12 +49,45 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/eduhub-backend:latest
 
+  # ─── Build Nginx ──────────────────────────────────────────────────────────
+  build-nginx:
+    needs: changes
+    if: needs.changes.outputs.nginx == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and push nginx image
         uses: docker/build-push-action@v5
         with:
           context: ./nginx
+          file: ./nginx/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/eduhub-nginx:latest
+
+  # ─── Deploy ───────────────────────────────────────────────────────────────
+  deploy:
+    needs: [changes, build-backend, build-nginx]
+    if: always() && (needs.build-backend.result == 'success' || needs.build-backend.result == 'skipped') && (needs.build-nginx.result == 'success' || needs.build-nginx.result == 'skipped') && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.nginx == 'true')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TS_AUTH_KEY }}
+          tags: tag:ci
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v1
@@ -59,8 +98,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            mkdir -p ~/prod/eduhub
-            cat > ~/prod/eduhub/docker-compose.yml << 'EOF'
+            set -e
+            cd ~/prod/eduhub
+
+            # Write compose files and env
+            cat > ~/prod/eduhub/docker-compose.yml << 'COMPOSEFILE'
             version: '3.8'
             services:
               db:
@@ -159,8 +201,9 @@ jobs:
             networks:
               eduhub_network:
                 driver: bridge
-            EOF
-            cat > ~/prod/eduhub/docker-compose.prod.yml << 'EOF'
+            COMPOSEFILE
+
+            cat > ~/prod/eduhub/docker-compose.prod.yml << 'PRODFILE'
             version: '3.8'
             services:
               backend:
@@ -169,4 +212,68 @@ jobs:
                   NODE_ENV: production
               nginx:
                 image: ghcr.io/richfield-eduhub/eduhub-nginx:latest
+            PRODFILE
+
+            cat > ~/prod/eduhub/.env << EOF
+            DB_NAME=eduhub
+            DB_USER=postgres
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_PORT=5433
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+            PGADMIN_EMAIL=admin@eduhub.co.za
+            PGADMIN_PASSWORD=${{ secrets.PGADMIN_PASSWORD }}
+            NODE_ENV=production
             EOF
+
+            # Login to GHCR
+            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+            # Deploy only changed services with rollback
+            CHANGED_BACKEND="${{ needs.changes.outputs.backend }}"
+            CHANGED_NGINX="${{ needs.changes.outputs.nginx }}"
+
+            deploy_service() {
+              SERVICE=$1
+              echo "Deploying $SERVICE..."
+              
+              # Pull new image
+              docker compose -f docker-compose.yml -f docker-compose.prod.yml pull $SERVICE
+              
+              # Store current image as rollback point
+              CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' eduhub_${SERVICE} 2>/dev/null || echo "none")
+              
+              # Update only this service
+              docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps $SERVICE
+              
+              # Wait for health check
+              echo "Waiting for $SERVICE health check..."
+              RETRIES=0
+              MAX_RETRIES=10
+              until [ $RETRIES -eq $MAX_RETRIES ] || [ "$(docker inspect --format='{{.State.Health.Status}}' eduhub_${SERVICE} 2>/dev/null)" = "healthy" ]; do
+                sleep 5
+                RETRIES=$((RETRIES+1))
+                echo "Attempt $RETRIES/$MAX_RETRIES..."
+              done
+              
+              if [ $RETRIES -eq $MAX_RETRIES ]; then
+                echo "❌ $SERVICE failed health check — rolling back!"
+                if [ "$CURRENT_IMAGE" != "none" ]; then
+                  docker stop eduhub_${SERVICE}
+                  docker run -d --name eduhub_${SERVICE}_rollback $CURRENT_IMAGE
+                fi
+                exit 1
+              fi
+              
+              echo "✅ $SERVICE deployed successfully!"
+            }
+
+            if [ "$CHANGED_BACKEND" = "true" ]; then
+              deploy_service "backend"
+            fi
+
+            if [ "$CHANGED_NGINX" = "true" ]; then
+              deploy_service "nginx"
+            fi
+
+            docker system prune -f

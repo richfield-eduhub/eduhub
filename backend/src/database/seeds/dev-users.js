@@ -38,11 +38,7 @@ module.exports = {
         `, {
           replacements: {
             id: adminUserId,
-<<<<<<< HEAD
             email: 'admin@richfield.ac.za',
-=======
-            email: 'admin@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
             password_hash: defaultPassword,
             member_number: 'ADMIN001',
             role: 'admin',
@@ -83,11 +79,7 @@ module.exports = {
         const lecturers = [
           {
             user_id: '30000001-0000-4000-8000-000000000001',
-<<<<<<< HEAD
             email: 'john.smith@richfield.ac.za',
-=======
-            email: 'john.smith@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
             member_number: 'EMP2024001',
             detail_id: '31000001-0000-4000-8000-000000000001',
             first_name: 'John',
@@ -106,11 +98,7 @@ module.exports = {
           },
           {
             user_id: '30000002-0000-4000-8000-000000000002',
-<<<<<<< HEAD
             email: 'sarah.jones@richfield.ac.za',
-=======
-            email: 'sarah.jones@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
             member_number: 'EMP2024002',
             detail_id: '31000002-0000-4000-8000-000000000002',
             first_name: 'Sarah',
@@ -129,11 +117,7 @@ module.exports = {
           },
           {
             user_id: '30000003-0000-4000-8000-000000000003',
-<<<<<<< HEAD
             email: 'david.naidoo@richfield.ac.za',
-=======
-            email: 'david.naidoo@eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
             member_number: 'EMP2024003',
             detail_id: '31000003-0000-4000-8000-000000000003',
             first_name: 'David',
@@ -213,11 +197,7 @@ module.exports = {
         const students = [
           {
             user_id: '40000001-0000-4000-8000-000000000001',
-<<<<<<< HEAD
             email: 'thabo.molefe@student.richfield.ac.za',
-=======
-            email: 'thabo.molefe@student.eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
             member_number: '2026-0001',
             detail_id: '41000001-0000-4000-8000-000000000001',
             first_name: 'Thabo',
@@ -238,11 +218,7 @@ module.exports = {
           },
           {
             user_id: '40000002-0000-4000-8000-000000000002',
-<<<<<<< HEAD
             email: 'lerato.khumalo@student.richfield.ac.za',
-=======
-            email: 'lerato.khumalo@student.eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
             member_number: '2026-0002',
             detail_id: '41000002-0000-4000-8000-000000000002',
             first_name: 'Lerato',
@@ -263,11 +239,7 @@ module.exports = {
           },
           {
             user_id: '40000003-0000-4000-8000-000000000003',
-<<<<<<< HEAD
             email: 'sipho.dlamini@student.richfield.ac.za',
-=======
-            email: 'sipho.dlamini@student.eduhub.ac.za',
->>>>>>> 531c062 (popi's changes)
             member_number: '2026-0003',
             detail_id: '41000003-0000-4000-8000-000000000003',
             first_name: 'Sipho',
@@ -426,11 +398,7 @@ module.exports = {
         console.log('   - 8 Student registrations');
         console.log('');
         console.log('🔐 Default login credentials:');
-<<<<<<< HEAD
         console.log('   Email: admin@richfield.ac.za');
-=======
-        console.log('   Email: admin@eduhub.ac.za');
->>>>>>> 531c062 (popi's changes)
         console.log('   Password: Password123!');
         console.log('');
         console.log('   All users have the same default password: Password123!');

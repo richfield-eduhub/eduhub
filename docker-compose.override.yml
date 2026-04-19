@@ -1,0 +1,21 @@
+version: "3.8"
+
+# This file is automatically merged with docker-compose.yml for local development.
+# Just run: docker compose up
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+      BACKEND_COMMAND: npm run dev
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
