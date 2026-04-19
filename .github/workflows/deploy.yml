@@ -319,6 +319,8 @@ jobs:
             # Issue initial Let's Encrypt certificate once, then keep it renewed via certbot service
             if [ ! -f "./certbot/conf/renewal/${DOMAIN}.conf" ]; then
               echo "Issuing initial Let's Encrypt certificate for ${DOMAIN}..."
+              # Remove temporary self-signed lineage so certbot can create a managed one
+              rm -rf "./certbot/conf/live/${DOMAIN}" "./certbot/conf/archive/${DOMAIN}"
               docker run --rm \
                 -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
                 -v "$(pwd)/certbot/www:/var/www/certbot" \
