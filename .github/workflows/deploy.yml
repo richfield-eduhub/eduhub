@@ -186,7 +186,7 @@ jobs:
                   backend:
                     condition: service_healthy
                 healthcheck:
-                  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+                  test: ["CMD", "curl", "-fsS", "http://localhost/healthz"]
                   interval: 30s
                   timeout: 3s
                   retries: 3
@@ -249,7 +249,7 @@ jobs:
               # Wait for health check
               echo "Waiting for $SERVICE health check..."
               RETRIES=0
-              MAX_RETRIES=10
+              MAX_RETRIES=5
               until [ $RETRIES -eq $MAX_RETRIES ] || [ "$(docker inspect --format='{{.State.Health.Status}}' eduhub_${SERVICE} 2>/dev/null)" = "healthy" ]; do
                 sleep 5
                 RETRIES=$((RETRIES+1))
