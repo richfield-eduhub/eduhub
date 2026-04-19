@@ -101,6 +101,24 @@
 - Build context changed to root (`.`) with `file: ./nginx/Dockerfile`
 - Any change to `frontend/**` triggers nginx image rebuild
 
+### 13. SSL/HTTPS with Let's Encrypt (Certbot)
+- Domain secured: `edu-hub.duckdns.org` with Let's Encrypt certificate
+- Nginx now serves:
+  - `80/tcp`: ACME challenge (`/.well-known/acme-challenge/*`), `/healthz`, and HTTP -> HTTPS redirect
+  - `443/tcp`: main app traffic with TLS certs from `/etc/letsencrypt/live/edu-hub.duckdns.org/`
+- Added shared cert volumes for `nginx` and `certbot`:
+  - `./certbot/conf:/etc/letsencrypt`
+  - `./certbot/www:/var/www/certbot`
+- Added `certbot` container renewal loop (`certbot renew` every 12 hours)
+- First-time bootstrap strategy:
+  1. Start nginx with temporary self-signed cert (so container can start)
+  2. Issue real cert with certbot webroot challenge
+  3. Reload nginx to activate real cert
+- Verification result:
+  - `issuer=C = US, O = Let's Encrypt`
+  - `subject=CN = edu-hub.duckdns.org`
+  - Valid until `2026-07-18`
+
 ---
 
 ## 🗂️ Project Structure
@@ -151,11 +169,12 @@ docker ps
 
 # Check logs
 docker logs eduhub_backend
-docker logs eduhuid_nginx
+docker logs eduhub_nginx
 
 # Manual prod deploy
 cd ~/prod/eduhub
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f nginx certbot
 
 # Check Tailscale
 tailscale status
@@ -335,6 +354,33 @@ docker volume rm volumename          # Remove volume
 docker login ghcr.io -u username --password-stdin   # Login to GHCR
 docker tag image ghcr.io/org/image:tag              # Tag image
 docker push ghcr.io/org/image:tag                   # Push to registry
+```
+
+### 🔐 SSL / Let's Encrypt
+```bash
+# Validate ACME challenge path over HTTP (must return 200/ok)
+mkdir -p ~/prod/eduhub/certbot/www/.well-known/acme-challenge
+echo "ok" > ~/prod/eduhub/certbot/www/.well-known/acme-challenge/test
+curl -I http://edu-hub.duckdns.org/.well-known/acme-challenge/test
+curl http://edu-hub.duckdns.org/.well-known/acme-challenge/test
+
+# Request/replace certificate (webroot mode)
+cd ~/prod/eduhub
+docker run --rm \
+  -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
+  -v "$(pwd)/certbot/www:/var/www/certbot" \
+  certbot/certbot:latest certonly \
+  --webroot -w /var/www/certbot \
+  --email admin@eduhub.co.za \
+  --agree-tos --no-eff-email \
+  -d edu-hub.duckdns.org \
+  --non-interactive -v
+
+# Reload nginx after cert issuance/renewal
+docker exec eduhub_nginx nginx -s reload
+
+# Verify certificate issuer, subject, and expiry
+echo | openssl s_client -connect edu-hub.duckdns.org:443 -servername edu-hub.duckdns.org 2>/dev/null | openssl x509 -noout -issuer -subject -dates
 ```
 
 ### 🐙 Docker Compose
