@@ -70,7 +70,7 @@ jobs:
       - name: Build and push nginx image
         uses: docker/build-push-action@v5
         with:
-          context: ./nginx
+          context: .
           file: ./nginx/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/eduhub-nginx:latest
