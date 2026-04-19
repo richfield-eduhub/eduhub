@@ -103,7 +103,6 @@ jobs:
 
             # Write compose files and env
             cat > ~/prod/eduhub/docker-compose.yml << 'COMPOSEFILE'
-            version: '3.8'
             services:
               db:
                 image: postgres:16
@@ -182,6 +181,8 @@ jobs:
                   - "${NGINX_HTTPS_PORT:-443}:443"
                 volumes:
                   - ./logs/nginx:/var/log/nginx
+                  - ./certbot/conf:/etc/letsencrypt
+                  - ./certbot/www:/var/www/certbot
                 depends_on:
                   backend:
                     condition: service_healthy
@@ -191,6 +192,17 @@ jobs:
                   timeout: 3s
                   retries: 3
                   start_period: 5s
+                networks:
+                  - eduhub_network
+              certbot:
+                image: certbot/certbot:latest
+                container_name: eduhub_certbot
+                restart: unless-stopped
+                volumes:
+                  - ./certbot/conf:/etc/letsencrypt
+                  - ./certbot/www:/var/www/certbot
+                entrypoint: /bin/sh
+                command: -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h; done"
                 networks:
                   - eduhub_network
             volumes:
@@ -204,7 +216,6 @@ jobs:
             COMPOSEFILE
 
             cat > ~/prod/eduhub/docker-compose.prod.yml << 'PRODFILE'
-            version: '3.8'
             services:
               backend:
                 image: ghcr.io/richfield-eduhub/eduhub-backend:latest
@@ -224,10 +235,27 @@ jobs:
             PGADMIN_EMAIL=admin@eduhub.co.za
             PGADMIN_PASSWORD=${{ secrets.PGADMIN_PASSWORD }}
             NODE_ENV=production
+            DOMAIN=edu-hub.duckdns.org
+            LETSENCRYPT_EMAIL=admin@eduhub.co.za
             EOF
 
             # Login to GHCR
             echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+            # Prepare TLS directories and issue first certificate if missing
+            DOMAIN="${DOMAIN:-edu-hub.duckdns.org}"
+            LETSENCRYPT_EMAIL="${LETSENCRYPT_EMAIL:-admin@eduhub.co.za}"
+            CERT_PATH="./certbot/conf/live/${DOMAIN}/fullchain.pem"
+            mkdir -p ./certbot/conf ./certbot/www ./logs/nginx ./logs/backend
+
+            if [ ! -f "$CERT_PATH" ]; then
+              echo "No certificate found for ${DOMAIN}. Creating temporary self-signed cert..."
+              mkdir -p "./certbot/conf/live/${DOMAIN}"
+              openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+                -keyout "./certbot/conf/live/${DOMAIN}/privkey.pem" \
+                -out "./certbot/conf/live/${DOMAIN}/fullchain.pem" \
+                -subj "/CN=${DOMAIN}"
+            fi
 
             # Deploy only changed services with rollback
             CHANGED_BACKEND="${{ needs.changes.outputs.backend }}"
@@ -284,5 +312,27 @@ jobs:
             if [ "$CHANGED_NGINX" = "true" ]; then
               deploy_service "nginx"
             fi
+
+            # Ensure nginx is running before ACME webroot validation
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps nginx
+
+            # Issue initial Let's Encrypt certificate once, then keep it renewed via certbot service
+            if [ ! -f "./certbot/conf/renewal/${DOMAIN}.conf" ]; then
+              echo "Issuing initial Let's Encrypt certificate for ${DOMAIN}..."
+              docker run --rm \
+                -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
+                -v "$(pwd)/certbot/www:/var/www/certbot" \
+                certbot/certbot:latest certonly \
+                --webroot -w /var/www/certbot \
+                --email "$LETSENCRYPT_EMAIL" \
+                --agree-tos \
+                --no-eff-email \
+                -d "$DOMAIN" \
+                --non-interactive
+            fi
+
+            # Start/refresh certbot renewal loop and reload nginx to pick up renewed certs
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps certbot
+            docker exec eduhub_nginx nginx -s reload || true
 
             docker system prune -f
