@@ -52,10 +52,7 @@ const APPLICATION_TYPE = {
   NEW: 'new',
   RETURNING: 'returning',
   TRANSFER: 'transfer',
-<<<<<<< HEAD
   OTHER: 'other',
-=======
->>>>>>> 531c062 (popi's changes)
 };
 
 const DOCUMENT_TYPE = {

@@ -4,7 +4,7 @@
 
 const crypto = require('crypto');
 const sequelize = require('../config/database');
-<<<<<<< HEAD
+
 const { APPLICATION_STATUS, PAGINATION } = require('../utils/constants');
 
 const ADMIN_APPLICATION_STATUSES = [
@@ -15,9 +15,6 @@ const ADMIN_APPLICATION_STATUSES = [
 ];
 
 const FINAL_APPLICATION_STATUSES = [APPLICATION_STATUS.APPROVED, APPLICATION_STATUS.REJECTED];
-=======
-const { APPLICATION_STATUS } = require('../utils/constants');
->>>>>>> 531c062 (popi's changes)
 
 function generateReferenceNumber() {
   const year = new Date().getFullYear();
@@ -31,7 +28,7 @@ function normalizeEmail(email) {
     .toLowerCase();
 }
 
-<<<<<<< HEAD
+
 function isSouthAfricanNationality(nationality) {
   return String(nationality || '').trim() === 'South African';
 }
@@ -119,8 +116,7 @@ function assertFullApplicationForSubmit(payload) {
   }
 }
 
-=======
->>>>>>> 531c062 (popi's changes)
+
 class ApplicationService {
   async assertCampusOffersQualification(campusId, qualificationId, transaction) {
     const [row] = await sequelize.query(
@@ -157,15 +153,9 @@ class ApplicationService {
     }
   }
 
-<<<<<<< HEAD
-  async getActiveQualification(qualificationId, transaction) {
-    const [row] = await sequelize.query(
-      `SELECT id, code, name FROM qualifications WHERE id = ? AND is_active = true`,
-=======
   async assertQualificationExists(qualificationId, transaction) {
     const [row] = await sequelize.query(
       `SELECT id FROM qualifications WHERE id = ? AND is_active = true`,
->>>>>>> 531c062 (popi's changes)
       {
         replacements: [qualificationId],
         type: sequelize.QueryTypes.SELECT,
@@ -175,12 +165,8 @@ class ApplicationService {
     if (!row) {
       throw { statusCode: 400, message: 'Invalid or inactive qualification' };
     }
-<<<<<<< HEAD
-    return row;
-  }
 
-  async assertQualificationExists(qualificationId, transaction) {
-    await this.getActiveQualification(qualificationId, transaction);
+    return row;
   }
 
   async findDuplicateOpenApplication(
@@ -217,31 +203,18 @@ class ApplicationService {
     }
     const pass = passportNumber ? String(passportNumber).trim() : '';
     if (!pass) return null;
-=======
-  }
 
-  async findDuplicateOpenApplication(qualificationId, idNumber, transaction) {
-    if (!idNumber) return null;
->>>>>>> 531c062 (popi's changes)
     const [row] = await sequelize.query(
       `SELECT id, reference_number, status
        FROM applications
        WHERE qualification_id = ?
-<<<<<<< HEAD
-         AND TRIM(COALESCE(nationality, 'South African')) <> 'South African'
+         AND TRIM(COALESCE(nationality, '')) != 'South African'
          AND passport_number = ?
-=======
-         AND id_number = ?
->>>>>>> 531c062 (popi's changes)
          AND status IN (?, ?, ?)`,
       {
         replacements: [
           qualificationId,
-<<<<<<< HEAD
           pass,
-=======
-          idNumber,
->>>>>>> 531c062 (popi's changes)
           APPLICATION_STATUS.DRAFT,
           APPLICATION_STATUS.PENDING,
           APPLICATION_STATUS.UNDER_REVIEW,
@@ -254,7 +227,6 @@ class ApplicationService {
   }
 
   /**
-<<<<<<< HEAD
    * Prior rejection for the same identity + qualification — applicant may not apply again.
    */
   async findRejectedApplication(
@@ -289,31 +261,18 @@ class ApplicationService {
     }
     const pass = passportNumber ? String(passportNumber).trim() : '';
     if (!pass) return null;
-=======
-   * Prior rejection for the same ID + qualification — applicant may not apply again.
-   */
-  async findRejectedApplication(qualificationId, idNumber, transaction) {
-    if (!idNumber) return null;
->>>>>>> 531c062 (popi's changes)
+
     const [row] = await sequelize.query(
       `SELECT id, reference_number, status
        FROM applications
        WHERE qualification_id = ?
-<<<<<<< HEAD
-         AND TRIM(COALESCE(nationality, 'South African')) <> 'South African'
+         AND TRIM(COALESCE(nationality, '')) != 'South African'
          AND passport_number = ?
-=======
-         AND id_number = ?
->>>>>>> 531c062 (popi's changes)
          AND status = ?`,
       {
         replacements: [
           qualificationId,
-<<<<<<< HEAD
           pass,
-=======
-          idNumber,
->>>>>>> 531c062 (popi's changes)
           APPLICATION_STATUS.REJECTED,
         ],
         type: sequelize.QueryTypes.SELECT,
@@ -351,21 +310,6 @@ class ApplicationService {
         email,
         phone,
         id_number,
-<<<<<<< HEAD
-        passport_number,
-        nationality,
-        date_of_birth,
-        gender,
-        alt_email,
-        street_address,
-        suburb,
-        city,
-        province,
-        postal_code,
-        study_year,
-        docs_uploaded,
-=======
->>>>>>> 531c062 (popi's changes)
         tc_accepted,
         status = APPLICATION_STATUS.DRAFT,
       } = payload;
@@ -375,23 +319,6 @@ class ApplicationService {
         throw { statusCode: 400, message: 'campus_id and qualification_id are required' };
       }
 
-<<<<<<< HEAD
-      if (!first_name || !last_name || !email || !phone) {
-        await transaction.rollback();
-        throw {
-          statusCode: 400,
-          message: 'first_name, last_name, email, and phone are required',
-        };
-      }
-
-      const nationalityNorm = nationality != null ? String(nationality).trim() : 'South African';
-      const normalizedEmail = normalizeEmail(email);
-      const altEmailNorm =
-        alt_email != null && String(alt_email).trim()
-          ? normalizeEmail(alt_email)
-          : null;
-
-=======
       if (!first_name || !last_name || !email || !phone || !id_number) {
         await transaction.rollback();
         throw {
@@ -402,7 +329,6 @@ class ApplicationService {
       }
 
       const normalizedEmail = normalizeEmail(email);
->>>>>>> 531c062 (popi's changes)
       const finalStatus =
         status === APPLICATION_STATUS.PENDING
           ? APPLICATION_STATUS.PENDING
@@ -416,74 +342,31 @@ class ApplicationService {
         };
       }
 
-<<<<<<< HEAD
-      if (finalStatus === APPLICATION_STATUS.PENDING) {
-        assertFullApplicationForSubmit({
-          ...payload,
-          nationality: nationalityNorm,
-        });
-        assertIdentityForSubmit(
-          nationalityNorm,
-          id_number,
-          passport_number
-        );
-      }
-
-      await this.assertCampusExists(campus_id, transaction);
-      const qualification = await this.getActiveQualification(
-        qualification_id,
-        transaction
-      );
-=======
       await this.assertCampusExists(campus_id, transaction);
       await this.assertQualificationExists(qualification_id, transaction);
->>>>>>> 531c062 (popi's changes)
       await this.assertCampusOffersQualification(
         campus_id,
         qualification_id,
         transaction
       );
 
-<<<<<<< HEAD
-      const idTrim = id_number != null ? String(id_number).trim() : '';
-      const passTrim =
-        passport_number != null ? String(passport_number).trim() : '';
-
-      const dup = await this.findDuplicateOpenApplication(
-        qualification_id,
-        nationalityNorm,
-        idTrim || null,
-        passTrim || null,
-=======
       const dup = await this.findDuplicateOpenApplication(
         qualification_id,
         id_number,
->>>>>>> 531c062 (popi's changes)
         transaction
       );
       if (dup) {
         await transaction.rollback();
         throw {
           statusCode: 409,
-<<<<<<< HEAD
-          message:
-            'An open application already exists for this identity and qualification',
-=======
           message: 'An open application already exists for this ID number and qualification',
->>>>>>> 531c062 (popi's changes)
           data: { reference_number: dup.reference_number, status: dup.status },
         };
       }
 
       const rejected = await this.findRejectedApplication(
         qualification_id,
-<<<<<<< HEAD
-        nationalityNorm,
-        idTrim || null,
-        passTrim || null,
-=======
         id_number.trim(),
->>>>>>> 531c062 (popi's changes)
         transaction
       );
       if (rejected) {
@@ -508,74 +391,29 @@ class ApplicationService {
             ? matric_subjects
             : JSON.stringify(matric_subjects);
 
-<<<<<<< HEAD
-      const docsJson =
-        docs_uploaded == null
-          ? null
-          : typeof docs_uploaded === 'string'
-            ? docs_uploaded
-            : JSON.stringify(docs_uploaded);
-
-=======
->>>>>>> 531c062 (popi's changes)
       const now = new Date();
       const tcAccepted = Boolean(tc_accepted);
       const tcAcceptedAt = tcAccepted ? now : null;
       const submittedAt =
         finalStatus === APPLICATION_STATUS.PENDING ? now : null;
 
-<<<<<<< HEAD
-      const idForDb = isSouthAfricanNationality(nationalityNorm)
-        ? idTrim || null
-        : null;
-      const passForDb = isSouthAfricanNationality(nationalityNorm)
-        ? null
-        : passTrim || null;
-
-      const studyYearVal =
-        study_year != null && study_year !== ''
-          ? parseInt(study_year, 10)
-          : null;
-
       const [results] = await sequelize.query(
         `INSERT INTO applications (
           user_id, reference_number, qualification_id, campus_id,
-          qualification_code, qualification_name,
-=======
-      const [results] = await sequelize.query(
-        `INSERT INTO applications (
-          user_id, reference_number, qualification_id, campus_id,
->>>>>>> 531c062 (popi's changes)
           admission_for, application_type,
           high_school, high_school_year, highest_grade, matric_subjects,
           tertiary_institution, tertiary_qualification, tertiary_year,
           payer_name, payer_relation, payer_phone, payer_email, payer_address,
           status, tc_accepted, tc_accepted_at, submitted_at,
           first_name, last_name, email, phone, id_number,
-<<<<<<< HEAD
-          nationality, passport_number, date_of_birth, gender, alt_email,
-          street_address, suburb, city, province, postal_code,
-          study_year, docs_uploaded,
           created_at, updated_at
         ) VALUES (
           NULL, ?, ?, ?, ?, ?,
-          ?, ?,
-=======
-          created_at, updated_at
-        ) VALUES (
-          NULL, ?, ?, ?, ?, ?,
->>>>>>> 531c062 (popi's changes)
           ?, ?, ?, CAST(? AS jsonb),
           ?, ?, ?,
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?,
           ?, ?, ?, ?, ?,
-<<<<<<< HEAD
-          ?, ?, ?, ?,
-          ?, ?, ?, ?, ?,
-          ?, CAST(? AS jsonb),
-=======
->>>>>>> 531c062 (popi's changes)
           NOW(), NOW()
         )
         RETURNING id, reference_number, status, submitted_at, created_at`,
@@ -584,11 +422,6 @@ class ApplicationService {
             reference_number,
             qualification_id,
             campus_id,
-<<<<<<< HEAD
-            qualification.code,
-            qualification.name,
-=======
->>>>>>> 531c062 (popi's changes)
             admission_for || null,
             application_type || 'new',
             high_school || null,
@@ -611,23 +444,7 @@ class ApplicationService {
             last_name.trim(),
             normalizedEmail,
             phone.trim(),
-<<<<<<< HEAD
-            idForDb,
-            nationalityNorm,
-            passForDb,
-            date_of_birth || null,
-            gender || null,
-            altEmailNorm,
-            street_address || null,
-            suburb || null,
-            city || null,
-            province || null,
-            postal_code || null,
-            studyYearVal,
-            docsJson,
-=======
             id_number.trim(),
->>>>>>> 531c062 (popi's changes)
           ],
           transaction,
         }
@@ -664,19 +481,8 @@ class ApplicationService {
          a.status, a.tc_accepted, a.tc_accepted_at, a.submitted_at, a.rejection_reason,
          a.reviewed_at, a.created_at, a.updated_at,
          a.first_name, a.last_name, a.email, a.phone, a.id_number,
-<<<<<<< HEAD
-         a.nationality, a.passport_number, a.date_of_birth, a.gender, a.alt_email,
-         a.street_address, a.suburb, a.city, a.province, a.postal_code,
-         a.study_year, a.docs_uploaded,
-         a.qualification_code AS stored_qualification_code,
-         a.qualification_name AS stored_qualification_name,
-         c.code AS campus_code, c.name AS campus_name, c.city AS campus_city,
-         COALESCE(q.code, a.qualification_code) AS qualification_code,
-         COALESCE(q.name, a.qualification_name) AS qualification_name
-=======
          c.code AS campus_code, c.name AS campus_name, c.city AS campus_city,
          q.code AS qualification_code, q.name AS qualification_name
->>>>>>> 531c062 (popi's changes)
        FROM applications a
        LEFT JOIN campuses c ON a.campus_id = c.id
        LEFT JOIN qualifications q ON a.qualification_id = q.id
@@ -709,16 +515,8 @@ class ApplicationService {
          a.id, a.reference_number, a.qualification_id, a.campus_id,
          a.status, a.submitted_at, a.created_at,
          a.first_name, a.last_name, a.email, a.phone, a.id_number,
-<<<<<<< HEAD
-         a.nationality, a.passport_number, a.date_of_birth, a.gender,
-         a.street_address, a.city, a.province, a.study_year,
-         c.code AS campus_code, c.name AS campus_name,
-         COALESCE(q.code, a.qualification_code) AS qualification_code,
-         COALESCE(q.name, a.qualification_name) AS qualification_name
-=======
          c.code AS campus_code, c.name AS campus_name,
          q.code AS qualification_code, q.name AS qualification_name
->>>>>>> 531c062 (popi's changes)
        FROM applications a
        LEFT JOIN campuses c ON a.campus_id = c.id
        LEFT JOIN qualifications q ON a.qualification_id = q.id
@@ -764,16 +562,7 @@ class ApplicationService {
       existing.status === APPLICATION_STATUS.DRAFT &&
       finalStatus === APPLICATION_STATUS.PENDING;
 
-<<<<<<< HEAD
-    const tcAccepted =
-      payload.tc_accepted !== undefined
-        ? Boolean(payload.tc_accepted)
-        : existing.tc_accepted;
-
-    if (submitting && !tcAccepted) {
-=======
     if (submitting && !payload.tc_accepted) {
->>>>>>> 531c062 (popi's changes)
       throw {
         statusCode: 400,
         message: 'Terms and conditions must be accepted to submit',
@@ -783,7 +572,7 @@ class ApplicationService {
     const campusId = payload.campus_id ?? existing.campus_id;
     const qualificationId = payload.qualification_id ?? existing.qualification_id;
 
-<<<<<<< HEAD
+
     const nationalityMerged =
       payload.nationality !== undefined
         ? String(payload.nationality).trim()
@@ -844,12 +633,6 @@ class ApplicationService {
       assertFullApplicationForSubmit(mergedForSubmit);
       assertIdentityForSubmit(nationalityMerged, idNumber, passportNumber);
     }
-=======
-    const idNumber =
-      payload.id_number !== undefined
-        ? String(payload.id_number).trim()
-        : existing.id_number;
->>>>>>> 531c062 (popi's changes)
 
     const matricMerged =
       payload.matric_subjects !== undefined
@@ -862,13 +645,10 @@ class ApplicationService {
             ? existing.matric_subjects
             : JSON.stringify(existing.matric_subjects);
 
-<<<<<<< HEAD
-=======
     const tcAccepted =
       payload.tc_accepted !== undefined
         ? Boolean(payload.tc_accepted)
         : existing.tc_accepted;
->>>>>>> 531c062 (popi's changes)
     let tcAcceptedAt = existing.tc_accepted_at;
     if (tcAccepted && !existing.tc_accepted) {
       tcAcceptedAt = new Date();
@@ -884,7 +664,7 @@ class ApplicationService {
         ? normalizeEmail(payload.email)
         : normalizeEmail(existing.email);
 
-<<<<<<< HEAD
+
     const altEmailNorm =
       payload.alt_email !== undefined
         ? payload.alt_email != null && String(payload.alt_email).trim()
@@ -917,16 +697,7 @@ class ApplicationService {
     const transaction = await sequelize.transaction();
     try {
       await this.assertCampusExists(campusId, transaction);
-      const qualification = await this.getActiveQualification(
-        qualificationId,
-        transaction
-      );
-=======
-    const transaction = await sequelize.transaction();
-    try {
-      await this.assertCampusExists(campusId, transaction);
       await this.assertQualificationExists(qualificationId, transaction);
->>>>>>> 531c062 (popi's changes)
       await this.assertCampusOffersQualification(
         campusId,
         qualificationId,
@@ -935,13 +706,7 @@ class ApplicationService {
 
       const dup = await this.findDuplicateOpenApplication(
         qualificationId,
-<<<<<<< HEAD
-        nationalityMerged,
-        idNumber || null,
-        passportNumber || null,
-=======
         idNumber,
->>>>>>> 531c062 (popi's changes)
         transaction
       );
       if (dup && String(dup.id) !== String(applicationId)) {
@@ -949,24 +714,14 @@ class ApplicationService {
         throw {
           statusCode: 409,
           message:
-<<<<<<< HEAD
-            'An open application already exists for this identity and qualification',
-=======
             'An open application already exists for this ID number and qualification',
->>>>>>> 531c062 (popi's changes)
           data: { reference_number: dup.reference_number, status: dup.status },
         };
       }
 
       const rejected = await this.findRejectedApplication(
         qualificationId,
-<<<<<<< HEAD
-        nationalityMerged,
-        idNumber || null,
-        passportNumber || null,
-=======
         idNumber,
->>>>>>> 531c062 (popi's changes)
         transaction
       );
       if (rejected && String(rejected.id) !== String(applicationId)) {
@@ -974,11 +729,7 @@ class ApplicationService {
         throw {
           statusCode: 403,
           message:
-<<<<<<< HEAD
-            'A previous application for this qualification was declined. You cannot use this qualification again for this identity.',
-=======
             'A previous application for this qualification was declined. You cannot use this qualification again for this ID number.',
->>>>>>> 531c062 (popi's changes)
           data: {
             reason: 'previously_rejected',
             reference_number: rejected.reference_number,
@@ -991,11 +742,6 @@ class ApplicationService {
         `UPDATE applications SET
           campus_id = ?,
           qualification_id = ?,
-<<<<<<< HEAD
-          qualification_code = ?,
-          qualification_name = ?,
-=======
->>>>>>> 531c062 (popi's changes)
           admission_for = ?,
           application_type = ?,
           high_school = ?,
@@ -1019,32 +765,12 @@ class ApplicationService {
           email = ?,
           phone = ?,
           id_number = ?,
-<<<<<<< HEAD
-          nationality = ?,
-          passport_number = ?,
-          date_of_birth = ?,
-          gender = ?,
-          alt_email = ?,
-          street_address = ?,
-          suburb = ?,
-          city = ?,
-          province = ?,
-          postal_code = ?,
-          study_year = ?,
-          docs_uploaded = CAST(? AS jsonb),
-=======
->>>>>>> 531c062 (popi's changes)
           updated_at = NOW()
         WHERE id = ?`,
         {
           replacements: [
             campusId,
             qualificationId,
-<<<<<<< HEAD
-            qualification.code,
-            qualification.name,
-=======
->>>>>>> 531c062 (popi's changes)
             payload.admission_for !== undefined
               ? payload.admission_for
               : existing.admission_for,
@@ -1093,31 +819,7 @@ class ApplicationService {
             payload.phone !== undefined
               ? String(payload.phone).trim()
               : existing.phone,
-<<<<<<< HEAD
-            idForDb,
-            nationalityMerged,
-            passForDb,
-            payload.date_of_birth !== undefined
-              ? payload.date_of_birth
-              : existing.date_of_birth,
-            payload.gender !== undefined ? payload.gender : existing.gender,
-            altEmailNorm,
-            payload.street_address !== undefined
-              ? payload.street_address
-              : existing.street_address,
-            payload.suburb !== undefined ? payload.suburb : existing.suburb,
-            payload.city !== undefined ? payload.city : existing.city,
-            payload.province !== undefined ? payload.province : existing.province,
-            payload.postal_code !== undefined
-              ? payload.postal_code
-              : existing.postal_code,
-            payload.study_year !== undefined
-              ? payload.study_year
-              : existing.study_year,
-            docsMerged,
-=======
             idNumber,
->>>>>>> 531c062 (popi's changes)
             applicationId,
           ],
           transaction,
@@ -1135,7 +837,7 @@ class ApplicationService {
       throw err;
     }
   }
-<<<<<<< HEAD
+
 
   _applicationAdminSelect() {
     return `SELECT
@@ -1340,8 +1042,6 @@ class ApplicationService {
     );
     return rows;
   }
-=======
->>>>>>> 531c062 (popi's changes)
 }
 
 module.exports = new ApplicationService();

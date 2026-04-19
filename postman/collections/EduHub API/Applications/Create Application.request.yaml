@@ -12,7 +12,6 @@ body:
     {
       "campus_id": "{{campus_id}}",
       "qualification_id": "{{qualification_id}}",
-<<<<<<< HEAD
       "application_type": "new",
       "admission_for": "1st Year",
       "study_year": 1,
@@ -45,15 +44,4 @@ body:
       "docs_uploaded": { "id_document": "pending" },
       "tc_accepted": true,
       "status": "pending"
-=======
-      "first_name": "Jane",
-      "last_name": "Doe",
-      "email": "jane.doe@example.com",
-      "phone": "0821234567",
-      "id_number": "9001010000000",
-      "tc_accepted": true,
-      "status": "pending",
-      "application_type": "new",
-      "admission_for": "1st Year"
->>>>>>> 531c062 (popi's changes)
     }
