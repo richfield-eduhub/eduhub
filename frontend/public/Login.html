@@ -82,9 +82,7 @@
   <script>
     const existing = getCurrentUser();
     if (existing) {
-      if (existing.role === 'admin') window.location.href = '../admin/Dashboard.html';
-      else if (existing.role === 'student') window.location.href = '../student/Dashboard.html';
-      else window.location.href = '../lecturer/Dashboard.html';
+      redirectToRoleHome(existing);
     }
     function fillDemo(e,p) { document.getElementById('email').value=e; document.getElementById('password').value=p; }
     async function handleLogin() {
@@ -95,10 +93,10 @@
       const r=await login(email,password);
       if (!r.success) { showAlert('alert-box',r.message,'error'); setLoading('login-btn',false,'Sign In →'); return; }
       if (r.user.tempPassword) {
-        window.location.href = '../student/Profile.html?forceChange=1';
+        window.location.href = APP_CONFIG.ROUTES.forceChangePassword;
         return;
       }
-      window.location.href = r.user.role==='admin'?'../admin/Dashboard.html':r.user.role==='student'?'../student/Dashboard.html':'../lecturer/Dashboard.html';
+      redirectToRoleHome(r.user);
     }
   </script>
 </body>

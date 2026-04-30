@@ -23,7 +23,6 @@
 <div id="app" style="max-width:780px;margin:0 auto;padding:32px 24px;min-height:100vh"></div>
 <script src="../shared.js"></script>
 <script>
-const NATIONALITIES_LIST = ['South African','Zimbabwean','Mozambican','Zambian','Malawian','Botswanan','Namibian','Swazi','Lesothan','Congolese (DRC)','Nigerian','Ghanaian','Kenyan','Tanzanian','Ugandan','Rwandan','British','American','Canadian','Australian','German','French','Indian','Pakistani','Brazilian','Other'];
 const NEW_STEPS = ['Personal','Contact & Address','Education','Qualification','Documents','Review & Submit'];
 const RETURNING_STEPS = ['Verify Identity','Confirm Details','New Modules','Review & Submit'];
 // Re-enrolment from student dashboard: skip identity lookup, personal info & docs
@@ -190,7 +189,7 @@ function inp(key,placeholder,type='text',extra=''){
   return `<input type="${type}" value="${(state.form[key]||'').replace(/"/g,'&quot;')}" placeholder="${placeholder}" oninput="set('${key}',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors[key]?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px" ${extra}/>`;
 }
 function selNat(){
-  return `<select onchange="setAndRender('nationality',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.nationality?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px;background:white">${NATIONALITIES_LIST.map(n=>`<option value="${n}" ${state.form.nationality===n?'selected':''}>${n}</option>`).join('')}</select>`;
+  return `<select onchange="setAndRender('nationality',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.nationality?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px;background:white">${getNationalities().map(n=>`<option value="${n}" ${state.form.nationality===n?'selected':''}>${n}</option>`).join('')}</select>`;
 }
 
 function renderStepper(steps){
@@ -418,9 +417,7 @@ function render(){
   }
 
   // ── NEW/OTHER FULL FORM ──
-  const docList = isForeign()
-    ?['Certified copy of Passport (all pages)','Study permit / visa','Certified copy of highest qualification','Proof of payment / funding letter','Passport photo','SAQA evaluation letter']
-    :['Certified copy of SA ID document','Certified copy of Matric certificate','Certified copy of tertiary qualifications','Proof of payment / funding letter','Passport photo'];
+  const docList = getDocumentRequirements(isForeign());
 
   app.innerHTML=`
     <div style="max-width:760px;width:100%;margin:0 auto">
@@ -465,7 +462,7 @@ function renderPersonal(){
   <div class="form-group"><label class="form-label">Gender <span class="required">*</span></label>
     <select onchange="set('gender',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.gender?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px;background:white">
       <option value="">Select...</option>
-      ${['Male','Female','Non-binary','Prefer not to say'].map(g=>`<option value="${g}" ${f.gender===g?'selected':''}>${g}</option>`).join('')}
+      ${getGenders().map(g=>`<option value="${g}" ${f.gender===g?'selected':''}>${g}</option>`).join('')}
     </select>${errSpan('gender')}</div>
   ${isForeign()?`<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3">🌍 <strong>Foreign National:</strong> You'll need certified passport copy and valid study permit/visa.</div>`:''}`;
 }
@@ -488,7 +485,7 @@ function renderContact(){
     <div class="form-group"><label class="form-label">Province <span class="required">*</span></label>
       ${!isForeign()?`<select onchange="set('province',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.province?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px;background:white">
         <option value="">Select...</option>
-        ${['Gauteng','Western Cape','KwaZulu-Natal','Eastern Cape','Limpopo','Mpumalanga','North West','Free State','Northern Cape'].map(p=>`<option value="${p}" ${f.province===p?'selected':''}>${p}</option>`).join('')}
+        ${getProvinces().map(p=>`<option value="${p}" ${f.province===p?'selected':''}>${p}</option>`).join('')}
       </select>`:inp('province','Province/Region')}
       ${errSpan('province')}</div>
     <div class="form-group"><label class="form-label">Postal Code</label>${inp('postalCode','0001')}</div>
@@ -505,7 +502,7 @@ function renderEducation(){
   <div class="form-group"><label class="form-label">Highest Grade / Qualification <span class="required">*</span></label>
     <select onchange="set('highestGrade',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.highestGrade?'#dc2626':'#e5e7eb'};border-radius:8px;font-size:14px;background:white">
       <option value="">Select...</option>
-      ${['Grade 12 / Matric','Grade 11','GED','N3',isForeign()?'Foreign equivalent':''].filter(Boolean).map(g=>`<option value="${g}" ${f.highestGrade===g?'selected':''}>${g}</option>`).join('')}
+      ${getEducationLevels(isForeign()).map(g=>`<option value="${g}" ${f.highestGrade===g?'selected':''}>${g}</option>`).join('')}
     </select>${errSpan('highestGrade')}</div>
   <div class="form-section-header" style="margin-top:8px"><span style="font-size:20px">🏛️</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Tertiary Education (if applicable)</h3></div>
   <div class="form-row">
@@ -544,7 +541,7 @@ function renderQualification(){
     <div class="form-group"><label class="form-label">Relationship</label>
       <select onchange="set('payerRelation',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;background:white">
         <option value="">Select...</option>
-        ${['Self','Parent','Guardian','Sponsor','Employer'].map(r=>`<option value="${r}" ${f.payerRelation===r?'selected':''}>${r}</option>`).join('')}
+        ${getPayerRelationships().map(r=>`<option value="${r}" ${f.payerRelation===r?'selected':''}>${r}</option>`).join('')}
       </select>
     </div>
   </div>
@@ -640,8 +637,17 @@ function handleDocFile(input, doc) {
     showToast(doc + ' — file selected ✓', 'success');
   }
 }
-renderNavbar('apply');
-render();
+async function startPage() {
+  renderNavbar('apply');
+  const app = document.getElementById('app');
+  if (app) {
+    app.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;min-height:220px;color:#6b7280;font-size:14px">Loading application data...</div>`;
+  }
+  await initReferenceData();
+  render();
+}
+
+startPage();
 </script>
 </body>
 </html>

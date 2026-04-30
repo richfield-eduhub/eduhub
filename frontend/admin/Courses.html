@@ -37,19 +37,26 @@ renderNavbar('admin-courses');
 
 // Colour palette cycles through brand colours for all qualifications
 const PALETTE = ['#003DA5','#0369a1','#0891b2','#7c3aed','#be185d','#1e6b3c','#b45309','#155e75','#6d28d9','#0f766e','#92400e','#5b21b6','#065f46','#374151','#1e1b4b','#4338ca'];
-const COLORS = Object.fromEntries(QUALIFICATIONS.map((q, i) => [q.code, PALETTE[i % PALETTE.length]]));
-const regs   = getRegistrations();
+let COLORS = {};
+let regs = [];
 
-const totalStudents = new Set(regs.filter(r=>r.status==='allocated'||r.status==='approved').map(r=>r.studentId)).size;
+function renderPage() {
+  const qualifications = getQualifications();
+  COLORS = Object.fromEntries(qualifications.map((q, i) => [q.code, PALETTE[i % PALETTE.length]]));
+  regs = getRegistrations();
 
-document.getElementById('stats').innerHTML = [
-  {icon:'🏫',label:'Total Qualifications',value:QUALIFICATIONS.length,bg:'#E0E7FF'},
-  {icon:'📚',label:'Total Modules',value:QUALIFICATIONS.reduce((s,q)=>s+q.modules.length,0),bg:'#D1FAE5'},
-  {icon:'🎓',label:'Enrolled Students',value:totalStudents,bg:'#FEF3C7'},
-  {icon:'💰',label:'Avg Annual Fee',value:'R'+Math.round(QUALIFICATIONS.reduce((s,q)=>s+q.fee,0)/QUALIFICATIONS.length).toLocaleString(),bg:'#FCE7F3'},
-].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span style="font-size:22px">${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
+  const totalStudents = new Set(
+    regs.filter(r=>r.status==='allocated'||r.status==='approved').map(r=>r.studentId)
+  ).size;
 
-document.getElementById('courses-list').innerHTML = QUALIFICATIONS.map(q => {
+  document.getElementById('stats').innerHTML = [
+    {icon:'🏫',label:'Total Qualifications',value:qualifications.length,bg:'#E0E7FF'},
+    {icon:'📚',label:'Total Modules',value:qualifications.reduce((s,q)=>s+q.modules.length,0),bg:'#D1FAE5'},
+    {icon:'🎓',label:'Enrolled Students',value:totalStudents,bg:'#FEF3C7'},
+    {icon:'💰',label:'Avg Annual Fee',value:'R'+Math.round(qualifications.reduce((s,q)=>s+q.fee,0)/qualifications.length).toLocaleString(),bg:'#FCE7F3'},
+  ].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span style="font-size:22px">${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
+
+  document.getElementById('courses-list').innerHTML = qualifications.map(q => {
   const enrolled = new Set(regs.filter(r=>r.qualificationCode===q.code&&(r.status==='allocated'||r.status==='approved')).map(r=>r.studentId)).size;
   const byYear = {};
   q.modules.forEach(m => { if (!byYear[m.year]) byYear[m.year] = 0; byYear[m.year]++; });
@@ -77,10 +84,11 @@ document.getElementById('courses-list').innerHTML = QUALIFICATIONS.map(q => {
       <button onclick="openModules('${q.code}')" class="btn btn-secondary btn-sm">📋 View All Modules</button>
     </div>
   </div>`;
-}).join('');
+  }).join('');
+}
 
 function openModules(code) {
-  const q = QUALIFICATIONS.find(x => x.code === code);
+  const q = getQualifications().find(x => x.code === code);
   if (!q) return;
   document.getElementById('mod-title').textContent = q.name;
   document.getElementById('mod-header').style.background = COLORS[code] || '#123f7a';
@@ -102,6 +110,15 @@ function openModules(code) {
     </div>`).join('');
   openModal('module-modal');
 }
+
+async function startPage() {
+  document.getElementById('courses-list').innerHTML =
+    '<div style="padding:32px;text-align:center;color:#6b7280">Loading course catalogue...</div>';
+  await initReferenceData();
+  renderPage();
+}
+
+startPage();
 </script>
 </body>
 </html>

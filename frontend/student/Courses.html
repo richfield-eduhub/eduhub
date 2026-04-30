@@ -48,11 +48,8 @@ renderNavbar('student-courses');
 
 // Map courses to categories based on faculty
 const PALETTE = ['#003DA5','#0369a1','#0891b2','#7c3aed','#be185d','#1e6b3c','#b45309','#155e75','#6d28d9','#0f766e','#92400e','#5b21b6','#065f46','#374151','#1e1b4b','#4338ca'];
-const COLORS  = Object.fromEntries(QUALIFICATIONS.map((q, i) => [q.code, PALETTE[i % PALETTE.length]]));
-const CAT_MAP = Object.fromEntries(QUALIFICATIONS.map(q => [
-  q.code,
-  q.faculty.toLowerCase().includes('information') ? 'it' : 'business'
-]));
+let COLORS  = {};
+let CAT_MAP = {};
 let current = 'all';
 
 function filterBy(cat, btn) {
@@ -63,7 +60,8 @@ function filterBy(cat, btn) {
 }
 
 function render() {
-  const list = current === 'all' ? QUALIFICATIONS : QUALIFICATIONS.filter(q => CAT_MAP[q.code] === current);
+  const qualifications = getQualifications();
+  const list = current === 'all' ? qualifications : qualifications.filter(q => CAT_MAP[q.code] === current);
   document.getElementById('grid').innerHTML = list.map(q => `
     <div class="course-card">
       <div style="background:${COLORS[q.code]||'#123f7a'};padding:20px 22px;color:white">
@@ -91,7 +89,7 @@ function render() {
 }
 
 function openCourse(code) {
-  const q = QUALIFICATIONS.find(x => x.code === code);
+  const q = getQualifications().find(x => x.code === code);
   if (!q) return;
   document.getElementById('modal-title').textContent = q.name;
   document.getElementById('modal-header').style.background = COLORS[q.code] || '#123f7a';
@@ -123,7 +121,20 @@ function openCourse(code) {
   openModal('course-modal');
 }
 
-render();
+async function startPage() {
+  document.getElementById('grid').innerHTML =
+    '<div style="padding:32px;text-align:center;color:#6b7280">Loading course catalogue...</div>';
+  await initReferenceData();
+  const qualifications = getQualifications();
+  COLORS  = Object.fromEntries(qualifications.map((q, i) => [q.code, PALETTE[i % PALETTE.length]]));
+  CAT_MAP = Object.fromEntries(qualifications.map(q => [
+    q.code,
+    q.faculty.toLowerCase().includes('information') ? 'it' : 'business'
+  ]));
+  render();
+}
+
+startPage();
 </script>
 </body>
 </html>

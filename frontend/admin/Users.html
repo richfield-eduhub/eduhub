@@ -51,7 +51,7 @@
 
 <script src="../shared.js"></script>
 <script>
-const admin = requireAuth('admin');
+const admin = requireAuth(ROLES.ADMIN);
 renderNavbar('admin-users');
 
 let roleFilter = 'all';
@@ -61,14 +61,14 @@ function renderStats() {
   const users = getUsers();
   document.getElementById('stats').innerHTML = [
     {icon:'👥',label:'Total Users',value:users.length,bg:'#E0E7FF'},
-    {icon:'🎓',label:'Students',value:users.filter(u=>u.role==='student').length,bg:'#D1FAE5'},
-    {icon:'👨‍🏫',label:'Lecturers',value:users.filter(u=>u.role==='lecturer').length,bg:'#FEF3C7'},
-    {icon:'⚙️',label:'Admins',value:users.filter(u=>u.role==='admin').length,bg:'#FCE7F3'},
+    {icon:'🎓',label:'Students',value:users.filter(u=>u.role===ROLES.STUDENT).length,bg:'#D1FAE5'},
+    {icon:'👨‍🏫',label:'Lecturers',value:users.filter(u=>u.role===ROLES.LECTURER).length,bg:'#FEF3C7'},
+    {icon:'⚙️',label:'Admins',value:users.filter(u=>u.role===ROLES.ADMIN).length,bg:'#FCE7F3'},
   ].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span style="font-size:22px">${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
 }
 
 function renderFilters() {
-  document.getElementById('role-filters').innerHTML = ['all','student','lecturer','admin'].map(r=>`
+  document.getElementById('role-filters').innerHTML = ['all', ROLES.STUDENT, ROLES.LECTURER, ROLES.ADMIN].map(r=>`
     <button class="filter-btn ${roleFilter===r?'active':''}" onclick="setRole('${r}',this)">${r==='all'?'All':r.charAt(0).toUpperCase()+r.slice(1)}s</button>`).join('');
 }
 
@@ -97,7 +97,7 @@ function render() {
       return `<tr>
         <td><div style="font-weight:600">${u.name||'—'}</div><div style="font-size:12px;color:var(--rf-gray)">${fmtDate(u.createdAt)}</div></td>
         <td style="font-size:13px">${u.email}</td>
-        <td><span class="badge ${u.role==='admin'?'badge-info':u.role==='lecturer'?'badge-pending':'badge-approved'}">${u.role}</span></td>
+        <td><span class="badge ${u.role===ROLES.ADMIN?'badge-info':u.role===ROLES.LECTURER?'badge-pending':'badge-approved'}">${u.role}</span></td>
         <td style="font-family:var(--font-mono);font-size:12px;color:var(--rf-blue)">${u.studentId||'—'}</td>
         <td><span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:${(u.status||'active')==='active'?'#D1FAE5':'#FEE2E2'};color:${(u.status||'active')==='active'?'#065f46':'#dc2626'}">${(u.status||'active')==='active'?'✓ Active':'✗ Inactive'}</span></td>
         <td>${u.tempPassword?'<span style="font-size:12px;color:#d97706;font-weight:700">⚠ Temp pwd</span>':'<span style="font-size:12px;color:#059669;font-weight:700">✓ Normal</span>'}</td>
@@ -126,7 +126,7 @@ function saveRole() {
   const users = getUsers();
   const idx = users.findIndex(u=>u.id===editingUserId);
   if (idx===-1) return;
-  if (users[idx].id === admin.id && newRole !== 'admin') return showAlert('role-alert','You cannot change your own role.','error');
+  if (users[idx].id === admin.id && newRole !== ROLES.ADMIN) return showAlert('role-alert','You cannot change your own role.','error');
   users[idx] = {...users[idx], role:newRole, updatedAt:new Date().toISOString()};
   setUsers(users);
   addAuditLog({ action:'role_change', description:`Changed ${users[idx].name}'s role to ${newRole}`, performedBy:admin.name });
