@@ -1486,9 +1486,9 @@ async function login(email, password) {
   const res = await api("POST", "/auth/login", { email, password });
   if (!res.ok)
     return { success: false, message: res.message || "Login failed." };
-  setToken(res.token);
-  setCachedUser(res.user);
-  return { success: true, user: res.user };
+  setToken(res.data.accessToken);
+  setCachedUser(res.data.user);
+  return { success: true, user: res.data.user };
 }
 
 async function logout() {
@@ -1606,9 +1606,12 @@ async function getCourseRoster(moduleCode) {
 /* ═══════════════════════════════════════════════════
    ADMIN  →  /api/admin/*
    ═══════════════════════════════════════════════════ */
-async function getAdminUsers() {
+async function getUsers() {
   const res = await api("GET", "/admin/users");
   return res.ok ? res.users : [];
+}
+async function getAdminUsers() {
+  return getUsers();
 }
 async function getStatistics() {
   return api("GET", "/admin/statistics");
@@ -1621,6 +1624,46 @@ async function changeUserRole(userId, role) {
 }
 async function changeUserStatus(userId, status) {
   return api("PUT", `/admin/users/${userId}/status`, { status });
+}
+
+/* ═══════════════════════════════════════════════════
+   NOTIFICATIONS & INBOX (Stubs for old dashboard code)
+   ═══════════════════════════════════════════════════ */
+function getInboxFor(userId) {
+  // Stub function - returns empty array until inbox API is implemented
+  return [];
+}
+function getSentBy(userId) {
+  // Stub function - returns empty array until messaging API is implemented
+  return [];
+}
+
+/* ═══════════════════════════════════════════════════
+   ASSIGNMENTS (Stubs for old dashboard code)
+   ═══════════════════════════════════════════════════ */
+function getAssignments() {
+  // Stub function - returns empty array until assignments API is implemented
+  return [];
+}
+function getStudentAssignments(studentId) {
+  // Stub function - returns empty array until assignments API is implemented
+  return [];
+}
+
+/* ═══════════════════════════════════════════════════
+   EVENTS (Stubs for old dashboard code)
+   ═══════════════════════════════════════════════════ */
+function getUpcomingEvents(role) {
+  // Stub function - returns empty array until events API is implemented
+  return [];
+}
+
+/* ═══════════════════════════════════════════════════
+   EMAIL (Stubs for old dashboard code)
+   ═══════════════════════════════════════════════════ */
+function getSchoolEmails(studentId) {
+  // Stub function - returns empty array until email API is implemented
+  return [];
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1774,8 +1817,8 @@ function renderNavbar(activePage) {
       </button>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-left:12px">
-      <div style="text-align:right"><div style="font-size:13px;font-weight:600">${user.name}</div><div style="font-size:11px;opacity:.7;text-transform:capitalize">${user.role}</div></div>
-      <button onclick="doLogout()" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">Logout</button>
+      <div style="text-align:right"><div style="font-size:13px;font-weight:600">${user.first_name || user.email.split('@')[0]}</div><div style="font-size:11px;opacity:.7;text-transform:capitalize">${user.role}</div></div>
+      <button onclick="doLogout()" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">Logout</button>
     </div>`
     : "";
   const notifHtml = user

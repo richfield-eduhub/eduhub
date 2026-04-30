@@ -66,7 +66,7 @@
   </style>
 </head>
 <body>
-<div id="navbar-root"></div>
+<div id="navbar-placeholder"></div>
 <div class="main-content">
   <h1 class="section-title">LECTURER PORTAL</h1>
   <p class="section-subtitle" id="subtitle"></p>
@@ -205,8 +205,9 @@
 const user = requireAuth('lecturer');
 renderNavbar('lecturer-dashboard');
 
-const allUsers = getUsers();
-const regs = getRegistrations();
+(async () => {
+const allUsers = await getUsers();
+const regs = await getRegistrations();
 const approvedRegs = regs.filter(r => r.status==='approved'||r.status==='allocated');
 const students = allUsers.filter(u => u.role === 'student');
 const progCount = new Set(approvedRegs.map(r => r.qualificationCode)).size;
@@ -216,7 +217,7 @@ const allAsgns = getAssignments();
 const pendingAsgns = allAsgns.filter(a => a.status === 'submitted');
 
 /* stats */
-document.getElementById('subtitle').textContent = `Welcome, ${user.name}`;
+document.getElementById('subtitle').textContent = `Welcome, ${user.first_name || 'Lecturer'}`;
 document.getElementById('stats').innerHTML = [
   { icon:'🎓', label:'Total Students',        value: students.length,    bg:'#E0E7FF' },
   { icon:'📝', label:'Active Registrations',   value: approvedRegs.length, bg:'#D1FAE5' },
@@ -507,6 +508,8 @@ function showDayEvents(dateStr, event) {
   popup.style.left=left+'px';
   popup.classList.add('show');
 }
+})(); // End async IIFE
+
 document.addEventListener('click',e=>{if(!e.target.closest('#dayPopup')&&!e.target.closest('.lec-cal')) document.getElementById('dayPopup').classList.remove('show');});
 </script>
 </body>

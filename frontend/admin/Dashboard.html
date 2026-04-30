@@ -80,7 +80,7 @@
   </style>
 </head>
 <body>
-<div id="navbar-root"></div>
+<div id="navbar-placeholder"></div>
 <div class="main-content">
   <h1 class="section-title">ADMIN DASHBOARD</h1>
   <p class="section-subtitle">Overview of applications, registrations and student activity</p>
@@ -211,10 +211,11 @@
   const user = requireAuth('admin');
   renderNavbar('admin-dashboard');
 
-  const apps  = getApplications();
-  const regs  = getRegistrations();
-  const users = getUsers();
-  const notifs= getNotifications();
+(async () => {
+  const apps  = await getApplications();
+  const regs  = await getRegistrations();
+  const users = await getUsers();
+  const notifs= await getNotifications();
   const pending    = apps.filter(a=>a.status==='pending').length;
   const approved   = apps.filter(a=>a.status==='approved').length;
   const students   = users.filter(u=>u.role==='student').length;
@@ -247,6 +248,7 @@
     :`<table class="data-table"><thead><tr><th>Event</th><th>Message</th><th>Time</th></tr></thead><tbody>
     ${adminNotifs.map(n=>`<tr><td>${badge(n.type==='success'?'approved':n.type==='error'?'declined':'info')}<br><span style="font-size:11px">${n.title}</span></td><td style="font-size:13px;color:var(--rf-gray);max-width:300px">${n.message.substring(0,80)}${n.message.length>80?'...':''}</td><td style="font-size:12px;color:var(--rf-gray)">${fmtDateTime(n.createdAt)}</td></tr>`).join('')}
     </tbody></table>`;
+})(); // End async IIFE
 
   /* ════════════════════════════════
      EVENT CALENDAR

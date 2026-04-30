@@ -26,13 +26,17 @@
         <p style="font-size:16px;opacity:.75;line-height:1.7;max-width:320px">Access your student portal, manage registrations, and track your academic journey.</p>
         <div style="margin-top:48px;border-top:1px solid rgba(255,255,255,.15);padding-top:32px">
           <div style="font-size:13px;opacity:.6;margin-bottom:16px">DEMO ACCOUNTS — click to fill</div>
-          <div class="demo-card" onclick="fillDemo('admin@eduhub.ac.za','admin123')">
+          <div class="demo-card" onclick="fillDemo('admin@eduhub.ac.za','Password123!')">
             <div style="font-weight:600;font-size:13px">Admin</div>
-            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">admin@eduhub.ac.za / admin123</div>
+            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">admin@eduhub.ac.za / Password123!</div>
           </div>
-          <div class="demo-card" onclick="fillDemo('smokoena@eduhub.ac.za','lec123')">
+          <div class="demo-card" onclick="fillDemo('john.smith@eduhub.ac.za','Password123!')">
             <div style="font-weight:600;font-size:13px">Lecturer</div>
-            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">smokoena@eduhub.ac.za / lec123</div>
+            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">john.smith@eduhub.ac.za / Password123!</div>
+          </div>
+          <div class="demo-card" onclick="fillDemo('thabo.molefe@student.eduhub.ac.za','Password123!')">
+            <div style="font-weight:600;font-size:13px">Student</div>
+            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">thabo.molefe@student.eduhub.ac.za / Password123!</div>
           </div>
           <!-- Student login instructions — display only, not clickable -->
           <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:13px 15px;margin-top:12px;user-select:none">
@@ -83,12 +87,12 @@
       else window.location.href = '../lecturer/Dashboard.html';
     }
     function fillDemo(e,p) { document.getElementById('email').value=e; document.getElementById('password').value=p; }
-    function handleLogin() {
+    async function handleLogin() {
       clearAlert('alert-box');
       const email=document.getElementById('email').value.trim(), password=document.getElementById('password').value;
       if (!email||!password) return showAlert('alert-box','Please enter your email and password.','error');
       setLoading('login-btn',true,'Signing in...');
-      const r=login(email,password);
+      const r=await login(email,password);
       if (!r.success) { showAlert('alert-box',r.message,'error'); setLoading('login-btn',false,'Sign In →'); return; }
       if (r.user.tempPassword) {
         window.location.href = '../student/Profile.html?forceChange=1';
