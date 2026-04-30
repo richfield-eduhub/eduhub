@@ -1,0 +1,129 @@
+<div class="admin-dashboard">
+
+  <h2>Student Applications</h2>
+
+  <div class="admin-dashboard--application-list">
+
+    <div class="admin-dashboard--application-card" data-id="1">
+      <p><strong>Name:</strong> Peter Thang</p>
+      <p>Status: Pending</p>
+      <button class="admin-dashboard--reject-button" onclick="rejectApplication(1)">Reject</button>
+      <button class="admin-dashboard--approve-button" onclick="approveApplication(1)">Approve</button>
+    </div>
+
+    <div class="admin-dashboard--application-card" data-id="2">
+      <p><strong>Name:</strong> Mary John</p>
+      <p>Status: Pending</p>
+      <button class="admin-dashboard--reject-button" onclick="rejectApplication(2)">Reject</button>
+      <button class="admin-dashboard--approve-button" onclick="approveApplication(2)">Approve</button>
+    </div>
+
+  </div>
+  
+  
+</div>
+
+<style>
+.admin-dashboard {
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin: auto;
+}
+
+.admin-dashboard--application-card {
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin-bottom: 10px;
+}
+
+.admin-dashboard button {
+  margin-right: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+</style>
+
+<script>
+const applications = {
+  1: { name: "Peter Thang", status: "Pending", email: "joelle.mpala@gmail.com" },
+  2: { name: "Mary John", status: "Pending", email: "mary@email.com" }
+};
+
+function generateStudentNumber() {
+  return "STU" + Math.floor(100000 + Math.random() * 900000);
+}
+
+function generatePassword() {
+  return Math.random().toString(36).slice(-8);
+}
+
+function updateStatusUI(id, text) {
+  const card = document.querySelector(`[data-id="${id}"]`);
+  const statusText = card.querySelector("p:nth-of-type(2)");
+  statusText.textContent = text;
+}
+
+function approveApplication(id) {
+  const app = applications[id];
+
+  const studentNumber = generateStudentNumber();
+  const password = generatePassword();
+
+  app.status = "Approved";
+  app.studentNumber = studentNumber;
+  app.password = password;
+
+  updateStatusUI(id, "Status: Approved");
+
+  sendConfirmationLetter(app);
+}
+
+function rejectApplication(id) {
+  const app = applications[id];
+
+  const reason = prompt("Enter rejection reason:");
+  if (!reason) return;
+
+  app.status = "Rejected";
+  app.reason = reason;
+
+  updateStatusUI(id, "Status: Rejected");
+
+  sendRejectionLetter(app);
+}
+
+function sendConfirmationLetter(student) {
+  const message = `
+Dear ${student.name},
+
+Congratulations! Your application has been approved.
+
+Student Number: ${student.studentNumber}
+Password: ${student.password}
+
+You can now log in to the student portal.
+
+Regards,
+University Admissions Office
+`;
+
+  console.log("Sending approval email to:", student.email);
+  console.log(message);
+}
+
+function sendRejectionLetter(student) {
+  const message = `
+Dear ${student.name},
+
+We regret to inform you that your application has been rejected.
+
+Reason: ${student.reason}
+
+Regards,
+University Admissions Office
+`;
+
+  console.log("Sending rejection email to:", student.email);
+  console.log(message);
+}
+</script>
