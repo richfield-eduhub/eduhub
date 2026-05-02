@@ -28,7 +28,11 @@ class AuthService {
 
       if (existingUser) {
         await transaction.rollback();
-        throw { statusCode: 409, message: 'Email already registered' };
+        throw {
+          statusCode: 409,
+          errorCode: 'EMAIL_EXISTS',
+          message: 'An account with this email already exists. Please sign in instead.',
+        };
       }
 
       // Hash password

@@ -31,9 +31,6 @@ async function migrator() {
     .filter((f) => f.endsWith(".js"))
     .sort();
 
-  console.log(`[migrator] Checking migrations (${files.length} found, ${ranNames.size} already applied)...`);
-
-  let appliedCount = 0;
   for (const file of files) {
     const mod = require(path.join(MIGRATIONS_DIR, file));
     const migration = mod.migration || mod;
@@ -54,17 +51,10 @@ async function migrator() {
       );
       await t.commit();
       console.log(`[migrator] done:    ${migration.name}`);
-      appliedCount++;
     } catch (err) {
       await t.rollback();
       throw new Error(`Migration failed [${migration.name}]: ${err.message}`);
     }
-  }
-
-  if (appliedCount === 0) {
-    console.log('[migrator] All migrations up to date ✓');
-  } else {
-    console.log(`[migrator] Applied ${appliedCount} new migration(s) ✓`);
   }
 }
 

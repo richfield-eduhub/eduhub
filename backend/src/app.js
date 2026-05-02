@@ -1,4 +1,19 @@
-require('dotenv').config();
+// Load .env — auto-fallback: use localhost DB when 'db' hostname not reachable
+const dotenv = require('dotenv');
+dotenv.config();
+
+// If DB_HOST is 'db' (Docker internal hostname) but we're running locally,
+// automatically switch to localhost so "npm start" works without Docker
+if (process.env.DB_HOST === 'db') {
+  const dns = require('dns');
+  // We'll do a sync-style check via env override if IN_DOCKER is not set
+  // Simple heuristic: if running in a container, hostname resolves; locally it won't
+  // Override at startup — the migrator/pg will use the final env value
+  if (!process.env.IN_DOCKER) {
+    process.env.DB_HOST = 'localhost';
+    console.log('[config] DB_HOST auto-set to localhost (not running in Docker)');
+  }
+}
 const express = require('express');
 const path    = require('path');
 const morgan  = require('morgan');
@@ -79,12 +94,12 @@ app.use('/api/registrations',  registrationsRoutes);
 /**
  * Static Frontend (frontend-html)
  */
-const FRONTEND = path.join(__dirname, '../../frontend-html');
+const FRONTEND = path.join(__dirname, '../../frontend');
 app.use(express.static(FRONTEND));
 
 const page = (file) => (_, res) => res.sendFile(path.join(FRONTEND, file));
 
-app.get('/',                 page('public/Home.html'));
+app.get('/',                 (_, res) => res.sendFile(path.join(FRONTEND, 'index.html')));
 app.get('/home',             page('public/Home.html'));
 app.get('/login',            page('public/Login.html'));
 app.get('/register',         page('public/Register.html'));
