@@ -12,6 +12,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       nginx: ${{ steps.filter.outputs.nginx }}
+      root: ${{ steps.filter.outputs.root }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -23,11 +24,16 @@ jobs:
             nginx:
               - 'nginx/**'
               - 'frontend/**'
+            root:
+              - 'docker-compose*.yml'
+              - 'database/**'
+              - '.env.example'
+              - 'README.md'
 
   # ─── Build Backend ────────────────────────────────────────────────────────
   build-backend:
     needs: changes
-    if: needs.changes.outputs.backend == 'true'
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.root == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -52,7 +58,7 @@ jobs:
   # ─── Build Nginx ──────────────────────────────────────────────────────────
   build-nginx:
     needs: changes
-    if: needs.changes.outputs.nginx == 'true'
+    if: needs.changes.outputs.nginx == 'true' || needs.changes.outputs.root == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -78,7 +84,7 @@ jobs:
   # ─── Deploy ───────────────────────────────────────────────────────────────
   deploy:
     needs: [changes, build-backend, build-nginx]
-    if: always() && (needs.build-backend.result == 'success' || needs.build-backend.result == 'skipped') && (needs.build-nginx.result == 'success' || needs.build-nginx.result == 'skipped') && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.nginx == 'true')
+    if: always() && (needs.build-backend.result == 'success' || needs.build-backend.result == 'skipped') && (needs.build-nginx.result == 'success' || needs.build-nginx.result == 'skipped') && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.nginx == 'true' || needs.changes.outputs.root == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -166,6 +172,8 @@ jobs:
                 depends_on:
                   db:
                     condition: service_healthy
+                  pgadmin:
+                    condition: service_started
                 healthcheck:
                   test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
                   interval: 30s
