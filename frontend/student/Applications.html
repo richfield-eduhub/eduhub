@@ -24,8 +24,7 @@
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('detail-modal')">Close</button></div>
   </div>
 </div>
-
-<script src="../shared.js"></script>
+<script src="../shared-local.js"></script>
 <script>
 const user = requireAuth('student');
 renderNavbar('student-applications');
@@ -58,7 +57,7 @@ function render() {
         </div>
         <div style="display:flex;gap:8px;flex-shrink:0">
           <button class="btn btn-sm btn-secondary" onclick="openDetail('${a.id}')">View Details</button>
-          ${a.status==='approved'?`<a href="MyCourses.html" class="btn btn-sm btn-primary" style="text-decoration:none">View Courses</a>`:''}
+          ${a.status==='approved'?`<a href="../student/MyCourses.html" class="btn btn-sm btn-primary" style="text-decoration:none">View Courses</a>`:''}
         </div>
       </div>
       <div style="padding:10px 22px;background:var(--rf-offwhite);border-top:1px solid var(--rf-border);display:flex;gap:20px;font-size:12px;color:var(--rf-gray)">

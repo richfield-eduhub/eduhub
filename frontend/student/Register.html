@@ -12,7 +12,7 @@
   <h1 class="section-title">MODULE REGISTRATION</h1>
   <div id="content"></div>
 </div>
-<script src="../shared.js"></script>
+<script src="../shared-local.js"></script>
 <script>
 const user=requireAuth('student');
 renderNavbar('student-register');
@@ -36,7 +36,7 @@ if(!myApp){
     <div style="font-size:56px;margin-bottom:16px">✅</div>
     <h2 style="color:#059669;font-weight:800;margin-bottom:10px">Modules Already Allocated</h2>
     <p style="color:#6b7280;font-size:15px;line-height:1.7;margin-bottom:24px">Your modules have been allocated by the admissions office. You have <strong style="color:#001A4D">${total} modules</strong> across ${myAllocs.length} semester${myAllocs.length>1?'s':''}.</p>
-    <a href="Modules.html" style="display:inline-block;background:#123f7a;color:white;padding:12px 28px;border-radius:8px;font-weight:700;font-size:15px;text-decoration:none">View My Modules →</a>`);
+    <a href="../student/MyCourses.html" style="display:inline-block;background:#123f7a;color:white;padding:12px 28px;border-radius:8px;font-weight:700;font-size:15px;text-decoration:none">View My Modules →</a>`);
 }else{
   // Waiting screen with animated spinner
   document.getElementById('content').innerHTML=`

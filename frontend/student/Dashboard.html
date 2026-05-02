@@ -192,7 +192,7 @@ table.cal td.empty{color:transparent;cursor:default;pointer-events:none}
 </style>
 </head>
 <body>
-<div id="navbar-placeholder"></div>
+<div id="navbar-root"></div>
 <div class="shell">
   <div class="main-content">
 
@@ -412,8 +412,7 @@ table.cal td.empty{color:transparent;cursor:default;pointer-events:none}
     </div>
   </div>
 </div>
-
-<script src="../shared.js"></script>
+<script src="../shared-local.js"></script>
 <script>
 const user = requireAuth('student');
 renderNavbar('student-dashboard');
@@ -422,14 +421,13 @@ const COLORS = ['#123f7a','#c0392b','#1a9e8f','#6b3fa0','#e05a30','#1a5db5','#7c
 const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 /* ─── Load user data ─── */
-(async () => {
-const firstName = user.first_name || 'Student';
+const firstName = user.name ? user.name.split(' ')[0] : 'Student';
 document.getElementById('dashGreeting').textContent = `Hi, ${firstName}! 👋`;
 
-const allRegs   = await getRegistrations();
+const allRegs   = getRegistrations();
 const myRegs    = allRegs.filter(r => r.studentId === user.studentId && (r.status === 'allocated' || r.status === 'approved'));
 const myMods    = myRegs.flatMap(r => r.modules || []);
-const myApps    = (await getApplications()).filter(a => a.email === user.email || a.studentId === user.studentId);
+const myApps    = getApplications().filter(a => a.email === user.email || a.studentId === user.studentId);
 const upEvents  = getUpcomingEvents('student');
 const myAsgns   = getStudentAssignments(user.studentId);
 const myEmails  = getSchoolEmails(user.studentId);
@@ -442,7 +440,6 @@ document.getElementById('dashStats').innerHTML = [
   { icon:'📧', label:'My Email',          val: '✉',                     bg:'#FEF3C7' },
   { icon:'📅', label:'Upcoming Events',  val: upEvents.length,         bg:'#FCE7F3' },
 ].map(s => `<div class="dash-stat"><div class="ds-icon" style="background:${s.bg}">${s.icon}</div><div><div class="ds-val">${s.val}</div><div class="ds-lbl">${s.label}</div></div></div>`).join('');
-})(); // End async IIFE
 
 /* ─── Sidebar events ─── */
 function renderSidebarEvents() {
@@ -896,8 +893,8 @@ function initLibrary() {
 }
 
 /* ─── STUDENT SUPPORT ─── */
-async function initSupport() {
-  const lecturers = (await getUsers()).filter(u => u.role === 'lecturer');
+function initSupport() {
+  const lecturers = getUsers().filter(u => u.role === 'lecturer');
   const sel = document.getElementById('msgLecturer');
   sel.innerHTML = '<option value="">— Choose a lecturer —</option>';
   lecturers.forEach(l => {
@@ -917,13 +914,13 @@ async function initSupport() {
   renderMyMessages();
 }
 
-async function renderMyMessages() {
+function renderMyMessages() {
   const sent = getSentBy(user.id);
   const inbox = getInboxFor(user.id);
   const all = [...sent, ...inbox].sort((a,b) => new Date(b.sentAt) - new Date(a.sentAt));
   const el = document.getElementById('myMessages');
   if (!all.length) { el.innerHTML = '<p style="color:var(--muted);font-size:.83rem">No messages yet.</p>'; return; }
-  const users = await getUsers();
+  const users = getUsers();
   el.innerHTML = all.map(m => {
     const fromUser = users.find(u => u.id === m.from);
     const toUser = users.find(u => u.id === m.to);
@@ -967,7 +964,7 @@ function handleApplyNow() {
 
   if (!myApproved) {
     // Brand-new applicant — no existing record, go to full public form
-    window.location.href = '../public/Apply.html';
+    window.location.href = rootPath('public/Apply.html');
     return;
   }
 
@@ -1035,7 +1032,7 @@ function proceedToApply() {
     qualCode,
     studentId
   });
-  window.location.href = `../public/Apply.html?${params.toString()}`;
+  window.location.href = rootPath('public/Apply.html') + '?' + params.toString();
 }
 
 /* ─── PAGE SWITCHING ─── */

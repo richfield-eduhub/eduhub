@@ -10,25 +10,16 @@ const cors = require('cors');
  */
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl requests, health checks from load balancers)
-    if (!origin) {
-      console.log('[CORS] Request with no origin header - allowing');
-      return callback(null, true);
-    }
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
 
     const allowedOrigins = process.env.ALLOWED_ORIGINS
-      ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-      : ['http://localhost:3000', 'http://localhost:5173', 'https://edu-hub.duckdns.org'];
-
-    console.log('[CORS] Checking origin:', origin);
-    console.log('[CORS] Allowed origins:', allowedOrigins);
+      ? process.env.ALLOWED_ORIGINS.split(',')
+      : ['http://localhost', 'http://localhost:3000', 'http://localhost:5173'];
 
     if (allowedOrigins.includes(origin)) {
-      console.log('[CORS] Origin allowed:', origin);
       callback(null, true);
     } else {
-      console.error('[CORS] Origin blocked:', origin);
-      console.error('[CORS] Make sure ALLOWED_ORIGINS env variable includes:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },

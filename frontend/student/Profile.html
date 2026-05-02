@@ -131,8 +131,7 @@
     </div>
   </div>
 </div>
-
-<script src="../shared.js"></script>
+<script src="../shared-local.js"></script>
 <script>
 const user = requireAuth('student');
 renderNavbar('student-profile');
@@ -193,8 +192,30 @@ function toggleEditMode(editing) {
   if (!editing) renderProfile();
 }
 
+// ── Wire real-time validation on profile edit fields ─────────────────────
+function wireProfileValidation() {
+  attachFieldValidation('firstName', EduValidate.name, 'First name');
+  attachFieldValidation('lastName',  EduValidate.name, 'Last name');
+  attachFieldValidation('phone',     EduValidate.phone);
+}
+// Call when edit mode opens (toggleEditMode calls renderProfile which re-populates fields)
+const _origToggleEditMode = typeof toggleEditMode === 'function' ? toggleEditMode : null;
+
 function saveProfile() {
   clearAlert('profile-edit-alert');
+
+  // Run validation before saving
+  const allOk = validateForm([
+    { id: 'firstName', rule: EduValidate.name, args: ['First name'] },
+    { id: 'lastName',  rule: EduValidate.name, args: ['Last name'] },
+    { id: 'phone',     rule: EduValidate.phone, optional: true },
+  ]);
+
+  if (!allOk) {
+    showAlert('profile-edit-alert', 'Please fix the highlighted fields before saving.', 'error');
+    return;
+  }
+
   const patch = {
     firstName:   document.getElementById('firstName').value.trim(),
     lastName:    document.getElementById('lastName').value.trim(),
@@ -223,7 +244,7 @@ function savePwd() {
   document.getElementById('confirm-pwd').value = '';
   showToast('Password changed successfully!', 'success');
   const wasForced = new URLSearchParams(window.location.search).get('forceChange') === '1';
-  setTimeout(() => { closeModal('pwd-modal'); if (wasForced) window.location.href = '../student/Dashboard.html'; }, 1500);
+  setTimeout(() => { closeModal('pwd-modal'); if (wasForced) window.location.href = rootPath('student/Dashboard.html'); }, 1500);
 }
 
 function handleAvatarUpload(input) {

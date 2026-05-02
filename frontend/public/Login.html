@@ -26,17 +26,25 @@
         <p style="font-size:16px;opacity:.75;line-height:1.7;max-width:320px">Access your student portal, manage registrations, and track your academic journey.</p>
         <div style="margin-top:48px;border-top:1px solid rgba(255,255,255,.15);padding-top:32px">
           <div style="font-size:13px;opacity:.6;margin-bottom:16px">DEMO ACCOUNTS — click to fill</div>
-          <div class="demo-card" onclick="fillDemo('admin@eduhub.ac.za','Password123!')">
-            <div style="font-weight:600;font-size:13px">Admin</div>
-            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">admin@eduhub.ac.za / Password123!</div>
+          <div id="demo-ls" style="display:block">
+            <div class="demo-card" onclick="fillDemo('admin@eduhub.ac.za','admin123')">
+              <div style="font-weight:600;font-size:13px">Admin <span style="opacity:.5;font-size:11px">(Live Server)</span></div>
+              <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">admin@eduhub.ac.za / admin123</div>
+            </div>
+            <div class="demo-card" onclick="fillDemo('smokoena@eduhub.ac.za','lec123')">
+              <div style="font-weight:600;font-size:13px">Lecturer <span style="opacity:.5;font-size:11px">(Live Server)</span></div>
+              <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">smokoena@eduhub.ac.za / lec123</div>
+            </div>
           </div>
-          <div class="demo-card" onclick="fillDemo('john.smith@eduhub.ac.za','Password123!')">
-            <div style="font-weight:600;font-size:13px">Lecturer</div>
-            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">john.smith@eduhub.ac.za / Password123!</div>
-          </div>
-          <div class="demo-card" onclick="fillDemo('thabo.molefe@student.eduhub.ac.za','Password123!')">
-            <div style="font-weight:600;font-size:13px">Student</div>
-            <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">thabo.molefe@student.eduhub.ac.za / Password123!</div>
+          <div id="demo-docker" style="display:none">
+            <div class="demo-card" onclick="fillDemo('admin@richfield.ac.za','Password123!')">
+              <div style="font-weight:600;font-size:13px">Admin <span style="opacity:.5;font-size:11px">(Docker)</span></div>
+              <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">admin@richfield.ac.za / Password123!</div>
+            </div>
+            <div class="demo-card" onclick="fillDemo('john.smith@richfield.ac.za','Password123!')">
+              <div style="font-weight:600;font-size:13px">Lecturer <span style="opacity:.5;font-size:11px">(Docker)</span></div>
+              <div style="font-size:12px;opacity:.65;font-family:var(--font-mono)">john.smith@richfield.ac.za / Password123!</div>
+            </div>
           </div>
           <!-- Student login instructions — display only, not clickable -->
           <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:13px 15px;margin-top:12px;user-select:none">
@@ -73,32 +81,94 @@
         <button id="login-btn" class="btn btn-primary btn-lg" style="width:100%;justify-content:center;margin-top:8px" onclick="handleLogin()">Sign In →</button>
       </div>
       <div style="text-align:center;margin-top:32px;padding-top:24px;border-top:1px solid var(--rf-border)">
-        <p style="font-size:14px;color:var(--rf-gray);margin-bottom:8px">New student? <a href="Register.html" style="color:var(--rf-blue);font-weight:600">Create an account →</a></p>
-        <p style="font-size:14px;color:var(--rf-gray)">Forgot your password? <a href="ForgotPassword.html"  style="color:var(--rf-blue);font-weight:600">Reset it →</a></p>
+        <p style="font-size:14px;color:var(--rf-gray);margin-bottom:8px">New student? <a href="../public/Register.html" style="color:var(--rf-blue);font-weight:600">Create an account →</a></p>
+        <p style="font-size:14px;color:var(--rf-gray)">Forgot your password? <a href="../public/ForgotPassword.html"  style="color:var(--rf-blue);font-weight:600">Reset it →</a></p>
       </div>
     </div>
   </div>
-  <script src="../shared.js"></script>
+  <script src="../shared-local.js"></script>
   <script>
-    const existing = getCurrentUser();
-    if (existing) {
-      if (existing.role === 'admin') window.location.href = '../admin/Dashboard.html';
-      else if (existing.role === 'student') window.location.href = '../student/Dashboard.html';
-      else window.location.href = '../lecturer/Dashboard.html';
+    // ── Environment detection ──────────────────────────────────────
+    // Live Server (VS Code) runs on 5500-5502, or file:// direct open
+    // Docker nginx runs on 80, Node backend dev runs on 3000
+    function _isLiveServer() {
+      if (window.location.protocol === 'file:') return true;
+      var p = window.location.port;
+      return p === '5500' || p === '5501' || p === '5502';
     }
-    function fillDemo(e,p) { document.getElementById('email').value=e; document.getElementById('password').value=p; }
+    function _isBackendMode() {
+      var p = window.location.port;
+      return p === '3000' || p === '80' || p === '';
+    }
+
+    // ── Show correct demo credentials for this environment ─────────
+    (function() {
+      var ls  = document.getElementById('demo-ls');
+      var doc = document.getElementById('demo-docker');
+      if (!ls || !doc) return;
+      if (_isLiveServer()) {
+        ls.style.display  = 'block';
+        doc.style.display = 'none';
+      } else {
+        ls.style.display  = 'none';
+        doc.style.display = 'block';
+      }
+    })();
+
+    // ── Auto-redirect if already logged in ────────────────────────
+    var existing = getCurrentUser();
+    if (existing) {
+      window.location.href = existing.role === 'admin' ? rootPath('admin/Dashboard.html')
+        : existing.role === 'student' ? rootPath('student/Dashboard.html')
+        : rootPath('lecturer/Dashboard.html');
+    }
+
+    function fillDemo(e, p) {
+      document.getElementById('email').value = e;
+      document.getElementById('password').value = p;
+    }
+
     async function handleLogin() {
       clearAlert('alert-box');
-      const email=document.getElementById('email').value.trim(), password=document.getElementById('password').value;
-      if (!email||!password) return showAlert('alert-box','Please enter your email and password.','error');
-      setLoading('login-btn',true,'Signing in...');
-      const r=await login(email,password);
-      if (!r.success) { showAlert('alert-box',r.message,'error'); setLoading('login-btn',false,'Sign In →'); return; }
-      if (r.user.tempPassword) {
-        window.location.href = '../student/Profile.html?forceChange=1';
-        return;
+      var email    = document.getElementById('email').value.trim();
+      var password = document.getElementById('password').value;
+      if (!email || !password) return showAlert('alert-box', 'Please enter your email and password.', 'error');
+      setLoading('login-btn', true, 'Signing in...');
+
+      if (_isLiveServer()) {
+        // ── Live Server (5500) / file:// → localStorage auth ───────
+        var r = login(email, password);
+        if (!r.success) { showAlert('alert-box', r.message, 'error'); setLoading('login-btn', false, 'Sign In →'); return; }
+        if (r.user && r.user.tempPassword) { window.location.href = rootPath('student/Profile.html') + '?forceChange=1'; return; }
+        var role = r.user.role;
+        window.location.href = role === 'admin' ? rootPath('admin/Dashboard.html') : role === 'student' ? rootPath('student/Dashboard.html') : rootPath('lecturer/Dashboard.html');
+      } else {
+        // ── Node backend (port 3000) or Docker (port 80) → real API ─
+        try {
+          await _loadSharedJs();
+          var r = await window._apiLogin(email, password);
+          if (!r.success) { showAlert('alert-box', r.message || 'Login failed.', 'error'); setLoading('login-btn', false, 'Sign In →'); return; }
+          if (r.user && r.user.tempPassword) { window.location.href = '/student/profile'; return; }
+          var role = r.user && r.user.role;
+          window.location.href = role === 'admin' ? '/admin' : role === 'student' ? '/student' : '/lecturer';
+        } catch(err) {
+          showAlert('alert-box', 'Connection error. Please try again.', 'error');
+          setLoading('login-btn', false, 'Sign In →');
+        }
       }
-      window.location.href = r.user.role==='admin'?'../admin/Dashboard.html':r.user.role==='student'?'../student/Dashboard.html':'../lecturer/Dashboard.html';
+    }
+
+    // Lazy-load shared.js only for Docker mode (avoids polluting Live Server)
+    var _sharedJsLoaded = false;
+    function _loadSharedJs() {
+      if (_sharedJsLoaded) return Promise.resolve();
+      return new Promise(function(resolve, reject) {
+        var s = document.createElement('script');
+        s.src = '../shared.js';
+        s.onload = function() { _sharedJsLoaded = true; resolve(); };
+        s.onerror = function() { reject(new Error('Failed to load shared.js')); };
+        document.head.appendChild(s);
+      });
     }
   </script>
 </body>

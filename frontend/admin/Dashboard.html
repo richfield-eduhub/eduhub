@@ -80,14 +80,14 @@
   </style>
 </head>
 <body>
-<div id="navbar-placeholder"></div>
+<div id="navbar-root"></div>
 <div class="main-content">
   <h1 class="section-title">ADMIN DASHBOARD</h1>
   <p class="section-subtitle">Overview of applications, registrations and student activity</p>
   <div class="grid-4 mb-24" id="stats"></div>
   <div class="grid-2 mb-24">
     <div class="card">
-      <div class="card-header"><span style="font-weight:700;font-size:15px">Recent Applications</span><a href="Applications.html" class="btn btn-sm btn-secondary">View All</a></div>
+      <div class="card-header"><span style="font-weight:700;font-size:15px">Recent Applications</span><a href="../admin/Applications.html" class="btn btn-sm btn-secondary">View All</a></div>
       <div id="recent-apps"></div>
     </div>
     <div class="card">
@@ -205,17 +205,15 @@
     </div>
   </div>
 </div>
-
-<script src="../shared.js"></script>
+<script src="../shared-local.js"></script>
 <script>
   const user = requireAuth('admin');
   renderNavbar('admin-dashboard');
 
-(async () => {
-  const apps  = await getApplications();
-  const regs  = await getRegistrations();
-  const users = await getUsers();
-  const notifs= await getNotifications();
+  const apps  = getApplications();
+  const regs  = getRegistrations();
+  const users = getUsers();
+  const notifs= getNotifications();
   const pending    = apps.filter(a=>a.status==='pending').length;
   const approved   = apps.filter(a=>a.status==='approved').length;
   const students   = users.filter(u=>u.role==='student').length;
@@ -248,7 +246,6 @@
     :`<table class="data-table"><thead><tr><th>Event</th><th>Message</th><th>Time</th></tr></thead><tbody>
     ${adminNotifs.map(n=>`<tr><td>${badge(n.type==='success'?'approved':n.type==='error'?'declined':'info')}<br><span style="font-size:11px">${n.title}</span></td><td style="font-size:13px;color:var(--rf-gray);max-width:300px">${n.message.substring(0,80)}${n.message.length>80?'...':''}</td><td style="font-size:12px;color:var(--rf-gray)">${fmtDateTime(n.createdAt)}</td></tr>`).join('')}
     </tbody></table>`;
-})(); // End async IIFE
 
   /* ════════════════════════════════
      EVENT CALENDAR

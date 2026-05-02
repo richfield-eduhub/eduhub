@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 module.exports = {
   migration: {
@@ -8,6 +8,7 @@ module.exports = {
       console.log('👥 Creating default accounts...');
       const sequelize = queryInterface.sequelize;
 
+      // Check table exists (lowercase)
       try {
         await sequelize.query(`SELECT 1 FROM users LIMIT 1`);
       } catch (e) {
@@ -15,32 +16,66 @@ module.exports = {
         return;
       }
 
-      const defaultPassword = await bcrypt.hash('Password123!', 10);
+      // Hash the demo passwords shown on the Login page
+      const adminHash    = await bcrypt.hash('admin123',   12);
+      const lecturerHash = await bcrypt.hash('lec123',     12);
+      const studentHash  = await bcrypt.hash('Password123!', 12);
+
       const adminId    = '20000001-0000-4000-8000-000000000001';
       const lecturerId = '20000002-0000-4000-8000-000000000002';
       const studentId  = '20000003-0000-4000-8000-000000000003';
 
-      await sequelize.query(`INSERT INTO users (id,email,password_hash,member_number,role,account_status,is_verified,is_default_password,created_at,updated_at) VALUES (:id,:email,:pw,:mn,:role,'active',true,true,NOW(),NOW()) ON CONFLICT (id) DO NOTHING`,
-        { replacements:{id:adminId,email:'admin@eduhub.ac.za',pw:defaultPassword,mn:'ADMIN001',role:'admin'}, transaction });
-      await sequelize.query(`INSERT INTO user_details (id,user_id,first_name,last_name,date_of_birth,gender,nationality,id_number,phone,city,province,created_at,updated_at) VALUES (:id,:uid,'System','Admin','1990-01-01','Prefer not to say','South African','9001010001088','0800000000','Johannesburg','Gauteng',NOW(),NOW()) ON CONFLICT (id) DO NOTHING`,
-        { replacements:{id:'21000001-0000-4000-8000-000000000001',uid:adminId}, transaction });
+      // ── Admin ──────────────────────────────────────────
+      await sequelize.query(
+        `INSERT INTO users (id, email, password_hash, role, account_status, is_verified, created_at, updated_at)
+         VALUES (:id, :email, :pw, 'admin', 'active', true, NOW(), NOW())
+         ON CONFLICT (id) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
+        { replacements: { id: adminId, email: 'admin@eduhub.ac.za', pw: adminHash }, transaction }
+      );
+      await sequelize.query(
+        `INSERT INTO user_details (user_id, first_name, last_name, date_of_birth, phone, created_at, updated_at)
+         VALUES (:uid, 'System', 'Admin', '1990-01-01', '0800000000', NOW(), NOW())
+         ON CONFLICT (user_id) DO NOTHING`,
+        { replacements: { uid: adminId }, transaction }
+      );
 
-      await sequelize.query(`INSERT INTO users (id,email,password_hash,member_number,role,account_status,is_verified,is_default_password,created_at,updated_at) VALUES (:id,:email,:pw,:mn,:role,'active',true,true,NOW(),NOW()) ON CONFLICT (id) DO NOTHING`,
-        { replacements:{id:lecturerId,email:'john.smith@eduhub.ac.za',pw:defaultPassword,mn:'EMP2024001',role:'lecturer'}, transaction });
-      await sequelize.query(`INSERT INTO user_details (id,user_id,first_name,last_name,date_of_birth,gender,nationality,id_number,phone,city,province,created_at,updated_at) VALUES (:id,:uid,'John','Smith','1980-05-20','Male','South African','8005200001083','0112345678','Johannesburg','Gauteng',NOW(),NOW()) ON CONFLICT (id) DO NOTHING`,
-        { replacements:{id:'31000001-0000-4000-8000-000000000001',uid:lecturerId}, transaction });
+      // ── Lecturer (matches Login page demo: smokoena@eduhub.ac.za / lec123) ──
+      await sequelize.query(
+        `INSERT INTO users (id, email, password_hash, role, account_status, is_verified, created_at, updated_at)
+         VALUES (:id, :email, :pw, 'lecturer', 'active', true, NOW(), NOW())
+         ON CONFLICT (id) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
+        { replacements: { id: lecturerId, email: 'smokoena@eduhub.ac.za', pw: lecturerHash }, transaction }
+      );
+      await sequelize.query(
+        `INSERT INTO user_details (user_id, first_name, last_name, date_of_birth, phone, created_at, updated_at)
+         VALUES (:uid, 'Sarah', 'Mokoena', '1985-07-12', '0112345678', NOW(), NOW())
+         ON CONFLICT (user_id) DO NOTHING`,
+        { replacements: { uid: lecturerId }, transaction }
+      );
 
-      await sequelize.query(`INSERT INTO users (id,email,password_hash,member_number,role,account_status,is_verified,is_default_password,created_at,updated_at) VALUES (:id,:email,:pw,:mn,:role,'active',true,true,NOW(),NOW()) ON CONFLICT (id) DO NOTHING`,
-        { replacements:{id:studentId,email:'thabo.molefe@student.eduhub.ac.za',pw:defaultPassword,mn:'2026-0001',role:'student'}, transaction });
-      await sequelize.query(`INSERT INTO user_details (id,user_id,first_name,last_name,date_of_birth,gender,nationality,id_number,phone,city,province,created_at,updated_at) VALUES (:id,:uid,'Thabo','Molefe','2000-03-15','Male','South African','0003150001083','0821234567','Johannesburg','Gauteng',NOW(),NOW()) ON CONFLICT (id) DO NOTHING`,
-        { replacements:{id:'41000001-0000-4000-8000-000000000001',uid:studentId}, transaction });
+      // ── Demo Student ──────────────────────────────────
+      await sequelize.query(
+        `INSERT INTO users (id, email, password_hash, role, account_status, is_verified, created_at, updated_at)
+         VALUES (:id, :email, :pw, 'student', 'active', true, NOW(), NOW())
+         ON CONFLICT (id) DO UPDATE SET password_hash = EXCLUDED.password_hash`,
+        { replacements: { id: studentId, email: 'thabo.molefe@student.eduhub.ac.za', pw: studentHash }, transaction }
+      );
+      await sequelize.query(
+        `INSERT INTO user_details (user_id, first_name, last_name, date_of_birth, phone, created_at, updated_at)
+         VALUES (:uid, 'Thabo', 'Molefe', '2000-03-15', '0821234567', NOW(), NOW())
+         ON CONFLICT (user_id) DO NOTHING`,
+        { replacements: { uid: studentId }, transaction }
+      );
 
-      console.log('✅ Default accounts created: admin@eduhub.ac.za / Password123!');
+      console.log('✅ Default accounts seeded:');
+      console.log('   admin@eduhub.ac.za        / admin123');
+      console.log('   smokoena@eduhub.ac.za      / lec123');
+      console.log('   thabo.molefe@...           / Password123!');
     },
 
     down: async (queryInterface, Sequelize, transaction) => {
       await queryInterface.sequelize.query(
-        `DELETE FROM users WHERE email IN ('admin@eduhub.ac.za','john.smith@eduhub.ac.za','thabo.molefe@student.eduhub.ac.za')`,
+        `DELETE FROM users WHERE email IN ('admin@eduhub.ac.za','smokoena@eduhub.ac.za','thabo.molefe@student.eduhub.ac.za')`,
         { transaction }
       );
     },

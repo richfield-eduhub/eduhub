@@ -21,7 +21,7 @@
 <body>
 <div id="navbar-root"></div>
 <div id="app" style="max-width:780px;margin:0 auto;padding:32px 24px;min-height:100vh"></div>
-<script src="../shared.js"></script>
+<script src="../shared-local.js"></script>
 <script>
 const NATIONALITIES_LIST = ['South African','Zimbabwean','Mozambican','Zambian','Malawian','Botswanan','Namibian','Swazi','Lesothan','Congolese (DRC)','Nigerian','Ghanaian','Kenyan','Tanzanian','Ugandan','Rwandan','British','American','Canadian','Australian','German','French','Indian','Pakistani','Brazilian','Other'];
 const NEW_STEPS = ['Personal','Contact & Address','Education','Qualification','Documents','Review & Submit'];
@@ -39,14 +39,7 @@ const REENROL_STUDENT_ID   = _urlParams.get('studentId') || '';
 
 // Pre-fetch existing student record for re-enrolment
 let _reenrolStudent = null;
-if (REENROL_MODE && REENROL_STUDENT_ID) {
-  // Try to find by studentId from approved applications
-  const _allApps = getApplications ? getApplications() : [];
-  const _found = _allApps.find(a => a.studentId === REENROL_STUDENT_ID && a.status === 'approved');
-  if (_found) {
-    _reenrolStudent = { application: _found, user: { name: (_found.firstName||'') + ' ' + (_found.lastName||''), studentId: _found.studentId } };
-  }
-}
+// Note: getApplications() is async; reenrol student details are loaded when the lookup runs
 
 // Compute allowed admission-for options for this student
 // A 1st-year student can ONLY apply for 2nd Year (nextYear = currentYear + 1)
@@ -143,7 +136,7 @@ function validate() {
         if(!f.dateOfBirth)e.dateOfBirth='Required';
         if(!f.gender)e.gender='Required';
       }
-      if(s===1){if(!f.phone)e.phone='Required';if(!f.email||!f.email.includes('@'))e.email='Enter a valid email';if(!f.streetAddress)e.streetAddress='Required';if(!f.city)e.city='Required';if(!f.province)e.province='Required';}
+      if(s===1){if(!f.phone)e.phone='Required';if(!f.email||!f.email.includes('@')){e.email='Enter a valid email';}else{const dup=findExistingAccountByEmail(f.email);if(dup){e.email=dup.source==='user'?'An account with this email already exists. Please sign in instead.':'An application with this email has already been submitted. Please sign in to check your application status.';}}if(!f.streetAddress)e.streetAddress='Required';if(!f.city)e.city='Required';if(!f.province)e.province='Required';}
       if(s===2){if(!f.highSchool)e.highSchool='Required';if(!f.highestGrade)e.highestGrade='Required';}
       if(s===3){if(!f.qualificationCode)e.qualificationCode='Please select a qualification';if(!f.payerName)e.payerName='Required';if(!f.payerPhone)e.payerPhone='Required';}
     }
@@ -157,8 +150,60 @@ function validate() {
 
 function admissionToYear(af){ if(af==='2nd Year')return 2;if(af==='3rd Year')return 3;return 1; }
 
-function handleSubmit(){
+// Validates that first 6 digits of SA ID match YYMMDD of the given date string
+function validateSAIdDOB(idNumber, dateOfBirth) {
+  if (!idNumber || !dateOfBirth) return true;
+  const dob = new Date(dateOfBirth);
+  if (isNaN(dob)) return true;
+  const yy = String(dob.getFullYear()).slice(2);
+  const mm = String(dob.getMonth() + 1).padStart(2, '0');
+  const dd = String(dob.getDate()).padStart(2, '0');
+  return idNumber.startsWith(yy + mm + dd);
+}
+
+// Looks up an approved student record by ID/passport from localStorage
+function findStudentByIdOrPassport(value) {
+  // Uses shared-local.js getApplications() and getUsers() from localStorage
+  const apps = getApplications();
+  const found = apps.find(a =>
+    a.status === 'approved' &&
+    (a.idNumber === value || a.passportNumber === value)
+  );
+  if (!found) return null;
+  return {
+    application: found,
+    user: {
+      name: (found.firstName || '') + ' ' + (found.lastName || ''),
+      studentId: found.studentId || found.student_id || ''
+    }
+  };
+}
+
+// Check if an email already exists in localStorage (applications or users)
+function findExistingAccountByEmail(email) {
+  if (!email) return null;
+  const normalised = email.trim().toLowerCase();
+  // Check users list first (approved/registered accounts)
+  const users = getUsers();
+  const existingUser = users.find(u => u.email && u.email.trim().toLowerCase() === normalised && u.role !== 'admin');
+  if (existingUser) return { source: 'user', record: existingUser };
+  // Also check pending/submitted applications
+  const apps = getApplications();
+  const existingApp = apps.find(a => a.email && a.email.trim().toLowerCase() === normalised);
+  if (existingApp) return { source: 'application', record: existingApp, status: existingApp.status };
+  return null;
+}
+
+async function handleSubmit(){
   if(!validate())return;
+  // Final duplicate-email guard before writing to localStorage
+  if(state.appType !== 'returning' && !state.reenrolMode){
+    const dup = findExistingAccountByEmail(state.form.email);
+    if(dup){
+      showToast('This email address is already registered. Please sign in instead.','error');
+      return;
+    }
+  }
   const yr = state.reenrolMode ? REENROL_NEXT_YEAR
     : (state.appType==='returning' ? admissionToYear(state.admissionFor) : state.studyYear);
   const appType = state.reenrolMode ? 'returning'
@@ -166,11 +211,12 @@ function handleSubmit(){
   const admFor = state.reenrolMode
     ? (REENROL_NEXT_YEAR===2?'2nd Year':REENROL_NEXT_YEAR===3?'3rd Year':'2nd Year')
     : (state.admissionFor||'1st Semester');
-  const app = submitApplication({...state.form, applicationType:appType, admissionFor:admFor, studyYear:yr});
-  setState({submitted:true, submittedApp:{studentId:app.studentId||state.form.idNumber,id:app.id}});
+  const res = await submitApplication({...state.form, applicationType:appType, admissionFor:admFor, studyYear:yr});
+  const app = (res && res.data) ? res.data : (res || {});
+  setState({submitted:true, submittedApp:{studentId:app.studentId||app.student_id||state.form.idNumber,id:app.id}});
 }
 
-function handleLookup(){
+async function handleLookup(){
   state.lookupError='';
   if(!state.lookupValue.trim()){state.lookupError='Please enter your ID or passport number.';render();return;}
   const result = findStudentByIdOrPassport(state.lookupValue.trim());
@@ -220,7 +266,7 @@ function render(){
           <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3;margin-bottom:16px">
             ⏱ <strong>Next Steps:</strong> Our admissions team will review within <strong>3–5 business days</strong>. You'll be contacted at <strong>${f.email}</strong>.
           </div>
-          <a href="#" onclick="window.location.href=rootPath('index.html')" style="display:block;background:#123f7a;color:white;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none">← Back to Home</a>
+          <a href="../index.html" onclick="goHome();return false;" style="display:block;background:#123f7a;color:white;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none">← Back to Home</a>
         </div>
       </div>`;
     return;
@@ -475,7 +521,20 @@ function renderContact(){
   return `<div class="form-section-header"><span style="font-size:20px">📞</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Contact Details</h3></div>
   <div class="form-row">
     <div class="form-group"><label class="form-label">Phone <span class="required">*</span></label>${inp('phone','+27 XX XXX XXXX','tel')}${errSpan('phone')}</div>
-    <div class="form-group"><label class="form-label">Email <span class="required">*</span></label>${inp('email','you@example.com','email')}${errSpan('email')}</div>
+    <div class="form-group"><label class="form-label">Email <span class="required">*</span></label>${inp('email','you@example.com','email')}
+      ${state.errors.email && (state.errors.email.includes('already exists') || state.errors.email.includes('already been submitted'))
+        ? `<div style="margin-top:8px;background:#FEF2F2;border:1.5px solid #FECACA;border-radius:10px;padding:14px 16px">
+            <div style="display:flex;align-items:flex-start;gap:10px">
+              <span style="font-size:20px;flex-shrink:0">⚠️</span>
+              <div style="flex:1">
+                <div style="font-weight:700;color:#991B1B;font-size:14px;margin-bottom:4px">Account Already Exists</div>
+                <div style="font-size:13px;color:#7F1D1D;line-height:1.5;margin-bottom:10px">${state.errors.email}</div>
+                <a href="Login.html" style="display:inline-block;background:#123f7a;color:white;text-decoration:none;padding:8px 18px;border-radius:7px;font-size:13px;font-weight:700">🔑 Sign In to Your Account</a>
+              </div>
+            </div>
+          </div>`
+        : errSpan('email')}
+    </div>
   </div>
   <div class="form-group"><label class="form-label">Alternative Email</label>${inp('altEmail','alt@example.com','email')}</div>
   <div class="form-section-header" style="margin-top:8px"><span style="font-size:20px">🏠</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Residential Address</h3></div>
