@@ -14,8 +14,11 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+      - ./frontend:/frontend-html:ro
 
   nginx:
     build:
       context: .
       dockerfile: ./nginx/Dockerfile
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
