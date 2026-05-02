@@ -107,8 +107,11 @@ jobs:
             set -e
             cd ~/prod/eduhub
 
-            # Write compose files and env
-            cat > ~/prod/eduhub/docker-compose.yml << 'COMPOSEFILE'
+            # Write infrastructure compose (only if it doesn't exist - deploy once manually)
+            if [ ! -f ~/prod/eduhub/docker-compose.infrastructure.yml ]; then
+              echo "Creating infrastructure compose (first-time setup)..."
+              cat > ~/prod/eduhub/docker-compose.infrastructure.yml << 'INFRAFILE'
+            version: "3.8"
             services:
               db:
                 image: postgres:16
@@ -122,9 +125,8 @@ jobs:
                   - "${DB_PORT:-5433}:5432"
                 volumes:
                   - eduhub_pgdata:/var/lib/postgresql/data
-                  - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
                 healthcheck:
-                  test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+                  test: ["CMD-SHELL", "pg_isready -U \${DB_USER:-postgres}"]
                   interval: 5s
                   timeout: 5s
                   retries: 10
@@ -149,6 +151,36 @@ jobs:
                     condition: service_healthy
                 networks:
                   - eduhub_network
+              certbot:
+                image: certbot/certbot:latest
+                container_name: eduhub_certbot
+                restart: unless-stopped
+                volumes:
+                  - ./certbot/conf:/etc/letsencrypt
+                  - ./certbot/www:/var/www/certbot
+                entrypoint: /bin/sh
+                command: -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h; done"
+                networks:
+                  - eduhub_network
+            volumes:
+              eduhub_pgdata:
+                driver: local
+              eduhub_pgadmin:
+                driver: local
+            networks:
+              eduhub_network:
+                driver: bridge
+            INFRAFILE
+
+              # Start infrastructure services
+              docker compose -f docker-compose.infrastructure.yml up -d
+              echo "✅ Infrastructure services started"
+            fi
+
+            # Write application compose (always updated on deploy)
+            cat > ~/prod/eduhub/docker-compose.app.yml << 'APPFILE'
+            version: "3.8"
+            services:
               backend:
                 container_name: eduhub_backend
                 restart: unless-stopped
@@ -204,26 +236,10 @@ jobs:
                   start_period: 5s
                 networks:
                   - eduhub_network
-              certbot:
-                image: certbot/certbot:latest
-                container_name: eduhub_certbot
-                restart: unless-stopped
-                volumes:
-                  - ./certbot/conf:/etc/letsencrypt
-                  - ./certbot/www:/var/www/certbot
-                entrypoint: /bin/sh
-                command: -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h; done"
-                networks:
-                  - eduhub_network
-            volumes:
-              eduhub_pgdata:
-                driver: local
-              eduhub_pgadmin:
-                driver: local
             networks:
               eduhub_network:
                 driver: bridge
-            COMPOSEFILE
+            APPFILE
 
             cat > ~/prod/eduhub/docker-compose.prod.yml << 'PRODFILE'
             services:
@@ -276,15 +292,15 @@ jobs:
               SERVICE=$1
               CONTAINER="eduhub_${SERVICE}"
               echo "Deploying $SERVICE..."
-              
+
               # Pull new image
-              docker compose -f docker-compose.yml -f docker-compose.prod.yml pull $SERVICE
+              docker compose -f docker-compose.infrastructure.yml -f docker-compose.app.yml -f docker-compose.prod.yml pull $SERVICE
               
               # Store current image as rollback point
               CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' "$CONTAINER" 2>/dev/null || echo "none")
               
               # Update only this service
-              docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps $SERVICE
+              docker compose -f docker-compose.infrastructure.yml -f docker-compose.app.yml -f docker-compose.prod.yml up -d --no-deps $SERVICE
               
               # Wait for health check
               echo "Waiting for $SERVICE health check..."
@@ -325,7 +341,7 @@ jobs:
             fi
 
             # Ensure nginx is running before ACME webroot validation
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps nginx
+            docker compose -f docker-compose.infrastructure.yml -f docker-compose.app.yml -f docker-compose.prod.yml up -d --no-deps nginx
 
             # Issue initial Let's Encrypt certificate once, then keep it renewed via certbot service
             if [ ! -f "./certbot/conf/renewal/${DOMAIN}.conf" ]; then
@@ -344,8 +360,7 @@ jobs:
                 --non-interactive
             fi
 
-            # Start/refresh certbot renewal loop and reload nginx to pick up renewed certs
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps certbot
+            # Reload nginx to pick up renewed certs (certbot is in infrastructure stack)
             docker exec eduhub_nginx nginx -s reload || true
 
             docker system prune -f

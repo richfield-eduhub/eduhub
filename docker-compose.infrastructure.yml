@@ -1,0 +1,89 @@
+version: "3.8"
+
+# Infrastructure services - deployed manually, rarely change
+# Deploy with: docker compose -f docker-compose.infrastructure.yml up -d
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16
+    container_name: eduhub_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-eduhub}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-yourpassword}
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - eduhub_pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - eduhub_network
+
+  # pgAdmin for Database Management
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: eduhub_pgadmin
+    restart: unless-stopped
+    user: root
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@eduhub.co.za}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 10
+      PGADMIN_CONFIG_SERVER_MODE: "True"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - eduhub_pgadmin:/var/lib/pgadmin
+      - ./logs/pgadmin:/var/log/pgadmin
+      - ./pgadmin-config/servers.json:/pgadmin4/servers.json:ro
+      - ./pgadmin-config/pgpass:/tmp/pgpass:ro
+      - ./pgadmin-config/setup-pgadmin.sh:/docker-entrypoint-initdb.d/setup.sh:ro
+    entrypoint: >
+      /bin/sh -c "
+      cp /tmp/pgpass /pgpass &&
+      chmod 600 /pgpass &&
+      chown pgadmin:root /pgpass &&
+      /entrypoint.sh
+      "
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - eduhub_network
+
+  # Certbot for Let's Encrypt SSL certificates
+  certbot:
+    image: certbot/certbot:latest
+    container_name: eduhub_certbot
+    restart: unless-stopped
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: /bin/sh
+    command: -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h; done"
+    networks:
+      - eduhub_network
+
+volumes:
+  eduhub_pgdata:
+    driver: local
+  eduhub_pgadmin:
+    driver: local
+
+networks:
+  eduhub_network:
+    driver: bridge
+    external: false
