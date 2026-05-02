@@ -146,6 +146,7 @@ jobs:
               backend:
                 container_name: eduhub_backend
                 restart: unless-stopped
+                image: ghcr.io/richfield-eduhub/eduhub-backend:latest
                 environment:
                   NODE_ENV: ${NODE_ENV:-production}
                   PORT: 3000
@@ -176,6 +177,7 @@ jobs:
               nginx:
                 container_name: eduhub_nginx
                 restart: unless-stopped
+                image: ghcr.io/richfield-eduhub/eduhub-nginx:latest
                 ports:
                   - "${NGINX_HTTP_PORT:-80}:80"
                   - "${NGINX_HTTPS_PORT:-443}:443"
