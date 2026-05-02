@@ -237,6 +237,7 @@ jobs:
             NODE_ENV=production
             DOMAIN=edu-hub.duckdns.org
             LETSENCRYPT_EMAIL=admin@eduhub.co.za
+            ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,https://edu-hub.duckdns.org
             EOF
 
             # Login to GHCR
