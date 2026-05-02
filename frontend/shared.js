@@ -1455,7 +1455,30 @@ function getCurrentUser() {
   return getCachedUser();
 }
 
+/* Detect if running as a local file (no server) */
+function _isFileMode() {
+  // file:// protocol OR Live Server (port 5500/5501) — no backend available on these
+  if (window.location.protocol === 'file:') return true;
+  const port = window.location.port;
+  if (port === '5500' || port === '5501') return true;
+  return false;
+}
+/* Detect the API base URL — works both for direct :3000 and via nginx proxy */
+function _apiBase() {
+  if (_isFileMode()) return null; // no server available
+  const origin = window.location.origin;
+  return origin + '/api';
+}
+
 async function api(method, path, body) {
+  // If opened via file:// or Live Server, no backend available — use localStorage mode
+  if (_isFileMode()) {
+    console.warn('[EduHub] No backend available. Using localStorage mode. For full features open http://localhost (Docker).');
+    return {
+      ok: false,
+      message: 'No backend available. Please run Docker and open http://localhost in your browser.'
+    };
+  }
   const opts = {
     method,
     headers: {
@@ -1486,9 +1509,11 @@ async function login(email, password) {
   const res = await api("POST", "/auth/login", { email, password });
   if (!res.ok)
     return { success: false, message: res.message || "Login failed." };
-  setToken(res.data.accessToken);
-  setCachedUser(res.data.user);
-  return { success: true, user: res.data.user };
+  const token = (res.data && res.data.accessToken) || res.accessToken || res.token;
+  const user  = (res.data && res.data.user)        || res.user;
+  setToken(token);
+  setCachedUser(user);
+  return { success: true, user };
 }
 
 async function logout() {
@@ -1606,12 +1631,9 @@ async function getCourseRoster(moduleCode) {
 /* ═══════════════════════════════════════════════════
    ADMIN  →  /api/admin/*
    ═══════════════════════════════════════════════════ */
-async function getUsers() {
+async function getAdminUsers() {
   const res = await api("GET", "/admin/users");
   return res.ok ? res.users : [];
-}
-async function getAdminUsers() {
-  return getUsers();
 }
 async function getStatistics() {
   return api("GET", "/admin/statistics");
@@ -1624,46 +1646,6 @@ async function changeUserRole(userId, role) {
 }
 async function changeUserStatus(userId, status) {
   return api("PUT", `/admin/users/${userId}/status`, { status });
-}
-
-/* ═══════════════════════════════════════════════════
-   NOTIFICATIONS & INBOX (Stubs for old dashboard code)
-   ═══════════════════════════════════════════════════ */
-function getInboxFor(userId) {
-  // Stub function - returns empty array until inbox API is implemented
-  return [];
-}
-function getSentBy(userId) {
-  // Stub function - returns empty array until messaging API is implemented
-  return [];
-}
-
-/* ═══════════════════════════════════════════════════
-   ASSIGNMENTS (Stubs for old dashboard code)
-   ═══════════════════════════════════════════════════ */
-function getAssignments() {
-  // Stub function - returns empty array until assignments API is implemented
-  return [];
-}
-function getStudentAssignments(studentId) {
-  // Stub function - returns empty array until assignments API is implemented
-  return [];
-}
-
-/* ═══════════════════════════════════════════════════
-   EVENTS (Stubs for old dashboard code)
-   ═══════════════════════════════════════════════════ */
-function getUpcomingEvents(role) {
-  // Stub function - returns empty array until events API is implemented
-  return [];
-}
-
-/* ═══════════════════════════════════════════════════
-   EMAIL (Stubs for old dashboard code)
-   ═══════════════════════════════════════════════════ */
-function getSchoolEmails(studentId) {
-  // Stub function - returns empty array until email API is implemented
-  return [];
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1817,8 +1799,8 @@ function renderNavbar(activePage) {
       </button>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-left:12px">
-      <div style="text-align:right"><div style="font-size:13px;font-weight:600">${user.first_name || user.email.split('@')[0]}</div><div style="font-size:11px;opacity:.7;text-transform:capitalize">${user.role}</div></div>
-      <button onclick="doLogout()" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">Logout</button>
+      <div style="text-align:right"><div style="font-size:13px;font-weight:600">${user.name}</div><div style="font-size:11px;opacity:.7;text-transform:capitalize">${user.role}</div></div>
+      <button onclick="doLogout()" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">Logout</button>
     </div>`
     : "";
   const notifHtml = user
@@ -1826,14 +1808,17 @@ function renderNavbar(activePage) {
     <div id="notif-dropdown" class="hidden" style="position:fixed;top:64px;right:20px;width:360px;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:200;overflow:hidden;border:1px solid #e5e7eb">
       <div style="padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
         <span style="font-weight:700;color:var(--rf-navy);font-size:15px">Notifications</span>
-        <span id="notif-unread-label" style="font-size:12px;color:#123f7a"></span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span id="notif-unread-label" style="font-size:12px;color:#123f7a"></span>
+          <button id="notif-clear-btn" onclick="clearAllNotifs(event)" style="font-size:11px;font-weight:600;color:#dc2626;background:none;border:1px solid #fca5a5;border-radius:5px;padding:3px 9px;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">Clear All</button>
+        </div>
       </div>
       <div id="notif-list" style="max-height:340px;overflow-y:auto">
         <div style="padding:20px;text-align:center;color:var(--rf-gray);font-size:13px">Loading...</div>
       </div>
     </div>`
     : "";
-  const ph = document.getElementById("navbar-placeholder");
+  const ph = document.getElementById("navbar-root");
   if (ph) {
     ph.innerHTML = `
       <nav class="navbar">
@@ -1904,6 +1889,21 @@ async function doMarkRead(id) {
   await markNotifRead(id);
   loadNotifDropdown();
 }
+async function clearAllNotifs(event) {
+  if (event) event.stopPropagation();
+  const btn = document.getElementById("notif-clear-btn");
+  if (btn) { btn.textContent = "Clearing…"; btn.disabled = true; }
+  const notifs = await getNotifications();
+  await Promise.all(notifs.map((n) => deleteNotif(n.id)));
+  localStorage.setItem("_unreadCount", "0");
+  const badge = document.getElementById("notif-badge");
+  if (badge) badge.style.display = "none";
+  const label = document.getElementById("notif-unread-label");
+  if (label) label.textContent = "";
+  const list = document.getElementById("notif-list");
+  if (list) list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--rf-gray);font-size:14px">No notifications yet</div>';
+  if (btn) { btn.textContent = "Clear All"; btn.disabled = false; }
+}
 async function doLogout() {
   await logout();
   window.location.href = "/";
@@ -1931,3 +1931,284 @@ function renderFooter() {
   <div class="footer-bottom">© ${new Date().getFullYear()} EduHub — A Learning Experience of a Lifetime · All rights reserved</div>
   </footer>`;
 }
+
+/* ═══════════════════════════════════════════════════
+   COMPATIBILITY LAYER
+   These functions bridge shared-local.js calls used
+   by admin/student/lecturer pages. They use
+   localStorage for features not yet backed by an API
+   endpoint (events, announcements, assignments, etc.)
+   and map legacy names to their shared.js equivalents.
+   ═══════════════════════════════════════════════════ */
+
+/* -- localStorage helpers -- */
+function _lsLoad(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+}
+function _lsSave(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
+
+/* -- getUsers / setUsers (localStorage mirror + admin API) -- */
+function getUsers() { return _lsLoad('users', []); }
+function setUsers(v) { _lsSave('users', v); }
+
+/* -- Events (localStorage) -- */
+function getEvents()    { return _lsLoad('events', []); }
+function setEvents(v)   { _lsSave('events', v); }
+
+function createEvent(ev) {
+  const events = getEvents();
+  const newEv = { id:'ev-'+Date.now(), title:ev.title, date:ev.date, time:ev.time||'',
+    type:ev.type||'general', audience:ev.audience||'all', description:ev.description||'',
+    createdBy:ev.createdBy||'admin', createdAt:new Date().toISOString() };
+  events.push(newEv); setEvents(events); return newEv;
+}
+function deleteEvent(id) { setEvents(getEvents().filter(e=>e.id!==id)); }
+function getEventsForDate(dateStr) { return getEvents().filter(e=>e.date===dateStr); }
+function getUpcomingEvents(role) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  return getEvents().filter(e=>{
+    const d=new Date(e.date); d.setHours(0,0,0,0);
+    return d>=today && (e.audience==='all'||(role==='student'&&e.audience==='students')||(role==='lecturer'&&e.audience==='lecturers')||role==='admin');
+  }).sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,10);
+}
+
+/* -- Notifications (localStorage) -- */
+function addNotification(n) {
+  const notif = { ...n, id:Date.now().toString()+Math.random().toString(36).slice(2), createdAt:new Date().toISOString(), read:false };
+  _lsSave('notifications', [notif, ..._lsLoad('notifications',[])]);
+}
+function getUserNotifs(user) {
+  if(!user) return [];
+  return _lsLoad('notifications',[]).filter(n=>n.userId===user.id||n.userId===user.studentId);
+}
+
+/* -- Announcements (localStorage) -- */
+function getAnnouncements() { return _lsLoad('announcements',[]); }
+function saveAnnouncements(v) { _lsSave('announcements',v); }
+function addAnnouncement(ann) {
+  const list = getAnnouncements();
+  const item = { ...ann, id:`ANN-${Date.now()}`, createdAt:new Date().toISOString() };
+  saveAnnouncements([item,...list]); return item;
+}
+
+/* -- Audit Logs (localStorage, also has API via getAuditLogs()) -- */
+function addAuditLog(entry) {
+  const logs = _lsLoad('auditLogs',[]);
+  _lsSave('auditLogs',[{...entry,id:`LOG-${Date.now()}`,createdAt:new Date().toISOString()},...logs].slice(0,200));
+}
+
+/* -- Email Log (localStorage) -- */
+function getSentEmails() { return _lsLoad('sentEmails',[]); }
+
+/* -- Assignments (localStorage) -- */
+function getAssignments()  { return _lsLoad('assignments',[]); }
+function setAssignments(v) { _lsSave('assignments',v); }
+function submitAssignment(studentId,moduleCode,moduleName,title,content,fileName) {
+  const list=getAssignments();
+  const asgn={id:'asgn-'+Date.now(),studentId,moduleCode,moduleName,title,content,
+    fileName:fileName||null,submittedAt:new Date().toISOString(),status:'submitted',mark:null,feedback:null,gradedBy:null,gradedAt:null};
+  list.push(asgn); setAssignments(list); return asgn;
+}
+function gradeAssignment(id,mark,feedback,gradedBy) {
+  const list=getAssignments(); const asgn=list.find(a=>a.id===id); if(!asgn)return;
+  Object.assign(asgn,{mark,feedback,gradedBy,gradedAt:new Date().toISOString(),status:'graded'});
+  setAssignments(list); return asgn;
+}
+function getStudentAssignments(studentId) { return getAssignments().filter(a=>a.studentId===studentId).sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt)); }
+function getAssignmentsForModule(moduleCode) { return getAssignments().filter(a=>a.moduleCode===moduleCode).sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt)); }
+
+/* -- Lecturer Assignment Briefs (localStorage) -- */
+function getLecturerAssignments()  { return _lsLoad('lecturerAssignments',[]); }
+function setLecturerAssignments(v) { _lsSave('lecturerAssignments',v); }
+function uploadLecturerAssignment(lecturerId,lecturerName,moduleCode,moduleName,title,description,dueDate,fileName) {
+  const list=getLecturerAssignments();
+  const asgn={id:'lasgn-'+Date.now(),lecturerId,lecturerName,moduleCode,moduleName,title,description,dueDate:dueDate||null,fileName:fileName||null,uploadedAt:new Date().toISOString()};
+  list.push(asgn); setLecturerAssignments(list); return asgn;
+}
+function getLecturerAssignmentsForModule(moduleCode) { return getLecturerAssignments().filter(a=>a.moduleCode===moduleCode).sort((a,b)=>new Date(b.uploadedAt)-new Date(a.uploadedAt)); }
+function deleteLecturerAssignment(id) { setLecturerAssignments(getLecturerAssignments().filter(a=>a.id!==id)); }
+
+/* -- Messages (localStorage) -- */
+function getMessages()  { return _lsLoad('messages',[]); }
+function setMessages(v) { _lsSave('messages',v); }
+function sendMessage(fromUserId,toUserId,subject,body) {
+  const msgs=getMessages();
+  const msg={id:'msg-'+Date.now(),from:fromUserId,to:toUserId,subject,body,sentAt:new Date().toISOString(),read:false,replies:[]};
+  msgs.push(msg); setMessages(msgs); return msg;
+}
+function replyMessage(msgId,fromUserId,body) {
+  const msgs=getMessages(); const msg=msgs.find(m=>m.id===msgId); if(!msg)return;
+  msg.replies.push({from:fromUserId,body,sentAt:new Date().toISOString()}); setMessages(msgs);
+}
+function markMessageRead(msgId) {
+  const msgs=getMessages(); const msg=msgs.find(m=>m.id===msgId);
+  if(msg){msg.read=true;setMessages(msgs);}
+}
+function getInboxFor(userId) { return getMessages().filter(m=>m.to===userId).sort((a,b)=>new Date(b.sentAt)-new Date(a.sentAt)); }
+function getSentBy(userId)   { return getMessages().filter(m=>m.from===userId).sort((a,b)=>new Date(b.sentAt)-new Date(a.sentAt)); }
+
+/* -- School Emails (localStorage) -- */
+function getSchoolEmails(studentId) { return _lsLoad('schoolEmails_'+studentId,[]); }
+function addSchoolEmail(studentId,email) {
+  const emails=getSchoolEmails(studentId);
+  emails.unshift({id:'se-'+Date.now(),...email,sentAt:new Date().toISOString(),read:false});
+  _lsSave('schoolEmails_'+studentId,emails.slice(0,50));
+}
+function markSchoolEmailRead(studentId,emailId) {
+  const emails=getSchoolEmails(studentId); const e=emails.find(x=>x.id===emailId);
+  if(e){e.read=true;_lsSave('schoolEmails_'+studentId,emails);}
+}
+
+/* -- Study Mode (localStorage) -- */
+function getStudyMode()     { return localStorage.getItem('studyMode')||null; }
+function setStudyMode(mode) { localStorage.setItem('studyMode',mode); }
+
+/* -- Library Resources (static data) -- */
+const LIBRARY_RESOURCES = [
+  {id:'lib-001',code:'ICT101',name:'Introduction to Programming',type:'guide',title:'Programming Fundamentals Study Guide',size:'2.4 MB'},
+  {id:'lib-002',code:'ICT101',name:'Introduction to Programming',type:'slides',title:'Week 1–6 Lecture Slides',size:'5.1 MB'},
+  {id:'lib-003',code:'ICT102',name:'Computer Architecture',type:'guide',title:'Computer Architecture Textbook',size:'8.3 MB'},
+  {id:'lib-004',code:'ICT103',name:'Mathematics for Computing',type:'guide',title:'Discrete Maths Study Notes',size:'3.2 MB'},
+  {id:'lib-005',code:'ICT104',name:'Web Development Fundamentals',type:'guide',title:'HTML & CSS Reference Guide',size:'1.8 MB'},
+  {id:'lib-006',code:'ICT105',name:'Database Design',type:'guide',title:'SQL & ERD Study Guide',size:'4.1 MB'},
+  {id:'lib-007',code:'ICT106',name:'Networking Fundamentals',type:'guide',title:'Networking OSI Model Notes',size:'2.9 MB'},
+  {id:'lib-008',code:'BUS101',name:'Business Communication',type:'guide',title:'Business Writing Guide',size:'1.5 MB'},
+  {id:'lib-009',code:'BUS102',name:'Principles of Management',type:'guide',title:'Management Theories Summary',size:'2.1 MB'},
+  {id:'lib-010',code:'general',name:'General',type:'policy',title:'Student Handbook 2026',size:'1.2 MB'},
+  {id:'lib-011',code:'general',name:'General',type:'policy',title:'Academic Calendar 2026',size:'0.5 MB'},
+  {id:'lib-012',code:'general',name:'General',type:'research',title:'How to Write Academic Essays',size:'0.8 MB'},
+];
+function getLibraryResources(moduleCode) {
+  if(!moduleCode||moduleCode==='all') return LIBRARY_RESOURCES;
+  return LIBRARY_RESOURCES.filter(r=>r.code===moduleCode||r.code==='general');
+}
+
+/* -- QUALIFICATIONS already defined at top of shared.js -- */
+/* -- generateStudentId (used by some pages) -- */
+function generateStudentId() {
+  const year = new Date().getFullYear();
+  return `SD${String(year).slice(2)}/${year}/${Math.floor(1000000+Math.random()*9000000)}`;
+}
+
+/* -- SA ID DOB validation (used by Apply.html) -- */
+function validateSAIdDOB(idNumber, dateOfBirth) {
+  if(!idNumber||idNumber.length<6||!dateOfBirth) return true;
+  const parts=dateOfBirth.split('-');
+  if(parts.length!==3) return true;
+  const expected=parts[0].slice(-2)+parts[1]+parts[2];
+  return idNumber.slice(0,6)===expected;
+}
+
+/* -- findStudentByIdOrPassport (async, hits API) -- */
+async function findStudentByIdOrPassport(value) {
+  try {
+    const res = await api('GET','/applications');
+    const apps = (res.data&&Array.isArray(res.data))?res.data:(Array.isArray(res.applications)?res.applications:[]);
+    const found = apps.find(a=>a.status==='approved'&&(a.idNumber===value||a.id_number===value||a.passportNumber===value||a.passport_number===value));
+    if(!found) return null;
+    return { application:found, user:{ name:(found.firstName||found.first_name||'')+' '+(found.lastName||found.last_name||''), studentId:found.studentId||found.student_id||'' } };
+  } catch { return null; }
+}
+
+/* -- doChangePassword alias -- */
+async function doChangePassword(userId, newPassword) {
+  return changePassword(null, newPassword);
+}
+
+/* -- registerUser alias (maps to registerAccount) -- */
+async function registerUser(firstName, lastName, email, password) {
+  return registerAccount({ firstName, lastName, email, password, role:'student' });
+}
+
+/* -- declineApplication alias -- */
+async function declineApplication(id, reason) {
+  return rejectApplication(id, reason);
+}
+
+/* -- submitRegistration (localStorage + notify) -- */
+function submitRegistration(regData) {
+  const reg={...regData,id:`REG-${Date.now()}`,submittedAt:new Date().toISOString(),status:'pending'};
+  const regs=_lsLoad('localRegistrations',[]);
+  _lsSave('localRegistrations',[reg,...regs]);
+  return reg;
+}
+
+/* -- doAllocateModules (localStorage) -- */
+function doAllocateModules(applicationId,modules,semester,studyYear) {
+  const apps=_lsLoad('localApplications',[]);
+  const app=apps.find(a=>a.id===applicationId);
+  const reg={id:`ALLOC-${Date.now()}`,studentId:app?app.studentId:'',applicationId,
+    modules,semester,studyYear,status:'allocated',allocatedAt:new Date().toISOString()};
+  const regs=_lsLoad('localRegistrations',[]);
+  _lsSave('localRegistrations',[reg,...regs]);
+}
+
+/* -- approveApplication / declineApplication local wrappers -- */
+async function approveApplication(id) {
+  return api('PUT',`/applications/${id}/approve`);
+}
+
+/* -- fmtDate / fmtDateTime helpers (if not already defined) -- */
+if(typeof fmtDate==='undefined'){
+  function fmtDate(d){ return d?new Date(d).toLocaleDateString('en-ZA',{year:'numeric',month:'short',day:'numeric'}):'—'; }
+}
+if(typeof fmtDateTime==='undefined'){
+  function fmtDateTime(d){ return d?new Date(d).toLocaleString('en-ZA'):'—'; }
+}
+
+/* -- EmailJS send stubs (admin pages call these) -- */
+async function sendApprovalEmail(app, tempPassword) { console.log('[email] approval queued for', app.email); }
+async function sendRejectionEmail(app, reason)      { console.log('[email] rejection queued for', app.email); }
+
+
+/* ═══════════════════════════════════════════════════
+   goHome() — works via file://, http://localhost:3000,
+   and nginx. Detects context automatically.
+   ═══════════════════════════════════════════════════ */
+function goHome() {
+  const proto = window.location.protocol;
+  const host  = window.location.host; // e.g. "localhost:3000" or ""
+
+  if (proto === 'file:') {
+    // Opened directly from filesystem — navigate relative to current file
+    const path = window.location.pathname.replace(/\\/g, '/');
+    const parts = path.split('/').filter(Boolean);
+    // Find how deep we are under the frontend folder
+    // public/Apply.html → go up 1 level → ../index.html
+    // admin/Dashboard.html → go up 1 level → ../index.html
+    // index.html → stay
+    const depth = parts.length > 0 ? 1 : 0;
+    window.location.href = depth > 0 ? '../index.html' : 'index.html';
+  } else {
+    // Running on a server (http/https)
+    window.location.href = '/';
+  }
+}
+
+/* Also fix doLogout to use goHome */
+function doLogout() {
+  try { logout(); } catch(e) {}
+  try {
+    // clear tokens for both shared.js (JWT) and shared-local.js (localStorage)
+    if (typeof setToken === 'function') setToken(null);
+    if (typeof setCachedUser === 'function') setCachedUser(null);
+    if (typeof setCurrentUser === 'function') setCurrentUser(null);
+  } catch(e) {}
+  goHome();
+}
+
+/* ═══════════════════════════════════════════════════
+   API AUTH BRIDGE
+   Called by Login.html in Docker mode via _loadSharedJs()
+   Named _apiLogin to avoid conflict with shared-local.js's
+   synchronous login() function
+   ═══════════════════════════════════════════════════ */
+window._apiLogin = async function(email, password) {
+  var res = await api("POST", "/auth/login", { email: email, password: password });
+  if (!res.ok) return { success: false, message: res.message || "Login failed." };
+  var token = (res.data && res.data.accessToken) || res.accessToken || res.token;
+  var user  = (res.data && res.data.user) || res.user;
+  setToken(token);
+  setCachedUser(user);
+  return { success: true, user: user };
+};

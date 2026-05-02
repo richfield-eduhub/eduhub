@@ -43,18 +43,35 @@ const DEFAULT_PASSWORDS = { 'admin@eduhub.ac.za':'admin123', 'smokoena@eduhub.ac
    based on where the current HTML file lives.
    ═══════════════════════════════════════════════════ */
 function getRoot() {
-  const path = window.location.pathname.replace(/\\/g, '/');
-  // depth = number of folders below the frontend-html root
-  // index.html  → depth 0 → prefix ""
-  // public/X    → depth 1 → prefix "../"
-  // admin/X     → depth 1 → prefix "../"
-  // student/X   → depth 1 → prefix "../"
-  // lecturer/X  → depth 1 → prefix "../"
-  const parts = path.split('/').filter(Boolean);
-  // Find "frontend-html" in the path and measure depth after it
-  const fhIdx = parts.lastIndexOf('frontend-html');
-  const depth = fhIdx >= 0 ? parts.length - fhIdx - 1 : (parts.length > 0 ? 1 : 0);
-  return depth <= 1 ? '' : '../'.repeat(depth - 1);
+  var proto = window.location.protocol;
+  var port  = window.location.port;
+
+  // file:// — calculate relative depth from the frontend root folder
+  if (proto === 'file:') {
+    var pathname = window.location.pathname.replace(/\\/g, '/');
+    var parts = pathname.split('/').filter(Boolean);
+    var rootFolders = ['frontend', 'frontend-html', 'eduhub-fixed', 'eduhub-main', 'eduhub'];
+    var rootIdx = -1;
+    for (var i = 0; i < rootFolders.length; i++) {
+      var idx = parts.lastIndexOf(rootFolders[i]);
+      if (idx >= 0 && idx > rootIdx) rootIdx = idx;
+    }
+    var depth = rootIdx >= 0 ? parts.length - rootIdx - 1 : (parts.length > 1 ? 1 : 0);
+    return depth <= 1 ? '' : '../'.repeat(depth - 1);
+  }
+
+  // Live Server (VS Code) — port 5500/5501/5502
+  // Use relative '../' paths so they work regardless of where Live Server is rooted.
+  if (port === '5500' || port === '5501' || port === '5502') {
+    var segs = window.location.pathname.replace(/\\/g,'/').split('/').filter(Boolean);
+    // Check if any path segment is a known subfolder (admin, student, lecturer, public)
+    var subfolders = ['admin','student','lecturer','public'];
+    var inSub = segs.some(function(s){ return subfolders.indexOf(s.toLowerCase()) >= 0; });
+    return inSub ? '../' : '';
+  }
+
+  // Docker (nginx port 80) or Node backend (port 3000) — use absolute paths
+  return '/';
 }
 
 // Build a path from root of frontend-html
@@ -101,9 +118,19 @@ function login(email, password) {
 function logout() { setCurrentUser(null); }
 
 function requireAuth(role) {
-  const u = getCurrentUser();
-  if (!u) { window.location.href = rootPath('public/Login.html'); return null; }
-  if (role && u.role !== role) { window.location.href = rootPath('index.html'); return null; }
+  var u = getCurrentUser();
+  var port = window.location.port;
+  var proto = window.location.protocol;
+  // Docker/Node backend: use clean URLs. Live Server or file://: use rootPath (relative/absolute as getRoot decides)
+  var useCleanUrls = proto !== 'file:' && port !== '5500' && port !== '5501' && port !== '5502';
+  if (!u) {
+    window.location.href = useCleanUrls ? '/login' : rootPath('public/Login.html');
+    return null;
+  }
+  if (role && u.role !== role) {
+    window.location.href = useCleanUrls ? ('/' + u.role) : rootPath('index.html');
+    return null;
+  }
   return u;
 }
 
@@ -335,7 +362,10 @@ function renderNavbar(activePage) {
       <div id="notif-dropdown" class="hidden" style="position:absolute;right:0;top:46px;width:360px;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:200;overflow:hidden;border:1px solid #e5e7eb">
         <div style="padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
           <span style="font-weight:700;color:#001A4D;font-size:15px">Notifications</span>
-          ${unread > 0 ? `<span style="font-size:12px;color:#123f7a">${unread} unread</span>` : ''}
+          <div style="display:flex;align-items:center;gap:10px">
+            ${unread > 0 ? `<span style="font-size:12px;color:#123f7a">${unread} unread</span>` : ''}
+            ${notifs.length > 0 ? `<button onclick="clearAllNotifs(event)" style="font-size:11px;font-weight:600;color:#dc2626;background:none;border:1px solid #fca5a5;border-radius:5px;padding:3px 9px;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">Clear All</button>` : ''}
+          </div>
         </div>
         <div style="max-height:340px;overflow-y:auto">
           ${notifs.length === 0 ? '<div style="padding:24px;text-align:center;color:#6b7280;font-size:14px">No notifications yet</div>' :
@@ -410,7 +440,22 @@ function toggleNotifs(event) {
 }
 
 function doMarkRead(id) { markNotifRead(id); location.reload(); }
-function doLogout() { logout(); window.location.href = rootPath('index.html'); }
+function clearAllNotifs(event) {
+  if (event) event.stopPropagation();
+  const user = getCurrentUser();
+  const notifs = getNotifications();
+  // Keep notifications that don't belong to current user (shouldn't happen but safe)
+  const remaining = notifs.filter(n => n.userId !== (user && (user.id || user.studentId)));
+  setNotifications(remaining);
+  location.reload();
+}
+function goHome() {
+  var port = window.location.port;
+  var proto = window.location.protocol;
+  var useCleanUrls = proto !== 'file:' && port !== '5500' && port !== '5501' && port !== '5502';
+  window.location.href = useCleanUrls ? '/' : rootPath('index.html');
+}
+function doLogout() { logout(); goHome(); }
 
 // Close notif dropdown when clicking outside
 document.addEventListener('click', function(e) {
@@ -426,12 +471,182 @@ document.addEventListener('click', function(e) {
    ═══════════════════════════════════════════════════ */
 
 // POST /api/auth/register
+/* ═══════════════════════════════════════════════════
+   EduHub Input Validation Library
+   All field-level and form-level validation rules live here.
+   ═══════════════════════════════════════════════════ */
+
+const EduValidate = {
+
+  // ── Email ──────────────────────────────────────────
+  email(value) {
+    const v = (value || '').trim();
+    if (!v) return { ok: false, msg: 'Email address is required.' };
+    // Must contain exactly one @
+    if (!v.includes('@')) return { ok: false, msg: 'Email must contain an @ symbol (e.g. you@example.com).' };
+    // Full RFC-ish check: local@domain.tld
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!re.test(v)) return { ok: false, msg: 'Enter a valid email address (e.g. you@example.com).' };
+    return { ok: true };
+  },
+
+  // ── South African phone number ─────────────────────
+  // Accepts: 0XX XXX XXXX  |  +27 XX XXX XXXX  |  27XXXXXXXXX  (digits only, spaces, dashes ignored)
+  phone(value) {
+    const v = (value || '').trim();
+    if (!v) return { ok: true }; // phone is optional on registration; callers that need it required must check separately
+    // Strip spaces, dashes, parentheses for digit-count check
+    const digits = v.replace(/[\s\-().]/g, '');
+    // Allow +27... or 27... (international) or 0... (local)
+    const intl = /^\+?27[6-8][0-9]{8}$/;  // +27 or 27 then 6x/7x/8x prefix + 8 more digits
+    const local = /^0[6-8][0-9]{8}$/;      // 06x, 07x, 08x + 8 more digits = 10 digits total
+    if (!intl.test(digits) && !local.test(digits)) {
+      return {
+        ok: false,
+        msg: 'Enter a valid South African phone number (e.g. 071 234 5678 or +27 71 234 5678).',
+      };
+    }
+    return { ok: true };
+  },
+
+  // ── SA ID Number ───────────────────────────────────
+  // 13 digits: YYMMDD SSSS C A Z  (Luhn-like checksum)
+  saId(value) {
+    const v = (value || '').trim();
+    if (!v) return { ok: true }; // optional field
+    if (!/^\d{13}$/.test(v)) return { ok: false, msg: 'SA ID number must be exactly 13 digits.' };
+    // Basic date check: positions 0-5 must be a valid YYMMDD
+    const mm = parseInt(v.slice(2, 4), 10);
+    const dd = parseInt(v.slice(4, 6), 10);
+    if (mm < 1 || mm > 12) return { ok: false, msg: 'SA ID number contains an invalid month.' };
+    if (dd < 1 || dd > 31) return { ok: false, msg: 'SA ID number contains an invalid day.' };
+    // Luhn checksum (South African RSA ID algorithm)
+    let odd = 0, even = '';
+    for (let i = 0; i < 12; i++) {
+      if (i % 2 === 0) odd += parseInt(v[i], 10);
+      else even += v[i];
+    }
+    const evenSum = (parseInt(even, 10) * 2).toString().split('').reduce((a, c) => a + parseInt(c, 10), 0);
+    const total = odd + evenSum;
+    const check = (10 - (total % 10)) % 10;
+    if (check !== parseInt(v[12], 10)) return { ok: false, msg: 'SA ID number is invalid (checksum failed).' };
+    return { ok: true };
+  },
+
+  // ── Name (first / last) ────────────────────────────
+  name(value, label) {
+    const v = (value || '').trim();
+    if (!v) return { ok: false, msg: `${label || 'Name'} is required.` };
+    if (v.length < 2) return { ok: false, msg: `${label || 'Name'} must be at least 2 characters.` };
+    if (v.length > 60) return { ok: false, msg: `${label || 'Name'} must be 60 characters or fewer.` };
+    if (!/^[A-Za-z\u00C0-\u024F'\- ]+$/.test(v))
+      return { ok: false, msg: `${label || 'Name'} may only contain letters, hyphens, apostrophes and spaces.` };
+    return { ok: true };
+  },
+
+  // ── Password ────────────────────────────────────────
+  password(value) {
+    const v = value || '';
+    if (!v) return { ok: false, msg: 'Password is required.' };
+    if (v.length < 8) return { ok: false, msg: 'Password must be at least 8 characters.' };
+    if (!/[A-Z]/.test(v)) return { ok: false, msg: 'Password must contain at least one uppercase letter.' };
+    if (!/[a-z]/.test(v)) return { ok: false, msg: 'Password must contain at least one lowercase letter.' };
+    if (!/[0-9]/.test(v)) return { ok: false, msg: 'Password must contain at least one number.' };
+    return { ok: true };
+  },
+
+  // ── Password confirm ───────────────────────────────
+  passwordConfirm(value, original) {
+    if (!value) return { ok: false, msg: 'Please confirm your password.' };
+    if (value !== original) return { ok: false, msg: 'Passwords do not match.' };
+    return { ok: true };
+  },
+};
+
+/* ─────────────────────────────────────────────────────
+   Inline field feedback helpers
+   Usage: attachFieldValidation('fieldId', EduValidate.email)
+   ───────────────────────────────────────────────────── */
+
+function _getOrCreateHint(input) {
+  let hint = input.parentElement.querySelector('.field-hint');
+  if (!hint) {
+    hint = document.createElement('div');
+    hint.className = 'field-hint';
+    hint.style.cssText = 'font-size:12px;margin-top:4px;min-height:16px;transition:color .2s';
+    input.parentElement.appendChild(hint);
+  }
+  return hint;
+}
+
+function _setFieldState(input, ok, msg) {
+  const hint = _getOrCreateHint(input);
+  if (ok === null) {
+    // neutral / untouched
+    input.style.borderColor = '';
+    hint.textContent = '';
+    return;
+  }
+  if (ok) {
+    input.style.borderColor = '#22c55e';
+    hint.style.color = '#16a34a';
+    hint.textContent = '\u2713 Looks good';
+  } else {
+    input.style.borderColor = '#ef4444';
+    hint.style.color = '#dc2626';
+    hint.textContent = msg || '';
+  }
+}
+
+/**
+ * Attach real-time validation to a single input.
+ * @param {string} id       - element id
+ * @param {function} rule   - EduValidate.xxx function
+ * @param {...any} extraArgs - extra arguments forwarded to the rule after the value
+ */
+function attachFieldValidation(id, rule, ...extraArgs) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const run = () => {
+    const res = rule(el.value, ...extraArgs);
+    _setFieldState(el, res.ok, res.msg);
+  };
+  el.addEventListener('blur', run);
+  el.addEventListener('input', () => {
+    // Only show green/errors after the first blur, not while typing fresh
+    if (el.dataset.touched) run();
+  });
+  el.addEventListener('blur', () => { el.dataset.touched = '1'; }, { once: true });
+}
+
+/**
+ * Validate all fields at once and mark them.
+ * Returns true if all pass.
+ * @param {Array<{id, rule, args?, optional?}>} fields
+ */
+function validateForm(fields) {
+  let allOk = true;
+  for (const f of fields) {
+    const el = document.getElementById(f.id);
+    if (!el) continue;
+    // Skip optional fields that are empty
+    if (f.optional && !(el.value || '').trim()) {
+      _setFieldState(el, null, '');
+      continue;
+    }
+    const args = f.args || [];
+    const res = f.rule(el.value, ...args);
+    _setFieldState(el, res.ok, res.msg);
+    if (!res.ok) allOk = false;
+  }
+  return allOk;
+}
+
 function registerUser(firstName, lastName, email, password, phone, idNumber) {
+  // ── Duplicate email check only — all field validation is done by the form ──
   const users = getUsers();
   if (users.find(u => u.email.toLowerCase() === email.toLowerCase()))
-    return { success:false, message:'An account with this email already exists.' };
-  if (password.length < 8)
-    return { success:false, message:'Password must be at least 8 characters.' };
+    return { success:false, errorCode:'EMAIL_EXISTS', message:'An account with this email already exists. Please sign in instead.' };
   const newUser = {
     id: `user-${Date.now()}`,
     name: `${firstName} ${lastName}`,
@@ -556,9 +771,9 @@ function validateSAIdDOB(idNumber, dateOfBirth) {
    5. Paste all three values below and set EMAILJS_CONFIGURED = true
    ═══════════════════════════════════════════════════ */
 const EMAILJS_CONFIG = {
-  SERVICE_ID:  'service_service_t0ofow9',
-  TEMPLATE_ID: 'template_qhuhhxz',
-  PUBLIC_KEY:  'OEaUhfQefKiKSgys',
+  SERVICE_ID:  'service_5svzlkh',
+  TEMPLATE_ID: 'template_mhojj57',
+  PUBLIC_KEY:  'DXOTxCkWl4jVpqZe1',
 };
 const EMAILJS_CONFIGURED = true; // ← set true once credentials are filled in
 

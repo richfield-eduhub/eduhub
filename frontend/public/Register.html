@@ -1,98 +1,490 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Create Account — EduHub</title>
   <link rel="stylesheet" href="../shared.css"/>
   <style>
-    body{background:var(--rf-offwhite)}
-    .auth-wrap{min-height:100vh;display:flex}
-    .auth-left{flex:1;background:linear-gradient(135deg,var(--rf-navy) 0%,var(--rf-blue) 100%);display:flex;flex-direction:column;justify-content:center;padding:60px 48px;color:white;position:relative;overflow:hidden}
-    .auth-left::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;border-radius:50%;background:rgba(245,166,35,.1)}
-    .auth-left::after{content:'';position:absolute;bottom:-80px;left:-40px;width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,.04)}
-    .auth-inner{position:relative;z-index:1}
-    .auth-right{width:520px;display:flex;flex-direction:column;justify-content:center;padding:48px;background:white;overflow-y:auto}
-    @media(max-width:768px){.auth-left{display:none}.auth-right{width:100%}}
+    body { background: var(--rf-offwhite); }
+    .auth-wrap { min-height: 100vh; display: flex; }
+    .auth-left {
+      flex: 1;
+      background: linear-gradient(135deg, var(--rf-navy) 0%, var(--rf-blue) 100%);
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 60px 48px; color: white; position: relative; overflow: hidden;
+    }
+    .auth-left::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: rgba(245,166,35,.1);
+    }
+    .auth-left::after {
+      content: ''; position: absolute; bottom: -80px; left: -40px;
+      width: 360px; height: 360px; border-radius: 50%;
+      background: rgba(255,255,255,.04);
+    }
+    .auth-inner { position: relative; z-index: 1; }
+    .auth-right {
+      width: 520px; display: flex; flex-direction: column;
+      justify-content: center; padding: 48px; background: white; overflow-y: auto;
+    }
+    @media(max-width:768px) { .auth-left { display: none; } .auth-right { width: 100%; } }
+
+    /* Validation field styles */
+    .fgroup { display: flex; flex-direction: column; margin-bottom: 2px; }
+    .fhint  { font-size: 12px; margin-top: 3px; min-height: 16px; }
+    .fhint.ok  { color: #16a34a; }
+    .fhint.err { color: #dc2626; }
+    input.ok  { border-color: #22c55e !important; }
+    input.err { border-color: #ef4444 !important; }
+
+    .banner {
+      padding: 12px 16px; border-radius: 8px; margin-bottom: 14px;
+      font-size: 14px; font-weight: 500;
+    }
+    .banner.err { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+    .banner.dup {
+      background: #fef2f2; border: 1px solid #fca5a5;
+      display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px;
+    }
   </style>
 </head>
 <body>
 <div class="auth-wrap">
+
+  <!-- LEFT PANEL -->
   <div class="auth-left">
     <div class="auth-inner">
-      <div style="font-family:var(--font-display);font-size:14px;letter-spacing:4px;opacity:.6;margin-bottom:32px">EDUHUB GRADUATE INSTITUTE</div>
-      <h1 style="font-family:var(--font-display);font-size:48px;letter-spacing:2px;line-height:1;margin-bottom:20px">JOIN<br><span style="color:var(--rf-gold)">EDUHUB.</span></h1>
-      <p style="font-size:16px;opacity:.75;line-height:1.7;max-width:320px">Create your account to start your application and track your academic journey.</p>
+      <div style="font-family:var(--font-display);font-size:14px;letter-spacing:4px;opacity:.6;margin-bottom:32px">
+        EDUHUB GRADUATE INSTITUTE
+      </div>
+      <h1 style="font-family:var(--font-display);font-size:48px;letter-spacing:2px;line-height:1;margin-bottom:20px">
+        JOIN<br><span style="color:var(--rf-gold)">EDUHUB.</span>
+      </h1>
+      <p style="font-size:16px;opacity:.75;line-height:1.7;max-width:320px">
+        Create your account to start your application and track your academic journey.
+      </p>
       <div style="margin-top:40px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:18px">
         <div style="font-size:12px;opacity:.6;margin-bottom:10px;letter-spacing:1px">AFTER REGISTERING</div>
         <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;opacity:.85">
-          <div>📝 Submit your application online</div>
-          <div>✅ Get approved by admissions</div>
-          <div>📚 Receive your module allocation</div>
-          <div>🎓 Begin your studies</div>
+          <div>&#x1F4DD; Submit your application online</div>
+          <div>&#x2705; Get approved by admissions</div>
+          <div>&#x1F4DA; Receive your module allocation</div>
+          <div>&#x1F393; Begin your studies</div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- RIGHT PANEL -->
   <div class="auth-right">
-    <div style="margin-bottom:32px">
+    <div style="margin-bottom:28px">
       <h2 style="font-family:var(--font-display);font-size:28px;letter-spacing:1px;margin-bottom:6px">CREATE ACCOUNT</h2>
       <p style="color:var(--rf-gray);font-size:14px">Fill in your details to get started</p>
     </div>
-    <div id="alert-box"></div>
-    <div style="display:flex;flex-direction:column;gap:16px">
+
+    <!-- Banner for top-level messages -->
+    <div id="banner"></div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+      <!-- First + Last name row -->
       <div class="form-row">
-        <div class="form-group"><label class="form-label">First Name <span class="required">*</span></label><input id="firstName" class="form-input" placeholder="John"/></div>
-        <div class="form-group"><label class="form-label">Last Name <span class="required">*</span></label><input id="lastName" class="form-input" placeholder="Doe"/></div>
+        <div class="fgroup form-group">
+          <label class="form-label">First Name <span class="required">*</span></label>
+          <input id="firstName" class="form-input" placeholder="John" autocomplete="given-name"/>
+          <div id="hint-firstName" class="fhint"></div>
+        </div>
+        <div class="fgroup form-group">
+          <label class="form-label">Last Name <span class="required">*</span></label>
+          <input id="lastName" class="form-input" placeholder="Doe" autocomplete="family-name"/>
+          <div id="hint-lastName" class="fhint"></div>
+        </div>
       </div>
-      <div class="form-group"><label class="form-label">Email Address <span class="required">*</span></label><input type="email" id="email" class="form-input" placeholder="you@example.com"/></div>
-      <div class="form-group"><label class="form-label">Phone Number</label><input type="tel" id="phone" class="form-input" placeholder="+27 XX XXX XXXX"/></div>
-      <div class="form-group"><label class="form-label">SA ID Number</label><input id="idNumber" class="form-input" placeholder="Optional — can be added later" maxlength="13"/></div>
+
+      <!-- Email -->
+      <div class="fgroup">
+        <label class="form-label">Email Address <span class="required">*</span></label>
+        <input type="email" id="email" class="form-input" placeholder="you@example.com" autocomplete="email"/>
+        <div id="hint-email" class="fhint"></div>
+      </div>
+
+      <!-- Phone -->
+      <div class="fgroup">
+        <label class="form-label">
+          Phone Number
+          <small style="font-weight:400;color:var(--rf-gray)">(SA format, optional)</small>
+        </label>
+        <input type="tel" id="phone" class="form-input"
+               placeholder="071 234 5678  or  +27 71 234 5678" autocomplete="tel"/>
+        <div id="hint-phone" class="fhint"></div>
+      </div>
+
+      <!-- SA ID -->
+      <div class="fgroup">
+        <label class="form-label">
+          SA ID Number
+          <small style="font-weight:400;color:var(--rf-gray)">(optional)</small>
+        </label>
+        <input id="idNumber" class="form-input"
+               placeholder="13-digit SA ID — can be added later"
+               maxlength="13" inputmode="numeric"/>
+        <div id="hint-idNumber" class="fhint"></div>
+      </div>
+
+      <!-- Password row -->
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Password <span class="required">*</span></label><input type="password" id="password" class="form-input" placeholder="Min 8 characters"/></div>
-        <div class="form-group"><label class="form-label">Confirm Password <span class="required">*</span></label><input type="password" id="confirm" class="form-input" placeholder="Repeat password"/></div>
+        <div class="fgroup form-group">
+          <label class="form-label">Password <span class="required">*</span></label>
+          <input type="password" id="password" class="form-input"
+                 placeholder="Minimum 8 characters" autocomplete="new-password"/>
+          <div id="hint-password" class="fhint"></div>
+        </div>
+        <div class="fgroup form-group">
+          <label class="form-label">Confirm Password <span class="required">*</span></label>
+          <input type="password" id="confirm" class="form-input"
+                 placeholder="Repeat your password" autocomplete="new-password"/>
+          <div id="hint-confirm" class="fhint"></div>
+        </div>
       </div>
+
       <div style="background:var(--rf-offwhite);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--rf-gray)">
-        By creating an account you agree to EduHub's <strong style="color:var(--rf-blue)">Terms &amp; Conditions</strong> and <strong style="color:var(--rf-blue)">Privacy Policy</strong>.
+        By creating an account you agree to EduHub's
+        <strong style="color:var(--rf-blue)">Terms &amp; Conditions</strong> and
+        <strong style="color:var(--rf-blue)">Privacy Policy</strong>.
       </div>
-      <button id="reg-btn" class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="handleRegister()">Create Account →</button>
+
+      <button id="reg-btn" class="btn btn-primary btn-lg"
+              style="width:100%;justify-content:center;margin-top:4px"
+              onclick="handleRegister()">
+        Create Account &#8594;
+      </button>
     </div>
+
     <div style="text-align:center;margin-top:24px;padding-top:20px;border-top:1px solid var(--rf-border)">
-      <p style="font-size:14px;color:var(--rf-gray)">Already have an account? <a href="Login.html" style="color:var(--rf-blue);font-weight:600">Sign in →</a></p>
+      <p style="font-size:14px;color:var(--rf-gray)">
+        Already have an account?
+        <a href="../public/Login.html" style="color:var(--rf-blue);font-weight:600">Sign in &#8594;</a>
+      </p>
     </div>
-  </div>
-</div>
-<script src="../shared.js"></script>
+  </div><!-- /auth-right -->
+</div><!-- /auth-wrap -->
+
+<script src="../shared-local.js"></script>
 <script>
-// Already logged in → redirect
-const existing = getCurrentUser();
-if (existing) window.location.href = rootPath(existing.role==='admin'?'admin/Dashboard.html':existing.role==='lecturer'?'lecturer/Dashboard.html':'student/Dashboard.html');
+/* =============================================================
+   ALL VALIDATION LOGIC IS SELF-CONTAINED IN THIS SCRIPT BLOCK.
+   It does NOT depend on any external helper from shared-local.js
+   for field validation or duplicate-email checking.
+   ============================================================= */
 
+// ── Redirect if already logged in ────────────────────────────
+try {
+  var _cu = getCurrentUser();
+  if (_cu) {
+    var _dest = _cu.role === 'admin'    ? 'admin/Dashboard.html'
+              : _cu.role === 'lecturer' ? 'lecturer/Dashboard.html'
+              :                           'student/Dashboard.html';
+    window.location.href = rootPath(_dest);
+  }
+} catch(e) { /* getCurrentUser not ready yet — ignore */ }
+
+/* ── VALIDATION RULES ────────────────────────────────────────
+   Each rule receives the raw field value (string).
+   Returns null if VALID, or an error string if INVALID.
+   ─────────────────────────────────────────────────────────── */
+var RULES = {
+
+  firstName: function(v) {
+    v = String(v || '').trim();
+    if (v.length === 0) return 'First name is required.';
+    if (v.length < 2)   return 'First name must be at least 2 characters.';
+    if (!/^[A-Za-z\u00C0-\u024F'\- ]+$/.test(v))
+      return 'First name may only contain letters, hyphens and apostrophes.';
+    return null;
+  },
+
+  lastName: function(v) {
+    v = String(v || '').trim();
+    if (v.length === 0) return 'Last name is required.';
+    if (v.length < 2)   return 'Last name must be at least 2 characters.';
+    if (!/^[A-Za-z\u00C0-\u024F'\- ]+$/.test(v))
+      return 'Last name may only contain letters, hyphens and apostrophes.';
+    return null;
+  },
+
+  email: function(v) {
+    v = String(v || '').trim();
+    if (v.length === 0)    return 'Email address is required.';
+    if (v.indexOf('@') < 0) return 'Email must contain an @ symbol — e.g. you@example.com';
+    var parts = v.split('@');
+    if (parts[0].length === 0) return 'Enter the part before the @ symbol.';
+    if (!parts[1] || parts[1].indexOf('.') < 0)
+      return 'Enter a valid domain after @ — e.g. gmail.com or outlook.com';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v))
+      return 'Enter a valid email address — e.g. you@example.com';
+    return null;
+  },
+
+  phone: function(v) {
+    v = String(v || '').trim();
+    if (v.length === 0) return null;  // optional field
+    // Strip spaces, dashes, parentheses, dots
+    var d = v.replace(/[\s\-().]/g, '');
+    // Strip leading +
+    var dStripped = d.replace(/^\+/, '');
+    // SA local: 0[6-8] followed by 8 digits = 10 digits total
+    var localOk = /^0[6-8][0-9]{8}$/.test(dStripped);
+    // SA international: 27[6-8] followed by 8 digits = 11 digits total
+    var intlOk  = /^27[6-8][0-9]{8}$/.test(dStripped);
+    if (!localOk && !intlOk) {
+      return 'Enter a valid South African mobile number — e.g. 071 234 5678 or +27 71 234 5678. '
+           + 'Landlines and numbers that are too short are not accepted.';
+    }
+    return null;
+  },
+
+  idNumber: function(v) {
+    v = String(v || '').trim();
+    if (v.length === 0) return null;  // optional field
+    if (!/^[0-9]{13}$/.test(v)) return 'SA ID number must be exactly 13 digits.';
+    var mm = parseInt(v.slice(2, 4), 10);
+    var dd = parseInt(v.slice(4, 6), 10);
+    if (mm < 1 || mm > 12) return 'SA ID number contains an invalid month.';
+    if (dd < 1 || dd > 31) return 'SA ID number contains an invalid day.';
+    // Luhn checksum
+    var odd = 0, even = '';
+    for (var i = 0; i < 12; i++) {
+      if (i % 2 === 0) odd += parseInt(v[i], 10);
+      else even += v[i];
+    }
+    var evenSum = String(parseInt(even, 10) * 2)
+                    .split('').reduce(function(a, c) { return a + parseInt(c, 10); }, 0);
+    var check = (10 - ((odd + evenSum) % 10)) % 10;
+    if (check !== parseInt(v[12], 10))
+      return 'SA ID number is invalid — please double-check the number.';
+    return null;
+  },
+
+  password: function(v) {
+    v = String(v || '');
+    if (v.length === 0) return 'Password is required.';
+    if (v.length < 8)   return 'Password must be at least 8 characters long.';
+    return null;
+  },
+
+  confirm: function(v, pwd) {
+    v = String(v || '');
+    if (v.length === 0) return 'Please confirm your password.';
+    if (v !== pwd)      return 'Passwords do not match — please re-enter.';
+    return null;
+  }
+};
+
+/* ── FIELD STATE HELPER ──────────────────────────────────────
+   Sets the border colour on the input and shows the hint text.
+   state: 'ok' | 'err' | 'reset'
+   ─────────────────────────────────────────────────────────── */
+function setField(id, state, msg) {
+  var input = document.getElementById(id);
+  var hint  = document.getElementById('hint-' + id);
+  if (!input) return;
+
+  // Remove all state classes
+  input.classList.remove('ok', 'err');
+  if (hint) {
+    hint.textContent = '';
+    hint.className   = 'fhint';
+  }
+
+  if (state === 'ok') {
+    input.classList.add('ok');
+    if (hint) {
+      hint.textContent = '\u2713 Looks good';
+      hint.className   = 'fhint ok';
+    }
+  } else if (state === 'err') {
+    input.classList.add('err');
+    if (hint) {
+      hint.textContent = msg || '';
+      hint.className   = 'fhint err';
+    }
+  }
+  // 'reset' → no class, no text (already cleared above)
+}
+
+/* ── BANNER HELPER ───────────────────────────────────────────*/
+function showBanner(html) {
+  document.getElementById('banner').innerHTML = html;
+  document.getElementById('banner').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function clearBanner() {
+  document.getElementById('banner').innerHTML = '';
+}
+
+/* ── WIRE REAL-TIME BLUR VALIDATION ─────────────────────────
+   Each field validates itself when the user tabs out (blur).
+   After first blur, also validates on every keystroke (input).
+   Script runs AFTER the elements exist, so no DOMContentLoaded needed.
+   ─────────────────────────────────────────────────────────── */
+function wireBlur(id, ruleFn) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('blur', function() {
+    this.dataset.touched = '1';
+    var err = ruleFn(this.value);
+    setField(id, err === null ? 'ok' : 'err', err);
+  });
+  el.addEventListener('input', function() {
+    if (!this.dataset.touched) return;
+    var err = ruleFn(this.value);
+    setField(id, err === null ? 'ok' : 'err', err);
+  });
+}
+
+wireBlur('firstName', RULES.firstName);
+wireBlur('lastName',  RULES.lastName);
+wireBlur('email',     RULES.email);
+wireBlur('phone',     RULES.phone);
+wireBlur('idNumber',  RULES.idNumber);
+wireBlur('password',  RULES.password);
+
+// Confirm: depends on password field's current value
+(function() {
+  var c = document.getElementById('confirm');
+  var p = document.getElementById('password');
+  if (!c || !p) return;
+  function chk() {
+    var err = RULES.confirm(c.value, p.value);
+    setField('confirm', err === null ? 'ok' : 'err', err);
+  }
+  c.addEventListener('blur',  function() { this.dataset.touched = '1'; chk(); });
+  c.addEventListener('input', function() { if (this.dataset.touched) chk(); });
+  p.addEventListener('input', function() { if (c.dataset.touched) chk(); });
+})();
+
+/* ── SUBMIT HANDLER ──────────────────────────────────────────*/
 function handleRegister() {
-  clearAlert('alert-box');
-  const firstName = document.getElementById('firstName').value.trim();
-  const lastName  = document.getElementById('lastName').value.trim();
-  const email     = document.getElementById('email').value.trim();
-  const phone     = document.getElementById('phone').value.trim();
-  const idNumber  = document.getElementById('idNumber').value.trim();
-  const password  = document.getElementById('password').value;
-  const confirm   = document.getElementById('confirm').value;
+  clearBanner();
 
-  if (!firstName || !lastName || !email || !password)
-    return showAlert('alert-box', 'First name, last name, email and password are required.', 'error');
-  if (password !== confirm)
-    return showAlert('alert-box', 'Passwords do not match.', 'error');
+  // Read values
+  var firstName = document.getElementById('firstName').value.trim();
+  var lastName  = document.getElementById('lastName').value.trim();
+  var email     = document.getElementById('email').value.trim();
+  var phone     = document.getElementById('phone').value.trim();
+  var idNum     = document.getElementById('idNumber').value.trim();
+  var password  = document.getElementById('password').value;
+  var confirm   = document.getElementById('confirm').value;
 
-  setLoading('reg-btn', true, 'Creating account...');
-  const result = registerUser(firstName, lastName, email, password, phone, idNumber);
-  if (!result.success) {
-    showAlert('alert-box', result.message, 'error');
-    setLoading('reg-btn', false, 'Create Account →');
+  // Run every rule right now and collect errors
+  var errs = {
+    firstName : RULES.firstName(firstName),
+    lastName  : RULES.lastName(lastName),
+    email     : RULES.email(email),
+    phone     : RULES.phone(phone),
+    idNumber  : RULES.idNumber(idNum),
+    password  : RULES.password(password),
+    confirm   : RULES.confirm(confirm, password),
+  };
+
+  // Update every field's visual state
+  var ids = Object.keys(errs);
+  for (var i = 0; i < ids.length; i++) {
+    var fid = ids[i];
+    var el  = document.getElementById(fid);
+    if (el) el.dataset.touched = '1';  // force hints to show
+    setField(fid, errs[fid] === null ? 'ok' : 'err', errs[fid]);
+  }
+
+  // If any field failed — stop
+  var failed = ids.filter(function(k) { return errs[k] !== null; });
+  if (failed.length > 0) {
+    showBanner(
+      '<div class="banner err">'
+      + '&#9888;&nbsp; Please fix the <strong>' + failed.length + ' highlighted field'
+      + (failed.length > 1 ? 's' : '') + '</strong> before continuing.</div>'
+    );
+    // Scroll to first red field
+    var firstRed = document.querySelector('input.err');
+    if (firstRed) firstRed.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;  // <-- hard stop
+  }
+
+  // ── Duplicate email check (read directly from localStorage) ──
+  var usersRaw = null;
+  try { usersRaw = localStorage.getItem('users'); } catch(e) {}
+  var users = [];
+  try { users = usersRaw ? JSON.parse(usersRaw) : []; } catch(e) { users = []; }
+
+  // Also include SEED_USERS (admin + lecturer) in the check
+  var seedEmails = ['admin@eduhub.ac.za', 'smokoena@eduhub.ac.za'];
+  var emailLower = email.toLowerCase();
+
+  var isDuplicate = seedEmails.indexOf(emailLower) >= 0
+    || users.some(function(u) {
+         return u && u.email && u.email.toLowerCase() === emailLower;
+       });
+
+  if (isDuplicate) {
+    setField('email', 'err', 'This email address is already registered.');
+    showBanner(
+      '<div class="banner dup">'
+      + '<span style="font-size:22px;flex-shrink:0">&#9888;</span>'
+      + '<div>'
+      + '<strong style="display:block;margin-bottom:4px">Account already exists</strong>'
+      + '<p style="margin:0 0 10px;font-size:14px;color:#6b7280">'
+      +   'An account with <strong>' + email + '</strong> is already registered.'
+      + '</p>'
+      + '<a href="../public/Login.html" '
+      +    'style="display:inline-block;background:var(--rf-blue);color:white;'
+      +           'padding:8px 18px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none">'
+      +   'Sign in to your account &#8594;'
+      + '</a>'
+      + '&nbsp;&nbsp;'
+      + '<a href="../public/ForgotPassword.html" '
+      +    'style="font-size:13px;color:var(--rf-blue);text-decoration:underline">'
+      +   'Forgot password?'
+      + '</a>'
+      + '</div></div>'
+    );
+    return;  // <-- hard stop
+  }
+
+  // ── Disable button to prevent double-submit ──────────────────
+  var btn = document.getElementById('reg-btn');
+  btn.disabled = true;
+  btn.textContent = 'Creating account\u2026';
+
+  // ── Create the account via shared-local.js registerUser ──────
+  var result;
+  try {
+    result = registerUser(firstName, lastName, email, password, phone, idNum);
+  } catch(e) {
+    result = { success: false, message: 'Unexpected error: ' + e.message };
+  }
+
+  if (!result || !result.success) {
+    btn.disabled = false;
+    btn.innerHTML = 'Create Account &#8594;';
+
+    var msg = (result && result.message) ? result.message : 'Registration failed. Please try again.';
+
+    // Catch duplicate that slipped past our check
+    if (result && result.errorCode === 'EMAIL_EXISTS') {
+      setField('email', 'err', 'This email address is already registered.');
+      msg = 'An account with this email already exists. Please sign in instead.';
+    }
+    showBanner('<div class="banner err">&#9888;&nbsp; ' + msg + '</div>');
     return;
   }
-  // Auto login after registration
-  login(email, password);
-  showToast('Account created! Redirecting...', 'success');
-  setTimeout(() => window.location.href = rootPath('student/Dashboard.html'), 1000);
+
+  // ── Success ──────────────────────────────────────────────────
+  try { login(email, password); } catch(e) {}
+  try { showToast('Account created! Redirecting\u2026', 'success'); } catch(e) {}
+  setTimeout(function() {
+    window.location.href = rootPath('student/Dashboard.html');
+  }, 1000);
 }
 </script>
 </body>
