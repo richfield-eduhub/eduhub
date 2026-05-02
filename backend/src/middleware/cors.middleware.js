@@ -18,7 +18,7 @@ const corsOptions = {
 
     const allowedOrigins = process.env.ALLOWED_ORIGINS
       ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-      : ['http://localhost:3000', 'http://localhost:5173'];
+      : ['http://localhost:3000', 'http://localhost:5173', 'https://edu-hub.duckdns.org'];
 
     console.log('[CORS] Checking origin:', origin);
     console.log('[CORS] Allowed origins:', allowedOrigins);
