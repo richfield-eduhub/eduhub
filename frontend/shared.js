@@ -156,8 +156,12 @@ const PAYER_RELATIONSHIPS = [
   "Self",
   "Parent",
   "Guardian",
+  "Sibling",
+  "Spouse",
+  "Next of Kin",
   "Sponsor",
   "Employer",
+  "Other",
 ];
 
 // Dynamic reference data (fetched from backend - changes frequently)
@@ -270,6 +274,7 @@ function normalizeQualification(q) {
     q.duration_years ?? q.durationYears ?? q.duration ?? q.duration_in_years;
   const fee = Number(q.total_fee ?? q.totalFee ?? q.fee ?? 0);
   return {
+    id: q.id,
     code: q.code,
     name: q.name,
     faculty: q.faculty,
@@ -519,6 +524,41 @@ async function getApplications() {
 }
 async function submitApplication(appData) {
   return api("POST", "/applications", appData);
+}
+async function startApplicationDraft(payload) {
+  return api("POST", "/applications/drafts/start", payload);
+}
+async function checkApplicationIdentityStatus(payload) {
+  const params = new URLSearchParams();
+  if (payload?.nationality) params.set("nationality", payload.nationality);
+  if (payload?.id_number) params.set("id_number", payload.id_number);
+  if (payload?.passport_number) params.set("passport_number", payload.passport_number);
+  const qs = params.toString();
+  return api("GET", `/applications/identity/status${qs ? `?${qs}` : ""}`);
+}
+async function getApplicationDraft(draftId) {
+  return api("GET", `/applications/drafts/${draftId}`);
+}
+async function updateApplicationDraft(draftId, payload) {
+  return api("PUT", `/applications/drafts/${draftId}`, payload);
+}
+async function createApplicationPaymentIntent(draftId) {
+  return api("POST", `/applications/drafts/${draftId}/payment-intent`);
+}
+async function confirmApplicationPayment(draftId, payload) {
+  return api("POST", `/applications/drafts/${draftId}/payment-confirm`, payload);
+}
+async function submitApplicationDraft(draftId) {
+  return api("POST", `/applications/drafts/${draftId}/submit`);
+}
+async function evaluateApsEligibility(payload) {
+  return api("POST", "/applications/eligibility/aps", payload);
+}
+async function getCampusesByQualification(qualificationId) {
+  return api("GET", `/campuses/by-qualification/${qualificationId}`);
+}
+async function getAllCampuses() {
+  return api("GET", "/campuses?active_only=true&include_online=true");
 }
 async function getApplication(id) {
   return api("GET", `/applications/${id}`);
