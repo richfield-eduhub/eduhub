@@ -3,8 +3,10 @@
  */
 
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const sequelize = require('../config/database');
 const { generateStudentNumber, formatNumber } = require('../studentNumber');
+const emailService = require('./email.service');
 
 const { APPLICATION_STATUS, PAGINATION } = require('../utils/constants');
 
@@ -30,6 +32,10 @@ function normalizeEmail(email) {
 }
 
 class ApplicationStudentNumberStore {
+  constructor(transaction = null) {
+    this.transaction = transaction;
+  }
+
   async has(number) {
     const [row] = await sequelize.query(
       `SELECT 1 AS ok
@@ -39,6 +45,7 @@ class ApplicationStudentNumberStore {
       {
         replacements: [String(number)],
         type: sequelize.QueryTypes.SELECT,
+        transaction: this.transaction,
       }
     );
     return Boolean(row);
@@ -49,6 +56,59 @@ class ApplicationStudentNumberStore {
       throw new Error('Student number already exists');
     }
   }
+}
+
+function generateTemporaryPassword() {
+  const random = crypto.randomBytes(4).toString('hex').toUpperCase();
+  return `EduHub@${random}`;
+}
+
+function normalizeDateForUserDetails(value) {
+  if (!value) return '2000-01-01';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '2000-01-01';
+  return date.toISOString().slice(0, 10);
+}
+
+function sanitizePhone(value) {
+  const phone = String(value || '').trim();
+  return phone || '0000000000';
+}
+
+function decideAdmissionsEmailOutcome(draft) {
+  const aps = draft?.aps_result || null;
+  const desiredQualificationId = draft?.qualification_id;
+  const desiredQualificationName = draft?.resolved_qualification_name || draft?.qualification_name || null;
+
+  const recommended = Array.isArray(aps?.recommended) ? aps.recommended : [];
+  const possible = Array.isArray(aps?.possibly_eligible) ? aps.possibly_eligible : [];
+  const notEligible = Array.isArray(aps?.not_eligible) ? aps.not_eligible : [];
+
+  const desiredRecommended = recommended.find((q) => String(q.qualification_id) === String(desiredQualificationId));
+  if (desiredRecommended) {
+    return {
+      decision: 'conditionally_accepted',
+      suggestion: null,
+      desiredQualificationName,
+    };
+  }
+
+  const desiredPossible = possible.find((q) => String(q.qualification_id) === String(desiredQualificationId));
+  const desiredNotEligible = notEligible.find((q) => String(q.qualification_id) === String(desiredQualificationId));
+  if (desiredPossible || desiredNotEligible) {
+    const suggestion = recommended[0] || possible[0] || null;
+    return {
+      decision: suggestion ? 'suggested_alternative' : 'rejected',
+      suggestion: suggestion ? suggestion.qualification_name : null,
+      desiredQualificationName,
+    };
+  }
+
+  return {
+    decision: 'conditionally_accepted',
+    suggestion: null,
+    desiredQualificationName,
+  };
 }
 
 
@@ -317,6 +377,121 @@ class ApplicationService {
     }
 
     return { campusId: null, campuses, campus_mode: 'multiple' };
+  }
+
+  async ensureUserAccountForSubmittedDraft(draft, studentNumber, temporaryPassword, transaction) {
+    const applicantEmail = normalizeEmail(draft.email);
+    if (!applicantEmail) {
+      throw { statusCode: 400, message: 'Applicant email is required before submission' };
+    }
+
+    const [existingUser] = await sequelize.query(
+      `SELECT id, role
+       FROM users
+       WHERE LOWER(TRIM(email)) = ?
+       LIMIT 1`,
+      {
+        replacements: [applicantEmail],
+        type: sequelize.QueryTypes.SELECT,
+        transaction,
+      }
+    );
+
+    const passwordHash = await bcrypt.hash(temporaryPassword, 12);
+    let userId = existingUser ? existingUser.id : null;
+
+    if (existingUser) {
+      if (existingUser.role !== 'student') {
+        throw {
+          statusCode: 409,
+          message: 'Email already exists on a non-student account. Please contact support.',
+        };
+      }
+      await sequelize.query(
+        `UPDATE users
+         SET password_hash = ?,
+             member_number = ?,
+             account_status = 'active',
+             is_verified = true,
+             is_default_password = true,
+             require_password_change = true,
+             last_password_change = NOW(),
+             updated_at = NOW()
+         WHERE id = ?`,
+        {
+          replacements: [passwordHash, studentNumber, userId],
+          transaction,
+        }
+      );
+    } else {
+      const [inserted] = await sequelize.query(
+        `INSERT INTO users (
+           email, password_hash, member_number, role, account_status,
+           is_verified, is_default_password, require_password_change, created_at, updated_at
+         ) VALUES (
+           ?, ?, ?, 'student', 'active',
+           true, true, true, NOW(), NOW()
+         )
+         RETURNING id`,
+        {
+          replacements: [applicantEmail, passwordHash, studentNumber],
+          transaction,
+        }
+      );
+      userId = inserted[0].id;
+    }
+
+    await sequelize.query(
+      `INSERT INTO user_details (
+         user_id, first_name, last_name, date_of_birth, gender, nationality,
+         id_number, passport_number, phone, alt_email, street_address, suburb,
+         city, province, postal_code, lifecycle_status, created_at, updated_at
+       ) VALUES (
+         ?, ?, ?, ?, ?, ?,
+         ?, ?, ?, ?, ?, ?,
+         ?, ?, ?, ?, NOW(), NOW()
+       )
+       ON CONFLICT (user_id) DO UPDATE
+       SET first_name = EXCLUDED.first_name,
+           last_name = EXCLUDED.last_name,
+           date_of_birth = EXCLUDED.date_of_birth,
+           gender = EXCLUDED.gender,
+           nationality = EXCLUDED.nationality,
+           id_number = EXCLUDED.id_number,
+           passport_number = EXCLUDED.passport_number,
+           phone = EXCLUDED.phone,
+           alt_email = EXCLUDED.alt_email,
+           street_address = EXCLUDED.street_address,
+           suburb = EXCLUDED.suburb,
+           city = EXCLUDED.city,
+           province = EXCLUDED.province,
+           postal_code = EXCLUDED.postal_code,
+           lifecycle_status = EXCLUDED.lifecycle_status,
+           updated_at = NOW()`,
+      {
+        replacements: [
+          userId,
+          String(draft.first_name || '').trim() || 'Student',
+          String(draft.last_name || '').trim() || 'Applicant',
+          normalizeDateForUserDetails(draft.date_of_birth),
+          draft.gender || null,
+          draft.nationality || 'South African',
+          isSouthAfricanNationality(draft.nationality) ? String(draft.id_number || '').trim() || null : null,
+          isSouthAfricanNationality(draft.nationality) ? null : String(draft.passport_number || '').trim() || null,
+          sanitizePhone(draft.phone),
+          draft.alt_email ? normalizeEmail(draft.alt_email) : null,
+          draft.street_address || null,
+          draft.suburb || null,
+          draft.city || null,
+          draft.province || null,
+          draft.postal_code || null,
+          'applied',
+        ],
+        transaction,
+      }
+    );
+
+    return { userId };
   }
 
   async findRelatedPartyMatch({ payer_name, payer_phone, payer_email }, transaction) {
@@ -950,64 +1125,72 @@ class ApplicationService {
     }
 
     const generatedReference = draft.reference_number || generateReferenceNumber();
-    const store = new ApplicationStudentNumberStore();
     const submittedAt = new Date();
     const applicationYear =
       draft.created_at && !Number.isNaN(new Date(draft.created_at).getTime())
         ? new Date(draft.created_at).getFullYear()
         : submittedAt.getFullYear();
+    const temporaryPassword = generateTemporaryPassword();
 
     let generatedStudentNumber = draft.student_number || null;
-    if (!generatedStudentNumber) {
-      for (let attempt = 0; attempt < 10; attempt += 1) {
-        const candidate = await generateStudentNumber({
-          year: applicationYear,
-          role: 1,
-          store,
-        });
-        try {
-          await sequelize.query(
-            `UPDATE applications
-             SET status = ?,
-                 reference_number = ?,
-                 student_number = ?,
-                 submitted_at = ?,
-                 tc_version = COALESCE(tc_version, ?),
-                 updated_at = NOW()
-             WHERE id = ?`,
-            {
-              replacements: [
-                APPLICATION_STATUS.APPLIED,
-                generatedReference,
-                candidate,
-                submittedAt,
-                '2026.1',
-                draftId,
-              ],
-            }
-          );
-          generatedStudentNumber = candidate;
-          break;
-        } catch (error) {
-          if (error?.name === 'SequelizeUniqueConstraintError' && attempt < 9) {
-            continue;
+    let linkedUserId = draft.user_id || null;
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const transaction = await sequelize.transaction();
+      try {
+        if (!generatedStudentNumber) {
+          const store = new ApplicationStudentNumberStore(transaction);
+          generatedStudentNumber = await generateStudentNumber({
+            year: applicationYear,
+            role: 1,
+            store,
+          });
+        }
+
+        const account = await this.ensureUserAccountForSubmittedDraft(
+          draft,
+          generatedStudentNumber,
+          temporaryPassword,
+          transaction
+        );
+        linkedUserId = account.userId;
+
+        await sequelize.query(
+          `UPDATE applications
+           SET status = ?,
+               reference_number = ?,
+               student_number = ?,
+               user_id = ?,
+               submitted_at = ?,
+               tc_version = COALESCE(tc_version, ?),
+               updated_at = NOW()
+           WHERE id = ?`,
+          {
+            replacements: [
+              APPLICATION_STATUS.APPLIED,
+              generatedReference,
+              generatedStudentNumber,
+              linkedUserId,
+              submittedAt,
+              '2026.1',
+              draftId,
+            ],
+            transaction,
           }
-          throw error;
+        );
+
+        await transaction.commit();
+        break;
+      } catch (error) {
+        await transaction.rollback();
+        const isUniqueViolation =
+          error?.name === 'SequelizeUniqueConstraintError' || error?.original?.code === '23505';
+        if (!draft.student_number && isUniqueViolation && attempt < 9) {
+          generatedStudentNumber = null;
+          continue;
         }
+        throw error;
       }
-    } else {
-      await sequelize.query(
-        `UPDATE applications
-         SET status = ?,
-             reference_number = ?,
-             submitted_at = ?,
-             tc_version = COALESCE(tc_version, ?),
-             updated_at = NOW()
-         WHERE id = ?`,
-        {
-          replacements: [APPLICATION_STATUS.APPLIED, generatedReference, submittedAt, '2026.1', draftId],
-        }
-      );
     }
 
     if (!generatedStudentNumber) {
@@ -1015,13 +1198,38 @@ class ApplicationService {
     }
 
     const finalRow = await this._loadApplicationWithLabels(draftId);
+    const outcome = decideAdmissionsEmailOutcome(finalRow);
+    let emailSent = false;
+    try {
+      const emailResult = await emailService.sendAdmissionsOutcomeEmail({
+        to: finalRow.email,
+        fullName: `${finalRow.first_name || ''} ${finalRow.last_name || ''}`.trim(),
+        studentNumber: finalRow.student_number ? formatNumber(finalRow.student_number) : null,
+        qualificationName:
+          finalRow.resolved_qualification_name || finalRow.qualification_name || null,
+        admittedFor: finalRow.admission_for,
+        submittedAt: finalRow.submitted_at,
+        loginEmail: finalRow.email,
+        temporaryPassword,
+        decision: outcome.decision,
+        suggestionQualification: outcome.suggestion,
+        rejectionReason: finalRow.rejection_reason || null,
+        nationality: finalRow.nationality,
+      });
+      emailSent = Boolean(emailResult?.sent);
+    } catch (emailError) {
+      console.error('[ApplicationService] Failed to send admissions email:', emailError?.message || emailError);
+    }
+
     return {
       id: finalRow.id,
+      user_id: linkedUserId,
       reference_number: finalRow.reference_number,
       student_number: finalRow.student_number,
       student_number_formatted: finalRow.student_number ? formatNumber(finalRow.student_number) : null,
       status: finalRow.status,
       submitted_at: finalRow.submitted_at,
+      email_sent: emailSent,
     };
   }
 

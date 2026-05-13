@@ -470,6 +470,10 @@
       function hydrateFormFromDraft(draft) {
         if (!draft) return;
         const isPassportIdentity = !!draft.passport_number;
+        const draftIdNumber = draft.id_number || "";
+        const draftDob =
+          draft.date_of_birth ||
+          (!isPassportIdentity ? deriveDobFromSaId(draftIdNumber) : "");
         const draftSubjectEntries = ensureMinimumSubjectRows(
           (Array.isArray(draft.mark_entries) ? draft.mark_entries : []).map(
             (entry) => ({
@@ -484,14 +488,14 @@
         state.identityDocumentType = isPassportIdentity ? "passport" : "id";
         state.identityNumber = isPassportIdentity
           ? draft.passport_number || ""
-          : draft.id_number || "";
+          : draftIdNumber;
         state.form = {
           ...state.form,
           firstName: draft.first_name || "",
           lastName: draft.last_name || "",
-          idNumber: draft.id_number || "",
+          idNumber: draftIdNumber,
           passportNumber: draft.passport_number || "",
-          dateOfBirth: draft.date_of_birth || "",
+          dateOfBirth: draftDob,
           gender: draft.gender || "",
           nationality: draft.nationality || "South African",
           phone: draft.phone || "",
@@ -1266,6 +1270,7 @@
       async function handleIdentityStep() {
         state.identityError = "";
         state.identityStatus = null;
+        state.identityChecked = false;
         const normalized = normalizeIdentityInput(
           state.identityNumber,
           state.identityDocumentType,
@@ -1313,6 +1318,14 @@
           state.identityError = "Enter a valid passport number.";
           render();
           return;
+        }
+
+        const isPassport = state.identityDocumentType === "passport";
+        state.form.idNumber = isPassport ? "" : normalized;
+        state.form.passportNumber = isPassport ? normalized : "";
+        if (!isPassport) {
+          state.form.nationality = "South African";
+          state.form.dateOfBirth = deriveDobFromSaId(normalized) || "";
         }
 
         state.checkingIdentity = true;

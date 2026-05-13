@@ -89,6 +89,7 @@ class AuthService {
     // Get user with password hash
     const users = await sequelize.query(
       `SELECT u.id as user_id, u.email, u.password_hash, u.role, u.account_status,
+              u.is_default_password, u.require_password_change,
               ud.first_name, ud.last_name
        FROM users u
        LEFT JOIN user_details ud ON u.id = ud.user_id
@@ -134,6 +135,7 @@ class AuthService {
         role: user.role,
         first_name: user.first_name,
         last_name: user.last_name,
+        tempPassword: Boolean(user.require_password_change || user.is_default_password),
       },
       ...tokens,
     };
@@ -145,6 +147,7 @@ class AuthService {
   async getProfile(userId) {
     const users = await sequelize.query(
       `SELECT u.id as user_id, u.email, u.role, u.account_status, u.is_verified as email_verified, u.created_at,
+              u.is_default_password, u.require_password_change,
               ud.first_name, ud.last_name, ud.date_of_birth, ud.phone, ud.id_number, ud.nationality, ud.gender
        FROM users u
        LEFT JOIN user_details ud ON u.id = ud.user_id
@@ -161,7 +164,10 @@ class AuthService {
       throw { statusCode: 404, message: 'User not found' };
     }
 
-    return user;
+    return {
+      ...user,
+      tempPassword: Boolean(user.require_password_change || user.is_default_password),
+    };
   }
 
   /**
