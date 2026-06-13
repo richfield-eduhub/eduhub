@@ -634,29 +634,438 @@ async function changeUserStatus(userId, status) {
 
 /* ═══════════════════════════════════════════════════
    LEGACY DASHBOARD ADAPTERS
-   These keep older dashboard screens functional while
-   their API integrations are completed.
+   Local browser persistence used by legacy dashboard
+   screens while API parity is still in progress.
    ═══════════════════════════════════════════════════ */
-function getInboxFor(userId) {
-  return [];
+
+function fmtDateTime(d) {
+  if (!d) return "—";
+  return new Date(d).toLocaleString(APP_CONFIG.LOCALE, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
+
+const LEGACY_STORE_KEYS = {
+  messages: "eduhub.legacy.messages.v1",
+  assignmentSubmissions: "eduhub.legacy.assignmentSubmissions.v1",
+  lecturerAssignments: "eduhub.legacy.lecturerAssignments.v1",
+  events: "eduhub.legacy.events.v1",
+  announcements: "eduhub.legacy.announcements.v1",
+  notifications: "eduhub.legacy.notifications.v1",
+};
+
+function uid(prefix) {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function readJsonArray(key) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeJsonArray(key, items) {
+  localStorage.setItem(key, JSON.stringify(Array.isArray(items) ? items : []));
+}
+
+function getMessages() {
+  return readJsonArray(LEGACY_STORE_KEYS.messages);
+}
+
+function saveMessages(messages) {
+  writeJsonArray(LEGACY_STORE_KEYS.messages, messages);
+}
+
+function getInboxFor(userId) {
+  return getMessages()
+    .filter((m) => m.to === userId)
+    .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+}
+
 function getSentBy(userId) {
-  return [];
+  return getMessages()
+    .filter((m) => m.from === userId)
+    .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+}
+
+function sendMessage(from, to, subject, body) {
+  const all = getMessages();
+  const message = {
+    id: uid("msg"),
+    from,
+    to,
+    subject: String(subject || "").trim(),
+    body: String(body || "").trim(),
+    sentAt: new Date().toISOString(),
+    read: false,
+    replies: [],
+  };
+  all.push(message);
+  saveMessages(all);
+  return message;
+}
+
+function markMessageRead(messageId) {
+  const all = getMessages();
+  const idx = all.findIndex((m) => m.id === messageId);
+  if (idx === -1) return false;
+  all[idx].read = true;
+  saveMessages(all);
+  return true;
+}
+
+function replyMessage(messageId, from, body) {
+  const all = getMessages();
+  const idx = all.findIndex((m) => m.id === messageId);
+  if (idx === -1) return null;
+  if (!Array.isArray(all[idx].replies)) all[idx].replies = [];
+  all[idx].replies.push({
+    id: uid("reply"),
+    from,
+    body: String(body || "").trim(),
+    sentAt: new Date().toISOString(),
+  });
+  all[idx].read = true;
+  saveMessages(all);
+  return all[idx];
+}
+
+function getAssignmentSubmissions() {
+  return readJsonArray(LEGACY_STORE_KEYS.assignmentSubmissions);
+}
+
+function saveAssignmentSubmissions(items) {
+  writeJsonArray(LEGACY_STORE_KEYS.assignmentSubmissions, items);
 }
 
 function getAssignments() {
-  return [];
+  return getAssignmentSubmissions().sort(
+    (a, b) => new Date(b.submittedAt) - new Date(a.submittedAt),
+  );
 }
+
 function getStudentAssignments(studentId) {
-  return [];
+  return getAssignments().filter((a) => a.studentId === studentId);
+}
+
+function submitAssignment(
+  studentId,
+  moduleCode,
+  moduleName,
+  title,
+  content,
+  fileName = null,
+) {
+  const all = getAssignmentSubmissions();
+  const item = {
+    id: uid("asgn"),
+    studentId,
+    moduleCode,
+    moduleName,
+    title: String(title || "").trim(),
+    content: String(content || "").trim(),
+    fileName,
+    submittedAt: new Date().toISOString(),
+    status: "submitted",
+    mark: null,
+    feedback: "",
+    gradedAt: null,
+    gradedBy: null,
+  };
+  all.push(item);
+  saveAssignmentSubmissions(all);
+  return item;
+}
+
+function gradeAssignment(id, mark, feedback, gradedBy) {
+  const all = getAssignmentSubmissions();
+  const idx = all.findIndex((a) => a.id === id);
+  if (idx === -1) return null;
+  all[idx] = {
+    ...all[idx],
+    mark: Number(mark),
+    feedback: String(feedback || "").trim(),
+    gradedBy: gradedBy || "Lecturer",
+    gradedAt: new Date().toISOString(),
+    status: "graded",
+  };
+  saveAssignmentSubmissions(all);
+  return all[idx];
+}
+
+function getLecturerAssignments() {
+  return readJsonArray(LEGACY_STORE_KEYS.lecturerAssignments).sort(
+    (a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt),
+  );
+}
+
+function saveLecturerAssignments(items) {
+  writeJsonArray(LEGACY_STORE_KEYS.lecturerAssignments, items);
+}
+
+function getLecturerAssignmentsForModule(moduleCode) {
+  return getLecturerAssignments().filter((a) => a.moduleCode === moduleCode);
+}
+
+function uploadLecturerAssignment(
+  lecturerId,
+  lecturerName,
+  moduleCode,
+  moduleName,
+  title,
+  description,
+  dueDate = null,
+  fileName = null,
+) {
+  const all = getLecturerAssignments();
+  const item = {
+    id: uid("lec_asgn"),
+    lecturerId,
+    lecturerName,
+    moduleCode,
+    moduleName,
+    title: String(title || "").trim(),
+    description: String(description || "").trim(),
+    dueDate,
+    fileName,
+    uploadedAt: new Date().toISOString(),
+  };
+  all.push(item);
+  saveLecturerAssignments(all);
+  return item;
+}
+
+function deleteLecturerAssignment(id) {
+  const all = getLecturerAssignments().filter((a) => a.id !== id);
+  saveLecturerAssignments(all);
+}
+
+const DEFAULT_LEGACY_EVENTS = [
+  {
+    id: "ev_orientation",
+    title: "Student Orientation",
+    description: "Welcome session for new students.",
+    type: "academic",
+    audience: "all",
+    date: "2026-02-03",
+    time: "09:00",
+  },
+  {
+    id: "ev_s1_exam",
+    title: "Semester 1 Exams Start",
+    description: "Prepare your timetable and venues.",
+    type: "exam",
+    audience: "students",
+    date: "2026-05-25",
+  },
+  {
+    id: "ev_staff_meeting",
+    title: "Faculty Teaching & Learning Forum",
+    description: "Monthly lecturer forum and updates.",
+    type: "academic",
+    audience: "lecturers",
+    date: "2026-08-12",
+    time: "14:00",
+  },
+  {
+    id: "ev_open_day",
+    title: "EduHub Open Day",
+    description: "Prospective students campus showcase.",
+    type: "general",
+    audience: "all",
+    date: "2026-09-05",
+    time: "10:00",
+  },
+];
+
+function getEvents() {
+  const stored = readJsonArray(LEGACY_STORE_KEYS.events);
+  if (stored.length) return stored;
+  writeJsonArray(LEGACY_STORE_KEYS.events, DEFAULT_LEGACY_EVENTS);
+  return [...DEFAULT_LEGACY_EVENTS];
+}
+
+function saveEvents(events) {
+  writeJsonArray(LEGACY_STORE_KEYS.events, events);
+}
+
+function createEvent(payload) {
+  const all = getEvents();
+  const item = {
+    id: uid("ev"),
+    title: String(payload?.title || "").trim(),
+    date: payload?.date || new Date().toISOString().slice(0, 10),
+    time: payload?.time || "",
+    type: payload?.type || "general",
+    audience: payload?.audience || "all",
+    description: String(payload?.description || "").trim(),
+    createdBy: payload?.createdBy || null,
+    createdAt: new Date().toISOString(),
+  };
+  all.push(item);
+  saveEvents(all);
+  return item;
+}
+
+function deleteEvent(id) {
+  saveEvents(getEvents().filter((e) => e.id !== id));
 }
 
 function getUpcomingEvents(role) {
-  return [];
+  const allowedAudience = {
+    student: "students",
+    lecturer: "lecturers",
+    admin: "admins",
+  }[role];
+  const now = new Date();
+  return getEvents()
+    .filter((e) => e.audience === "all" || e.audience === allowedAudience)
+    .filter((e) => {
+      const eventDate = new Date(`${e.date}T23:59:59`);
+      return Number.isFinite(eventDate.getTime()) && eventDate >= now;
+    })
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
+function getAnnouncements() {
+  return readJsonArray(LEGACY_STORE_KEYS.announcements).sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  );
+}
+
+function saveAnnouncements(items) {
+  writeJsonArray(LEGACY_STORE_KEYS.announcements, items);
+}
+
+function addAnnouncement(payload) {
+  const all = getAnnouncements();
+  const item = {
+    id: uid("ann"),
+    title: String(payload?.title || "").trim(),
+    body: String(payload?.body || "").trim(),
+    target: payload?.target || "all",
+    priority: payload?.priority || "info",
+    authorId: payload?.authorId || null,
+    authorName: payload?.authorName || "Lecturer",
+    createdAt: new Date().toISOString(),
+  };
+  all.push(item);
+  saveAnnouncements(all);
+  return item;
+}
+
+function getLocalNotifications() {
+  return readJsonArray(LEGACY_STORE_KEYS.notifications);
+}
+
+function saveLocalNotifications(items) {
+  writeJsonArray(LEGACY_STORE_KEYS.notifications, items);
+}
+
+function addNotification({ userId, title, message, type = "info" }) {
+  const all = getLocalNotifications();
+  const item = {
+    id: uid("local_notif"),
+    userId,
+    title,
+    message,
+    type,
+    read: false,
+    createdAt: new Date().toISOString(),
+  };
+  all.push(item);
+  saveLocalNotifications(all);
+  return item;
+}
+
+function getSentEmails() {
+  return readJsonArray("sentEmails").sort(
+    (a, b) => new Date(b.sentAt) - new Date(a.sentAt),
+  );
 }
 
 function getSchoolEmails(studentId) {
-  return [];
+  const key = `eduhub_schoolEmails_${studentId}`;
+  const existing = readJsonArray(key);
+  if (existing.length) {
+    return existing.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+  }
+  const seeded = [
+    {
+      id: uid("mail"),
+      subject: "Welcome to EduHub",
+      body: "Welcome to EduHub! Your student account has been created successfully.",
+      from: "admissions@eduhub.ac.za",
+      sentAt: new Date().toISOString(),
+      read: false,
+    },
+  ];
+  writeJsonArray(key, seeded);
+  return seeded;
+}
+
+function markSchoolEmailRead(studentId, emailId) {
+  const key = `eduhub_schoolEmails_${studentId}`;
+  const all = readJsonArray(key);
+  const idx = all.findIndex((e) => e.id === emailId);
+  if (idx === -1) return false;
+  all[idx].read = true;
+  writeJsonArray(key, all);
+  return true;
+}
+
+function getLibraryResources(code = "all") {
+  const resources = [
+    {
+      id: "res_policy_1",
+      code: "general",
+      name: "General",
+      title: "Student Handbook",
+      type: "policy",
+      size: "1.8 MB",
+    },
+    {
+      id: "res_policy_2",
+      code: "general",
+      name: "General",
+      title: "Assessment Policy",
+      type: "policy",
+      size: "940 KB",
+    },
+    {
+      id: "res_ict101_1",
+      code: "ICT101",
+      name: "Programming Fundamentals",
+      title: "Python Basics Study Guide",
+      type: "guide",
+      size: "2.3 MB",
+    },
+    {
+      id: "res_ict104_1",
+      code: "ICT104",
+      name: "Web Development",
+      title: "HTML/CSS Lecture Slides",
+      type: "slides",
+      size: "3.1 MB",
+    },
+    {
+      id: "res_ict105_1",
+      code: "ICT105",
+      name: "Database Systems",
+      title: "SQL Practice Workbook",
+      type: "research",
+      size: "1.4 MB",
+    },
+  ];
+  if (!code || code === "all") return resources;
+  return resources.filter((r) => r.code === "general" || r.code === code);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -664,12 +1073,30 @@ function getSchoolEmails(studentId) {
    ═══════════════════════════════════════════════════ */
 async function getNotifications() {
   const res = await api("GET", "/notifications");
-  return res.ok ? res.notifications : [];
+  const apiNotifs = res.ok && Array.isArray(res.notifications) ? res.notifications : [];
+  const localNotifs = getLocalNotifications().filter(
+    (n) => n.userId === getCurrentUser()?.id,
+  );
+  return [...apiNotifs, ...localNotifs].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  );
 }
 async function markNotifRead(id) {
+  if (String(id).startsWith("local_notif_")) {
+    const all = getLocalNotifications();
+    const idx = all.findIndex((n) => n.id === id);
+    if (idx === -1) return { ok: false, message: "Notification not found" };
+    all[idx].read = true;
+    saveLocalNotifications(all);
+    return { ok: true };
+  }
   return api("PUT", `/notifications/${id}/read`);
 }
 async function deleteNotif(id) {
+  if (String(id).startsWith("local_notif_")) {
+    saveLocalNotifications(getLocalNotifications().filter((n) => n.id !== id));
+    return { ok: true };
+  }
   return api("DELETE", `/notifications/${id}`);
 }
 
@@ -796,7 +1223,20 @@ function renderNavbar(activePage) {
       { href: "/student/register", label: "Register Modules", key: "register" },
       { href: "/student/modules", label: "My Modules", key: "modules" },
     ],
-    lecturer: [{ href: "/lecturer", label: "Dashboard", key: "dashboard" }],
+    lecturer: [
+      { href: "/lecturer", label: "Dashboard", key: "lecturer-dashboard" },
+      {
+        href: "/lecturer/courses",
+        label: "My Courses",
+        key: "lecturer-courses",
+      },
+      { href: "/lecturer/roster", label: "Roster", key: "lecturer-roster" },
+      {
+        href: "/lecturer/announcements",
+        label: "Announcements",
+        key: "lecturer-announcements",
+      },
+    ],
   };
   const role = user ? user.role : "public";
   const navLinks = links[role] || links.public;

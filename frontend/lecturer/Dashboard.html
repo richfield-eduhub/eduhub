@@ -63,6 +63,31 @@
     .dp-close-btn{background:none;border:none;cursor:pointer;color:#6b7a99;font-size:1rem;padding:2px 4px;border-radius:4px;line-height:1}
     .dp-close-btn:hover{background:#f3f4f6}
     .badge-count{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#c0392b;color:white;border-radius:50%;font-size:.68rem;font-weight:700;margin-left:5px}
+
+    .quick-actions{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 20px}
+    .quick-link{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border:1px solid var(--rf-border);border-radius:8px;background:white;color:var(--rf-navy);font-size:.82rem;font-weight:700;text-decoration:none;transition:all .15s}
+    .quick-link:hover{border-color:var(--rf-blue);background:#f3f7ff;color:var(--rf-blue)}
+    .mini-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+    .mini-kpi{background:white;border:1px solid var(--rf-border);border-radius:9px;padding:12px 14px}
+    .mini-kpi .lbl{font-size:.73rem;color:var(--rf-gray);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+    .mini-kpi .val{font-size:1.15rem;color:var(--rf-navy);font-weight:900;margin-top:3px}
+    .tab-jumps{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+    .tab-jump{padding:7px 12px;border:1px solid var(--rf-border);border-radius:8px;background:#fff;font-size:.78rem;font-weight:700;color:var(--rf-blue);cursor:pointer}
+    .tab-jump:hover{border-color:var(--rf-blue);background:#f3f7ff}
+    .compose-card{background:white;border-radius:10px;border:1px solid var(--rf-border);padding:16px 18px;margin-bottom:14px}
+    .compose-card input,.compose-card select,.compose-card textarea{width:100%;padding:9px 11px;border:1.5px solid var(--rf-border);border-radius:7px;font-size:.84rem;font-family:inherit}
+    .compose-card textarea{resize:vertical;min-height:80px}
+    .compose-card input:focus,.compose-card select:focus,.compose-card textarea:focus{outline:none;border-color:#123f7a}
+    .asgn-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+    .asgn-chip{background:white;border:1px solid var(--rf-border);border-radius:8px;padding:10px 12px}
+    .asgn-chip .n{font-size:1rem;font-weight:900;color:var(--rf-navy)}
+    .asgn-chip .t{font-size:.72rem;color:var(--rf-gray);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+    .asgn-search{padding:9px 13px;border:1.5px solid var(--rf-border);border-radius:7px;font-size:.85rem;background:white;color:var(--rf-navy);min-width:240px}
+    .event-form{background:white;border:1px solid var(--rf-border);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+    .event-form input,.event-form select,.event-form textarea{width:100%;padding:8px 10px;border:1.5px solid var(--rf-border);border-radius:7px;font-size:.82rem;font-family:inherit}
+    .event-form textarea{resize:vertical;min-height:66px}
+    .event-form input:focus,.event-form select:focus,.event-form textarea:focus{outline:none;border-color:#123f7a}
+    .event-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   </style>
 </head>
 <body>
@@ -70,6 +95,11 @@
 <div class="main-content">
   <h1 class="section-title">LECTURER PORTAL</h1>
   <p class="section-subtitle" id="subtitle"></p>
+  <div class="quick-actions">
+    <a class="quick-link" href="/lecturer/courses">📚 My Courses</a>
+    <a class="quick-link" href="/lecturer/roster">📋 Class Roster</a>
+    <a class="quick-link" href="/lecturer/announcements">📢 Announcements</a>
+  </div>
   <div class="grid-4 mb-24" id="stats"></div>
 
   <div class="tab-bar">
@@ -81,6 +111,12 @@
 
   <!-- ── OVERVIEW ── -->
   <div class="tab-pane active" id="tab-overview">
+    <div class="mini-kpis" id="overviewKpis"></div>
+    <div class="tab-jumps">
+      <button class="tab-jump" onclick="switchTab(document.getElementById('msgTabBtn'),'tab-messages')">Go to Messages</button>
+      <button class="tab-jump" onclick="switchTab(document.getElementById('asgnTabBtn'),'tab-assignments')">Go to Assignments</button>
+      <button class="tab-jump" onclick="switchTab(null,'tab-calendar')">Go to Calendar</button>
+    </div>
     <div class="grid-2 mb-24">
       <div class="card">
         <div class="card-header"><span style="font-weight:700">Enrolled Students by Programme</span></div>
@@ -95,6 +131,18 @@
 
   <!-- ── MESSAGES ── -->
   <div class="tab-pane" id="tab-messages">
+    <div class="compose-card">
+      <div style="font-family:'Montserrat',sans-serif;font-size:.9rem;font-weight:900;color:var(--rf-navy);margin-bottom:8px">✉️ Compose Message to Student</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:9px">
+        <select id="composeTo"></select>
+        <input type="text" id="composeSubject" placeholder="Subject"/>
+      </div>
+      <textarea id="composeBody" placeholder="Write your message..."></textarea>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap">
+        <button class="btn-reply" style="margin-top:0" onclick="sendComposedMessage()">Send Message</button>
+        <span id="composeFb" style="font-size:.8rem"></span>
+      </div>
+    </div>
     <div class="grid-2">
       <div>
         <h3 style="font-weight:800;font-size:.95rem;color:var(--rf-navy);margin-bottom:14px">Inbox from Students</h3>
@@ -150,6 +198,7 @@
 
     <!-- Student Submissions -->
     <div style="font-family:'Montserrat',sans-serif;font-size:.88rem;font-weight:900;color:var(--rf-navy);margin-bottom:12px">📝 Student Submissions</div>
+    <div class="asgn-summary" id="asgnSummary"></div>
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap">
       <select id="asgnModFilter" onchange="renderAssignments()" style="padding:9px 13px;border:1.5px solid var(--rf-border);border-radius:7px;font-size:.85rem;background:white;color:var(--rf-navy)">
         <option value="all">All Modules</option>
@@ -159,6 +208,7 @@
         <option value="submitted">⏳ Pending Grading</option>
         <option value="graded">✅ Graded</option>
       </select>
+      <input id="asgnSearch" class="asgn-search" placeholder="Search by student, module or title..." oninput="renderAssignments()"/>
     </div>
     <div id="asgnList"></div>
   </div>
@@ -185,6 +235,32 @@
       </div>
       <div class="card">
         <div class="card-header"><span style="font-weight:700;font-size:15px">Upcoming Events</span></div>
+        <div class="event-form">
+          <div style="font-size:.78rem;font-weight:800;color:var(--rf-navy);margin-bottom:8px">+ Add Lecturer Event</div>
+          <input id="newEvTitle" placeholder="Event title" style="margin-bottom:8px"/>
+          <div class="event-grid" style="margin-bottom:8px">
+            <input id="newEvDate" type="date"/>
+            <input id="newEvTime" type="time"/>
+          </div>
+          <div class="event-grid" style="margin-bottom:8px">
+            <select id="newEvType">
+              <option value="academic">Academic</option>
+              <option value="general">General</option>
+              <option value="exam">Exam</option>
+              <option value="holiday">Holiday</option>
+            </select>
+            <select id="newEvAudience">
+              <option value="lecturers">Lecturers</option>
+              <option value="all">Everyone</option>
+              <option value="students">Students</option>
+            </select>
+          </div>
+          <textarea id="newEvDesc" placeholder="Description (optional)"></textarea>
+          <div style="display:flex;align-items:center;gap:9px;margin-top:8px">
+            <button class="btn-reply" style="margin-top:0;padding:7px 14px;font-size:.78rem" onclick="addLecturerEvent()">Save Event</button>
+            <span id="newEvFb" style="font-size:.76rem"></span>
+          </div>
+        </div>
         <div style="padding:4px 24px 20px;max-height:380px;overflow-y:auto" id="eventsList"></div>
       </div>
     </div>
@@ -204,16 +280,25 @@
 <script>
 const user = requireAuth('lecturer');
 renderNavbar('lecturer-dashboard');
+const lecturerName = user.name || [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email || 'Lecturer';
+
+// Global variables accessible to all functions
+let allUsers = [];
+let regs = [];
+let approvedRegs = [];
+let students = [];
+let progCount = 0;
+let allAsgns = [];
 
 (async () => {
-const allUsers = await getUsers();
-const regs = await getRegistrations();
-const approvedRegs = regs.filter(r => r.status==='approved'||r.status==='allocated');
-const students = allUsers.filter(u => u.role === 'student');
-const progCount = new Set(approvedRegs.map(r => r.qualificationCode)).size;
+allUsers = await getUsers();
+regs = await getRegistrations();
+approvedRegs = regs.filter(r => r.status==='approved'||r.status==='allocated');
+students = allUsers.filter(u => u.role === 'student');
+progCount = new Set(approvedRegs.map(r => r.qualificationCode)).size;
 const inbox = getInboxFor(user.id);
 const unreadCount = inbox.filter(m => !m.read).length;
-const allAsgns = getAssignments();
+allAsgns = getAssignments();
 const pendingAsgns = allAsgns.filter(a => a.status === 'submitted');
 
 /* stats */
@@ -228,6 +313,7 @@ document.getElementById('stats').innerHTML = [
 /* update tab badges */
 if (unreadCount > 0) document.getElementById('msgTabBtn').innerHTML += `<span class="badge-count">${unreadCount}</span>`;
 if (pendingAsgns.length > 0) document.getElementById('asgnTabBtn').innerHTML += `<span class="badge-count">${pendingAsgns.length}</span>`;
+renderOverviewKpis();
 
 /* overview table */
 document.getElementById('table-wrap').innerHTML = `<table class="data-table"><thead><tr><th>Student</th><th>Student ID</th><th>Programme</th><th>Semester</th><th>Modules</th></tr></thead><tbody>
@@ -249,20 +335,64 @@ document.getElementById('recent-asgns').innerHTML = recent5.length === 0
     return `<tr><td style="font-weight:600">${stu?.name||a.studentId}</td><td style="font-family:var(--font-mono);font-size:12px">${a.moduleCode}</td><td style="font-size:13px">${a.title}</td><td>${a.status === 'graded' ? `<span style="color:#059669;font-weight:700">✅ ${a.mark}%</span>` : '<span style="color:#d97706;font-weight:700">⏳ Pending</span>'}</td></tr>`;
   }).join('')}
   </tbody></table>`;
+})(); // End async IIFE
+
+/* ══════════════════════════════════════════════════════════
+   FUNCTION DECLARATIONS - Must be outside async IIFE for onclick handlers
+   ══════════════════════════════════════════════════════════ */
 
 /* ── Tab switching ── */
 function switchTab(btn, tabId) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  if (typeof btn === 'string') btn = document.querySelector(`[onclick*="${tabId}"]`);
-  btn.classList.add('active');
+  if (!btn || typeof btn === 'string') btn = document.querySelector(`[onclick*="${tabId}"]`);
+  if (btn) btn.classList.add('active');
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
-  if (tabId === 'tab-messages') renderMessages();
+  if (tabId === 'tab-messages') { initMessageCompose(); renderMessages(); }
   if (tabId === 'tab-assignments') { initAsgnFilters(); renderAssignments(); initUploadModuleSelect(); renderPublishedAssignments(); }
-  if (tabId === 'tab-calendar') { buildCal(); renderEventsList(); }
+  if (tabId === 'tab-calendar') { initEventDefaults(); buildCal(); renderEventsList(); }
+}
+
+function renderOverviewKpis() {
+  const passMarks = allAsgns.filter(a => a.status==='graded' && Number(a.mark) >= 50);
+  const graded = allAsgns.filter(a => a.status==='graded');
+  const avg = graded.length ? Math.round(graded.reduce((s,a)=>s+Number(a.mark||0),0)/graded.length) : 0;
+  document.getElementById('overviewKpis').innerHTML = [
+    { lbl:'Programmes', val: progCount || 0 },
+    { lbl:'Pass Rate', val: graded.length ? Math.round((passMarks.length/graded.length)*100) + '%' : '—' },
+    { lbl:'Average Mark', val: graded.length ? avg + '%' : '—' },
+  ].map(x => `<div class="mini-kpi"><div class="lbl">${x.lbl}</div><div class="val">${x.val}</div></div>`).join('');
 }
 
 /* ── Messages ── */
+function initMessageCompose() {
+  const students = allUsers.filter(u => u.role==='student');
+  const sel = document.getElementById('composeTo');
+  if (!sel) return;
+  if (sel.dataset.ready === '1') return;
+  sel.innerHTML = '<option value="">— Select Student —</option>' + students.map(s => {
+    const nm = s.name || [s.first_name, s.last_name].filter(Boolean).join(' ') || s.email;
+    return `<option value="${s.id}">${nm}${s.studentId ? ' · '+s.studentId : ''}</option>`;
+  }).join('');
+  sel.dataset.ready = '1';
+}
+
+function sendComposedMessage() {
+  const to = document.getElementById('composeTo').value;
+  const subject = document.getElementById('composeSubject').value.trim();
+  const body = document.getElementById('composeBody').value.trim();
+  const fb = document.getElementById('composeFb');
+  if (!to) { fb.innerHTML = '<span style="color:#dc2626">Choose a student first.</span>'; return; }
+  if (!subject) { fb.innerHTML = '<span style="color:#dc2626">Enter a subject.</span>'; return; }
+  if (!body) { fb.innerHTML = '<span style="color:#dc2626">Write a message first.</span>'; return; }
+  sendMessage(user.id, to, subject, body);
+  fb.innerHTML = '<span style="color:#059669;font-weight:700">✅ Message sent.</span>';
+  document.getElementById('composeSubject').value = '';
+  document.getElementById('composeBody').value = '';
+  document.getElementById('composeTo').value = '';
+  renderMessages();
+}
+
 function renderMessages() {
   const inboxMsgs = getInboxFor(user.id);
   const sentMsgs = getSentBy(user.id);
@@ -337,7 +467,7 @@ function doUploadAssignment() {
   if (!code)  { fb.innerHTML = '<span style="color:#dc2626">Please select a module.</span>'; return; }
   if (!title) { fb.innerHTML = '<span style="color:#dc2626">Please enter a title.</span>'; return; }
   if (!desc)  { fb.innerHTML = '<span style="color:#dc2626">Please add instructions for students.</span>'; return; }
-  uploadLecturerAssignment(user.id, user.name, code, name, title, desc, due||null, file||null);
+  uploadLecturerAssignment(user.id, lecturerName, code, name, title, desc, due||null, file||null);
   fb.innerHTML = '<span style="color:#059669;font-weight:700">✅ Published! Students can now see and download this assignment.</span>';
   document.getElementById('uploadAsgnTitle').value = '';
   document.getElementById('uploadAsgnDesc').value  = '';
@@ -395,10 +525,25 @@ function initAsgnFilters() {
 function renderAssignments() {
   const modFilter = document.getElementById('asgnModFilter').value;
   const statusFilter = document.getElementById('asgnStatusFilter').value;
+  const q = (document.getElementById('asgnSearch').value || '').trim().toLowerCase();
   let asgns = getAssignments();
   if (modFilter !== 'all') asgns = asgns.filter(a => a.moduleCode === modFilter);
   if (statusFilter !== 'all') asgns = asgns.filter(a => a.status === statusFilter);
+  if (q) {
+    asgns = asgns.filter(a => {
+      const stu = allUsers.find(u => u.studentId === a.studentId);
+      const stuName = (stu?.name || [stu?.first_name, stu?.last_name].filter(Boolean).join(' ') || '').toLowerCase();
+      return (
+        String(a.title || '').toLowerCase().includes(q) ||
+        String(a.moduleCode || '').toLowerCase().includes(q) ||
+        String(a.moduleName || '').toLowerCase().includes(q) ||
+        String(a.studentId || '').toLowerCase().includes(q) ||
+        stuName.includes(q)
+      );
+    });
+  }
   asgns.sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  renderAsgnSummary(asgns);
 
   const el = document.getElementById('asgnList');
   if (!asgns.length) {
@@ -437,14 +582,31 @@ function gradeAsgn(id) {
   const fb = document.getElementById(`gradeFb_${id}`);
   if (isNaN(mark) || mark < 0 || mark > 100) { fb.innerHTML = '<span style="color:#dc2626">Enter a valid mark (0–100).</span>'; return; }
   if (!feedback) { fb.innerHTML = '<span style="color:#dc2626">Please add feedback.</span>'; return; }
-  gradeAssignment(id, mark, feedback, user.name);
+  gradeAssignment(id, mark, feedback, lecturerName);
   fb.innerHTML = '<span style="color:#059669;font-weight:700">✅ Grade saved!</span>';
   setTimeout(() => renderAssignments(), 800);
+}
+
+function renderAsgnSummary(filtered) {
+  const all = getAssignments();
+  const graded = filtered.filter(a => a.status==='graded');
+  const pending = filtered.filter(a => a.status==='submitted');
+  const avg = graded.length ? Math.round(graded.reduce((s,a)=>s+Number(a.mark||0),0)/graded.length) : '—';
+  document.getElementById('asgnSummary').innerHTML = [
+    { n: filtered.length, t:'Visible Submissions' },
+    { n: pending.length, t:'Pending Grading' },
+    { n: graded.length ? avg + '%' : '—', t:'Average Mark' },
+  ].map(x => `<div class="asgn-chip"><div class="n">${x.n}</div><div class="t">${x.t}</div></div>`).join('');
 }
 
 /* ── Calendar ── */
 const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 let calDate = new Date();
+
+function initEventDefaults() {
+  const d = document.getElementById('newEvDate');
+  if (d && !d.value) d.value = new Date().toISOString().slice(0,10);
+}
 
 function buildCal() {
   const year = calDate.getFullYear(), month = calDate.getMonth(), today = new Date();
@@ -476,14 +638,16 @@ function renderEventsList() {
   if (!evts.length) { el.innerHTML = '<div style="padding:32px;text-align:center;color:var(--rf-gray);font-size:13px">No upcoming events</div>'; return; }
   el.innerHTML = evts.map(e => {
     const d = new Date(e.date+'T00:00:00');
+    const canRemove = e.createdBy === user.id;
     return `<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--rf-border)">
       <div style="min-width:48px;text-align:center;background:#f4f6fb;border-radius:7px;padding:5px 3px">
         <div style="font-size:1.3rem;font-weight:900;color:var(--rf-navy);line-height:1">${d.getDate()}</div>
         <div style="font-size:.64rem;font-weight:700;color:var(--rf-gray);text-transform:uppercase">${monthNames[d.getMonth()].slice(0,3)}</div>
       </div>
-      <div><div style="font-weight:700;font-size:.88rem;color:var(--rf-navy)">${e.title}</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:.88rem;color:var(--rf-navy)">${e.title}</div>
       ${e.description?`<div style="font-size:.78rem;color:var(--rf-gray);margin-top:2px">${e.description}</div>`:''}
       ${e.time?`<div style="font-size:.72rem;color:var(--rf-gray)">⏰ ${e.time}</div>`:''}</div>
+      ${canRemove ? `<button onclick="removeMyEvent('${e.id}')" style="padding:4px 9px;border:1px solid #e5e7eb;background:white;border-radius:6px;font-size:.72rem;color:#dc2626;cursor:pointer;height:fit-content">Remove</button>` : ''}
     </div>`;
   }).join('');
 }
@@ -500,6 +664,7 @@ function showDayEvents(dateStr, event) {
         <div style="font-size:.64rem;font-weight:700;color:#6b7a99;text-transform:uppercase;margin-bottom:2px">${e.type.toUpperCase()}${e.time?' · ⏰ '+e.time:''}</div>
         <div style="font-size:.85rem;font-weight:700;color:#123f7a">${e.title}</div>
         ${e.description?`<div style="font-size:.76rem;color:#6b7a99;margin-top:3px;line-height:1.5">${e.description}</div>`:''}
+        ${e.createdBy===user.id?`<button onclick="event.stopPropagation();removeMyEvent('${e.id}')" style="margin-top:6px;background:none;border:none;cursor:pointer;color:#dc2626;font-size:.73rem;padding:0;font-weight:700">🗑 Remove</button>`:''}
       </div>`).join('')
     : '<div style="color:#6b7a99;font-size:.82rem;text-align:center;padding:12px 0">📭 No events on this day.</div>';
   const rect = event.target.getBoundingClientRect();
@@ -508,7 +673,37 @@ function showDayEvents(dateStr, event) {
   popup.style.left=left+'px';
   popup.classList.add('show');
 }
-})(); // End async IIFE
+
+function addLecturerEvent() {
+  const title = document.getElementById('newEvTitle').value.trim();
+  const date = document.getElementById('newEvDate').value;
+  const fb = document.getElementById('newEvFb');
+  if (!title) { fb.innerHTML = '<span style="color:#dc2626">Enter event title.</span>'; return; }
+  if (!date) { fb.innerHTML = '<span style="color:#dc2626">Select event date.</span>'; return; }
+  createEvent({
+    title,
+    date,
+    time: document.getElementById('newEvTime').value,
+    type: document.getElementById('newEvType').value,
+    audience: document.getElementById('newEvAudience').value,
+    description: document.getElementById('newEvDesc').value.trim(),
+    createdBy: user.id,
+  });
+  fb.innerHTML = '<span style="color:#059669;font-weight:700">✅ Event added.</span>';
+  document.getElementById('newEvTitle').value = '';
+  document.getElementById('newEvTime').value = '';
+  document.getElementById('newEvDesc').value = '';
+  buildCal();
+  renderEventsList();
+}
+
+function removeMyEvent(id) {
+  if (!confirm('Remove this event?')) return;
+  deleteEvent(id);
+  buildCal();
+  renderEventsList();
+  document.getElementById('dayPopup').classList.remove('show');
+}
 
 document.addEventListener('click',e=>{if(!e.target.closest('#dayPopup')&&!e.target.closest('.lec-cal')) document.getElementById('dayPopup').classList.remove('show');});
 </script>

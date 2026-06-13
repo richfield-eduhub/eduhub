@@ -1,0 +1,342 @@
+================================================================================
+EDUHUB PROJECT - DOCUMENTATION REVIEW NOTES
+================================================================================
+Date Started: March 15, 2026
+Purpose: Read and understand all phases before coding starts next week
+Status: In Progress
+
+================================================================================
+DIAGRAMS TO ADD
+================================================================================
+
+Phase 2 - Planning Phase:
+[ ] Line ~1890: Gantt Chart visual (project timeline)
+[ ] Line ~2052: PERT Chart visual (task dependencies)
+[ ] Line ~2367: Use Case diagram placeholder
+[ ] Line ~2421: ERD placeholder
+[ ] Line ~2496: DFD placeholder
+
+Phase 3 - Analysis Phase:
+[ ] Line ~746: Use Case Diagram (all user interactions)
+[ ] Line ~1056: Conceptual ERD visual (10 entities with relationships)
+[ ] Line ~1298: DFD Diagrams (data flow for key processes)
+
+Phase 4 - Design Phase:
+[ ] Architecture diagrams (three-tier structure)
+[ ] Class diagram (OOP structure)
+[ ] Network topology diagram
+[ ] UI Mockups:
+    [ ] Login page
+    [ ] Registration form
+    [ ] Student dashboard
+    [ ] Application form
+    [ ] Course registration interface
+    [ ] Admin panel
+    [ ] Lecturer portal
+
+Phase 5 - Implementation Phase:
+[ ] Deployment architecture diagram
+[ ] Testing pyramid visualization
+[ ] Sprint timeline chart
+
+================================================================================
+TEXT EDITS / ADDITIONS NEEDED
+================================================================================
+
+Phase 2:
+[ ]
+
+Phase 3:
+[ ]
+
+Phase 4:
+[ ]
+
+Phase 5:
+[ ]
+
+================================================================================
+QUESTIONS / CLARIFICATIONS NEEDED
+================================================================================
+
+Database:
+-
+
+Business Logic:
+-
+
+API Design:
+-
+
+Frontend:
+-
+
+Testing:
+-
+
+Deployment:
+-
+
+================================================================================
+KEY SECTIONS TO UNDERSTAND FOR CODING
+================================================================================
+
+CRITICAL - Must Fully Understand Before Coding:
+
+Phase 3 - Requirements (lines 427-643):
+[ ] All 71 functional requirements
+[ ] All 26 non-functional requirements
+[ ] User roles and permissions
+
+Phase 4 - Database Design (lines 668-1177):
+[ ] users table schema
+[ ] students table schema
+[ ] emergency_contacts table schema
+[ ] applications table schema
+[ ] application_documents table schema
+[ ] courses table schema
+[ ] registrations table schema
+[ ] system_settings table schema
+[ ] audit_logs table schema
+[ ] notifications table schema
+[ ] All foreign key relationships
+[ ] All constraints and validations
+
+Phase 4 - Pseudocode (lines 1180-1764):
+[ ] User Authentication/Login algorithm
+[ ] Application Submission algorithm
+[ ] Application Approval algorithm
+[ ] Course Registration algorithm (IMPORTANT - complex logic)
+[ ] Student Number Generation algorithm
+[ ] Password Hashing/Verification algorithm
+[ ] File Upload Validation algorithm
+
+Phase 4 - API Design:
+[ ] Authentication endpoints
+[ ] User management endpoints
+[ ] Application endpoints
+[ ] Course endpoints
+[ ] Registration endpoints
+[ ] File upload endpoints
+
+Phase 5 - Testing Strategy:
+[ ] Unit testing approach
+[ ] Integration testing approach
+[ ] E2E testing approach
+[ ] All 127 test cases
+
+================================================================================
+UNDERSTANDING CHECKLIST
+================================================================================
+
+Business Understanding:
+[ ] Why EduHub is needed (Phase 2)
+[ ] Current system problems (Phase 2 & 3)
+[ ] Who the users are (6 roles)
+[ ] What each user role can do
+
+Technical Understanding:
+[ ] Three-tier architecture (Frontend, Backend, Database)
+[ ] Technology stack (React, Node.js, PostgreSQL)
+[ ] Database relationships (10 tables, how they connect)
+[ ] API structure (RESTful, 50+ endpoints)
+[ ] Authentication flow (JWT, bcrypt)
+[ ] File upload flow (5MB limit, validation)
+
+Core Features Understanding:
+[ ] User registration and login
+[ ] Application submission workflow
+[ ] Application approval process
+[ ] Student profile management
+[ ] Course registration with prerequisites
+[ ] Schedule conflict detection
+[ ] Notification system
+[ ] Audit logging
+
+Security Understanding:
+[ ] Password requirements and hashing
+[ ] JWT token generation and validation
+[ ] Session management (30min timeout, 24hr max)
+[ ] File upload security
+[ ] SQL injection prevention
+[ ] XSS protection
+
+Deployment Understanding:
+[ ] Docker setup
+[ ] Database migrations
+[ ] Environment variables
+[ ] Production configuration
+[ ] Backup strategy
+
+================================================================================
+CONCEPTS THAT NEED MORE CLARITY
+================================================================================
+
+(Add concepts here as you read that you don't fully understand yet)
+
+1.
+
+2.
+
+3.
+
+================================================================================
+IDEAS / IMPROVEMENTS
+================================================================================
+
+(Add any ideas that come up while reading)
+
+1.
+
+2.
+
+3.
+
+================================================================================
+CODING PREPARATION CHECKLIST
+================================================================================
+
+Before Starting Code Next Week:
+[ ] Fully understand all database schemas
+[ ] Fully understand all pseudocode algorithms
+[ ] Know all API endpoints needed
+[ ] Understand all user flows
+[ ] Have all diagrams created
+[ ] Know which features to build in which order
+[ ] Understand testing requirements
+[ ] Set up development environment
+[ ] Create Git branching strategy
+
+Sprint 1-2 Focus (Database + Authentication):
+[ ] Understand users table
+[ ] Understand authentication flow
+[ ] Understand JWT implementation
+[ ] Understand bcrypt password hashing
+
+Sprint 3-4 Focus (Application Management):
+[ ] Understand applications table
+[ ] Understand application_documents table
+[ ] Understand application workflow
+[ ] Understand file upload handling
+
+Sprint 5-6 Focus (Course Registration):
+[ ] Understand courses table
+[ ] Understand registrations table
+[ ] Understand prerequisite checking logic
+[ ] Understand schedule conflict detection
+[ ] Understand capacity management
+
+================================================================================
+IMPORTANT NUMBERS TO REMEMBER
+================================================================================
+
+Requirements:
+- 71 functional requirements
+- 26 non-functional requirements
+
+Database:
+- 10 tables
+- 6 user roles
+
+Performance Targets:
+- < 3 seconds page load time
+- < 1 second API response time
+- 99.5% uptime target
+- 100 concurrent users (normal)
+- 500 concurrent users (peak)
+
+Security:
+- Password: Min 8 chars, 1 upper, 1 lower, 1 number
+- Session timeout: 30 minutes
+- Max session: 24 hours
+- Bcrypt rounds: 10
+- Failed logins: 5 = 15min lock, 10 = admin unlock
+
+File Uploads:
+- Max file size: 5MB
+- Allowed types: PDF, JPG, PNG
+
+Business Rules:
+- Student number format: YEAR-#### (e.g., 2026-0001)
+- Max emergency contacts: 3 per student
+
+Testing:
+- 127 test cases total
+- 96.9% pass rate target
+- Unit test coverage: 75%
+- Integration test coverage: 85%
+- E2E coverage: 90% critical paths
+
+================================================================================
+READING PROGRESS
+================================================================================
+
+Phase 2 - Planning (2,545 lines):
+Start: ______ End: ______ Status: [ ] Complete
+
+Phase 3 - Analysis (1,346 lines):
+Start: ______ End: ______ Status: [ ] Complete
+
+Phase 4 - Design (2,424 lines):
+Start: ______ End: ______ Status: [ ] Complete
+
+Phase 5 - Implementation (2,686 lines):
+Start: ______ End: ______ Status: [ ] Complete
+
+Comprehensive Review Summary:
+Start: ______ End: ______ Status: [ ] Complete
+
+================================================================================
+NEXT STEPS AFTER READING
+================================================================================
+
+1. [ ] Create all missing diagrams
+2. [ ] Make text edits based on notes above
+3. [ ] Answer all questions/clarifications
+4. [ ] Set up development environment
+5. [ ] Create initial project structure
+6. [ ] Set up database locally
+7. [ ] Plan Sprint 1 tasks
+8. [ ] Start coding!
+
+================================================================================
+RESOURCES / TOOLS NEEDED
+================================================================================
+
+Diagram Tools:
+- Draw.io / Lucidchart (ERD, DFD, Use Case)
+- Figma / Sketch (UI Mockups)
+- Microsoft Project / GanttProject (Gantt/PERT)
+- PlantUML (Class diagrams)
+
+Development Tools:
+- Node.js 18+
+- PostgreSQL 14+
+- React 18
+- Docker
+- Git
+
+================================================================================
+NOTES / OBSERVATIONS
+================================================================================
+
+(Add any observations, insights, or notes as you read)
+
+Date: ______
+Note:
+
+
+
+Date: ______
+Note:
+
+
+
+Date: ______
+Note:
+
+
+
+================================================================================
+END OF NOTES
+================================================================================

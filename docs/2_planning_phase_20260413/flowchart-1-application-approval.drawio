@@ -1,0 +1,317 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Application Submission & Approval" id="application-approval">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1654" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Start Node -->
+        <mxCell id="start" value="Student Starts&#xa;Application" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="490" y="40" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Login Check Decision -->
+        <mxCell id="login-check" value="Is User&#xa;Logged In?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="485" y="140" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Register Account -->
+        <mxCell id="register" value="Register&#xa;New Account" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0FFE0;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="165" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Navigate to Login -->
+        <mxCell id="login-form" value="Navigate&#xa;to Login" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0FFE0;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="255" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Fill Application Form -->
+        <mxCell id="fill-form" value="Fill Application&#xa;Form" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0FFE0;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="280" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Form Validation Decision -->
+        <mxCell id="validate-form" value="Form Data&#xa;Valid?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="485" y="370" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Show Errors -->
+        <mxCell id="show-errors" value="Display&#xa;Validation Errors" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="700" y="395" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Upload Documents -->
+        <mxCell id="upload-docs" value="Upload Required&#xa;Documents" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0FFE0;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="510" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Document Validation Decision -->
+        <mxCell id="validate-docs" value="All Required&#xa;Documents&#xa;Uploaded?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="485" y="600" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Upload Prompt -->
+        <mxCell id="upload-prompt" value="Prompt: Upload&#xa;Missing Documents" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="625" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Check File Types -->
+        <mxCell id="check-types" value="File Types&#xa;Valid?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="485" y="740" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- File Error -->
+        <mxCell id="file-error" value="Show: Invalid&#xa;File Format Error" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="700" y="765" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Submit Application -->
+        <mxCell id="submit" value="Submit&#xa;Application" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#87CEEB;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="880" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Generate Reference -->
+        <mxCell id="gen-ref" value="Generate Application&#xa;Reference Number" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0FFE0;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="970" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Save to Database -->
+        <mxCell id="save-db" value="Save to Database&#xa;Status: Pending" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E6E6FA;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1070" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Send Confirmation -->
+        <mxCell id="send-confirm" value="Send Confirmation&#xa;Email to Applicant" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0FFE0;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1190" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Wait for Review -->
+        <mxCell id="wait" value="Applicant Waits&#xa;for Review" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFACD;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1290" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Admin Review Decision -->
+        <mxCell id="admin-review" value="Admin Reviews&#xa;Application" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="485" y="1380" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Request More Info -->
+        <mxCell id="request-info" value="Send Information&#xa;Request" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="1405" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- REJECTION PATH -->
+
+        <!-- Reject -->
+        <mxCell id="reject" value="Update Status:&#xa;Rejected" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="700" y="1405" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Log Rejection -->
+        <mxCell id="log-reject" value="Log Rejection&#xa;Reason" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E6E6FA;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="700" y="1495" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Notify Reject -->
+        <mxCell id="notify-reject" value="Send Rejection&#xa;Email" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="700" y="1615" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- End Reject -->
+        <mxCell id="end-reject" value="End:&#xa;Application Rejected" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="700" y="1705" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- APPROVAL PATH -->
+
+        <!-- Approve -->
+        <mxCell id="approve" value="Update Status:&#xa;Approved" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1520" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Generate Student Number -->
+        <mxCell id="gen-student-num" value="Generate Unique&#xa;Student Number" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1610" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Create Student Record -->
+        <mxCell id="create-student" value="Create Student&#xa;Record" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E6E6FA;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1710" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Update Role -->
+        <mxCell id="update-role" value="Update User Role&#xa;to 'Student'" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1830" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Log Approval -->
+        <mxCell id="log-approval" value="Log Approval&#xa;in Audit Trail" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E6E6FA;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1930" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Notify Approve -->
+        <mxCell id="notify-approve" value="Send Approval Email&#xa;with Student Number" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="2050" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- End Approve -->
+        <mxCell id="end-approve" value="End:&#xa;Application Approved" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="500" y="2150" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- EDGES/CONNECTIONS -->
+        <mxCell edge="1" parent="1" source="start" target="login-check">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="login-check" target="register">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="login-check" target="fill-form">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="register" target="login-form">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="login-form" target="fill-form">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="fill-form" target="validate-form">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="validate-form" target="show-errors">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="show-errors" target="fill-form">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="760" y="305" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="validate-form" target="upload-docs">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="upload-docs" target="validate-docs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="validate-docs" target="upload-prompt">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="upload-prompt" target="upload-docs">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="535" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="validate-docs" target="check-types">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="check-types" target="file-error">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="file-error" target="upload-docs">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="760" y="535" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="check-types" target="submit">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="submit" target="gen-ref">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="gen-ref" target="save-db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="save-db" target="send-confirm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="send-confirm" target="wait">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="wait" target="admin-review">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="admin-review" target="request-info">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Request Info" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="request-info" target="wait">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="1315" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="admin-review" target="reject">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Reject" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="reject" target="log-reject">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="log-reject" target="notify-reject">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="notify-reject" target="end-reject">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="admin-review" target="approve">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Approve" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="approve" target="gen-student-num">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="gen-student-num" target="create-student">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="create-student" target="update-role">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="update-role" target="log-approval">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="log-approval" target="notify-approve">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="notify-approve" target="end-approve">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
