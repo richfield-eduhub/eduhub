@@ -3,7 +3,10 @@
  */
 
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const sequelize = require('../config/database');
+const { generateStudentNumber, formatNumber } = require('../studentNumber');
+const emailService = require('./email.service');
 
 const { APPLICATION_STATUS, PAGINATION } = require('../utils/constants');
 
@@ -28,12 +31,151 @@ function normalizeEmail(email) {
     .toLowerCase();
 }
 
+class ApplicationStudentNumberStore {
+  constructor(transaction = null) {
+    this.transaction = transaction;
+  }
+
+  async has(number) {
+    const [row] = await sequelize.query(
+      `SELECT 1 AS ok
+       FROM applications
+       WHERE student_number = ?
+       LIMIT 1`,
+      {
+        replacements: [String(number)],
+        type: sequelize.QueryTypes.SELECT,
+        transaction: this.transaction,
+      }
+    );
+    return Boolean(row);
+  }
+
+  async add(number) {
+    if (await this.has(number)) {
+      throw new Error('Student number already exists');
+    }
+  }
+}
+
+function generateTemporaryPassword() {
+  const random = crypto.randomBytes(4).toString('hex').toUpperCase();
+  return `EduHub@${random}`;
+}
+
+function normalizeDateForUserDetails(value) {
+  if (!value) return '2000-01-01';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '2000-01-01';
+  return date.toISOString().slice(0, 10);
+}
+
+function sanitizePhone(value) {
+  const phone = String(value || '').trim();
+  return phone || '0000000000';
+}
+
+function decideAdmissionsEmailOutcome(draft) {
+  const aps = draft?.aps_result || null;
+  const desiredQualificationId = draft?.qualification_id;
+  const desiredQualificationName = draft?.resolved_qualification_name || draft?.qualification_name || null;
+
+  const recommended = Array.isArray(aps?.recommended) ? aps.recommended : [];
+  const possible = Array.isArray(aps?.possibly_eligible) ? aps.possibly_eligible : [];
+  const notEligible = Array.isArray(aps?.not_eligible) ? aps.not_eligible : [];
+
+  const desiredRecommended = recommended.find((q) => String(q.qualification_id) === String(desiredQualificationId));
+  if (desiredRecommended) {
+    return {
+      decision: 'conditionally_accepted',
+      suggestion: null,
+      desiredQualificationName,
+    };
+  }
+
+  const desiredPossible = possible.find((q) => String(q.qualification_id) === String(desiredQualificationId));
+  const desiredNotEligible = notEligible.find((q) => String(q.qualification_id) === String(desiredQualificationId));
+  if (desiredPossible || desiredNotEligible) {
+    const suggestion = recommended[0] || possible[0] || null;
+    return {
+      decision: suggestion ? 'suggested_alternative' : 'rejected',
+      suggestion: suggestion ? suggestion.qualification_name : null,
+      desiredQualificationName,
+    };
+  }
+
+  return {
+    decision: 'conditionally_accepted',
+    suggestion: null,
+    desiredQualificationName,
+  };
+}
+
 
 function isSouthAfricanNationality(nationality) {
   return String(nationality || '').trim() === 'South African';
 }
 
 const GENDER_VALUES = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
+const APS_BANDS = [
+  { min: 80, max: 100, points: 7, label: '80-100' },
+  { min: 70, max: 79, points: 6, label: '70-79' },
+  { min: 60, max: 69, points: 5, label: '60-69' },
+  { min: 50, max: 59, points: 4, label: '50-59' },
+  { min: 40, max: 49, points: 3, label: '40-49' },
+  { min: 30, max: 39, points: 2, label: '30-39' },
+  { min: 0, max: 29, points: 1, label: '0-29' },
+];
+
+const SYMBOL_TO_PERCENTAGE = {
+  A: 85,
+  B: 75,
+  C: 65,
+  D: 55,
+  E: 45,
+  F: 35,
+  G: 20,
+};
+
+function clampPercentage(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return null;
+  if (num < 0) return 0;
+  if (num > 100) return 100;
+  return num;
+}
+
+function normalizeMark(subject = {}) {
+  const explicitPercentage = clampPercentage(subject.percentage);
+  if (explicitPercentage !== null) {
+    return { percentage: explicitPercentage, source: 'percentage' };
+  }
+
+  const symbol = String(subject.symbol || '').trim().toUpperCase();
+  if (symbol && Object.prototype.hasOwnProperty.call(SYMBOL_TO_PERCENTAGE, symbol)) {
+    return { percentage: SYMBOL_TO_PERCENTAGE[symbol], source: 'symbol', symbol };
+  }
+
+  const range = String(subject.range || '').trim();
+  const rangeMatch = range.match(/^(\d{1,3})\s*-\s*(\d{1,3})$/);
+  if (rangeMatch) {
+    const min = clampPercentage(rangeMatch[1]);
+    const max = clampPercentage(rangeMatch[2]);
+    if (min !== null && max !== null && min <= max) {
+      return {
+        percentage: Math.round((min + max) / 2),
+        source: 'range',
+        range: `${min}-${max}`,
+      };
+    }
+  }
+
+  return { percentage: null, source: 'unknown' };
+}
+
+function getApsBand(percentage) {
+  return APS_BANDS.find((band) => percentage >= band.min && percentage <= band.max) || APS_BANDS[APS_BANDS.length - 1];
+}
 
 /**
  * Identity + full form validation when submitting (pending), aligned with admissions capture.
@@ -169,6 +311,1081 @@ class ApplicationService {
     return row;
   }
 
+  async findActiveQualificationByCode(qualificationCode, transaction) {
+    const code = String(qualificationCode || '').trim().toUpperCase();
+    if (!code) return null;
+    const [row] = await sequelize.query(
+      `SELECT id, code, name
+       FROM qualifications
+       WHERE UPPER(TRIM(code)) = ?
+         AND is_active = true
+       LIMIT 1`,
+      {
+        replacements: [code],
+        type: sequelize.QueryTypes.SELECT,
+        transaction,
+      }
+    );
+    return row || null;
+  }
+
+  async getCampusesForQualification(qualificationId, transaction) {
+    if (!qualificationId) return [];
+    const campuses = await sequelize.query(
+      `SELECT c.id, c.code, c.name, c.city, c.province
+       FROM campuses c
+       INNER JOIN campus_qualifications cq ON cq.campus_id = c.id
+       WHERE cq.qualification_id = ?
+         AND cq.is_active = true
+         AND c.is_active = true
+       ORDER BY c.is_online ASC, c.province ASC, c.city ASC, c.name ASC`,
+      {
+        replacements: [qualificationId],
+        type: sequelize.QueryTypes.SELECT,
+        transaction,
+      }
+    );
+    return campuses;
+  }
+
+  async resolveCampusAssignment(qualificationId, requestedCampusId, transaction, requireCampus = false) {
+    if (!qualificationId) return { campusId: null, campuses: [], campus_mode: 'none' };
+    const campuses = await this.getCampusesForQualification(qualificationId, transaction);
+
+    // Only throw error if campus is required (e.g., during payment/submission)
+    if (!campuses.length && requireCampus) {
+      throw { statusCode: 400, message: 'No active campuses are configured for this qualification' };
+    }
+
+    // If no campuses found but not required, return empty state
+    if (!campuses.length) {
+      return { campusId: null, campuses: [], campus_mode: 'none' };
+    }
+
+    if (requestedCampusId) {
+      const selected = campuses.find((campus) => String(campus.id) === String(requestedCampusId));
+      if (!selected && requireCampus) {
+        throw { statusCode: 400, message: 'Selected campus is not valid for this qualification' };
+      }
+      if (selected) {
+        return { campusId: selected.id, campuses, campus_mode: campuses.length === 1 ? 'single' : 'multiple' };
+      }
+    }
+
+    if (campuses.length === 1) {
+      return { campusId: campuses[0].id, campuses, campus_mode: 'single' };
+    }
+
+    return { campusId: null, campuses, campus_mode: 'multiple' };
+  }
+
+  async ensureUserAccountForSubmittedDraft(draft, studentNumber, temporaryPassword, transaction) {
+    const applicantEmail = normalizeEmail(draft.email);
+    if (!applicantEmail) {
+      throw { statusCode: 400, message: 'Applicant email is required before submission' };
+    }
+
+    const [existingUser] = await sequelize.query(
+      `SELECT id, role
+       FROM users
+       WHERE LOWER(TRIM(email)) = ?
+       LIMIT 1`,
+      {
+        replacements: [applicantEmail],
+        type: sequelize.QueryTypes.SELECT,
+        transaction,
+      }
+    );
+
+    const passwordHash = await bcrypt.hash(temporaryPassword, 12);
+    let userId = existingUser ? existingUser.id : null;
+
+    if (existingUser) {
+      if (existingUser.role !== 'student') {
+        throw {
+          statusCode: 409,
+          message: 'Email already exists on a non-student account. Please contact support.',
+        };
+      }
+      await sequelize.query(
+        `UPDATE users
+         SET password_hash = ?,
+             member_number = ?,
+             account_status = 'active',
+             is_verified = true,
+             is_default_password = true,
+             require_password_change = true,
+             last_password_change = NOW(),
+             updated_at = NOW()
+         WHERE id = ?`,
+        {
+          replacements: [passwordHash, studentNumber, userId],
+          transaction,
+        }
+      );
+    } else {
+      const [inserted] = await sequelize.query(
+        `INSERT INTO users (
+           email, password_hash, member_number, role, account_status,
+           is_verified, is_default_password, require_password_change, created_at, updated_at
+         ) VALUES (
+           ?, ?, ?, 'student', 'active',
+           true, true, true, NOW(), NOW()
+         )
+         RETURNING id`,
+        {
+          replacements: [applicantEmail, passwordHash, studentNumber],
+          transaction,
+        }
+      );
+      userId = inserted[0].id;
+    }
+
+    await sequelize.query(
+      `INSERT INTO user_details (
+         user_id, first_name, last_name, date_of_birth, gender, nationality,
+         id_number, passport_number, phone, alt_email, street_address, suburb,
+         city, province, postal_code, lifecycle_status, created_at, updated_at
+       ) VALUES (
+         ?, ?, ?, ?, ?, ?,
+         ?, ?, ?, ?, ?, ?,
+         ?, ?, ?, ?, NOW(), NOW()
+       )
+       ON CONFLICT (user_id) DO UPDATE
+       SET first_name = EXCLUDED.first_name,
+           last_name = EXCLUDED.last_name,
+           date_of_birth = EXCLUDED.date_of_birth,
+           gender = EXCLUDED.gender,
+           nationality = EXCLUDED.nationality,
+           id_number = EXCLUDED.id_number,
+           passport_number = EXCLUDED.passport_number,
+           phone = EXCLUDED.phone,
+           alt_email = EXCLUDED.alt_email,
+           street_address = EXCLUDED.street_address,
+           suburb = EXCLUDED.suburb,
+           city = EXCLUDED.city,
+           province = EXCLUDED.province,
+           postal_code = EXCLUDED.postal_code,
+           lifecycle_status = EXCLUDED.lifecycle_status,
+           updated_at = NOW()`,
+      {
+        replacements: [
+          userId,
+          String(draft.first_name || '').trim() || 'Student',
+          String(draft.last_name || '').trim() || 'Applicant',
+          normalizeDateForUserDetails(draft.date_of_birth),
+          draft.gender || null,
+          draft.nationality || 'South African',
+          isSouthAfricanNationality(draft.nationality) ? String(draft.id_number || '').trim() || null : null,
+          isSouthAfricanNationality(draft.nationality) ? null : String(draft.passport_number || '').trim() || null,
+          sanitizePhone(draft.phone),
+          draft.alt_email ? normalizeEmail(draft.alt_email) : null,
+          draft.street_address || null,
+          draft.suburb || null,
+          draft.city || null,
+          draft.province || null,
+          draft.postal_code || null,
+          'applied',
+        ],
+        transaction,
+      }
+    );
+
+    return { userId };
+  }
+
+  async findRelatedPartyMatch({ payer_name, payer_phone, payer_email }, transaction) {
+    const phone = String(payer_phone || '').trim();
+    const email = payer_email ? normalizeEmail(payer_email) : null;
+    const name = String(payer_name || '').trim();
+
+    if (!phone && !email) {
+      return { status: 'insufficient_data', related_party_id: null };
+    }
+
+    const [match] = await sequelize.query(
+      `SELECT id, payer_name, payer_phone, payer_email
+       FROM applications
+       WHERE id IS NOT NULL
+         AND (
+           (? IS NOT NULL AND LOWER(TRIM(COALESCE(payer_email, ''))) = ?)
+           OR
+           (? IS NOT NULL AND TRIM(COALESCE(payer_phone, '')) = ?)
+         )
+       ORDER BY updated_at DESC
+       LIMIT 1`,
+      {
+        replacements: [email, email, phone || null, phone || null],
+        type: sequelize.QueryTypes.SELECT,
+        transaction,
+      }
+    );
+
+    if (!match) {
+      return { status: 'not_found', related_party_id: null };
+    }
+
+    if (name && match.payer_name && name.toLowerCase() !== String(match.payer_name).trim().toLowerCase()) {
+      return { status: 'ambiguous', related_party_id: match.id };
+    }
+
+    return { status: 'matched', related_party_id: match.id };
+  }
+
+  async _loadApplicationWithLabels(applicationId, transaction) {
+    const [row] = await sequelize.query(
+      `SELECT
+         a.*,
+         c.code AS campus_code,
+         c.name AS campus_name,
+         q.code AS resolved_qualification_code,
+         q.name AS resolved_qualification_name
+       FROM applications a
+       LEFT JOIN campuses c ON a.campus_id = c.id
+       LEFT JOIN qualifications q ON a.qualification_id = q.id
+       WHERE a.id = ?`,
+      {
+        replacements: [applicationId],
+        type: sequelize.QueryTypes.SELECT,
+        transaction,
+      }
+    );
+
+    if (!row) {
+      throw { statusCode: 404, message: 'Draft application not found' };
+    }
+    return row;
+  }
+
+  _buildDraftPayload(row) {
+    return {
+      id: row.id,
+      status: row.status,
+      draft_id: row.id,
+      first_name: row.first_name,
+      last_name: row.last_name,
+      email: row.email,
+      phone: row.phone,
+      id_number: row.id_number,
+      passport_number: row.passport_number,
+      date_of_birth: row.date_of_birth,
+      gender: row.gender,
+      nationality: row.nationality,
+      alt_email: row.alt_email,
+      street_address: row.street_address,
+      suburb: row.suburb,
+      city: row.city,
+      province: row.province,
+      postal_code: row.postal_code,
+      high_school: row.high_school,
+      high_school_year: row.high_school_year,
+      highest_grade: row.highest_grade,
+      tertiary_institution: row.tertiary_institution,
+      tertiary_qualification: row.tertiary_qualification,
+      tertiary_year: row.tertiary_year,
+      additional_qualifications: row.additional_qualifications,
+      payer_type: row.payer_type || 'self',
+      payer_name: row.payer_name,
+      payer_relation: row.payer_relation,
+      payer_phone: row.payer_phone,
+      payer_email: row.payer_email,
+      payer_address: row.payer_address,
+      popia_accepted: row.popia_accepted,
+      popia_accepted_at: row.popia_accepted_at,
+      popia_version: row.popia_version,
+      related_party_match_status: row.related_party_match_status,
+      related_party_id: row.related_party_id,
+      qualification_id: row.qualification_id,
+      qualification_code: row.resolved_qualification_code || row.qualification_code,
+      qualification_name: row.resolved_qualification_name || row.qualification_name,
+      campus_id: row.campus_id,
+      campus_code: row.campus_code,
+      campus_name: row.campus_name,
+      application_type: row.application_type,
+      admission_for: row.admission_for,
+      study_year: row.study_year,
+      mark_entries: row.mark_entries,
+      aps_result: row.aps_result,
+      docs_uploaded: row.docs_uploaded,
+      tc_accepted: row.tc_accepted,
+      tc_accepted_at: row.tc_accepted_at,
+      tc_version: row.tc_version,
+      submitted_at: row.submitted_at,
+      reference_number: row.reference_number,
+      student_number: row.student_number,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    };
+  }
+
+  async _findOpenDraftByIdentity({ nationality, id_number, passport_number }, transaction) {
+    const normalizedNationality =
+      nationality != null && String(nationality).trim()
+        ? String(nationality).trim()
+        : 'South African';
+    const isSa = isSouthAfricanNationality(normalizedNationality);
+    const identityValue = isSa
+      ? String(id_number || '').trim()
+      : String(passport_number || '').trim();
+
+    if (!identityValue) return null;
+
+    const [row] = await sequelize.query(
+      `SELECT id
+       FROM applications
+       WHERE status = ?
+         AND (
+           (TRIM(COALESCE(nationality, 'South African')) = 'South African' AND id_number = ?)
+           OR
+           (TRIM(COALESCE(nationality, 'South African')) <> 'South African' AND passport_number = ?)
+         )
+       ORDER BY updated_at DESC
+       LIMIT 1`,
+      {
+        replacements: [
+          APPLICATION_STATUS.DRAFT,
+          isSa ? identityValue : null,
+          isSa ? null : identityValue,
+        ],
+        type: sequelize.QueryTypes.SELECT,
+        transaction,
+      }
+    );
+
+    return row || null;
+  }
+
+  async checkIdentityStatus({ id_number, passport_number, nationality }) {
+    const normalizedNationality =
+      nationality != null && String(nationality).trim()
+        ? String(nationality).trim()
+        : 'South African';
+    const isSa = isSouthAfricanNationality(normalizedNationality);
+    const identityValue = isSa
+      ? String(id_number || '').trim()
+      : String(passport_number || '').trim();
+
+    if (!identityValue) {
+      throw { statusCode: 400, message: 'Identity value is required' };
+    }
+
+    const rows = await sequelize.query(
+      `SELECT
+         id,
+         reference_number,
+         student_number,
+         status,
+         qualification_id,
+         qualification_code,
+         qualification_name,
+         submitted_at,
+         created_at,
+         updated_at
+       FROM applications
+       WHERE (
+         (TRIM(COALESCE(nationality, 'South African')) = 'South African' AND id_number = ?)
+         OR
+         (TRIM(COALESCE(nationality, 'South African')) <> 'South African' AND passport_number = ?)
+       )
+       ORDER BY updated_at DESC
+       LIMIT 10`,
+      {
+        replacements: [isSa ? identityValue : null, isSa ? null : identityValue],
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    const openDraft = rows.find((row) => row.status === APPLICATION_STATUS.DRAFT) || null;
+    const latest = rows[0] || null;
+
+    return {
+      identity_type: isSa ? 'id_number' : 'passport_number',
+      identity_value: identityValue,
+      nationality: normalizedNationality,
+      has_records: rows.length > 0,
+      has_open_draft: Boolean(openDraft),
+      draft_id: openDraft ? openDraft.id : null,
+      latest_status: latest ? latest.status : null,
+      applications: rows,
+    };
+  }
+
+  async startOrResumeDraft(payload) {
+    const normalizedNationality =
+      payload.nationality != null && String(payload.nationality).trim()
+        ? String(payload.nationality).trim()
+        : 'South African';
+    const isSa = isSouthAfricanNationality(normalizedNationality);
+    const idNumber = isSa ? String(payload.id_number || '').trim() || null : null;
+    const passportNumber = isSa ? null : String(payload.passport_number || '').trim() || null;
+
+    const transaction = await sequelize.transaction();
+    try {
+      // Try to find existing draft only if we have identity information
+      let existing = null;
+      if ((isSa && idNumber) || (!isSa && passportNumber)) {
+        existing = await this._findOpenDraftByIdentity(
+          {
+            nationality: normalizedNationality,
+            id_number: idNumber,
+            passport_number: passportNumber,
+          },
+          transaction
+        );
+      }
+
+      if (existing) {
+        const row = await this._loadApplicationWithLabels(existing.id, transaction);
+        await transaction.commit();
+        return {
+          draft: this._buildDraftPayload(row),
+          resumed: true,
+        };
+      }
+
+      const [inserted] = await sequelize.query(
+        `INSERT INTO applications (
+          user_id, reference_number, qualification_id, campus_id,
+          application_type, status,
+          first_name, last_name, email, phone,
+          id_number, passport_number, nationality, date_of_birth, gender,
+          created_at, updated_at
+        ) VALUES (
+          NULL, ?, NULL, NULL,
+          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?,
+          NOW(), NOW()
+        )
+        RETURNING id`,
+        {
+          replacements: [
+            null,
+            payload.application_type || 'new',
+            APPLICATION_STATUS.DRAFT,
+            payload.first_name ? String(payload.first_name).trim() : null,
+            payload.last_name ? String(payload.last_name).trim() : null,
+            payload.email ? normalizeEmail(payload.email) : null,
+            payload.phone ? String(payload.phone).trim() : null,
+            idNumber,
+            passportNumber,
+            normalizedNationality,
+            payload.date_of_birth || null,
+            payload.gender || null,
+          ],
+          transaction,
+        }
+      );
+
+      const row = await this._loadApplicationWithLabels(inserted[0].id, transaction);
+      await transaction.commit();
+      return {
+        draft: this._buildDraftPayload(row),
+        resumed: false,
+      };
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  async getDraftById(draftId) {
+    const row = await this._loadApplicationWithLabels(draftId);
+    const campuses = row.qualification_id
+      ? await this.getCampusesForQualification(row.qualification_id)
+      : [];
+    return {
+      ...this._buildDraftPayload(row),
+      campus_options: campuses,
+      campus_mode: campuses.length > 1 ? 'multiple' : campuses.length === 1 ? 'single' : 'none',
+    };
+  }
+
+  async updateDraft(draftId, payload) {
+    const existing = await this._loadApplicationWithLabels(draftId);
+    if (existing.status !== APPLICATION_STATUS.DRAFT) {
+      throw { statusCode: 409, message: 'Only draft applications can be updated incrementally' };
+    }
+
+    const nationality =
+      payload.nationality !== undefined
+        ? String(payload.nationality || '').trim() || 'South African'
+        : String(existing.nationality || '').trim() || 'South African';
+    const isSa = isSouthAfricanNationality(nationality);
+    const idNumber =
+      payload.id_number !== undefined
+        ? String(payload.id_number || '').trim() || null
+        : existing.id_number;
+    const passportNumber =
+      payload.passport_number !== undefined
+        ? String(payload.passport_number || '').trim() || null
+        : existing.passport_number;
+
+    const requestedQualificationId = payload.qualification_id ?? existing.qualification_id;
+    const requestedQualificationCode =
+      payload.qualification_code ?? existing.qualification_code;
+    let qualificationId = requestedQualificationId;
+    if (qualificationId) {
+      try {
+        await this.assertQualificationExists(qualificationId);
+      } catch (error) {
+        const fallbackQualification = await this.findActiveQualificationByCode(
+          requestedQualificationCode
+        );
+        if (!fallbackQualification) {
+          throw {
+            statusCode: 400,
+            message:
+              'Selected qualification is no longer available. Please re-select your qualification.',
+          };
+        }
+        qualificationId = fallbackQualification.id;
+      }
+    } else if (requestedQualificationCode) {
+      const fallbackQualification = await this.findActiveQualificationByCode(
+        requestedQualificationCode
+      );
+      qualificationId = fallbackQualification ? fallbackQualification.id : null;
+    }
+
+    let campusId = payload.campus_id ?? existing.campus_id;
+    let campusInfo = { campusId, campuses: [], campus_mode: 'none' };
+    if (qualificationId) {
+      campusInfo = await this.resolveCampusAssignment(
+        qualificationId,
+        payload.campus_id !== undefined ? payload.campus_id : existing.campus_id,
+        null
+      );
+      campusId = campusInfo.campusId;
+    }
+
+    const additionalQualifications =
+      payload.additional_qualifications !== undefined
+        ? JSON.stringify(payload.additional_qualifications || [])
+        : existing.additional_qualifications
+          ? JSON.stringify(existing.additional_qualifications)
+          : null;
+
+    const markEntries =
+      payload.mark_entries !== undefined
+        ? JSON.stringify(payload.mark_entries || [])
+        : existing.mark_entries
+          ? JSON.stringify(existing.mark_entries)
+          : null;
+
+    const apsResult =
+      payload.aps_result !== undefined
+        ? JSON.stringify(payload.aps_result || {})
+        : existing.aps_result
+          ? JSON.stringify(existing.aps_result)
+          : null;
+
+    const payerType = String(payload.payer_type ?? existing.payer_type ?? 'self').toLowerCase();
+    const popiaAccepted =
+      payload.popia_accepted !== undefined
+        ? Boolean(payload.popia_accepted)
+        : Boolean(existing.popia_accepted);
+    const popiaAcceptedAt =
+      popiaAccepted && !existing.popia_accepted
+        ? new Date()
+        : existing.popia_accepted_at;
+
+    const tcAccepted = payload.tc_accepted !== undefined ? Boolean(payload.tc_accepted) : existing.tc_accepted;
+    const tcAcceptedAt =
+      tcAccepted && !existing.tc_accepted
+        ? new Date()
+        : existing.tc_accepted_at;
+    const tcVersion = payload.tc_version ?? existing.tc_version ?? '2026.1';
+    const popiaVersion = payload.popia_version ?? existing.popia_version ?? '2026.1';
+
+    const relatedParty = await this.findRelatedPartyMatch(
+      {
+        payer_name: payload.payer_name ?? existing.payer_name,
+        payer_phone: payload.payer_phone ?? existing.payer_phone,
+        payer_email: payload.payer_email ?? existing.payer_email,
+      },
+      null
+    );
+
+    await sequelize.query(
+      `UPDATE applications SET
+        qualification_id = ?,
+        campus_id = ?,
+        admission_for = ?,
+        application_type = ?,
+        high_school = ?,
+        high_school_year = ?,
+        highest_grade = ?,
+        tertiary_institution = ?,
+        tertiary_qualification = ?,
+        tertiary_year = ?,
+        additional_qualifications = CAST(? AS jsonb),
+        payer_type = ?,
+        payer_name = ?,
+        payer_relation = ?,
+        payer_phone = ?,
+        payer_email = ?,
+        payer_address = ?,
+        popia_accepted = ?,
+        popia_accepted_at = ?,
+        popia_version = ?,
+        related_party_match_status = ?,
+        related_party_id = ?,
+        first_name = ?,
+        last_name = ?,
+        email = ?,
+        phone = ?,
+        id_number = ?,
+        passport_number = ?,
+        nationality = ?,
+        date_of_birth = ?,
+        gender = ?,
+        alt_email = ?,
+        street_address = ?,
+        suburb = ?,
+        city = ?,
+        province = ?,
+        postal_code = ?,
+        study_year = ?,
+        qualification_code = ?,
+        qualification_name = ?,
+        mark_entries = CAST(? AS jsonb),
+        aps_result = CAST(? AS jsonb),
+        docs_uploaded = CAST(? AS jsonb),
+        tc_accepted = ?,
+        tc_accepted_at = ?,
+        tc_version = ?,
+        updated_at = NOW()
+      WHERE id = ?`,
+      {
+        replacements: [
+          qualificationId,
+          campusId,
+          payload.admission_for ?? existing.admission_for,
+          payload.application_type ?? existing.application_type,
+          payload.high_school ?? existing.high_school,
+          payload.high_school_year ?? existing.high_school_year,
+          payload.highest_grade ?? existing.highest_grade,
+          payload.tertiary_institution ?? existing.tertiary_institution,
+          payload.tertiary_qualification ?? existing.tertiary_qualification,
+          payload.tertiary_year ?? existing.tertiary_year,
+          additionalQualifications,
+          payerType,
+          payload.payer_name ?? existing.payer_name,
+          payload.payer_relation ?? existing.payer_relation,
+          payload.payer_phone ?? existing.payer_phone,
+          payload.payer_email ?? existing.payer_email,
+          payload.payer_address ?? existing.payer_address,
+          popiaAccepted,
+          popiaAcceptedAt,
+          popiaVersion,
+          relatedParty.status,
+          relatedParty.related_party_id,
+          payload.first_name ?? existing.first_name,
+          payload.last_name ?? existing.last_name,
+          payload.email !== undefined ? normalizeEmail(payload.email) : existing.email,
+          payload.phone ?? existing.phone,
+          isSa ? idNumber : null,
+          isSa ? null : passportNumber,
+          nationality,
+          payload.date_of_birth ?? existing.date_of_birth,
+          payload.gender ?? existing.gender,
+          payload.alt_email !== undefined
+            ? payload.alt_email
+              ? normalizeEmail(payload.alt_email)
+              : null
+            : existing.alt_email,
+          payload.street_address ?? existing.street_address,
+          payload.suburb ?? existing.suburb,
+          payload.city ?? existing.city,
+          payload.province ?? existing.province,
+          payload.postal_code ?? existing.postal_code,
+          payload.study_year ?? existing.study_year,
+          payload.qualification_code ?? existing.qualification_code,
+          payload.qualification_name ?? existing.qualification_name,
+          markEntries,
+          apsResult,
+          payload.docs_uploaded !== undefined
+            ? JSON.stringify(payload.docs_uploaded || [])
+            : existing.docs_uploaded
+              ? JSON.stringify(existing.docs_uploaded)
+              : null,
+          tcAccepted,
+          tcAcceptedAt,
+          tcVersion,
+          draftId,
+        ],
+      }
+    );
+
+    const row = await this._loadApplicationWithLabels(draftId);
+    return {
+      ...this._buildDraftPayload(row),
+      campus_options: campusInfo.campuses,
+      campus_mode: campusInfo.campus_mode,
+    };
+  }
+
+  async createDraftPaymentIntent(draftId) {
+    const draft = await this._loadApplicationWithLabels(draftId);
+    if (draft.status !== APPLICATION_STATUS.DRAFT) {
+      throw { statusCode: 409, message: 'Payment intent can only be created for draft applications' };
+    }
+
+    if (!draft.tc_accepted) {
+      throw { statusCode: 400, message: 'Terms and conditions must be accepted before payment' };
+    }
+
+    if (!draft.qualification_id) {
+      throw { statusCode: 400, message: 'Qualification selection is required before payment' };
+    }
+
+    const campuses = await this.getCampusesForQualification(draft.qualification_id);
+    if (campuses.length > 1 && !draft.campus_id) {
+      throw { statusCode: 400, message: 'Campus selection is required for this qualification' };
+    }
+    if (campuses.length === 1 && !draft.campus_id) {
+      await sequelize.query(
+        `UPDATE applications SET campus_id = ?, updated_at = NOW() WHERE id = ?`,
+        { replacements: [campuses[0].id, draftId] }
+      );
+    }
+
+    const payerType = String(draft.payer_type || 'self').toLowerCase();
+    if (!draft.payer_name || !draft.payer_phone || !draft.payer_relation) {
+      throw { statusCode: 400, message: 'Responsible person linkage fields are required before payment' };
+    }
+    if (payerType !== 'self') {
+      if (!draft.payer_email || !draft.payer_address) {
+        throw { statusCode: 400, message: 'Guardian/sponsor payer details require email and address' };
+      }
+      if (!draft.popia_accepted) {
+        throw { statusCode: 400, message: 'POPIA consent is required for guardian/sponsor payer type' };
+      }
+    }
+
+    await sequelize.query(
+      `UPDATE applications
+       SET status = ?,
+           tc_version = COALESCE(tc_version, ?),
+           popia_version = CASE
+             WHEN LOWER(COALESCE(payer_type, 'self')) <> 'self'
+             THEN COALESCE(popia_version, ?)
+             ELSE popia_version
+           END,
+           updated_at = NOW()
+       WHERE id = ?`,
+      {
+        replacements: [APPLICATION_STATUS.PAYMENT_PENDING, '2026.1', '2026.1', draftId],
+      }
+    );
+
+    return {
+      draft_id: draftId,
+      status: APPLICATION_STATUS.PAYMENT_PENDING,
+      payment_reference: `PAY-${Date.now()}`,
+      amount: 500,
+      currency: 'ZAR',
+    };
+  }
+
+  async confirmDraftPayment(draftId, payload = {}) {
+    const draft = await this._loadApplicationWithLabels(draftId);
+    if (draft.status !== APPLICATION_STATUS.PAYMENT_PENDING) {
+      throw { statusCode: 409, message: 'Payment confirmation requires payment_pending status' };
+    }
+
+    const paid = payload.paid !== false;
+    if (!paid) {
+      await sequelize.query(
+        `UPDATE applications SET status = ?, updated_at = NOW() WHERE id = ?`,
+        {
+          replacements: [APPLICATION_STATUS.DRAFT, draftId],
+        }
+      );
+      return { draft_id: draftId, paid: false, status: APPLICATION_STATUS.DRAFT };
+    }
+
+    await sequelize.query(
+      `UPDATE applications SET updated_at = NOW() WHERE id = ?`,
+      {
+        replacements: [draftId],
+      }
+    );
+    return { draft_id: draftId, paid: true, status: APPLICATION_STATUS.PAYMENT_PENDING };
+  }
+
+  async submitDraft(draftId) {
+    const draft = await this._loadApplicationWithLabels(draftId);
+    if (draft.status !== APPLICATION_STATUS.PAYMENT_PENDING) {
+      throw { statusCode: 409, message: 'Draft can only be submitted after payment confirmation' };
+    }
+
+    if (!draft.tc_accepted) {
+      throw { statusCode: 400, message: 'Terms and conditions must be accepted before submit' };
+    }
+
+    const generatedReference = draft.reference_number || generateReferenceNumber();
+    const submittedAt = new Date();
+    const applicationYear =
+      draft.created_at && !Number.isNaN(new Date(draft.created_at).getTime())
+        ? new Date(draft.created_at).getFullYear()
+        : submittedAt.getFullYear();
+    const temporaryPassword = generateTemporaryPassword();
+
+    let generatedStudentNumber = draft.student_number || null;
+    let linkedUserId = draft.user_id || null;
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const transaction = await sequelize.transaction();
+      try {
+        if (!generatedStudentNumber) {
+          const store = new ApplicationStudentNumberStore(transaction);
+          generatedStudentNumber = await generateStudentNumber({
+            year: applicationYear,
+            role: 1,
+            store,
+          });
+        }
+
+        const account = await this.ensureUserAccountForSubmittedDraft(
+          draft,
+          generatedStudentNumber,
+          temporaryPassword,
+          transaction
+        );
+        linkedUserId = account.userId;
+
+        await sequelize.query(
+          `UPDATE applications
+           SET status = ?,
+               reference_number = ?,
+               student_number = ?,
+               user_id = ?,
+               submitted_at = ?,
+               tc_version = COALESCE(tc_version, ?),
+               updated_at = NOW()
+           WHERE id = ?`,
+          {
+            replacements: [
+              APPLICATION_STATUS.APPLIED,
+              generatedReference,
+              generatedStudentNumber,
+              linkedUserId,
+              submittedAt,
+              '2026.1',
+              draftId,
+            ],
+            transaction,
+          }
+        );
+
+        await transaction.commit();
+        break;
+      } catch (error) {
+        await transaction.rollback();
+        const isUniqueViolation =
+          error?.name === 'SequelizeUniqueConstraintError' || error?.original?.code === '23505';
+        if (!draft.student_number && isUniqueViolation && attempt < 9) {
+          generatedStudentNumber = null;
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    if (!generatedStudentNumber) {
+      throw new Error('Could not generate unique number after 10 attempts');
+    }
+
+    const finalRow = await this._loadApplicationWithLabels(draftId);
+    const outcome = decideAdmissionsEmailOutcome(finalRow);
+    let emailSent = false;
+    try {
+      const emailResult = await emailService.sendAdmissionsOutcomeEmail({
+        to: finalRow.email,
+        fullName: `${finalRow.first_name || ''} ${finalRow.last_name || ''}`.trim(),
+        studentNumber: finalRow.student_number ? formatNumber(finalRow.student_number) : null,
+        qualificationName:
+          finalRow.resolved_qualification_name || finalRow.qualification_name || null,
+        admittedFor: finalRow.admission_for,
+        submittedAt: finalRow.submitted_at,
+        loginEmail: finalRow.email,
+        temporaryPassword,
+        decision: outcome.decision,
+        suggestionQualification: outcome.suggestion,
+        rejectionReason: finalRow.rejection_reason || null,
+        nationality: finalRow.nationality,
+      });
+      emailSent = Boolean(emailResult?.sent);
+    } catch (emailError) {
+      console.error('[ApplicationService] Failed to send admissions email:', emailError?.message || emailError);
+    }
+
+    return {
+      id: finalRow.id,
+      user_id: linkedUserId,
+      reference_number: finalRow.reference_number,
+      student_number: finalRow.student_number,
+      student_number_formatted: finalRow.student_number ? formatNumber(finalRow.student_number) : null,
+      status: finalRow.status,
+      submitted_at: finalRow.submitted_at,
+      email_sent: emailSent,
+    };
+  }
+
+  _isPostgraduateQualification(qualificationName) {
+    const label = String(qualificationName || '').toLowerCase();
+    return (
+      label.includes('honours') ||
+      label.includes('postgraduate') ||
+      label.includes('master')
+    );
+  }
+
+  _classifyEligibility(qualificationName, studyLevel, apsScore, hasMath, hasPriorQualification) {
+    const label = String(qualificationName || '').toLowerCase();
+    const postgraduate = this._isPostgraduateQualification(label);
+    const wantsPostgraduate = String(studyLevel || 'undergraduate').toLowerCase() === 'postgraduate';
+    const reasons = [];
+
+    if (postgraduate && !wantsPostgraduate) {
+      reasons.push('This is a postgraduate qualification');
+    }
+    if (!postgraduate && wantsPostgraduate) {
+      reasons.push('This qualification is undergraduate-level');
+    }
+
+    if (postgraduate && !hasPriorQualification) {
+      reasons.push('Prior tertiary qualification is required for postgraduate study');
+    }
+
+    const minAps = postgraduate ? 5 : label.includes('higher certificate') ? 2 : 3;
+    if (apsScore < minAps) {
+      reasons.push(`APS below minimum threshold (${minAps})`);
+    }
+
+    if (label.includes('information technology') && !hasMath) {
+      reasons.push('Mathematics required, Math Literacy may not be accepted for IT');
+    }
+
+    if (!reasons.length) {
+      return { status: 'recommended', reasons: [] };
+    }
+    if (reasons.length <= 2) {
+      return { status: 'possibly_eligible', reasons };
+    }
+    return { status: 'not_eligible', reasons };
+  }
+
+  async evaluateApsEligibility(payload = {}) {
+    const subjects = Array.isArray(payload.subjects) ? payload.subjects : [];
+    const scoredSubjects = subjects
+      .map((subject) => {
+        const normalized = normalizeMark(subject);
+        if (normalized.percentage == null) {
+          return {
+            name: subject.name || subject.subject || 'Unknown subject',
+            aps_points: null,
+            resolved_percentage: null,
+            source: normalized.source,
+            ignored: true,
+            reason: 'Unrecognized mark format',
+          };
+        }
+        const band = getApsBand(normalized.percentage);
+        const name = String(subject.name || subject.subject || '').trim() || 'Unknown subject';
+        const lifeOrientation = name.toLowerCase() === 'life orientation';
+        return {
+          name,
+          aps_points: band.points,
+          resolved_percentage: normalized.percentage,
+          source: normalized.source,
+          source_symbol: normalized.symbol || null,
+          source_range: normalized.range || null,
+          band: band.label,
+          ignored: lifeOrientation,
+          reason: lifeOrientation ? 'Excluded from APS core total' : null,
+        };
+      })
+      .filter((item) => item.name);
+
+    const apsScore = scoredSubjects
+      .filter((item) => item.aps_points != null && !item.ignored)
+      .reduce((total, subject) => total + subject.aps_points, 0);
+
+    const hasMath = scoredSubjects.some((subject) => {
+      const label = subject.name.toLowerCase();
+      return (
+        label === 'mathematics' ||
+        label === 'maths' ||
+        label.includes('pure mathematics')
+      );
+    });
+
+    const hasPriorQualification =
+      Array.isArray(payload.additional_qualifications) &&
+      payload.additional_qualifications.some((entry) => {
+        const status = String(entry?.study_status || '').toLowerCase();
+        return ['completed', 'in progress', 'in_progress'].includes(status);
+      });
+
+    const qualifications = await sequelize.query(
+      `SELECT q.id, q.code, q.name,
+              COALESCE(
+                json_agg(
+                  DISTINCT jsonb_build_object(
+                    'id', c.id,
+                    'code', c.code,
+                    'name', c.name,
+                    'city', c.city,
+                    'province', c.province
+                  )
+                ) FILTER (WHERE c.id IS NOT NULL),
+                '[]'::json
+              ) AS campuses
+       FROM qualifications
+       q
+       LEFT JOIN campus_qualifications cq ON cq.qualification_id = q.id AND cq.is_active = true
+       LEFT JOIN campuses c ON c.id = cq.campus_id AND c.is_active = true
+       WHERE q.is_active = true
+       GROUP BY q.id, q.code, q.name
+       ORDER BY q.name ASC`,
+      { type: sequelize.QueryTypes.SELECT }
+    );
+
+    const eligibility = qualifications.map((qualification) => {
+      const result = this._classifyEligibility(
+        qualification.name,
+        payload.study_level,
+        apsScore,
+        hasMath,
+        hasPriorQualification
+      );
+      return {
+        qualification_id: qualification.id,
+        qualification_code: qualification.code,
+        qualification_name: qualification.name,
+        campus_options: qualification.campuses || [],
+        campus_mode:
+          (qualification.campuses || []).length > 1
+            ? 'multiple'
+            : (qualification.campuses || []).length === 1
+              ? 'single'
+              : 'none',
+        status: result.status,
+        reasons: result.reasons,
+      };
+    });
+
+    return {
+      aps_score: apsScore,
+      subject_breakdown: scoredSubjects,
+      recommended: eligibility.filter((item) => item.status === 'recommended'),
+      possibly_eligible: eligibility.filter((item) => item.status === 'possibly_eligible'),
+      not_eligible: eligibility.filter((item) => item.status === 'not_eligible'),
+    };
+  }
+
   async findDuplicateOpenApplication(
     qualificationId,
     nationality,
@@ -186,12 +1403,14 @@ class ApplicationService {
          WHERE qualification_id = ?
            AND TRIM(COALESCE(nationality, 'South African')) = 'South African'
            AND id_number = ?
-           AND status IN (?, ?, ?)`,
+          AND status IN (?, ?, ?, ?, ?)`,
         {
           replacements: [
             qualificationId,
             id,
             APPLICATION_STATUS.DRAFT,
+            APPLICATION_STATUS.PAYMENT_PENDING,
+            APPLICATION_STATUS.APPLIED,
             APPLICATION_STATUS.PENDING,
             APPLICATION_STATUS.UNDER_REVIEW,
           ],
@@ -210,12 +1429,14 @@ class ApplicationService {
        WHERE qualification_id = ?
          AND TRIM(COALESCE(nationality, '')) != 'South African'
          AND passport_number = ?
-         AND status IN (?, ?, ?)`,
+         AND status IN (?, ?, ?, ?, ?)`,
       {
         replacements: [
           qualificationId,
           pass,
           APPLICATION_STATUS.DRAFT,
+          APPLICATION_STATUS.PAYMENT_PENDING,
+          APPLICATION_STATUS.APPLIED,
           APPLICATION_STATUS.PENDING,
           APPLICATION_STATUS.UNDER_REVIEW,
         ],
@@ -310,6 +1531,20 @@ class ApplicationService {
         email,
         phone,
         id_number,
+        passport_number,
+        nationality = 'South African',
+        date_of_birth,
+        gender,
+        alt_email,
+        street_address,
+        suburb,
+        city,
+        province,
+        postal_code,
+        study_year,
+        qualification_code,
+        qualification_name,
+        docs_uploaded,
         tc_accepted,
         status = APPLICATION_STATUS.DRAFT,
       } = payload;
@@ -319,14 +1554,16 @@ class ApplicationService {
         throw { statusCode: 400, message: 'campus_id and qualification_id are required' };
       }
 
-      if (!first_name || !last_name || !email || !phone || !id_number) {
+      if (!first_name || !last_name || !email || !phone) {
         await transaction.rollback();
         throw {
           statusCode: 400,
           message:
-            'first_name, last_name, email, phone, and id_number are required',
+            'first_name, last_name, email, and phone are required',
         };
       }
+
+      assertIdentityForSubmit(nationality, id_number, passport_number);
 
       const normalizedEmail = normalizeEmail(email);
       const finalStatus =
@@ -352,7 +1589,9 @@ class ApplicationService {
 
       const dup = await this.findDuplicateOpenApplication(
         qualification_id,
+        nationality,
         id_number,
+        passport_number,
         transaction
       );
       if (dup) {
@@ -366,7 +1605,9 @@ class ApplicationService {
 
       const rejected = await this.findRejectedApplication(
         qualification_id,
-        id_number.trim(),
+        nationality,
+        id_number,
+        passport_number,
         transaction
       );
       if (rejected) {
@@ -396,6 +1637,12 @@ class ApplicationService {
       const tcAcceptedAt = tcAccepted ? now : null;
       const submittedAt =
         finalStatus === APPLICATION_STATUS.PENDING ? now : null;
+      const docsJson =
+        docs_uploaded == null
+          ? null
+          : typeof docs_uploaded === 'string'
+            ? docs_uploaded
+            : JSON.stringify(docs_uploaded);
 
       const [results] = await sequelize.query(
         `INSERT INTO applications (
@@ -406,6 +1653,9 @@ class ApplicationService {
           payer_name, payer_relation, payer_phone, payer_email, payer_address,
           status, tc_accepted, tc_accepted_at, submitted_at,
           first_name, last_name, email, phone, id_number,
+          passport_number, nationality, date_of_birth, gender, alt_email,
+          street_address, suburb, city, province, postal_code,
+          study_year, qualification_code, qualification_name, docs_uploaded,
           created_at, updated_at
         ) VALUES (
           NULL, ?, ?, ?, ?, ?,
@@ -414,6 +1664,9 @@ class ApplicationService {
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?,
           ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?,
+          ?, ?, ?, ?,
           NOW(), NOW()
         )
         RETURNING id, reference_number, status, submitted_at, created_at`,
@@ -444,7 +1697,21 @@ class ApplicationService {
             last_name.trim(),
             normalizedEmail,
             phone.trim(),
-            id_number.trim(),
+            id_number ? String(id_number).trim() : null,
+            passport_number ? String(passport_number).trim() : null,
+            String(nationality || 'South African').trim(),
+            date_of_birth || null,
+            gender || null,
+            alt_email ? normalizeEmail(alt_email) : null,
+            street_address || null,
+            suburb || null,
+            city || null,
+            province || null,
+            postal_code || null,
+            study_year ?? null,
+            qualification_code || null,
+            qualification_name || null,
+            docsJson,
           ],
           transaction,
         }
@@ -474,15 +1741,25 @@ class ApplicationService {
     const [row] = await sequelize.query(
       `SELECT
          a.id, a.reference_number, a.user_id, a.qualification_id, a.campus_id,
+         a.student_number,
          a.admission_for, a.application_type,
          a.high_school, a.high_school_year, a.highest_grade, a.matric_subjects,
-         a.tertiary_institution, a.tertiary_qualification, a.tertiary_year,
-         a.payer_name, a.payer_relation, a.payer_phone, a.payer_email, a.payer_address,
+         a.tertiary_institution, a.tertiary_qualification, a.tertiary_year, a.additional_qualifications,
+         a.payer_type, a.payer_name, a.payer_relation, a.payer_phone, a.payer_email, a.payer_address,
+         a.popia_accepted, a.popia_accepted_at, a.popia_version,
+         a.related_party_match_status, a.related_party_id,
          a.status, a.tc_accepted, a.tc_accepted_at, a.submitted_at, a.rejection_reason,
+         a.tc_version,
          a.reviewed_at, a.created_at, a.updated_at,
          a.first_name, a.last_name, a.email, a.phone, a.id_number,
+         a.passport_number, a.nationality, a.date_of_birth, a.gender, a.alt_email,
+         a.street_address, a.suburb, a.city, a.province, a.postal_code,
+         a.study_year, a.docs_uploaded, a.mark_entries, a.aps_result,
+         a.qualification_code AS stored_qualification_code,
+         a.qualification_name AS stored_qualification_name,
          c.code AS campus_code, c.name AS campus_name, c.city AS campus_city,
-         q.code AS qualification_code, q.name AS qualification_name
+         COALESCE(q.code, a.qualification_code) AS qualification_code,
+         COALESCE(q.name, a.qualification_name) AS qualification_name
        FROM applications a
        LEFT JOIN campuses c ON a.campus_id = c.id
        LEFT JOIN qualifications q ON a.qualification_id = q.id
@@ -513,6 +1790,7 @@ class ApplicationService {
     const [row] = await sequelize.query(
       `SELECT
          a.id, a.reference_number, a.qualification_id, a.campus_id,
+         a.student_number,
          a.status, a.submitted_at, a.created_at,
          a.first_name, a.last_name, a.email, a.phone, a.id_number,
          c.code AS campus_code, c.name AS campus_name,
@@ -706,7 +1984,9 @@ class ApplicationService {
 
       const dup = await this.findDuplicateOpenApplication(
         qualificationId,
+        nationalityMerged,
         idNumber,
+        passportNumber,
         transaction
       );
       if (dup && String(dup.id) !== String(applicationId)) {
@@ -721,7 +2001,9 @@ class ApplicationService {
 
       const rejected = await this.findRejectedApplication(
         qualificationId,
+        nationalityMerged,
         idNumber,
+        passportNumber,
         transaction
       );
       if (rejected && String(rejected.id) !== String(applicationId)) {
@@ -765,6 +2047,20 @@ class ApplicationService {
           email = ?,
           phone = ?,
           id_number = ?,
+          passport_number = ?,
+          nationality = ?,
+          date_of_birth = ?,
+          gender = ?,
+          alt_email = ?,
+          street_address = ?,
+          suburb = ?,
+          city = ?,
+          province = ?,
+          postal_code = ?,
+          study_year = ?,
+          qualification_code = ?,
+          qualification_name = ?,
+          docs_uploaded = CAST(? AS jsonb),
           updated_at = NOW()
         WHERE id = ?`,
         {
@@ -819,7 +2115,31 @@ class ApplicationService {
             payload.phone !== undefined
               ? String(payload.phone).trim()
               : existing.phone,
-            idNumber,
+            idForDb,
+            passForDb,
+            nationalityMerged,
+            payload.date_of_birth !== undefined
+              ? payload.date_of_birth
+              : existing.date_of_birth,
+            payload.gender !== undefined ? payload.gender : existing.gender,
+            altEmailNorm,
+            payload.street_address !== undefined
+              ? payload.street_address
+              : existing.street_address,
+            payload.suburb !== undefined ? payload.suburb : existing.suburb,
+            payload.city !== undefined ? payload.city : existing.city,
+            payload.province !== undefined ? payload.province : existing.province,
+            payload.postal_code !== undefined
+              ? payload.postal_code
+              : existing.postal_code,
+            payload.study_year !== undefined ? payload.study_year : existing.study_year,
+            payload.qualification_code !== undefined
+              ? payload.qualification_code
+              : existing.stored_qualification_code,
+            payload.qualification_name !== undefined
+              ? payload.qualification_name
+              : existing.stored_qualification_name,
+            docsMerged,
             applicationId,
           ],
           transaction,
@@ -842,16 +2162,20 @@ class ApplicationService {
   _applicationAdminSelect() {
     return `SELECT
          a.id, a.reference_number, a.user_id, a.qualification_id, a.campus_id,
+         a.student_number,
          a.admission_for, a.application_type,
          a.high_school, a.high_school_year, a.highest_grade, a.matric_subjects,
-         a.tertiary_institution, a.tertiary_qualification, a.tertiary_year,
-         a.payer_name, a.payer_relation, a.payer_phone, a.payer_email, a.payer_address,
+         a.tertiary_institution, a.tertiary_qualification, a.tertiary_year, a.additional_qualifications,
+         a.payer_type, a.payer_name, a.payer_relation, a.payer_phone, a.payer_email, a.payer_address,
+         a.popia_accepted, a.popia_accepted_at, a.popia_version,
+         a.related_party_match_status, a.related_party_id,
          a.status, a.tc_accepted, a.tc_accepted_at, a.submitted_at, a.rejection_reason,
+         a.tc_version,
          a.reviewed_at, a.reviewed_by, a.approved_at, a.created_at, a.updated_at,
          a.first_name, a.last_name, a.email, a.phone, a.id_number,
          a.nationality, a.passport_number, a.date_of_birth, a.gender, a.alt_email,
          a.street_address, a.suburb, a.city, a.province, a.postal_code,
-         a.study_year, a.docs_uploaded,
+         a.study_year, a.docs_uploaded, a.mark_entries, a.aps_result,
          a.qualification_code AS stored_qualification_code,
          a.qualification_name AS stored_qualification_name,
          c.code AS campus_code, c.name AS campus_name, c.city AS campus_city,
@@ -896,9 +2220,9 @@ class ApplicationService {
     if (search && String(search).trim()) {
       const term = `%${String(search).trim()}%`;
       conditions.push(
-        `(a.first_name ILIKE ? OR a.last_name ILIKE ? OR a.email ILIKE ? OR a.reference_number ILIKE ? OR a.id_number ILIKE ? OR a.passport_number ILIKE ?)`
+        `(a.first_name ILIKE ? OR a.last_name ILIKE ? OR a.email ILIKE ? OR a.reference_number ILIKE ? OR a.student_number ILIKE ? OR a.id_number ILIKE ? OR a.passport_number ILIKE ?)`
       );
-      replacements.push(term, term, term, term, term, term);
+      replacements.push(term, term, term, term, term, term, term);
     }
 
     const whereSql = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';

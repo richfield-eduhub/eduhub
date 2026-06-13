@@ -32,7 +32,7 @@
 
 <script src="../shared.js"></script>
 <script>
-requireAuth('admin');
+requireAuth(ROLES.ADMIN);
 renderNavbar('admin-reports');
 
 const apps  = getApplications();
@@ -42,7 +42,7 @@ const notifs= getNotifications();
 const logs  = getAuditLogs();
 
 // Summary
-const students  = users.filter(u=>u.role==='student').length;
+const students  = users.filter(u=>u.role===ROLES.STUDENT).length;
 const pending   = apps.filter(a=>a.status==='pending').length;
 const approved  = apps.filter(a=>a.status==='approved').length;
 const allocated = regs.filter(r=>r.status==='allocated').length;
@@ -97,7 +97,7 @@ function showTab(tab, btn) {
         <div class="card">
           <div class="card-header"><span style="font-weight:700">User Roles</span></div>
           <div class="card-body">
-            ${['student','lecturer','admin'].map(r=>barRow(r.charAt(0).toUpperCase()+r.slice(1)+'s',roleCounts[r]||0,users.length,r==='admin'?'#7c3aed':r==='lecturer'?'#d97706':'#059669')).join('')}
+            ${[ROLES.STUDENT, ROLES.LECTURER, ROLES.ADMIN].map(r=>barRow(r.charAt(0).toUpperCase()+r.slice(1)+'s',roleCounts[r]||0,users.length,APP_CONFIG.THEME.roleColors[r] || '#059669')).join('')}
           </div>
         </div>
         <div class="card">

@@ -1,0 +1,379 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="User Authentication & Authorization" id="user-authentication">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1654" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Start -->
+        <mxCell id="start" value="User Accesses&#xa;System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="490" y="40" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Login Page -->
+        <mxCell id="login-page" value="Display Login Page" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0FFE0;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="140" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Enter Credentials -->
+        <mxCell id="enter-creds" value="User Enters Email&#xa;&amp; Password" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0FFE0;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="230" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Validate Input -->
+        <mxCell id="validate-input" value="Input Fields&#xa;Empty?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="485" y="320" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Empty Error -->
+        <mxCell id="empty-error" value="Show: Email/Password&#xa;Required" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="345" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Check Format -->
+        <mxCell id="check-format" value="Email Format&#xa;Valid?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="485" y="460" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Format Error -->
+        <mxCell id="format-error" value="Show: Invalid&#xa;Email Format" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="485" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Query Database -->
+        <mxCell id="query-db" value="Query User&#xa;Database" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E6E6FA;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="600" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- User Exists -->
+        <mxCell id="user-exists" value="User Found&#xa;in Database?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="485" y="720" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Login Fail -->
+        <mxCell id="login-fail" value="Show: Invalid&#xa;Credentials" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="745" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Log Failure -->
+        <mxCell id="log-failure" value="Log Failed&#xa;Login Attempt" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E6E6FA;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="835" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Check Attempts -->
+        <mxCell id="check-attempts" value="Failed Attempts&#xa;&gt; 5?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="265" y="955" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Lock Account -->
+        <mxCell id="lock-account" value="Lock Account&#xa;Temporarily" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="1095" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Notify Lock -->
+        <mxCell id="notify-lock" value="Send Account&#xa;Lock Email" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="1185" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- End Lock -->
+        <mxCell id="end-lock" value="End:&#xa;Account Locked" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="280" y="1275" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Check Active -->
+        <mxCell id="check-active" value="Account&#xa;Active?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="485" y="860" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Inactive Error -->
+        <mxCell id="inactive-error" value="Show: Account&#xa;Inactive/Suspended" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="700" y="885" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- End Inactive -->
+        <mxCell id="end-inactive" value="End:&#xa;Access Denied" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFB6C1;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="700" y="975" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Verify Password -->
+        <mxCell id="verify-password" value="Password&#xa;Matches Hash?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="485" y="1000" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Check Role -->
+        <mxCell id="check-role" value="User Role?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="485" y="1140" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Generate Token -->
+        <mxCell id="gen-token" value="Generate JWT Token" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#87CEEB;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1280" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Create Session -->
+        <mxCell id="create-session" value="Create Session&#xa;Record" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E6E6FA;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1370" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Log Success -->
+        <mxCell id="log-success" value="Log Successful&#xa;Login" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E6E6FA;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1490" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Reset Fail Count -->
+        <mxCell id="reset-fail" value="Reset Failed&#xa;Login Counter" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0FFE0;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1610" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Set Cookie -->
+        <mxCell id="set-cookie" value="Set Session Cookie" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0FFE0;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1700" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Route User -->
+        <mxCell id="route-user" value="Route Based&#xa;on Role" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFE4B5;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="485" y="1790" width="150" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Student Dashboard -->
+        <mxCell id="student-dash" value="Redirect to&#xa;Student Dashboard" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="180" y="1930" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Lecturer Dashboard -->
+        <mxCell id="lecturer-dash" value="Redirect to&#xa;Lecturer Dashboard" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="330" y="1930" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Admin Dashboard -->
+        <mxCell id="admin-dash" value="Redirect to&#xa;Admin Dashboard" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="1930" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Librarian Dashboard -->
+        <mxCell id="librarian-dash" value="Redirect to&#xa;Librarian Dashboard" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="670" y="1930" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Applicant Dashboard -->
+        <mxCell id="applicant-dash" value="Redirect to&#xa;Application Portal" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="820" y="1930" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- End Success -->
+        <mxCell id="end-success" value="End:&#xa;Authenticated" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90EE90;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="500" y="2020" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- EDGES/CONNECTIONS -->
+        <mxCell edge="1" parent="1" source="start" target="login-page">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="login-page" target="enter-creds">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="enter-creds" target="validate-input">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="validate-input" target="empty-error">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="empty-error" target="login-page">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="220" y="370" />
+              <mxPoint x="220" y="165" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="validate-input" target="check-format">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="check-format" target="format-error">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="format-error" target="login-page">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="220" y="510" />
+              <mxPoint x="220" y="165" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="check-format" target="query-db">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="query-db" target="user-exists">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="user-exists" target="login-fail">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="login-fail" target="log-failure">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="log-failure" target="check-attempts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="check-attempts" target="lock-account">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="lock-account" target="notify-lock">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="notify-lock" target="end-lock">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="check-attempts" target="login-page">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="180" y="1005" />
+              <mxPoint x="180" y="165" />
+            </Array>
+          </mxGeometry>
+          <mxCell value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="user-exists" target="check-active">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="check-active" target="inactive-error">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="inactive-error" target="end-inactive">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="check-active" target="verify-password">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="verify-password" target="login-fail">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="1050" />
+              <mxPoint x="340" y="770" />
+            </Array>
+          </mxGeometry>
+          <mxCell value="No" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="verify-password" target="check-role">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Yes" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="check-role" target="gen-token">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="All Roles" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="gen-token" target="create-session">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="create-session" target="log-success">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="log-success" target="reset-fail">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="reset-fail" target="set-cookie">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="set-cookie" target="route-user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="route-user" target="student-dash">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Student" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="route-user" target="lecturer-dash">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Lecturer" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="route-user" target="admin-dash">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Admin" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="route-user" target="librarian-dash">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Librarian" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="route-user" target="applicant-dash">
+          <mxGeometry relative="1" as="geometry" />
+          <mxCell value="Applicant" style="edgeLabel;html=1;align=center;verticalAlign=middle;" connectable="0" vertex="1">
+            <mxGeometry relative="1" as="geometry" />
+          </mxCell>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="student-dash" target="end-success">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240" y="2050" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="lecturer-dash" target="end-success">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="390" y="2050" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="admin-dash" target="end-success">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell edge="1" parent="1" source="librarian-dash" target="end-success">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="730" y="2050" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell edge="1" parent="1" source="applicant-dash" target="end-success">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="2050" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

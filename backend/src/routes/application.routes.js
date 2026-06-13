@@ -77,6 +77,12 @@ const lookupQueryValidation = [
     .withMessage("Valid email is required"),
 ];
 
+const identityStatusValidation = [
+  query('nationality').optional().trim(),
+  query('id_number').optional().trim(),
+  query('passport_number').optional().trim(),
+];
+
 const accessQueryValidation = [
   query("reference_number")
     .trim()
@@ -92,11 +98,86 @@ const idParamValidation = [
   param("id").isUUID().withMessage("Valid application id required"),
 ];
 
+const draftIdParamValidation = [
+  param("draftId").isUUID().withMessage("Valid draft id required"),
+];
+
+router.post(
+  "/drafts/start",
+  [
+    body("first_name").optional().trim(),
+    body("last_name").optional().trim(),
+    body("email").optional({ checkFalsy: true }).isEmail().normalizeEmail(),
+    body("phone").optional().trim(),
+    body("nationality").optional().trim(),
+    body("id_number").optional().trim(),
+    body("passport_number").optional().trim(),
+    body("date_of_birth").optional({ checkFalsy: true }).isISO8601(),
+    body("gender").optional({ checkFalsy: true }).isIn(GENDER_VALUES),
+    body("application_type").optional().trim(),
+  ],
+  validate,
+  applicationController.startDraft,
+);
+
+router.get(
+  "/drafts/:draftId",
+  draftIdParamValidation,
+  validate,
+  applicationController.getDraft,
+);
+
+router.put(
+  "/drafts/:draftId",
+  draftIdParamValidation,
+  validate,
+  applicationController.updateDraft,
+);
+
+router.post(
+  "/drafts/:draftId/payment-intent",
+  draftIdParamValidation,
+  validate,
+  applicationController.createDraftPaymentIntent,
+);
+
+router.post(
+  "/drafts/:draftId/payment-confirm",
+  draftIdParamValidation,
+  validate,
+  applicationController.confirmDraftPayment,
+);
+
+router.post(
+  "/drafts/:draftId/submit",
+  draftIdParamValidation,
+  validate,
+  applicationController.submitDraft,
+);
+
+router.post(
+  "/eligibility/aps",
+  [
+    body("subjects").optional().isArray(),
+    body("study_level").optional().isIn(["Undergraduate", "Postgraduate", "undergraduate", "postgraduate"]),
+    body("additional_qualifications").optional().isArray(),
+  ],
+  validate,
+  applicationController.evaluateAps,
+);
+
 router.post(
   "/",
   createApplicationValidation,
   validate,
   applicationController.createApplication,
+);
+
+router.get(
+  "/identity/status",
+  identityStatusValidation,
+  validate,
+  applicationController.checkIdentityStatus,
 );
 
 router.get(

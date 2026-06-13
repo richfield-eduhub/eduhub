@@ -14,7 +14,6 @@ services:
       - "${DB_PORT:-5433}:5432"
     volumes:
       - eduhub_pgdata:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
       interval: 5s
@@ -32,7 +31,8 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@eduhub.co.za}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
-      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 10
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 30
+      PGADMIN_CONFIG_GUNICORN_ACCESS_LOGFILE: "'/dev/null'"
       PGADMIN_CONFIG_SERVER_MODE: "True"
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     ports:
@@ -65,9 +65,9 @@ services:
   backend:
     container_name: eduhub_backend
     restart: unless-stopped
-    command: ${BACKEND_COMMAND:-npm start}
+    command: ${BACKEND_COMMAND:-npm run dev}
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
+      NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
       DB_HOST: db
       DB_PORT: 5432
@@ -81,6 +81,8 @@ services:
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     volumes:
+      - ./backend:/app
+      - /app/node_modules
       - ./logs/backend:/app/logs
     depends_on:
       db:

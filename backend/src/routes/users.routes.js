@@ -15,6 +15,7 @@ router.get('/profile', async (req, res, next) => {
   try {
     const [rows] = await sequelize.query(
       `SELECT u.id as user_id, u.email, u.role, u.account_status, u.created_at,
+              u.is_default_password, u.require_password_change,
               ud.first_name, ud.last_name, ud.phone, ud.date_of_birth, ud.id_number,
               ud.nationality, ud.gender, ud.city, ud.province, ud.street_address,
               ud.suburb, ud.postal_code
@@ -23,7 +24,13 @@ router.get('/profile', async (req, res, next) => {
        WHERE u.id = ?`,
       { replacements: [req.user.user_id] }
     );
-    const user = rows[0];
+    const base = rows[0];
+    const user = base
+      ? {
+          ...base,
+          tempPassword: Boolean(base.require_password_change || base.is_default_password),
+        }
+      : null;
     if (!user) return res.status(404).json({ ok: false, message: 'User not found.' });
     res.json({ ok: true, user });
   } catch (err) { next(err); }
@@ -89,7 +96,13 @@ router.put('/password', async (req, res, next) => {
 
     const hash = await bcrypt.hash(newPassword, 12);
     await sequelize.query(
-      `UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?`,
+      `UPDATE users
+       SET password_hash = ?,
+           is_default_password = false,
+           require_password_change = false,
+           last_password_change = NOW(),
+           updated_at = NOW()
+       WHERE id = ?`,
       { replacements: [hash, req.user.user_id] }
     );
     res.json({ ok: true, message: 'Password changed successfully.' });

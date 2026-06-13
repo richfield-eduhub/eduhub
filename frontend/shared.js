@@ -11,1400 +11,105 @@
 const EDUHUB_LOGO =
   "data:image/png;base64,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";
 
-const QUALIFICATIONS = [
-  {
-    code: "BSc IT",
-    name: "Bachelor of Science in Information Technology",
-    faculty: "Faculty of Information Technology",
-    duration: "3 Years",
-    fee: 45000,
-    modules: [
-      {
-        code: "BSCIT1101",
-        name: "Introduction to Programming",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BSCIT1102",
-        name: "Computer Architecture & Organisation",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BSCIT1103",
-        name: "Mathematics for Computing",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BSCIT1204",
-        name: "Web Development Fundamentals",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BSCIT1205",
-        name: "Database Design & Management",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BSCIT1206",
-        name: "Networking Fundamentals",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BSCIT2107",
-        name: "Object-Oriented Programming",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "BSCIT2108",
-        name: "Systems Analysis & Design",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "BSCIT2109",
-        name: "Data Structures & Algorithms",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "BSCIT2210",
-        name: "Cyber Security Fundamentals",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "BSCIT2211",
-        name: "Cloud Computing",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "BSCIT2212",
-        name: "Internet of Things",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "BSCIT3113",
-        name: "Business Intelligence & Data Analytics",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "BSCIT3114",
-        name: "Mobile Computing & Applications",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "BSCIT3115",
-        name: "IT Project Management",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "BSCIT3216",
-        name: "Digital Applications Development",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "BSCIT3217",
-        name: "Work Integrated Learning",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "BSCIT3218",
-        name: "IT Research Project",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-    ],
+const DEFAULT_APP_CONFIG = {
+  API_BASE: "/api",
+  LOCALE: "en-ZA",
+  ROUTES: {
+    login: "/login",
+    home: "/",
+    roleHomes: {
+      admin: "/admin",
+      student: "/student",
+      lecturer: "/lecturer",
+    },
+    forceChangePassword: "/student/profile?forceChange=1",
   },
-  {
-    code: "Dip IT",
-    name: "Diploma in Information Technology",
-    faculty: "Faculty of Information Technology",
-    duration: "3 Years",
-    fee: 42000,
-    modules: [
-      {
-        code: "DIT1101",
-        name: "Introduction to IT",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "DIT1102",
-        name: "Programming Logic & Design",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "DIT1103",
-        name: "Computer Hardware & Software",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "DIT1204",
-        name: "Database Fundamentals",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "DIT1205",
-        name: "Web Design & Development",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "DIT1206",
-        name: "Business Communication",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "DIT2107",
-        name: "Network Administration",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "DIT2108",
-        name: "Application Programming",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "DIT2109",
-        name: "Operating Systems Administration",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "DIT2210",
-        name: "IT Service Management",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "DIT2211",
-        name: "Python Development",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "DIT2212",
-        name: "Systems Security",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "DIT3113",
-        name: "Advanced Networking & Infrastructure",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "DIT3114",
-        name: "Database Administration",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "DIT3115",
-        name: "Software Engineering",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "DIT3216",
-        name: "Work Integrated Learning",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "DIT3217",
-        name: "IT Governance & Compliance",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "DIT3218",
-        name: "Emerging Technologies",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-    ],
+  DEFAULTS: {
+    auditLogLimit: 50,
+    toastMs: 4000,
+    minuteMs: 60000,
+    referenceDataTtlMs: 24 * 60 * 60 * 1000,
+    referenceDataVersion: "v2",
+    homeConfigTtlMs: 24 * 60 * 60 * 1000,
+    homeConfigVersion: "v1",
+    popularProgrammesLimit: 4,
   },
-  {
-    code: "HC IT",
-    name: "Higher Certificate in Information Technology",
-    faculty: "Faculty of Information Technology",
-    duration: "1 Year",
-    fee: 28000,
-    modules: [
-      {
-        code: "HCIT1101",
-        name: "IT Fundamentals",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCIT1102",
-        name: "Introduction to Programming",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCIT1103",
-        name: "Computer Networks Basics",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCIT1204",
-        name: "Systems Development",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "HCIT1205",
-        name: "Technical Support Fundamentals",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "HCIT1206",
-        name: "Web Development Basics",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-    ],
+  THEME: {
+    roleColors: {
+      admin: "#7c3aed",
+      lecturer: "#d97706",
+      student: "#059669",
+    },
   },
-  {
-    code: "HC CF",
-    name: "Higher Certificate in Computer Forensics",
-    faculty: "Faculty of Information Technology",
-    duration: "1 Year",
-    fee: 28000,
-    modules: [
-      {
-        code: "HCCF1101",
-        name: "Introduction to Cybercrime & Law",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCCF1102",
-        name: "Digital Evidence & Acquisition",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCCF1103",
-        name: "Computer Forensics Fundamentals",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCCF1204",
-        name: "Information Security Management",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "HCCF1205",
-        name: "Cybercrime Investigation Techniques",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "HCCF1206",
-        name: "Forensic Reporting & Documentation",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-    ],
+  HOME_STATS: {
+    yearsOfExcellence: 25,
+    alumniWorldwide: 50000,
+    display: {
+      yearsOfExcellence: { label: "Years of Excellence", suffix: "+" },
+      alumniWorldwide: { label: "Alumni Worldwide", suffix: "+" },
+      qualifications: { label: "Qualifications", suffix: "+" },
+      campuses: { label: "Campus Locations", suffix: "" },
+    },
   },
-  {
-    code: "BSc Hons IT",
-    name: "BSc Honours in Information Technology",
-    faculty: "Faculty of Information Technology",
-    duration: "1 Year",
-    fee: 48000,
-    modules: [
-      {
-        code: "BSCHIT1101",
-        name: "Advanced Research Methodology",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BSCHIT1102",
-        name: "IT Leadership & Governance",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BSCHIT1203",
-        name: "Advanced Software Engineering",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BSCHIT1204",
-        name: "Research Project & Dissertation",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-    ],
-  },
-  {
-    code: "BCom",
-    name: "Bachelor of Commerce",
-    faculty: "Faculty of Business & Management Sciences",
-    duration: "3 Years",
-    fee: 42000,
-    modules: [
-      {
-        code: "BCOM1101",
-        name: "Business Communication",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BCOM1102",
-        name: "Principles of Management",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BCOM1103",
-        name: "Financial Accounting",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BCOM1204",
-        name: "Economics I",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BCOM1205",
-        name: "Business Mathematics & Statistics",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BCOM1206",
-        name: "Marketing Fundamentals",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BCOM2107",
-        name: "Cost & Management Accounting",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "BCOM2108",
-        name: "Human Resource Management",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "BCOM2109",
-        name: "Business Law",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "BCOM2210",
-        name: "Financial Management",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "BCOM2211",
-        name: "Marketing Management",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "BCOM2212",
-        name: "Operations Management",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "BCOM3113",
-        name: "Strategic Management",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "BCOM3114",
-        name: "Entrepreneurship & Innovation",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "BCOM3115",
-        name: "Supply Chain Management",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "BCOM3216",
-        name: "Corporate Governance & Ethics",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "BCOM3217",
-        name: "International Business",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "BCOM3218",
-        name: "Business Research Project",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-    ],
-  },
-  {
-    code: "BBA",
-    name: "Bachelor of Business Administration",
-    faculty: "Faculty of Business & Management Sciences",
-    duration: "3 Years",
-    fee: 42000,
-    modules: [
-      {
-        code: "BBA1101",
-        name: "Business Communication",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BBA1102",
-        name: "Organisational Behaviour",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BBA1103",
-        name: "Business Mathematics",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BBA1204",
-        name: "Introduction to Economics",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BBA1205",
-        name: "Business Computing",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BBA1206",
-        name: "Marketing Principles",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BBA2107",
-        name: "Financial Accounting",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "BBA2108",
-        name: "Human Resource Management",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "BBA2109",
-        name: "Business Law & Ethics",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "BBA2210",
-        name: "Project Management",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "BBA2211",
-        name: "Operations & Supply Chain",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "BBA2212",
-        name: "Entrepreneurship",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "BBA3113",
-        name: "Strategic Management",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "BBA3114",
-        name: "Leadership & Change Management",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "BBA3115",
-        name: "Digital Business & Innovation",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "BBA3216",
-        name: "International Business Management",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "BBA3217",
-        name: "Corporate Governance",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "BBA3218",
-        name: "Business Research Project",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-    ],
-  },
-  {
-    code: "BPM",
-    name: "Bachelor of Public Management",
-    faculty: "Faculty of Business & Management Sciences",
-    duration: "3 Years",
-    fee: 38000,
-    modules: [
-      {
-        code: "BPM1101",
-        name: "Introduction to Public Administration",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BPM1102",
-        name: "Public Policy Fundamentals",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BPM1103",
-        name: "Government & Governance",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "BPM1204",
-        name: "Public Sector Economics",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BPM1205",
-        name: "Public Finance & Budgeting",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BPM1206",
-        name: "Communication for Public Sector",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "BPM2107",
-        name: "Public Sector HR Management",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "BPM2108",
-        name: "Local Government Management",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "BPM2109",
-        name: "Public Law & Administration",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "BPM2210",
-        name: "Service Delivery Management",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "BPM2211",
-        name: "Development Studies",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "BPM2212",
-        name: "Research Methods in Public Sector",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "BPM3113",
-        name: "Public Sector Strategic Planning",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "BPM3114",
-        name: "Performance Management in Public Sector",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "BPM3115",
-        name: "Intergovernmental Relations",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "BPM3216",
-        name: "Policy Implementation & Evaluation",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "BPM3217",
-        name: "Public Sector Entrepreneurship",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "BPM3218",
-        name: "Research Project",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-    ],
-  },
-  {
-    code: "DBA",
-    name: "Diploma in Business Administration",
-    faculty: "Faculty of Business & Management Sciences",
-    duration: "3 Years",
-    fee: 38000,
-    modules: [
-      {
-        code: "DBA1101",
-        name: "Business Communication",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "DBA1102",
-        name: "Principles of Management",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "DBA1103",
-        name: "Business Mathematics",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "DBA1204",
-        name: "Introduction to Accounting",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "DBA1205",
-        name: "Marketing Basics",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "DBA1206",
-        name: "Business Computing",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "DBA2107",
-        name: "Financial Management",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "DBA2108",
-        name: "Human Resources Fundamentals",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "DBA2109",
-        name: "Business Law",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "DBA2210",
-        name: "Supply Chain & Procurement",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "DBA2211",
-        name: "Entrepreneurship",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "DBA2212",
-        name: "Operations Management",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "DBA3113",
-        name: "Strategic Business Management",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "DBA3114",
-        name: "Leadership & Organisational Development",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "DBA3115",
-        name: "Business Research Methods",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "DBA3216",
-        name: "Work Integrated Learning",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "DBA3217",
-        name: "Digital Business Transformation",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "DBA3218",
-        name: "Business Research Project",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-    ],
-  },
-  {
-    code: "DLGM",
-    name: "Diploma in Local Government Management",
-    faculty: "Faculty of Business & Management Sciences",
-    duration: "3 Years",
-    fee: 36000,
-    modules: [
-      {
-        code: "DLGM1101",
-        name: "Introduction to Local Government",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "DLGM1102",
-        name: "Public Administration Foundations",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "DLGM1103",
-        name: "Municipal Finance Basics",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "DLGM1204",
-        name: "Local Government Legislation",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "DLGM1205",
-        name: "Integrated Development Planning",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "DLGM1206",
-        name: "Community Development",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "DLGM2107",
-        name: "Municipal HR Management",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "DLGM2108",
-        name: "Service Delivery & Performance",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "DLGM2109",
-        name: "Local Government Finance",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "DLGM2210",
-        name: "Policy Process & Implementation",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "DLGM2211",
-        name: "Ward Committee Systems",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "DLGM2212",
-        name: "Municipal Governance",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-      {
-        code: "DLGM3113",
-        name: "Advanced Municipal Management",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "DLGM3114",
-        name: "Local Economic Development",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "DLGM3115",
-        name: "Environmental Management in LGM",
-        credits: 15,
-        semester: 1,
-        year: 3,
-      },
-      {
-        code: "DLGM3216",
-        name: "Work Integrated Learning",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "DLGM3217",
-        name: "Research Methods in Public Management",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-      {
-        code: "DLGM3218",
-        name: "Applied Research Project",
-        credits: 15,
-        semester: 2,
-        year: 3,
-      },
-    ],
-  },
-  {
-    code: "HCBA",
-    name: "Higher Certificate in Business Administration",
-    faculty: "Faculty of Business & Management Sciences",
-    duration: "1 Year",
-    fee: 26000,
-    modules: [
-      {
-        code: "HCBA1101",
-        name: "Business Communication",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCBA1102",
-        name: "Introduction to Management",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCBA1103",
-        name: "Basic Financial Literacy",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCBA1204",
-        name: "Customer Service & Relations",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "HCBA1205",
-        name: "Office Technology & Computing",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "HCBA1206",
-        name: "Work Integrated Learning",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-    ],
-  },
-  {
-    code: "HCOA",
-    name: "Higher Certificate in Office Administration",
-    faculty: "Faculty of Business & Management Sciences",
-    duration: "1 Year",
-    fee: 26000,
-    modules: [
-      {
-        code: "HCOA1101",
-        name: "Office Administration Principles",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCOA1102",
-        name: "Business English & Communication",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCOA1103",
-        name: "Computer Applications & Office Software",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCOA1204",
-        name: "Records & Information Management",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "HCOA1205",
-        name: "Administrative Support Services",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "HCOA1206",
-        name: "Work Integrated Learning",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-    ],
-  },
-  {
-    code: "HCLGM",
-    name: "Higher Certificate in Local Government Management",
-    faculty: "Faculty of Business & Management Sciences",
-    duration: "1 Year",
-    fee: 26000,
-    modules: [
-      {
-        code: "HCLGM1101",
-        name: "Introduction to Local Government",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCLGM1102",
-        name: "Public Sector Administration",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCLGM1103",
-        name: "Municipal Finance Fundamentals",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCLGM1204",
-        name: "Community Engagement & Development",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "HCLGM1205",
-        name: "Service Delivery Basics",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "HCLGM1206",
-        name: "Work Integrated Learning",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-    ],
-  },
-  {
-    code: "HC RPLA",
-    name: "Higher Certificate in Recognition of Prior Learning Activities",
-    faculty: "Faculty of Business & Management Sciences",
-    duration: "1 Year",
-    fee: 24000,
-    modules: [
-      {
-        code: "HCRPLA1101",
-        name: "Principles of RPL in Higher Education",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCRPLA1102",
-        name: "Portfolio Preparation & Assessment",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "HCRPLA1203",
-        name: "RPL Facilitation Practice",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "HCRPLA1204",
-        name: "Work Integrated Learning in RPL",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-    ],
-  },
-  {
-    code: "MBA",
-    name: "Master of Business Administration",
-    faculty: "Faculty of Business & Management Sciences",
-    duration: "2 Years",
-    fee: 68000,
-    modules: [
-      {
-        code: "MBA1101",
-        name: "Advanced Business Strategy",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "MBA1102",
-        name: "Leadership in the 4th Industrial Revolution",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "MBA1103",
-        name: "Advanced Financial Management",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "MBA1204",
-        name: "Digital Transformation & Innovation",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "MBA1205",
-        name: "Research Methodology",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "MBA1206",
-        name: "Advanced Marketing Strategy",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "MBA2107",
-        name: "Big Data & Analytics for Managers",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "MBA2108",
-        name: "Entrepreneurship & Venture Capital",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "MBA2109",
-        name: "Corporate Governance & Business Ethics",
-        credits: 15,
-        semester: 1,
-        year: 2,
-      },
-      {
-        code: "MBA2210",
-        name: "MBA Research Project / Dissertation",
-        credits: 15,
-        semester: 2,
-        year: 2,
-      },
-    ],
-  },
-  {
-    code: "PGDip Mgt",
-    name: "Postgraduate Diploma in Management",
-    faculty: "Faculty of Business & Management Sciences",
-    duration: "1 Year",
-    fee: 48000,
-    modules: [
-      {
-        code: "PGDM1101",
-        name: "Management Principles & Practices",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "PGDM1102",
-        name: "Organisational Leadership",
-        credits: 15,
-        semester: 1,
-        year: 1,
-      },
-      {
-        code: "PGDM1203",
-        name: "Strategic Human Resource Management",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-      {
-        code: "PGDM1204",
-        name: "Applied Management Research Project",
-        credits: 15,
-        semester: 2,
-        year: 1,
-      },
-    ],
-  },
-];
+};
 
-const NATIONALITIES = [
+function mergeAppConfig(base, override) {
+  if (!override || typeof override !== "object") return base;
+  const mergedRoutes = {
+    ...base.ROUTES,
+    ...(override.ROUTES || {}),
+    roleHomes: {
+      ...base.ROUTES.roleHomes,
+      ...((override.ROUTES && override.ROUTES.roleHomes) || {}),
+    },
+  };
+  const mergedDefaults = {
+    ...base.DEFAULTS,
+    ...(override.DEFAULTS || {}),
+  };
+  const mergedTheme = {
+    ...base.THEME,
+    ...(override.THEME || {}),
+    roleColors: {
+      ...base.THEME.roleColors,
+      ...((override.THEME && override.THEME.roleColors) || {}),
+    },
+  };
+  const mergedHomeStatsDisplay = {
+    ...(base.HOME_STATS.display || {}),
+    ...((override.HOME_STATS && override.HOME_STATS.display) || {}),
+  };
+  const mergedHomeStats = {
+    ...base.HOME_STATS,
+    ...(override.HOME_STATS || {}),
+    display: mergedHomeStatsDisplay,
+  };
+  return {
+    ...base,
+    ...override,
+    ROUTES: mergedRoutes,
+    DEFAULTS: mergedDefaults,
+    THEME: mergedTheme,
+    HOME_STATS: mergedHomeStats,
+  };
+}
+
+const APP_CONFIG = mergeAppConfig(
+  DEFAULT_APP_CONFIG,
+  window.__EDUHUB_CONFIG || {},
+);
+
+const ROLES = Object.freeze({
+  ADMIN: "admin",
+  STUDENT: "student",
+  LECTURER: "lecturer",
+});
+
+// Qualifications are fetched from backend API (/api/qualifications)
+// This array is populated dynamically via initReferenceData()
+let QUALIFICATIONS = [];
+
+let NATIONALITIES = [
   "South African",
   "Zimbabwean",
   "Mozambican",
@@ -1427,6 +132,260 @@ const NATIONALITIES = [
   "Pakistani",
   "Other",
 ];
+
+// Static reference data (hardcoded - rarely changes)
+const GENDERS = ["Male", "Female", "Non-binary", "Prefer not to say"];
+
+const PROVINCES = [
+  "Gauteng",
+  "Western Cape",
+  "KwaZulu-Natal",
+  "Eastern Cape",
+  "Limpopo",
+  "Mpumalanga",
+  "North West",
+  "Free State",
+  "Northern Cape",
+];
+
+const EDUCATION_LEVELS_SA = ["Grade 12 / Matric", "Grade 11", "GED", "N3"];
+
+const EDUCATION_LEVELS_FOREIGN = ["Foreign equivalent"];
+
+const PAYER_RELATIONSHIPS = [
+  "Self",
+  "Parent",
+  "Guardian",
+  "Sibling",
+  "Spouse",
+  "Next of Kin",
+  "Sponsor",
+  "Employer",
+  "Other",
+];
+
+// Dynamic reference data (fetched from backend - changes frequently)
+let DOCUMENT_REQUIREMENTS_SA = [
+  "Certified copy of SA ID document",
+  "Certified copy of Matric certificate",
+  "Certified copy of tertiary qualifications",
+  "Proof of payment / funding letter",
+  "Passport photo",
+];
+
+let DOCUMENT_REQUIREMENTS_FOREIGN = [
+  "Certified copy of Passport (all pages)",
+  "Study permit / visa",
+  "Certified copy of highest qualification",
+  "Proof of payment / funding letter",
+  "Passport photo",
+  "SAQA evaluation letter",
+];
+
+const REFERENCE_CACHE_KEY = "eduhub.referenceData";
+let referenceDataInitPromise = null;
+
+function getQualifications() {
+  return QUALIFICATIONS;
+}
+
+function getNationalities() {
+  return NATIONALITIES;
+}
+
+function getGenders() {
+  return GENDERS;
+}
+
+function getProvinces() {
+  return PROVINCES;
+}
+
+function getEducationLevels(isForeign = false) {
+  return isForeign ? EDUCATION_LEVELS_FOREIGN : EDUCATION_LEVELS_SA;
+}
+
+function getPayerRelationships() {
+  return PAYER_RELATIONSHIPS;
+}
+
+function getDocumentRequirements(isForeign = false) {
+  return isForeign ? DOCUMENT_REQUIREMENTS_FOREIGN : DOCUMENT_REQUIREMENTS_SA;
+}
+
+function readReferenceCache() {
+  try {
+    const raw = localStorage.getItem(REFERENCE_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      !parsed ||
+      parsed.version !== APP_CONFIG.DEFAULTS.referenceDataVersion
+    ) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeReferenceCache(data) {
+  try {
+    localStorage.setItem(
+      REFERENCE_CACHE_KEY,
+      JSON.stringify({
+        version: APP_CONFIG.DEFAULTS.referenceDataVersion,
+        fetchedAt: Date.now(),
+        qualifications: data.qualifications,
+        nationalities: data.nationalities,
+        documentRequirementsSA: data.documentRequirementsSA,
+        documentRequirementsForeign: data.documentRequirementsForeign,
+      }),
+    );
+  } catch {
+    // ignore cache write failures
+  }
+}
+
+function hydrateReferenceData(data) {
+  if (Array.isArray(data.qualifications) && data.qualifications.length) {
+    QUALIFICATIONS = data.qualifications;
+  }
+  if (Array.isArray(data.nationalities) && data.nationalities.length) {
+    NATIONALITIES = data.nationalities;
+  }
+  if (
+    Array.isArray(data.documentRequirementsSA) &&
+    data.documentRequirementsSA.length
+  ) {
+    DOCUMENT_REQUIREMENTS_SA = data.documentRequirementsSA;
+  }
+  if (
+    Array.isArray(data.documentRequirementsForeign) &&
+    data.documentRequirementsForeign.length
+  ) {
+    DOCUMENT_REQUIREMENTS_FOREIGN = data.documentRequirementsForeign;
+  }
+}
+
+function normalizeQualification(q) {
+  const durationYears =
+    q.duration_years ?? q.durationYears ?? q.duration ?? q.duration_in_years;
+  const fee = Number(q.total_fee ?? q.totalFee ?? q.fee ?? 0);
+  return {
+    id: q.id,
+    code: q.code,
+    name: q.name,
+    faculty: q.faculty,
+    duration:
+      typeof durationYears === "number"
+        ? `${durationYears} Year${durationYears === 1 ? "" : "s"}`
+        : String(durationYears || "N/A"),
+    fee,
+    modules: Array.isArray(q.modules)
+      ? q.modules.map((m) => ({
+          code: m.code,
+          name: m.name,
+          credits: Number(m.credits || 0),
+          semester: Number(m.semester || m.semester_number || 1),
+          year: Number(m.year || m.year_of_study || 1),
+        }))
+      : [],
+  };
+}
+
+async function fetchReferenceDataFromApi() {
+  let qualifications = [];
+
+  // Prefer richer reference catalogue if available.
+  const referenceQualsRes = await api("GET", "/reference/qualifications");
+  if (referenceQualsRes.ok && Array.isArray(referenceQualsRes.data)) {
+    qualifications = referenceQualsRes.data
+      .map((q) => normalizeQualification(q))
+      .filter((q) => q.code && q.name);
+  }
+
+  // Fallback to legacy qualifications endpoint for older environments.
+  if (!qualifications.length) {
+    const qualsRes = await api("GET", "/qualifications?active_only=true");
+    if (!qualsRes.ok || !Array.isArray(qualsRes.data)) {
+      throw new Error("Failed to fetch qualifications");
+    }
+
+    const detailResponses = await Promise.all(
+      qualsRes.data.map((q) => api("GET", `/qualifications/${q.id}`)),
+    );
+
+    qualifications = detailResponses
+      .filter((r) => r.ok && r.data)
+      .map((r) => normalizeQualification(r.data))
+      .filter((q) => q.code && q.name);
+  }
+
+  // Fetch dynamic reference data in parallel (items that change frequently)
+  const [natsRes, docReqSARes, docReqForeignRes] = await Promise.all([
+    api("GET", "/reference/nationalities"),
+    api("GET", "/reference/document-requirements?type=sa_national"),
+    api("GET", "/reference/document-requirements?type=foreign_national"),
+  ]);
+
+  const nationalities =
+    natsRes.ok && Array.isArray(natsRes.data) ? natsRes.data : [];
+  const documentRequirementsSA =
+    docReqSARes.ok && Array.isArray(docReqSARes.data) ? docReqSARes.data : [];
+  const documentRequirementsForeign =
+    docReqForeignRes.ok && Array.isArray(docReqForeignRes.data)
+      ? docReqForeignRes.data
+      : [];
+
+  if (!qualifications.length) {
+    throw new Error("No qualification data returned");
+  }
+
+  return {
+    qualifications,
+    nationalities,
+    documentRequirementsSA,
+    documentRequirementsForeign,
+  };
+}
+
+async function initReferenceData(options = {}) {
+  const { force = false } = options;
+  if (!force && referenceDataInitPromise) return referenceDataInitPromise;
+
+  referenceDataInitPromise = (async () => {
+    const cached = readReferenceCache();
+    const isFresh =
+      cached &&
+      Date.now() - cached.fetchedAt < APP_CONFIG.DEFAULTS.referenceDataTtlMs;
+
+    if (!force && isFresh) {
+      hydrateReferenceData(cached);
+      return { fromCache: true };
+    }
+
+    try {
+      const fresh = await fetchReferenceDataFromApi();
+      hydrateReferenceData(fresh);
+      writeReferenceCache(fresh);
+      return { fromCache: false };
+    } catch (err) {
+      if (cached) {
+        hydrateReferenceData(cached);
+        return { fromCache: true, stale: true, error: err.message };
+      }
+      return { fromCache: true, stale: true, error: err.message };
+    }
+  })();
+
+  try {
+    return await referenceDataInitPromise;
+  } finally {
+    referenceDataInitPromise = null;
+  }
+}
 
 /* ═══════════════════════════════════════════════════
    API CORE
@@ -1465,11 +424,11 @@ async function api(method, path, body) {
   };
   if (body !== undefined) opts.body = JSON.stringify(body);
   try {
-    const res = await fetch(`/api${path}`, opts);
+    const res = await fetch(`${APP_CONFIG.API_BASE}${path}`, opts);
     if (res.status === 401) {
       setToken(null);
       setCachedUser(null);
-      window.location.href = "/login";
+      window.location.href = APP_CONFIG.ROUTES.login;
       return { ok: false, message: "Session expired." };
     }
     const data = await res.json();
@@ -1511,14 +470,23 @@ async function resetPassword(token, password) {
 function requireAuth(role) {
   const user = getCachedUser();
   if (!user || !getToken()) {
-    window.location.href = "/login";
+    window.location.href = APP_CONFIG.ROUTES.login;
     return null;
   }
   if (role && user.role !== role) {
-    window.location.href = `/${user.role}`;
+    redirectToRoleHome(user);
     return null;
   }
   return user;
+}
+
+function getRoleHomePath(role) {
+  return APP_CONFIG.ROUTES.roleHomes[role] || APP_CONFIG.ROUTES.home;
+}
+
+function redirectToRoleHome(userOrRole) {
+  const role = typeof userOrRole === "string" ? userOrRole : userOrRole?.role;
+  window.location.href = getRoleHomePath(role);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1556,6 +524,41 @@ async function getApplications() {
 }
 async function submitApplication(appData) {
   return api("POST", "/applications", appData);
+}
+async function startApplicationDraft(payload) {
+  return api("POST", "/applications/drafts/start", payload);
+}
+async function checkApplicationIdentityStatus(payload) {
+  const params = new URLSearchParams();
+  if (payload?.nationality) params.set("nationality", payload.nationality);
+  if (payload?.id_number) params.set("id_number", payload.id_number);
+  if (payload?.passport_number) params.set("passport_number", payload.passport_number);
+  const qs = params.toString();
+  return api("GET", `/applications/identity/status${qs ? `?${qs}` : ""}`);
+}
+async function getApplicationDraft(draftId) {
+  return api("GET", `/applications/drafts/${draftId}`);
+}
+async function updateApplicationDraft(draftId, payload) {
+  return api("PUT", `/applications/drafts/${draftId}`, payload);
+}
+async function createApplicationPaymentIntent(draftId) {
+  return api("POST", `/applications/drafts/${draftId}/payment-intent`);
+}
+async function confirmApplicationPayment(draftId, payload) {
+  return api("POST", `/applications/drafts/${draftId}/payment-confirm`, payload);
+}
+async function submitApplicationDraft(draftId) {
+  return api("POST", `/applications/drafts/${draftId}/submit`);
+}
+async function evaluateApsEligibility(payload) {
+  return api("POST", "/applications/eligibility/aps", payload);
+}
+async function getCampusesByQualification(qualificationId) {
+  return api("GET", `/campuses/by-qualification/${qualificationId}`);
+}
+async function getAllCampuses() {
+  return api("GET", "/campuses?active_only=true&include_online=true");
 }
 async function getApplication(id) {
   return api("GET", `/applications/${id}`);
@@ -1617,7 +620,10 @@ async function getStatistics() {
   return api("GET", "/admin/statistics");
 }
 async function getAuditLogs(limit) {
-  return api("GET", `/admin/audit-logs?limit=${limit || 50}`);
+  return api(
+    "GET",
+    `/admin/audit-logs?limit=${limit || APP_CONFIG.DEFAULTS.auditLogLimit}`,
+  );
 }
 async function changeUserRole(userId, role) {
   return api("PUT", `/admin/users/${userId}/role`, { role });
@@ -1627,43 +633,439 @@ async function changeUserStatus(userId, status) {
 }
 
 /* ═══════════════════════════════════════════════════
-   NOTIFICATIONS & INBOX (Stubs for old dashboard code)
+   LEGACY DASHBOARD ADAPTERS
+   Local browser persistence used by legacy dashboard
+   screens while API parity is still in progress.
    ═══════════════════════════════════════════════════ */
+
+function fmtDateTime(d) {
+  if (!d) return "—";
+  return new Date(d).toLocaleString(APP_CONFIG.LOCALE, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+const LEGACY_STORE_KEYS = {
+  messages: "eduhub.legacy.messages.v1",
+  assignmentSubmissions: "eduhub.legacy.assignmentSubmissions.v1",
+  lecturerAssignments: "eduhub.legacy.lecturerAssignments.v1",
+  events: "eduhub.legacy.events.v1",
+  announcements: "eduhub.legacy.announcements.v1",
+  notifications: "eduhub.legacy.notifications.v1",
+};
+
+function uid(prefix) {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function readJsonArray(key) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeJsonArray(key, items) {
+  localStorage.setItem(key, JSON.stringify(Array.isArray(items) ? items : []));
+}
+
+function getMessages() {
+  return readJsonArray(LEGACY_STORE_KEYS.messages);
+}
+
+function saveMessages(messages) {
+  writeJsonArray(LEGACY_STORE_KEYS.messages, messages);
+}
+
 function getInboxFor(userId) {
-  // Stub function - returns empty array until inbox API is implemented
-  return [];
+  return getMessages()
+    .filter((m) => m.to === userId)
+    .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
 }
+
 function getSentBy(userId) {
-  // Stub function - returns empty array until messaging API is implemented
-  return [];
+  return getMessages()
+    .filter((m) => m.from === userId)
+    .sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
 }
 
-/* ═══════════════════════════════════════════════════
-   ASSIGNMENTS (Stubs for old dashboard code)
-   ═══════════════════════════════════════════════════ */
+function sendMessage(from, to, subject, body) {
+  const all = getMessages();
+  const message = {
+    id: uid("msg"),
+    from,
+    to,
+    subject: String(subject || "").trim(),
+    body: String(body || "").trim(),
+    sentAt: new Date().toISOString(),
+    read: false,
+    replies: [],
+  };
+  all.push(message);
+  saveMessages(all);
+  return message;
+}
+
+function markMessageRead(messageId) {
+  const all = getMessages();
+  const idx = all.findIndex((m) => m.id === messageId);
+  if (idx === -1) return false;
+  all[idx].read = true;
+  saveMessages(all);
+  return true;
+}
+
+function replyMessage(messageId, from, body) {
+  const all = getMessages();
+  const idx = all.findIndex((m) => m.id === messageId);
+  if (idx === -1) return null;
+  if (!Array.isArray(all[idx].replies)) all[idx].replies = [];
+  all[idx].replies.push({
+    id: uid("reply"),
+    from,
+    body: String(body || "").trim(),
+    sentAt: new Date().toISOString(),
+  });
+  all[idx].read = true;
+  saveMessages(all);
+  return all[idx];
+}
+
+function getAssignmentSubmissions() {
+  return readJsonArray(LEGACY_STORE_KEYS.assignmentSubmissions);
+}
+
+function saveAssignmentSubmissions(items) {
+  writeJsonArray(LEGACY_STORE_KEYS.assignmentSubmissions, items);
+}
+
 function getAssignments() {
-  // Stub function - returns empty array until assignments API is implemented
-  return [];
+  return getAssignmentSubmissions().sort(
+    (a, b) => new Date(b.submittedAt) - new Date(a.submittedAt),
+  );
 }
+
 function getStudentAssignments(studentId) {
-  // Stub function - returns empty array until assignments API is implemented
-  return [];
+  return getAssignments().filter((a) => a.studentId === studentId);
 }
 
-/* ═══════════════════════════════════════════════════
-   EVENTS (Stubs for old dashboard code)
-   ═══════════════════════════════════════════════════ */
+function submitAssignment(
+  studentId,
+  moduleCode,
+  moduleName,
+  title,
+  content,
+  fileName = null,
+) {
+  const all = getAssignmentSubmissions();
+  const item = {
+    id: uid("asgn"),
+    studentId,
+    moduleCode,
+    moduleName,
+    title: String(title || "").trim(),
+    content: String(content || "").trim(),
+    fileName,
+    submittedAt: new Date().toISOString(),
+    status: "submitted",
+    mark: null,
+    feedback: "",
+    gradedAt: null,
+    gradedBy: null,
+  };
+  all.push(item);
+  saveAssignmentSubmissions(all);
+  return item;
+}
+
+function gradeAssignment(id, mark, feedback, gradedBy) {
+  const all = getAssignmentSubmissions();
+  const idx = all.findIndex((a) => a.id === id);
+  if (idx === -1) return null;
+  all[idx] = {
+    ...all[idx],
+    mark: Number(mark),
+    feedback: String(feedback || "").trim(),
+    gradedBy: gradedBy || "Lecturer",
+    gradedAt: new Date().toISOString(),
+    status: "graded",
+  };
+  saveAssignmentSubmissions(all);
+  return all[idx];
+}
+
+function getLecturerAssignments() {
+  return readJsonArray(LEGACY_STORE_KEYS.lecturerAssignments).sort(
+    (a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt),
+  );
+}
+
+function saveLecturerAssignments(items) {
+  writeJsonArray(LEGACY_STORE_KEYS.lecturerAssignments, items);
+}
+
+function getLecturerAssignmentsForModule(moduleCode) {
+  return getLecturerAssignments().filter((a) => a.moduleCode === moduleCode);
+}
+
+function uploadLecturerAssignment(
+  lecturerId,
+  lecturerName,
+  moduleCode,
+  moduleName,
+  title,
+  description,
+  dueDate = null,
+  fileName = null,
+) {
+  const all = getLecturerAssignments();
+  const item = {
+    id: uid("lec_asgn"),
+    lecturerId,
+    lecturerName,
+    moduleCode,
+    moduleName,
+    title: String(title || "").trim(),
+    description: String(description || "").trim(),
+    dueDate,
+    fileName,
+    uploadedAt: new Date().toISOString(),
+  };
+  all.push(item);
+  saveLecturerAssignments(all);
+  return item;
+}
+
+function deleteLecturerAssignment(id) {
+  const all = getLecturerAssignments().filter((a) => a.id !== id);
+  saveLecturerAssignments(all);
+}
+
+const DEFAULT_LEGACY_EVENTS = [
+  {
+    id: "ev_orientation",
+    title: "Student Orientation",
+    description: "Welcome session for new students.",
+    type: "academic",
+    audience: "all",
+    date: "2026-02-03",
+    time: "09:00",
+  },
+  {
+    id: "ev_s1_exam",
+    title: "Semester 1 Exams Start",
+    description: "Prepare your timetable and venues.",
+    type: "exam",
+    audience: "students",
+    date: "2026-05-25",
+  },
+  {
+    id: "ev_staff_meeting",
+    title: "Faculty Teaching & Learning Forum",
+    description: "Monthly lecturer forum and updates.",
+    type: "academic",
+    audience: "lecturers",
+    date: "2026-08-12",
+    time: "14:00",
+  },
+  {
+    id: "ev_open_day",
+    title: "EduHub Open Day",
+    description: "Prospective students campus showcase.",
+    type: "general",
+    audience: "all",
+    date: "2026-09-05",
+    time: "10:00",
+  },
+];
+
+function getEvents() {
+  const stored = readJsonArray(LEGACY_STORE_KEYS.events);
+  if (stored.length) return stored;
+  writeJsonArray(LEGACY_STORE_KEYS.events, DEFAULT_LEGACY_EVENTS);
+  return [...DEFAULT_LEGACY_EVENTS];
+}
+
+function saveEvents(events) {
+  writeJsonArray(LEGACY_STORE_KEYS.events, events);
+}
+
+function createEvent(payload) {
+  const all = getEvents();
+  const item = {
+    id: uid("ev"),
+    title: String(payload?.title || "").trim(),
+    date: payload?.date || new Date().toISOString().slice(0, 10),
+    time: payload?.time || "",
+    type: payload?.type || "general",
+    audience: payload?.audience || "all",
+    description: String(payload?.description || "").trim(),
+    createdBy: payload?.createdBy || null,
+    createdAt: new Date().toISOString(),
+  };
+  all.push(item);
+  saveEvents(all);
+  return item;
+}
+
+function deleteEvent(id) {
+  saveEvents(getEvents().filter((e) => e.id !== id));
+}
+
 function getUpcomingEvents(role) {
-  // Stub function - returns empty array until events API is implemented
-  return [];
+  const allowedAudience = {
+    student: "students",
+    lecturer: "lecturers",
+    admin: "admins",
+  }[role];
+  const now = new Date();
+  return getEvents()
+    .filter((e) => e.audience === "all" || e.audience === allowedAudience)
+    .filter((e) => {
+      const eventDate = new Date(`${e.date}T23:59:59`);
+      return Number.isFinite(eventDate.getTime()) && eventDate >= now;
+    })
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
 }
 
-/* ═══════════════════════════════════════════════════
-   EMAIL (Stubs for old dashboard code)
-   ═══════════════════════════════════════════════════ */
+function getAnnouncements() {
+  return readJsonArray(LEGACY_STORE_KEYS.announcements).sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  );
+}
+
+function saveAnnouncements(items) {
+  writeJsonArray(LEGACY_STORE_KEYS.announcements, items);
+}
+
+function addAnnouncement(payload) {
+  const all = getAnnouncements();
+  const item = {
+    id: uid("ann"),
+    title: String(payload?.title || "").trim(),
+    body: String(payload?.body || "").trim(),
+    target: payload?.target || "all",
+    priority: payload?.priority || "info",
+    authorId: payload?.authorId || null,
+    authorName: payload?.authorName || "Lecturer",
+    createdAt: new Date().toISOString(),
+  };
+  all.push(item);
+  saveAnnouncements(all);
+  return item;
+}
+
+function getLocalNotifications() {
+  return readJsonArray(LEGACY_STORE_KEYS.notifications);
+}
+
+function saveLocalNotifications(items) {
+  writeJsonArray(LEGACY_STORE_KEYS.notifications, items);
+}
+
+function addNotification({ userId, title, message, type = "info" }) {
+  const all = getLocalNotifications();
+  const item = {
+    id: uid("local_notif"),
+    userId,
+    title,
+    message,
+    type,
+    read: false,
+    createdAt: new Date().toISOString(),
+  };
+  all.push(item);
+  saveLocalNotifications(all);
+  return item;
+}
+
+function getSentEmails() {
+  return readJsonArray("sentEmails").sort(
+    (a, b) => new Date(b.sentAt) - new Date(a.sentAt),
+  );
+}
+
 function getSchoolEmails(studentId) {
-  // Stub function - returns empty array until email API is implemented
-  return [];
+  const key = `eduhub_schoolEmails_${studentId}`;
+  const existing = readJsonArray(key);
+  if (existing.length) {
+    return existing.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+  }
+  const seeded = [
+    {
+      id: uid("mail"),
+      subject: "Welcome to EduHub",
+      body: "Welcome to EduHub! Your student account has been created successfully.",
+      from: "admissions@eduhub.ac.za",
+      sentAt: new Date().toISOString(),
+      read: false,
+    },
+  ];
+  writeJsonArray(key, seeded);
+  return seeded;
+}
+
+function markSchoolEmailRead(studentId, emailId) {
+  const key = `eduhub_schoolEmails_${studentId}`;
+  const all = readJsonArray(key);
+  const idx = all.findIndex((e) => e.id === emailId);
+  if (idx === -1) return false;
+  all[idx].read = true;
+  writeJsonArray(key, all);
+  return true;
+}
+
+function getLibraryResources(code = "all") {
+  const resources = [
+    {
+      id: "res_policy_1",
+      code: "general",
+      name: "General",
+      title: "Student Handbook",
+      type: "policy",
+      size: "1.8 MB",
+    },
+    {
+      id: "res_policy_2",
+      code: "general",
+      name: "General",
+      title: "Assessment Policy",
+      type: "policy",
+      size: "940 KB",
+    },
+    {
+      id: "res_ict101_1",
+      code: "ICT101",
+      name: "Programming Fundamentals",
+      title: "Python Basics Study Guide",
+      type: "guide",
+      size: "2.3 MB",
+    },
+    {
+      id: "res_ict104_1",
+      code: "ICT104",
+      name: "Web Development",
+      title: "HTML/CSS Lecture Slides",
+      type: "slides",
+      size: "3.1 MB",
+    },
+    {
+      id: "res_ict105_1",
+      code: "ICT105",
+      name: "Database Systems",
+      title: "SQL Practice Workbook",
+      type: "research",
+      size: "1.4 MB",
+    },
+  ];
+  if (!code || code === "all") return resources;
+  return resources.filter((r) => r.code === "general" || r.code === code);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1671,12 +1073,30 @@ function getSchoolEmails(studentId) {
    ═══════════════════════════════════════════════════ */
 async function getNotifications() {
   const res = await api("GET", "/notifications");
-  return res.ok ? res.notifications : [];
+  const apiNotifs = res.ok && Array.isArray(res.notifications) ? res.notifications : [];
+  const localNotifs = getLocalNotifications().filter(
+    (n) => n.userId === getCurrentUser()?.id,
+  );
+  return [...apiNotifs, ...localNotifs].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  );
 }
 async function markNotifRead(id) {
+  if (String(id).startsWith("local_notif_")) {
+    const all = getLocalNotifications();
+    const idx = all.findIndex((n) => n.id === id);
+    if (idx === -1) return { ok: false, message: "Notification not found" };
+    all[idx].read = true;
+    saveLocalNotifications(all);
+    return { ok: true };
+  }
   return api("PUT", `/notifications/${id}/read`);
 }
 async function deleteNotif(id) {
+  if (String(id).startsWith("local_notif_")) {
+    saveLocalNotifications(getLocalNotifications().filter((n) => n.id !== id));
+    return { ok: true };
+  }
   return api("DELETE", `/notifications/${id}`);
 }
 
@@ -1719,7 +1139,7 @@ function badge(status) {
 
 function fmtDate(d) {
   return d
-    ? new Date(d).toLocaleDateString("en-ZA", {
+    ? new Date(d).toLocaleDateString(APP_CONFIG.LOCALE, {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -1727,7 +1147,9 @@ function fmtDate(d) {
     : "—";
 }
 function timeAgo(d) {
-  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  const m = Math.floor(
+    (Date.now() - new Date(d).getTime()) / APP_CONFIG.DEFAULTS.minuteMs,
+  );
   if (m < 1) return "Just now";
   if (m < 60) return m + "m ago";
   const h = Math.floor(m / 60);
@@ -1753,7 +1175,10 @@ function showToast(msg, type, ms) {
   t.textContent = msg;
   t.className = `toast toast-${type || "success"}`;
   clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.add("hidden"), ms || 4000);
+  t._timer = setTimeout(
+    () => t.classList.add("hidden"),
+    ms || APP_CONFIG.DEFAULTS.toastMs,
+  );
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1798,7 +1223,20 @@ function renderNavbar(activePage) {
       { href: "/student/register", label: "Register Modules", key: "register" },
       { href: "/student/modules", label: "My Modules", key: "modules" },
     ],
-    lecturer: [{ href: "/lecturer", label: "Dashboard", key: "dashboard" }],
+    lecturer: [
+      { href: "/lecturer", label: "Dashboard", key: "lecturer-dashboard" },
+      {
+        href: "/lecturer/courses",
+        label: "My Courses",
+        key: "lecturer-courses",
+      },
+      { href: "/lecturer/roster", label: "Roster", key: "lecturer-roster" },
+      {
+        href: "/lecturer/announcements",
+        label: "Announcements",
+        key: "lecturer-announcements",
+      },
+    ],
   };
   const role = user ? user.role : "public";
   const navLinks = links[role] || links.public;
@@ -1817,7 +1255,7 @@ function renderNavbar(activePage) {
       </button>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-left:12px">
-      <div style="text-align:right"><div style="font-size:13px;font-weight:600">${user.first_name || user.email.split('@')[0]}</div><div style="font-size:11px;opacity:.7;text-transform:capitalize">${user.role}</div></div>
+      <div style="text-align:right"><div style="font-size:13px;font-weight:600">${user.first_name || user.email.split("@")[0]}</div><div style="font-size:11px;opacity:.7;text-transform:capitalize">${user.role}</div></div>
       <button onclick="doLogout()" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">Logout</button>
     </div>`
     : "";
@@ -1833,9 +1271,7 @@ function renderNavbar(activePage) {
       </div>
     </div>`
     : "";
-  const ph = document.getElementById("navbar-placeholder");
-  if (ph) {
-    ph.innerHTML = `
+  const navMarkup = `
       <nav class="navbar">
         <a href="${user ? "/" + user.role : "/"}" style="display:flex;align-items:center;gap:8px">
           <img src="${EDUHUB_LOGO}" alt="EduHub" style="height:36px" onerror="this.style.display='none'">
@@ -1843,6 +1279,11 @@ function renderNavbar(activePage) {
         </a>
         <div class="navbar-links">${linksHtml}${userHtml}</div>
       </nav>${notifHtml}`;
+  const placeholder =
+    document.getElementById("navbar-placeholder") ||
+    document.getElementById("navbar-root");
+  if (placeholder) {
+    placeholder.innerHTML = navMarkup;
   }
   document.addEventListener("click", (e) => {
     const d = document.getElementById("notif-dropdown"),
@@ -1906,7 +1347,15 @@ async function doMarkRead(id) {
 }
 async function doLogout() {
   await logout();
-  window.location.href = "/";
+  window.location.href = APP_CONFIG.ROUTES.home;
+}
+
+function getStudyMode() {
+  return localStorage.getItem("studyMode") || null;
+}
+
+function setStudyMode(mode) {
+  localStorage.setItem("studyMode", mode);
 }
 
 /* ═══════════════════════════════════════════════════

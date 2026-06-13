@@ -32,6 +32,9 @@ router.get('/', (req, res) => {
 
 // ── POST /api/applications ──────────────────────────────────────────────────
 router.post('/', (req, res) => {
+  console.log('[Applications][POST] Incoming request body:');
+  console.log(JSON.stringify(req.body, null, 2));
+
   const {
     firstName, lastName, email, phone, idNumber, passportNumber,
     dateOfBirth, gender, nationality,
@@ -95,6 +98,9 @@ router.post('/', (req, res) => {
     submittedAt:     new Date().toISOString(),
     createdAt:       new Date().toISOString(),
   };
+
+  console.log('[Applications][POST] Persisted application object:');
+  console.log(JSON.stringify(app, null, 2));
 
   applications.unshift(app);
 

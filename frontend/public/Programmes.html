@@ -60,237 +60,79 @@
   <script>
     renderNavbar('programmes');
 
-    const PROGS = [
-      // ── IT UNDERGRADUATE ───────────────────────────────────────────────────────
-      {
-        slug:'bscit', title:'Bachelor of Science in Information Technology', code:'BSc IT',
-        faculty:'Faculty of Information Technology', duration:'3 Years', nqf:'NQF 7', nqfNum:7,
-        saqa:'SAQA ID 50362 · 370 credits', icon:'💻', color:'#003DA5', cat:'it', level:'deg',
-        levelLabel:'Degree', delivery:'Contact & Distance',
-        desc:'Learn to automate business processes, ensure Cyber Security, build Cloud and IoT solutions, and develop Mobile & Digital Applications. A career-launching degree with real-world impact.',
-        careers:['Business Analyst','Application Developer','Information Security Analyst','Systems Analyst & Designer','Database Administrator','Data Analyst','Cyber Security Consultant','Software Engineer'],
-        modules:[
-          {yr:1,s:1,items:['Introduction to Programming','Computer Architecture & Organisation','Mathematics for Computing']},
-          {yr:1,s:2,items:['Web Development Fundamentals','Database Design & Management','Networking Fundamentals']},
-          {yr:2,s:1,items:['Object-Oriented Programming','Systems Analysis & Design','Data Structures & Algorithms']},
-          {yr:2,s:2,items:['Cyber Security Fundamentals','Cloud Computing','Internet of Things']},
-          {yr:3,s:1,items:['Business Intelligence & Data Analytics','Mobile Computing & Applications','IT Project Management']},
-          {yr:3,s:2,items:['Digital Applications Development','Work Integrated Learning','IT Research Project']},
-        ]
-      },
-      {
-        slug:'dit', title:'Diploma in Information Technology', code:'Dip IT',
-        faculty:'Faculty of Information Technology', duration:'3 Years', nqf:'NQF 6', nqfNum:6,
-        saqa:'SAQA ID 88322 · 360 credits', icon:'🖥️', color:'#0369a1', cat:'it', level:'dip',
-        levelLabel:'Diploma', delivery:'Contact & Distance',
-        desc:'A wide-spectrum IT diploma covering programming, networking, database administration, IT service management and emerging technologies — preparing you for a broad range of IT roles.',
-        careers:['IT Manager','Business Analyst','Database & Systems Administrator','Network Administrator','Application Programmer','Python Developer','Network Engineer'],
-        modules:[
-          {yr:1,s:1,items:['Introduction to IT','Programming Logic & Design','Computer Hardware & Software']},
-          {yr:1,s:2,items:['Database Fundamentals','Web Design & Development','Business Communication']},
-          {yr:2,s:1,items:['Network Administration','Application Programming','Operating Systems Administration']},
-          {yr:2,s:2,items:['IT Service Management','Python Development','Systems Security']},
-          {yr:3,s:1,items:['Advanced Networking & Infrastructure','Database Administration','Software Engineering']},
-          {yr:3,s:2,items:['Work Integrated Learning','IT Governance & Compliance','Emerging Technologies']},
-        ]
-      },
-      // ── IT HIGHER CERTIFICATES ──────────────────────────────────────────────
-      {
-        slug:'hcit', title:'Higher Certificate in Information Technology', code:'HC IT',
-        faculty:'Faculty of Information Technology', duration:'1 Year', nqf:'NQF 5', nqfNum:5,
-        saqa:'SAQA ID 82926 · 120 credits', icon:'🖱️', color:'#0891b2', cat:'it', level:'hc',
-        levelLabel:'Higher Certificate', delivery:'Contact & Distance',
-        desc:'Foundational knowledge in IT — systems development and technical support. Your gateway into higher IT study or an entry-level tech career.',
-        careers:['IT Technical Support','Junior Web Developer','Systems Developer'],
-        modules:[
-          {yr:1,s:1,items:['IT Fundamentals','Introduction to Programming','Computer Networks Basics']},
-          {yr:1,s:2,items:['Systems Development','Technical Support Fundamentals','Web Development Basics']},
-        ]
-      },
-      {
-        slug:'hccf', title:'Higher Certificate in Computer Forensics', code:'HC CF',
-        faculty:'Faculty of Information Technology', duration:'1 Year', nqf:'NQF 5', nqfNum:5,
-        saqa:'SAQA ID 111617 · 120 credits', icon:'🔍', color:'#7c3aed', cat:'it', level:'hc',
-        levelLabel:'Higher Certificate', delivery:'Distance Only',
-        desc:'Technical skills and reflective competencies to tackle cybercrime. Focus on information security and computer forensic investigation techniques.',
-        careers:['Computer Forensics Investigator','Cybercrime Prevention Analyst'],
-        modules:[
-          {yr:1,s:1,items:['Introduction to Cybercrime & Law','Digital Evidence & Acquisition','Computer Forensics Fundamentals']},
-          {yr:1,s:2,items:['Information Security Management','Cybercrime Investigation Techniques','Forensic Reporting & Documentation']},
-        ]
-      },
-      // ── IT POSTGRADUATE ─────────────────────────────────────────────────────
-      {
-        slug:'bschit', title:'BSc Honours in Information Technology', code:'BSc Hons IT',
-        faculty:'Faculty of Information Technology', duration:'1 Year', nqf:'NQF 8', nqfNum:8,
-        saqa:'SAQA ID 110089 · 120 credits', icon:'🏅', color:'#be185d', cat:'it', level:'pg',
-        levelLabel:'Postgraduate', delivery:'Distance Only',
-        desc:'Enhances BSc IT graduates with a practical and theoretical curriculum at managerial level — equipping you for senior roles in software engineering, business analysis and data analysis.',
-        careers:['Senior Software Engineer','Senior Business Analyst','Application Development Manager','Senior Data Analyst'],
-        modules:[
-          {yr:1,s:1,items:['Advanced Research Methodology','IT Leadership & Governance']},
-          {yr:1,s:2,items:['Advanced Software Engineering','Research Project & Dissertation']},
-        ]
-      },
+    // Marketing metadata for each programme (icons, colors, descriptions, etc.)
+    const PROG_METADATA = {
+      'BSc IT': { slug:'bscit', icon:'💻', color:'#003DA5', cat:'it', level:'deg', levelLabel:'Degree', nqf:'NQF 7', nqfNum:7, saqa:'SAQA ID 50362 · 370 credits', delivery:'Contact & Distance', desc:'Learn to automate business processes, ensure Cyber Security, build Cloud and IoT solutions, and develop Mobile & Digital Applications. A career-launching degree with real-world impact.', careers:['Business Analyst','Application Developer','Information Security Analyst','Systems Analyst & Designer','Database Administrator','Data Analyst','Cyber Security Consultant','Software Engineer'] },
+      'Dip IT': { slug:'dit', icon:'🖥️', color:'#0369a1', cat:'it', level:'dip', levelLabel:'Diploma', nqf:'NQF 6', nqfNum:6, saqa:'SAQA ID 88322 · 360 credits', delivery:'Contact & Distance', desc:'A wide-spectrum IT diploma covering programming, networking, database administration, IT service management and emerging technologies — preparing you for a broad range of IT roles.', careers:['IT Manager','Business Analyst','Database & Systems Administrator','Network Administrator','Application Programmer','Python Developer','Network Engineer'] },
+      'HC IT': { slug:'hcit', icon:'📱', color:'#0891b2', cat:'it', level:'hc', levelLabel:'Higher Certificate', nqf:'NQF 5', nqfNum:5, saqa:'SAQA ID 50362 · 120 credits', delivery:'Contact & Distance', desc:'An entry-level IT qualification designed to build foundational skills in programming, databases, and web development — a perfect launchpad into tech.', careers:['Junior Developer','IT Support Technician','Web Developer','Help Desk Analyst'] },
+      'HC CF': { slug:'hccf', icon:'📘', color:'#06b6d4', cat:'it', level:'hc', levelLabel:'Higher Certificate', nqf:'NQF 5', nqfNum:5, saqa:'SAQA ID 50362 · 120 credits', delivery:'Contact & Distance', desc:'Specialised training in cyber security fundamentals and digital forensics — protecting digital assets in an increasingly connected world.', careers:['Cyber Security Analyst','Digital Forensics Technician','Security Operations Analyst','Compliance Officer'] },
+      'BSc Hons IT': { slug:'bschonsit', icon:'🎓', color:'#7c3aed', cat:'it', level:'pg', levelLabel:'Honours', nqf:'NQF 8', nqfNum:8, saqa:'SAQA ID · 120 credits', delivery:'Contact & Distance', desc:'Deepen your IT expertise with advanced research and specialised modules in emerging technologies and innovation.', careers:['Senior Developer','IT Consultant','Research Analyst','Solutions Architect'] },
+      'BCom': { slug:'bcom', icon:'📊', color:'#059669', cat:'bms', level:'deg', levelLabel:'Degree', nqf:'NQF 7', nqfNum:7, saqa:'SAQA ID · 370 credits', delivery:'Contact & Distance', desc:'A comprehensive business degree covering accounting, finance, marketing, and management — launching your career in commerce.', careers:['Accountant','Financial Analyst','Marketing Manager','Business Consultant'] },
+      'BBA': { slug:'bba', icon:'💼', color:'#10b981', cat:'bms', level:'deg', levelLabel:'Degree', nqf:'NQF 7', nqfNum:7, saqa:'SAQA ID · 370 credits', delivery:'Contact & Distance', desc:'Learn to lead organisations through strategic management, operations, and entrepreneurship.', careers:['Business Manager','Operations Manager','Entrepreneur','Project Manager'] },
+      'BPM': { slug:'bpm', icon:'📈', color:'#14b8a6', cat:'bms', level:'deg', levelLabel:'Degree', nqf:'NQF 7', nqfNum:7, saqa:'SAQA ID · 370 credits', delivery:'Contact & Distance', desc:'Master public sector management, governance, and policy implementation for impactful public service.', careers:['Public Manager','Policy Analyst','Government Relations Officer','NGO Manager'] },
+      'DBA': { slug:'dba', icon:'📋', color:'#0ea5e9', cat:'bms', level:'dip', levelLabel:'Diploma', nqf:'NQF 6', nqfNum:6, saqa:'SAQA ID · 360 credits', delivery:'Contact & Distance', desc:'Practical business administration training in finance, marketing, HR, and operations.', careers:['Office Manager','HR Officer','Marketing Coordinator','Operations Administrator'] },
+      'DLGM': { slug:'dlgm', icon:'🏛️', color:'#06b6d4', cat:'bms', level:'dip', levelLabel:'Diploma', nqf:'NQF 6', nqfNum:6, saqa:'SAQA ID · 360 credits', delivery:'Contact & Distance', desc:'Train for local government roles with modules in municipal finance, service delivery, and governance.', careers:['Municipal Officer','Local Government Administrator','Community Development Officer','Policy Implementer'] },
+      'HCBA': { slug:'hcba', icon:'💳', color:'#14b8a6', cat:'bms', level:'hc', levelLabel:'Higher Certificate', nqf:'NQF 5', nqfNum:5, saqa:'SAQA ID · 120 credits', delivery:'Contact & Distance', desc:'Entry-level business administration fundamentals for aspiring business professionals.', careers:['Administrative Assistant','Office Coordinator','Junior Accountant','Customer Service Manager'] },
+      'HCOA': { slug:'hcoa', icon:'🗂️', color:'#10b981', cat:'bms', level:'hc', levelLabel:'Higher Certificate', nqf:'NQF 5', nqfNum:5, saqa:'SAQA ID · 120 credits', delivery:'Contact & Distance', desc:'Office administration essentials for effective workplace coordination and support.', careers:['Office Administrator','Receptionist','Executive Assistant','Records Manager'] },
+      'HCLGM': { slug:'hclgm', icon:'🏢', color:'#059669', cat:'bms', level:'hc', levelLabel:'Higher Certificate', nqf:'NQF 5', nqfNum:5, saqa:'SAQA ID · 120 credits', delivery:'Contact & Distance', desc:'Introduction to local government management and municipal administration.', careers:['Municipal Clerk','Local Government Assistant','Community Liaison Officer'] },
+      'HC RPLA': { slug:'hcrpla', icon:'🌍', color:'#06b6d4', cat:'bms', level:'hc', levelLabel:'Higher Certificate', nqf:'NQF 5', nqfNum:5, saqa:'SAQA ID · 120 credits', delivery:'Contact & Distance', desc:'Recognition of Prior Learning assessment pathway for experienced professionals.', careers:['Various based on experience'] },
+      'MBA': { slug:'mba', icon:'👔', color:'#8b5cf6', cat:'bms', level:'pg', levelLabel:'Masters', nqf:'NQF 9', nqfNum:9, saqa:'SAQA ID · 180 credits', delivery:'Contact & Distance', desc:'Executive business leadership programme for strategic decision-making and organisational excellence.', careers:['CEO','General Manager','Strategy Consultant','Business Director'] },
+      'PGDip Mgt': { slug:'pgdipmgt', icon:'🎯', color:'#a855f7', cat:'bms', level:'pg', levelLabel:'Postgraduate Diploma', nqf:'NQF 8', nqfNum:8, saqa:'SAQA ID · 120 credits', delivery:'Contact & Distance', desc:'Advanced management training for mid-career professionals seeking leadership roles.', careers:['Senior Manager','Department Head','Strategic Planner','Change Manager'] }
+    };
 
-      // ── BMS UNDERGRADUATE ──────────────────────────────────────────────────
-      {
-        slug:'bcom', title:'Bachelor of Commerce', code:'BCom',
-        faculty:'Faculty of Business & Management Sciences', duration:'3 Years', nqf:'NQF 7', nqfNum:7,
-        saqa:'SAQA ID 84948 · 360 credits', icon:'📊', color:'#1e6b3c', cat:'bms', level:'deg',
-        levelLabel:'Degree', delivery:'Contact & Distance',
-        desc:'Prepares graduates for professional, business and commercial environments. Strong foundations in accounting, financial management, marketing, HR and strategic management.',
-        careers:['Accountant','General Management','Entrepreneurship','Marketing Management','Human Resource Management','Financial Management'],
-        modules:[
-          {yr:1,s:1,items:['Business Communication','Principles of Management','Financial Accounting']},
-          {yr:1,s:2,items:['Economics I','Business Mathematics & Statistics','Marketing Fundamentals']},
-          {yr:2,s:1,items:['Cost & Management Accounting','Human Resource Management','Business Law']},
-          {yr:2,s:2,items:['Financial Management','Marketing Management','Operations Management']},
-          {yr:3,s:1,items:['Strategic Management','Entrepreneurship & Innovation','Supply Chain Management']},
-          {yr:3,s:2,items:['Corporate Governance & Ethics','International Business','Business Research Project']},
-        ]
-      },
-      {
-        slug:'bba', title:'Bachelor of Business Administration', code:'BBA',
-        faculty:'Faculty of Business & Management Sciences', duration:'3 Years', nqf:'NQF 7', nqfNum:7,
-        saqa:'SAQA ID 88921 · 360 credits', icon:'🏢', color:'#b45309', cat:'bms', level:'deg',
-        levelLabel:'Degree', delivery:'Contact & Distance',
-        desc:'Develops knowledge and skills across all sub-sectors of business management — producing knowledgeable, skilled individuals who can improve productivity in public and private sectors.',
-        careers:['Operations Manager','Business Development Manager','Entrepreneur','HR Manager','Project Manager'],
-        modules:[
-          {yr:1,s:1,items:['Business Communication','Organisational Behaviour','Business Mathematics']},
-          {yr:1,s:2,items:['Introduction to Economics','Business Computing','Marketing Principles']},
-          {yr:2,s:1,items:['Financial Accounting','Human Resource Management','Business Law & Ethics']},
-          {yr:2,s:2,items:['Project Management','Operations & Supply Chain','Entrepreneurship']},
-          {yr:3,s:1,items:['Strategic Management','Leadership & Change Management','Digital Business & Innovation']},
-          {yr:3,s:2,items:['International Business Management','Corporate Governance','Business Research Project']},
-        ]
-      },
-      {
-        slug:'bpm', title:'Bachelor of Public Management', code:'BPM',
-        faculty:'Faculty of Business & Management Sciences', duration:'3 Years', nqf:'NQF 7', nqfNum:7,
-        saqa:'SAQA ID 94580 · 360 credits', icon:'🏛️', color:'#155e75', cat:'bms', level:'deg',
-        levelLabel:'Degree', delivery:'Distance Only',
-        desc:'Provides broad knowledge and skills for careers in the public sector, public administration, policy making and local government.',
-        careers:['Local Government Officer','Public Finance Specialist','Public Sector Economist','Public Sector HR Manager','Policy Advisor','Consultant'],
-        modules:[
-          {yr:1,s:1,items:['Introduction to Public Administration','Public Policy Fundamentals','Government & Governance']},
-          {yr:1,s:2,items:['Public Sector Economics','Public Finance & Budgeting','Communication for Public Sector']},
-          {yr:2,s:1,items:['Public Sector HR Management','Local Government Management','Public Law & Administration']},
-          {yr:2,s:2,items:['Service Delivery Management','Development Studies','Research Methods in Public Sector']},
-          {yr:3,s:1,items:['Public Sector Strategic Planning','Performance Management in Public Sector','Intergovernmental Relations']},
-          {yr:3,s:2,items:['Policy Implementation & Evaluation','Public Sector Entrepreneurship','Research Project']},
-        ]
-      },
-      {
-        slug:'dba', title:'Diploma in Business Administration', code:'DBA',
-        faculty:'Faculty of Business & Management Sciences', duration:'3 Years', nqf:'NQF 6', nqfNum:6,
-        saqa:'SAQA ID 88897 · 360 credits', icon:'📋', color:'#6d28d9', cat:'bms', level:'dip',
-        levelLabel:'Diploma', delivery:'Contact & Distance',
-        desc:'A vocational and industry-oriented qualification. Emphasises general business principles, application and technology. Provides access to the labour market with progression to degree-level study possible.',
-        careers:['Small Business Manager','Entrepreneur','Banking Professional','Financial Services','HR Coordinator','Procurement Officer','Supervisor'],
-        modules:[
-          {yr:1,s:1,items:['Business Communication','Principles of Management','Business Mathematics']},
-          {yr:1,s:2,items:['Introduction to Accounting','Marketing Basics','Business Computing']},
-          {yr:2,s:1,items:['Financial Management','Human Resources Fundamentals','Business Law']},
-          {yr:2,s:2,items:['Supply Chain & Procurement','Entrepreneurship','Operations Management']},
-          {yr:3,s:1,items:['Strategic Business Management','Leadership & Organisational Development','Business Research Methods']},
-          {yr:3,s:2,items:['Work Integrated Learning','Digital Business Transformation','Business Research Project']},
-        ]
-      },
-      {
-        slug:'dlgm', title:'Diploma in Local Government Management', code:'DLGM',
-        faculty:'Faculty of Business & Management Sciences', duration:'3 Years', nqf:'NQF 6', nqfNum:6,
-        saqa:'SAQA ID 99717 · 360 credits', icon:'🏙️', color:'#0f766e', cat:'bms', level:'dip',
-        levelLabel:'Diploma', delivery:'Distance Only',
-        desc:'Designed for local government cadres. Covers Integrated Development Planning, Service Delivery, Legislative and Policy Process, Local Government Finance and Performance Management.',
-        careers:['Local Government Manager','IDP Officer','Municipal Finance Officer','Service Delivery Coordinator','Ward Committee Facilitator'],
-        modules:[
-          {yr:1,s:1,items:['Introduction to Local Government','Public Administration Foundations','Municipal Finance Basics']},
-          {yr:1,s:2,items:['Local Government Legislation','Integrated Development Planning','Community Development']},
-          {yr:2,s:1,items:['Municipal HR Management','Service Delivery & Performance','Local Government Finance']},
-          {yr:2,s:2,items:['Policy Process & Implementation','Ward Committee Systems','Municipal Governance']},
-          {yr:3,s:1,items:['Advanced Municipal Management','Local Economic Development','Environmental Management in LGM']},
-          {yr:3,s:2,items:['Work Integrated Learning','Research Methods in Public Management','Applied Research Project']},
-        ]
-      },
-      // ── BMS HIGHER CERTIFICATES ────────────────────────────────────────────
-      {
-        slug:'hcba', title:'Higher Certificate in Business Administration', code:'HCBA',
-        faculty:'Faculty of Business & Management Sciences', duration:'1 Year', nqf:'NQF 5', nqfNum:5,
-        saqa:'SAQA ID 90864 · 120 credits', icon:'📁', color:'#92400e', cat:'bms', level:'hc',
-        levelLabel:'Higher Certificate', delivery:'Contact & Distance',
-        desc:'Vocational and industry-oriented with Work Integrated Learning. Provides basic management and administrative knowledge for service organisations. Counts as entry to degree or diploma programmes.',
-        careers:['Administrative Officer','Office Manager','Junior HR Coordinator','Customer Service Supervisor'],
-        modules:[
-          {yr:1,s:1,items:['Business Communication','Introduction to Management','Basic Financial Literacy']},
-          {yr:1,s:2,items:['Customer Service & Relations','Office Technology & Computing','Work Integrated Learning']},
-        ]
-      },
-      {
-        slug:'hcoa', title:'Higher Certificate in Office Administration', code:'HCOA',
-        faculty:'Faculty of Business & Management Sciences', duration:'1 Year', nqf:'NQF 5', nqfNum:5,
-        saqa:'SAQA ID 88901 · 120 credits', icon:'🗂️', color:'#5b21b6', cat:'bms', level:'hc',
-        levelLabel:'Higher Certificate', delivery:'Contact Only',
-        desc:'Provides knowledge and practical skills to perform effectively as an office administrator. Enables graduates to contribute to management activities and pursue entry-level administrative positions.',
-        careers:['Office Administrator','Records Officer','PA / Secretary','Management Support'],
-        modules:[
-          {yr:1,s:1,items:['Office Administration Principles','Business English & Communication','Computer Applications & Office Software']},
-          {yr:1,s:2,items:['Records & Information Management','Administrative Support Services','Work Integrated Learning']},
-        ]
-      },
-      {
-        slug:'hclgm', title:'Higher Certificate in Local Government Management', code:'HCLGM',
-        faculty:'Faculty of Business & Management Sciences', duration:'1 Year', nqf:'NQF 5', nqfNum:5,
-        saqa:'SAQA ID 94600 · 120 credits', icon:'🏘️', color:'#065f46', cat:'bms', level:'hc',
-        levelLabel:'Higher Certificate', delivery:'Distance Only',
-        desc:'Entry-level qualification for persons already employed in local government seeking formal qualification. Provides background for supervisory and management positions in the public sector.',
-        careers:['Local Government Officer','Municipal Support Staff','Community Liaison Officer'],
-        modules:[
-          {yr:1,s:1,items:['Introduction to Local Government','Public Sector Administration','Municipal Finance Fundamentals']},
-          {yr:1,s:2,items:['Community Engagement & Development','Service Delivery Basics','Work Integrated Learning']},
-        ]
-      },
-      {
-        slug:'hcrpla', title:'Higher Certificate in Recognition of Prior Learning Activities', code:'HC RPLA',
-        faculty:'Faculty of Business & Management Sciences', duration:'1 Year', nqf:'NQF 5', nqfNum:5,
-        saqa:'SAQA ID 93928 · 120 credits', icon:'📄', color:'#374151', cat:'bms', level:'hc',
-        levelLabel:'Higher Certificate', delivery:'Distance Only',
-        desc:'A vocational qualification for individuals in higher education practice. Develops practitioners who coordinate RPL activities — one of the first qualifications developed in this field in South Africa.',
-        careers:['RPL Facilitator','Assessment Coordinator','HE Practitioner','Portfolio Advisor'],
-        modules:[
-          {yr:1,s:1,items:['Principles of RPL in Higher Education','Portfolio Preparation & Assessment']},
-          {yr:1,s:2,items:['RPL Facilitation Practice','Work Integrated Learning in RPL']},
-        ]
-      },
-      // ── BMS POSTGRADUATE ───────────────────────────────────────────────────
-      {
-        slug:'mba', title:'Master of Business Administration', code:'MBA',
-        faculty:'Faculty of Business & Management Sciences', duration:'2 Years', nqf:'NQF 9', nqfNum:9,
-        saqa:'SAQA ID 117681 · 180 credits', icon:'🎓', color:'#1e1b4b', cat:'bms', level:'pg',
-        levelLabel:'Postgraduate', delivery:'Distance Only',
-        desc:'Transformative programme equipping students with business, leadership and modern IT skills for the 4th Industrial Revolution. Apply learnings immediately in your job and business.',
-        careers:['CEO / Director','Senior Manager','Business Consultant','Director General','Regional Manager','MBA Graduate roles across industry'],
-        modules:[
-          {yr:1,s:1,items:['Advanced Business Strategy','Leadership in the 4th Industrial Revolution','Advanced Financial Management']},
-          {yr:1,s:2,items:['Digital Transformation & Innovation','Research Methodology','Advanced Marketing Strategy']},
-          {yr:2,s:1,items:['Big Data & Analytics for Managers','Entrepreneurship & Venture Capital','Corporate Governance & Business Ethics']},
-          {yr:2,s:2,items:['MBA Research Project / Dissertation']},
-        ]
-      },
-      {
-        slug:'pgdm', title:'Postgraduate Diploma in Management', code:'PGDip Mgt',
-        faculty:'Faculty of Business & Management Sciences', duration:'1 Year', nqf:'NQF 8', nqfNum:8,
-        saqa:'SAQA ID 105754 · 120 credits', icon:'🏅', color:'#4338ca', cat:'bms', level:'pg',
-        levelLabel:'Postgraduate', delivery:'Distance Only',
-        desc:'Empowers employed graduates, career-changers and those seeking management advancement with advanced general management knowledge — manage teams and organisations more effectively.',
-        careers:['Operations Manager','Department Head','Senior Project Manager','Management Consultant','Team Leader'],
-        modules:[
-          {yr:1,s:1,items:['Management Principles & Practices','Organisational Leadership']},
-          {yr:1,s:2,items:['Strategic Human Resource Management','Applied Management Research Project']},
-        ]
-      },
-    ];
+    // Programmes data - will be populated from backend
+    let PROGS = [];
+
+    async function loadProgrammes() {
+      try {
+        await initReferenceData();
+        const qualifications = getQualifications();
+
+        // Merge backend data with frontend metadata
+        PROGS = qualifications.map(q => {
+          const meta = PROG_METADATA[q.code] || {
+            slug: q.code.toLowerCase().replace(/\s+/g, ''),
+            icon: '📚',
+            color: '#6b7280',
+            cat: 'other',
+            level: 'deg',
+            levelLabel: 'Programme',
+            nqf: 'NQF 7',
+            nqfNum: 7,
+            saqa: '',
+            delivery: 'Contact & Distance',
+            desc: q.name,
+            careers: []
+          };
+
+          return {
+            ...meta,
+            code: q.code,
+            title: q.name,
+            faculty: q.faculty,
+            duration: q.duration || `${q.durationYears || 3} Years`,
+            modules: Array.isArray(q.modules) ? groupModulesByYearSemester(q.modules) : []
+          };
+        });
+
+        render();
+      } catch (err) {
+        console.error('Failed to load programmes:', err);
+        document.getElementById('progs-grid').innerHTML = '<div style="padding:40px;text-align:center;color:#dc2626">Failed to load programmes. Please refresh the page.</div>';
+      }
+    }
+
+    function groupModulesByYearSemester(modules) {
+      const grouped = {};
+      modules.forEach(m => {
+        const key = `${m.year}-${m.semester}`;
+        if (!grouped[key]) {
+          grouped[key] = { yr: m.year, s: m.semester, items: [] };
+        }
+        grouped[key].items.push(m.name);
+      });
+      return Object.values(grouped).sort((a, b) => a.yr === b.yr ? a.s - b.s : a.yr - b.yr);
+    }
 
     let currentTab = 'all';
 
@@ -358,7 +200,8 @@
       }).join('');
     }
 
-    render();
+    // Load programmes from backend on page load
+    loadProgrammes();
   </script>
 </body>
 </html>

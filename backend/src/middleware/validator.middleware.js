@@ -8,22 +8,22 @@
  */
 function sanitizeInputs(req, res, next) {
   const sanitizeValue = (value) => {
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       // Remove script tags and their content
       return value
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
         .trim();
     }
     return value;
   };
 
   const sanitizeObject = (obj) => {
-    if (obj && typeof obj === 'object') {
+    if (obj && typeof obj === "object") {
       Object.keys(obj).forEach((key) => {
-        if (typeof obj[key] === 'string') {
+        if (typeof obj[key] === "string") {
           obj[key] = sanitizeValue(obj[key]);
-        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        } else if (typeof obj[key] === "object" && obj[key] !== null) {
           sanitizeObject(obj[key]);
         }
       });
@@ -52,14 +52,16 @@ function sanitizeInputs(req, res, next) {
  * Validation middleware using express-validator
  * Checks for validation errors and returns 400 if any exist
  */
-const { validationResult } = require('express-validator');
+const { validationResult } = require("express-validator");
 
 function validate(req, res, next) {
+  console.log("[Validator] Request body:", req.body);
   const errors = validationResult(req);
+  console.log("[Validator] Errors:", errors);
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
-      message: 'Validation failed',
+      message: "Validation failed",
       errors: errors.array(),
     });
   }

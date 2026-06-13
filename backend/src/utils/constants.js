@@ -41,6 +41,8 @@ const REGISTRATION_STATUS = {
 
 const APPLICATION_STATUS = {
   DRAFT: 'draft',
+  PAYMENT_PENDING: 'payment_pending',
+  APPLIED: 'applied',
   PENDING: 'pending',
   UNDER_REVIEW: 'under_review',
   APPROVED: 'approved',

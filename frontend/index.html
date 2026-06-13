@@ -253,301 +253,67 @@
         "
       >
         <div>
-          <div style="font-size: 34px; font-weight: 900; color: #123f7a">
-            25+
+          <div
+            id="stat-years"
+            style="font-size: 34px; font-weight: 900; color: #123f7a"
+          >
+            ...
           </div>
-          <div style="font-size: 13px; color: #6b7280; margin-top: 2px">
+          <div
+            id="stat-years-label"
+            style="font-size: 13px; color: #6b7280; margin-top: 2px"
+          >
             Years of Excellence
           </div>
         </div>
         <div>
-          <div style="font-size: 34px; font-weight: 900; color: #123f7a">
-            50,000+
+          <div
+            id="stat-alumni"
+            style="font-size: 34px; font-weight: 900; color: #123f7a"
+          >
+            ...
           </div>
-          <div style="font-size: 13px; color: #6b7280; margin-top: 2px">
+          <div
+            id="stat-alumni-label"
+            style="font-size: 13px; color: #6b7280; margin-top: 2px"
+          >
             Alumni Worldwide
           </div>
         </div>
         <div>
-          <div style="font-size: 34px; font-weight: 900; color: #123f7a">
-            40+
+          <div
+            id="stat-qualifications"
+            style="font-size: 34px; font-weight: 900; color: #123f7a"
+          >
+            ...
           </div>
-          <div style="font-size: 13px; color: #6b7280; margin-top: 2px">
+          <div
+            id="stat-qualifications-label"
+            style="font-size: 13px; color: #6b7280; margin-top: 2px"
+          >
             Qualifications
           </div>
         </div>
         <div>
-          <div style="font-size: 34px; font-weight: 900; color: #123f7a">8</div>
-          <div style="font-size: 13px; color: #6b7280; margin-top: 2px">
+          <div
+            id="stat-campuses"
+            style="font-size: 34px; font-weight: 900; color: #123f7a"
+          >
+            ...
+          </div>
+          <div
+            id="stat-campuses-label"
+            style="font-size: 13px; color: #6b7280; margin-top: 2px"
+          >
             Campus Locations
           </div>
         </div>
       </div>
     </div>
-
-    <!-- ── STUDY MODE PICKER ── -->
-    <div class="study-picker" id="studyModeSection">
-      <h2>How Would You Like to Study?</h2>
-      <p>
-        Choose the learning mode that fits your lifestyle. You can change this
-        at any time.
-      </p>
-      <div class="mode-cards">
-        <div class="mode-card" id="modeOnline" onclick="selectMode('online')">
-          <span class="selected-badge" id="badge-online" style="display: none"
-            >✓ Selected</span
-          >
-          <div class="mode-icon">💻</div>
-          <h3>Study Online</h3>
-          <p>
-            Learn at your own pace from anywhere in the world. All materials are
-            digital and accessible 24/7.
-          </p>
-          <ul class="mode-features">
-            <li>Learn from anywhere, any device</li>
-            <li>Self-paced study schedule</li>
-            <li>Live virtual lectures via Zoom</li>
-            <li>Online submission of assignments</li>
-            <li>Digital study guides & resources</li>
-            <li>Flexible exam arrangements</li>
-          </ul>
-          <button class="mode-select-btn" id="onlineBtn">
-            Choose Online Study
-          </button>
-        </div>
-
-        <div class="mode-card" id="modeContact" onclick="selectMode('contact')">
-          <span class="selected-badge" id="badge-contact" style="display: none"
-            >✓ Selected</span
-          >
-          <div class="mode-icon">🏫</div>
-          <h3>Contact / Campus</h3>
-          <p>
-            Attend classes in person at one of our 8 campuses. Build connections
-            and engage face-to-face.
-          </p>
-          <ul class="mode-features">
-            <li>Face-to-face lectures & tutorials</li>
-            <li>Campus library & computer labs</li>
-            <li>Student clubs & social activities</li>
-            <li>On-campus academic support</li>
-            <li>In-person exam venues</li>
-            <li>Campus accommodation options</li>
-          </ul>
-          <button class="mode-select-btn" id="contactBtn">
-            Choose Contact Study
-          </button>
-        </div>
-      </div>
-      <div class="mode-confirm-bar" id="modeConfirmBar"></div>
-    </div>
-
-    <!-- Programmes -->
-    <div
-      style="
-        padding: 50px 40px;
-        text-align: center;
-        max-width: 1100px;
-        margin: 0 auto;
-      "
-    >
-      <h2
-        style="
-          font-size: 32px;
-          color: #123f7a;
-          margin-bottom: 8px;
-          font-weight: 900;
-        "
-      >
-        Popular Programmes
-      </h2>
-      <p style="color: #6b7280; margin-bottom: 36px; font-size: 15px">
-        Choose from our nationally accredited qualifications
-      </p>
-      <div
-        style="
-          display: flex;
-          justify-content: center;
-          gap: 24px;
-          flex-wrap: wrap;
-        "
-      >
-        <div class="prog-card">
-          <div style="font-size: 36px; margin-bottom: 10px">💻</div>
-          <h3
-            style="
-              color: #123f7a;
-              margin-bottom: 10px;
-              font-size: 16px;
-              font-weight: 700;
-            "
-          >
-            BSc Information Technology
-          </h3>
-          <p
-            style="
-              color: #374151;
-              font-size: 14px;
-              line-height: 1.6;
-              margin-bottom: 16px;
-            "
-          >
-            Learn programming, networking, cybersecurity and data science.
-          </p>
-          <a
-            href="public/Programmes.html"
-            style="
-              display: inline-block;
-              background: #123f7a;
-              color: white;
-              padding: 10px 20px;
-              cursor: pointer;
-              font-size: 14px;
-              font-weight: 600;
-              border-radius: 4px;
-              text-decoration: none;
-            "
-            >Learn More</a
-          >
-        </div>
-        <div class="prog-card">
-          <div style="font-size: 36px; margin-bottom: 10px">📊</div>
-          <h3
-            style="
-              color: #123f7a;
-              margin-bottom: 10px;
-              font-size: 16px;
-              font-weight: 700;
-            "
-          >
-            Bachelor of Commerce
-          </h3>
-          <p
-            style="
-              color: #374151;
-              font-size: 14px;
-              line-height: 1.6;
-              margin-bottom: 16px;
-            "
-          >
-            Develop financial, management and business leadership skills.
-          </p>
-          <a
-            href="public/Programmes.html"
-            style="
-              display: inline-block;
-              background: #123f7a;
-              color: white;
-              padding: 10px 20px;
-              cursor: pointer;
-              font-size: 14px;
-              font-weight: 600;
-              border-radius: 4px;
-              text-decoration: none;
-            "
-            >Learn More</a
-          >
-        </div>
-        <div class="prog-card">
-          <div style="font-size: 36px; margin-bottom: 10px">🏢</div>
-          <h3
-            style="
-              color: #123f7a;
-              margin-bottom: 10px;
-              font-size: 16px;
-              font-weight: 700;
-            "
-          >
-            Business Administration
-          </h3>
-          <p
-            style="
-              color: #374151;
-              font-size: 14px;
-              line-height: 1.6;
-              margin-bottom: 16px;
-            "
-          >
-            Build strong management and entrepreneurship knowledge.
-          </p>
-          <a
-            href="public/Programmes.html"
-            style="
-              display: inline-block;
-              background: #123f7a;
-              color: white;
-              padding: 10px 20px;
-              cursor: pointer;
-              font-size: 14px;
-              font-weight: 600;
-              border-radius: 4px;
-              text-decoration: none;
-            "
-            >Learn More</a
-          >
-        </div>
-        <div class="prog-card">
-          <div style="font-size: 36px; margin-bottom: 10px">🎨</div>
-          <h3
-            style="
-              color: #123f7a;
-              margin-bottom: 10px;
-              font-size: 16px;
-              font-weight: 700;
-            "
-          >
-            Graphic Design
-          </h3>
-          <p
-            style="
-              color: #374151;
-              font-size: 14px;
-              line-height: 1.6;
-              margin-bottom: 16px;
-            "
-          >
-            Creative design, typography, branding and digital media.
-          </p>
-          <a
-            href="public/Programmes.html"
-            style="
-              display: inline-block;
-              background: #123f7a;
-              color: white;
-              padding: 10px 20px;
-              cursor: pointer;
-              font-size: 14px;
-              font-weight: 600;
-              border-radius: 4px;
-              text-decoration: none;
-            "
-            >Learn More</a
-          >
-        </div>
-      </div>
-      <div style="margin-top: 40px">
-        <a
-          href="public/Apply.html"
-          style="
-            display: inline-block;
-            background: #ffc72c;
-            color: #123f7a;
-            padding: 14px 36px;
-            font-size: 16px;
-            font-weight: 800;
-            border-radius: 4px;
-            text-decoration: none;
-            box-shadow: 0 4px 14px rgba(255, 199, 44, 0.4);
-          "
-          >Start Your Application →</a
-        >
-      </div>
-    </div>
-
     <!-- How it works -->
     <div
       style="
-        background: white;
+        background: #eef2ff;
         padding: 50px 40px;
         border-top: 1px solid #e5e7eb;
       "
@@ -578,7 +344,7 @@
               style="
                 width: 64px;
                 height: 64px;
-                background: #eef2ff;
+                background: white;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
@@ -620,7 +386,7 @@
               style="
                 width: 64px;
                 height: 64px;
-                background: #eef2ff;
+                background: white;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
@@ -662,7 +428,7 @@
               style="
                 width: 64px;
                 height: 64px;
-                background: #eef2ff;
+                background: white;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
@@ -704,7 +470,7 @@
               style="
                 width: 64px;
                 height: 64px;
-                background: #eef2ff;
+                background: white;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
@@ -742,6 +508,155 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ── STUDY MODE PICKER ── -->
+    <div
+      class="study-picker"
+      id="studyModeSection"
+      style="
+        background: white;
+        padding: 50px 40px;
+        border-top: 1px solid #e5e7eb;
+      "
+    >
+      <h2>How Would You Like to Study?</h2>
+      <p>
+        Choose the learning mode that fits your lifestyle. You can change this
+        at any time.
+      </p>
+      <div class="mode-cards">
+        <div class="mode-card" id="modeOnline" onclick="selectMode('online')">
+          <span class="selected-badge" id="badge-online" style="display: none"
+            >✓ Selected</span
+          >
+          <div class="mode-icon">💻</div>
+          <h3>Study Online</h3>
+          <p>
+            Learn at your own pace from anywhere in the world. All materials are
+            digital and accessible 24/7.
+          </p>
+          <ul class="mode-features">
+            <li>Learn from anywhere, any device</li>
+            <li>Self-paced study schedule</li>
+            <li>Live virtual lectures via Zoom</li>
+            <li>Online submission of assignments</li>
+            <li>Digital study guides & resources</li>
+            <li>Flexible exam arrangements</li>
+          </ul>
+          <!-- <button class="mode-select-btn" id="onlineBtn">
+            Choose Online Study
+          </button> -->
+        </div>
+
+        <div class="mode-card" id="modeContact" onclick="selectMode('contact')">
+          <span class="selected-badge" id="badge-contact" style="display: none"
+            >✓ Selected</span
+          >
+          <div class="mode-icon">🏫</div>
+          <h3>Contact / Campus</h3>
+          <p>
+            Attend classes in person at one of our campuses. Build connections
+            and engage face-to-face.
+          </p>
+          <ul class="mode-features">
+            <li>Face-to-face lectures & tutorials</li>
+            <li>Campus library & computer labs</li>
+            <li>Student clubs & social activities</li>
+            <li>On-campus academic support</li>
+            <li>In-person exam venues</li>
+            <li>Campus accommodation options</li>
+          </ul>
+          <!-- <button class="mode-select-btn" id="contactBtn">
+            Choose Contact Study
+          </button> -->
+        </div>
+      </div>
+      <div class="mode-confirm-bar" id="modeConfirmBar"></div>
+    </div>
+
+    <!-- Campuses -->
+    <div
+      style="
+        padding: 50px 40px 10px;
+        text-align: center;
+        max-width: 1100px;
+        margin: 0 auto;
+      "
+    >
+      <h2
+        style="
+          font-size: 32px;
+          color: #123f7a;
+          margin-bottom: 8px;
+          font-weight: 900;
+        "
+      >
+        Campus Locations
+      </h2>
+      <p style="color: #6b7280; margin-bottom: 36px; font-size: 15px">
+        Find a campus near you and start your learning journey
+      </p>
+      <div
+        id="campus-grid"
+        style="
+          display: flex;
+          justify-content: center;
+          gap: 24px;
+          flex-wrap: wrap;
+        "
+      ></div>
+      <div style="margin: 40px"></div>
+    </div>
+
+    <!-- Programmes -->
+    <div
+      style="
+        text-align: center;
+        margin: 0 auto;
+        padding: 50px 40px 10px;
+        background: white;
+      "
+    >
+      <h2
+        style="
+          font-size: 32px;
+          color: #123f7a;
+          margin-bottom: 8px;
+          font-weight: 900;
+        "
+      >
+        Popular Programmes
+      </h2>
+      <p style="color: #6b7280; margin-bottom: 36px; font-size: 15px">
+        Choose from our nationally accredited qualifications
+      </p>
+      <div
+        id="programme-grid"
+        style="
+          display: flex;
+          justify-content: center;
+          gap: 24px;
+          flex-wrap: wrap;
+        "
+      ></div>
+      <div style="margin: 40px">
+        <a
+          href="public/Apply.html"
+          style="
+            display: inline-block;
+            background: #ffc72c;
+            color: #123f7a;
+            padding: 14px 36px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 4px;
+            text-decoration: none;
+            box-shadow: 0 4px 14px rgba(255, 199, 44, 0.4);
+          "
+          >Start Your Application →</a
+        >
       </div>
     </div>
 
@@ -807,10 +722,11 @@
       </div>
     </div>
 
-    <script src="shared-local.js"></script>
+    <script src="shared.js"></script>
     <script>
       document.getElementById("yr").textContent = new Date().getFullYear();
       renderNavbar("home");
+      loadHomeStats();
 
       // Restore previously selected mode
       const saved = getStudyMode();
@@ -835,11 +751,395 @@
         if (animate) {
           const label =
             mode === "online" ? "💻 Online Study" : "🏫 Contact / Campus Study";
-          const bar = document.getElementById("modeConfirmBar");
-          bar.textContent = `✅ Study mode set to: ${label}. This preference has been saved.`;
-          bar.classList.add("show");
-          bar.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          // const bar = document.getElementById("modeConfirmBar");
+          // bar.textContent = `✅ Study mode set to: ${label}. This preference has been saved.`;
+          // bar.classList.add("show");
+          // bar.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
+      }
+
+      function setHomeStat(id, value, suffix = "") {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const numeric = Number(value || 0);
+        const formatted = Number.isFinite(numeric)
+          ? numeric.toLocaleString()
+          : String(value || "0");
+        el.textContent = `${formatted}${suffix || ""}`;
+      }
+
+      function setHomeLabel(id, label) {
+        const el = document.getElementById(id);
+        if (!el || !label) return;
+        el.textContent = label;
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function renderCampusCards(campuses) {
+        const grid = document.getElementById("campus-grid");
+        if (!grid) return;
+
+        if (!Array.isArray(campuses) || !campuses.length) {
+          grid.innerHTML = `
+            <div class="prog-card">
+              <div style="font-size: 36px; margin-bottom: 10px">🏫</div>
+              <h3 style="color:#123f7a;margin-bottom:10px;font-size:16px;font-weight:700;">
+                Campus information coming soon
+              </h3>
+              <p style="color:#374151;font-size:14px;line-height:1.6;margin-bottom:16px;">
+                We are preparing the latest campus details.
+              </p>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = campuses
+          .map((campus) => {
+            const title = escapeHtml(campus.name || "Campus");
+            const location = [campus.city, campus.province]
+              .filter(Boolean)
+              .map(escapeHtml)
+              .join(", ");
+            const address = escapeHtml(campus.address || "");
+            const phone = escapeHtml(campus.phone || "");
+            const whatsapp = escapeHtml(campus.whatsapp || "");
+            const email = escapeHtml(campus.email || "");
+            const cleanPhone = String(campus.phone || "").replace(
+              /[^\d+]/g,
+              "",
+            );
+            const cleanWhatsapp = String(campus.whatsapp || "").replace(
+              /\D/g,
+              "",
+            );
+            const emailHref = String(campus.email || "").trim()
+              ? `mailto:${encodeURIComponent(String(campus.email).trim())}`
+              : "";
+
+            return `
+              <div
+                class="prog-card"
+                style="
+                  text-align:left;
+                  background:#ffffff;
+                  border:1px solid #d1d5db;
+                  box-shadow:0 8px 22px rgba(17, 24, 39, 0.12);
+                  width:320px;
+                  padding:14px 14px 20px;
+                "
+              >
+                <div
+                  style="
+                    height: 190px;
+                    border-radius: 8px;
+                    margin-bottom: 18px;
+                    background:
+                      linear-gradient(rgba(17, 24, 39, 0.08), rgba(17, 24, 39, 0.08)),
+                      url('https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=700&q=80')
+                        center/cover;
+                  "
+                ></div>
+                <h3 style="color:#1f2937;margin-bottom:10px;font-size:16px;font-weight:700;">
+                  ${title}
+                </h3>
+                <p style="color:#6b7280;font-size:14px;margin-bottom:18px;line-height:1.55;">
+                  ${address || "Visit this campus for in-person classes and student support."}
+                </p>
+                <p style="color:#6b7280;font-size:13px;margin-bottom:10px;font-weight:600;">
+                  ${location || "South Africa"}
+                </p>
+                ${
+                  phone
+                    ? `<div style="display:flex;gap:8px;font-size:13px;margin-bottom:6px;color:#6b7280;">
+                         <span style="min-width:68px;">Phone:</span>
+                         <a href="${cleanPhone ? `tel:${cleanPhone}` : "#"}" style="font-weight:700;color:#4b5563;text-decoration:none;">
+                           ${phone}
+                         </a>
+                       </div>`
+                    : ""
+                }
+                ${
+                  whatsapp
+                    ? `<div style="display:flex;gap:8px;font-size:13px;margin-bottom:6px;color:#6b7280;">
+                         <span style="min-width:68px;">WhatsApp:</span>
+                         <a
+                           href="${cleanWhatsapp ? `https://wa.me/${cleanWhatsapp}` : "#"}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           style="font-weight:700;color:#4b5563;text-decoration:none;"
+                         >
+                           ${whatsapp}
+                         </a>
+                       </div>`
+                    : ""
+                }
+                ${
+                  email
+                    ? `<div style="display:flex;gap:8px;font-size:13px;color:#6b7280;">
+                         <span style="min-width:68px;">Email:</span>
+                         <a href="${emailHref || "#"}" style="color:#4b5563;text-decoration:underline;">
+                           ${email}
+                         </a>
+                       </div>`
+                    : ""
+                }
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function getProgrammeIcon(qualification) {
+        const text =
+          `${qualification?.faculty || ""} ${qualification?.name || ""}`.toLowerCase();
+        if (
+          text.includes("information") ||
+          text.includes("technology") ||
+          text.includes("comput")
+        ) {
+          return "💻";
+        }
+        if (
+          text.includes("business") ||
+          text.includes("commerce") ||
+          text.includes("management")
+        ) {
+          return "📊";
+        }
+        if (
+          text.includes("design") ||
+          text.includes("creative") ||
+          text.includes("media")
+        ) {
+          return "🎨";
+        }
+        if (text.includes("engineering")) {
+          return "🛠️";
+        }
+        return "🎓";
+      }
+
+      function getProgrammeDescription(qualification) {
+        const faculty = qualification?.faculty || "Accredited programme";
+        const duration = qualification?.duration
+          ? ` • ${qualification.duration}`
+          : "";
+        return `${faculty}${duration}`;
+      }
+
+      function renderProgrammeCards(qualifications, limit) {
+        const grid = document.getElementById("programme-grid");
+        if (!grid) return;
+
+        const safeLimit = Math.max(
+          1,
+          Number(limit || APP_CONFIG.DEFAULTS.popularProgrammesLimit || 4),
+        );
+        const cards = Array.isArray(qualifications)
+          ? qualifications.slice(0, safeLimit)
+          : [];
+
+        if (!cards.length) {
+          grid.innerHTML = `
+            <div class="prog-card">
+              <div style="font-size: 36px; margin-bottom: 10px">🎓</div>
+              <h3 style="color:#123f7a;margin-bottom:10px;font-size:16px;font-weight:700;">
+                Programmes loading
+              </h3>
+              <p style="color:#374151;font-size:14px;line-height:1.6;margin-bottom:16px;">
+                Browse our full catalogue to view available qualifications.
+              </p>
+              <a
+                href="public/Programmes.html"
+                style="
+                  display: inline-block;
+                  background: #123f7a;
+                  color: white;
+                  padding: 10px 20px;
+                  cursor: pointer;
+                  font-size: 14px;
+                  font-weight: 600;
+                  border-radius: 4px;
+                  text-decoration: none;
+                "
+              >
+                Learn More
+              </a>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = cards
+          .map((qualification) => {
+            const title = escapeHtml(
+              qualification.name || qualification.code || "Qualification",
+            );
+            const description = escapeHtml(
+              getProgrammeDescription(qualification),
+            );
+            const icon = getProgrammeIcon(qualification);
+            return `
+              <div class="prog-card">
+                <div style="font-size: 36px; margin-bottom: 10px">${icon}</div>
+                <h3 style="color:#123f7a;margin-bottom:10px;font-size:16px;font-weight:700;">
+                  ${title}
+                </h3>
+                <p style="color:#374151;font-size:14px;line-height:1.6;margin-bottom:16px;">
+                  ${description}
+                </p>
+                <a
+                  href="public/Programmes.html"
+                  style="
+                    display: inline-block;
+                    background: #123f7a;
+                    color: white;
+                    padding: 10px 20px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 600;
+                    border-radius: 4px;
+                    text-decoration: none;
+                  "
+                >
+                  Learn More
+                </a>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function readHomeConfigCache() {
+        try {
+          const raw = localStorage.getItem("eduhub.homeConfig");
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (
+            !parsed ||
+            parsed.version !== APP_CONFIG.DEFAULTS.homeConfigVersion
+          ) {
+            return null;
+          }
+          const isFresh =
+            Date.now() - Number(parsed.fetchedAt || 0) <
+            APP_CONFIG.DEFAULTS.homeConfigTtlMs;
+          return isFresh ? parsed.data || null : null;
+        } catch {
+          return null;
+        }
+      }
+
+      function writeHomeConfigCache(data) {
+        try {
+          localStorage.setItem(
+            "eduhub.homeConfig",
+            JSON.stringify({
+              version: APP_CONFIG.DEFAULTS.homeConfigVersion,
+              fetchedAt: Date.now(),
+              data,
+            }),
+          );
+        } catch {
+          // ignore cache write failures
+        }
+      }
+
+      async function loadHomeStats() {
+        await initReferenceData();
+        const qualifications = getQualifications();
+
+        const cachedHomeConfig = readHomeConfigCache();
+        const pendingRequests = [
+          api("GET", "/campuses?active_only=true&include_online=false"),
+        ];
+        if (!cachedHomeConfig) {
+          pendingRequests.push(api("GET", "/reference/home-config"));
+        }
+
+        const [campusesRes, homeConfigRes] = await Promise.all(pendingRequests);
+
+        const campuses =
+          campusesRes.ok && Array.isArray(campusesRes.data)
+            ? campusesRes.data
+            : [];
+        renderCampusCards(campuses);
+        const homeConfig =
+          cachedHomeConfig ||
+          (homeConfigRes && homeConfigRes.ok && homeConfigRes.data
+            ? homeConfigRes.data
+            : {});
+        if (
+          !cachedHomeConfig &&
+          homeConfigRes &&
+          homeConfigRes.ok &&
+          homeConfigRes.data
+        ) {
+          writeHomeConfigCache(homeConfigRes.data);
+        }
+        const defaultDisplay = APP_CONFIG.HOME_STATS.display || {};
+        const display = {
+          ...defaultDisplay,
+          ...(homeConfig.display || {}),
+        };
+
+        const years =
+          homeConfig.yearsOfExcellence ??
+          APP_CONFIG.HOME_STATS.yearsOfExcellence;
+        const alumni =
+          homeConfig.alumniWorldwide ?? APP_CONFIG.HOME_STATS.alumniWorldwide;
+        const popularProgrammesLimit =
+          homeConfig.popularProgrammesLimit ??
+          APP_CONFIG.DEFAULTS.popularProgrammesLimit;
+        renderProgrammeCards(qualifications, popularProgrammesLimit);
+        const qualificationCount = qualifications.length;
+
+        setHomeLabel(
+          "stat-years-label",
+          display.yearsOfExcellence?.label || "Years of Excellence",
+        );
+        setHomeLabel(
+          "stat-alumni-label",
+          display.alumniWorldwide?.label || "Alumni Worldwide",
+        );
+        setHomeLabel(
+          "stat-qualifications-label",
+          display.qualifications?.label || "Qualifications",
+        );
+        setHomeLabel(
+          "stat-campuses-label",
+          display.campuses?.label || "Campus Locations",
+        );
+
+        setHomeStat(
+          "stat-years",
+          years,
+          display.yearsOfExcellence?.suffix || "+",
+        );
+        setHomeStat(
+          "stat-alumni",
+          alumni,
+          display.alumniWorldwide?.suffix || "+",
+        );
+        setHomeStat(
+          "stat-qualifications",
+          qualificationCount,
+          display.qualifications?.suffix || "+",
+        );
+        setHomeStat(
+          "stat-campuses",
+          campuses.length,
+          display.campuses?.suffix || "",
+        );
       }
     </script>
   </body>

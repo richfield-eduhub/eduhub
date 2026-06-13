@@ -15,13 +15,18 @@ router.get('/users', async (req, res, next) => {
   try {
     const users = await sequelize.query(
       `SELECT u.id as user_id, u.email, u.role, u.account_status, u.created_at,
+              u.is_default_password, u.require_password_change,
               ud.first_name, ud.last_name, ud.phone
        FROM users u
        LEFT JOIN user_details ud ON u.id = ud.user_id
        ORDER BY u.created_at DESC`,
       { type: sequelize.QueryTypes.SELECT }
     );
-    res.json({ ok: true, users, total: users.length });
+    const out = users.map((user) => ({
+      ...user,
+      tempPassword: Boolean(user.require_password_change || user.is_default_password),
+    }));
+    res.json({ ok: true, users: out, total: out.length });
   } catch (err) { next(err); }
 });
 

@@ -14,6 +14,7 @@ const authRoutes          = require('./routes/auth.routes');
 const studentRoutes       = require('./routes/student.routes');
 const lecturerRoutes      = require('./routes/lecturer.routes');
 const qualificationRoutes = require('./routes/qualification.routes');
+const referenceRoutes     = require('./routes/reference.routes');
 const moduleRoutes        = require('./routes/module.routes');
 const campusRoutes        = require('./routes/campus.routes');
 const applicationRoutes   = require('./routes/application.routes');
@@ -64,6 +65,7 @@ app.use('/api/auth',           authRoutes);
 app.use('/api/students',       studentRoutes);
 app.use('/api/lecturers',      lecturerRoutes);
 app.use('/api/qualifications', qualificationRoutes);
+app.use('/api/reference',      referenceRoutes);
 app.use('/api/modules',        moduleRoutes);
 app.use('/api/campuses',       campusRoutes);
 app.use('/api/applications',   applicationCompatRoutes); // auth-based list/approve/reject first
