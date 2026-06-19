@@ -65,4 +65,60 @@ router.post('/:id/documents', authenticateToken, async (req, res) => {
   res.json({ ok: true, message: 'Document recorded.', documentName: req.body.documentName });
 });
 
+// ──────────────────────────────────────────────────────────
+// GET /api/applications/identity/status  — public (no auth)
+// Called by Apply.html before the form starts, to detect existing/duplicate records.
+// Query params: nationality, id_number (SA), passport_number (foreign)
+// ──────────────────────────────────────────────────────────
+router.get('/identity/status', async (req, res) => {
+  try {
+    const { nationality = 'South African', id_number, passport_number } = req.query;
+
+    const isSa = !nationality || nationality.trim().toLowerCase() === 'south african';
+    const identityValue = isSa
+      ? String(id_number || '').trim()
+      : String(passport_number || '').trim();
+
+    if (!identityValue) {
+      return res.status(400).json({ ok: false, message: 'Identity value is required.' });
+    }
+
+    const rows = await sequelize.query(
+      `SELECT id, reference_number, status, qualification_code, qualification_name, submitted_at, updated_at
+       FROM applications
+       WHERE (
+         (TRIM(COALESCE(nationality, 'South African')) = 'South African' AND id_number = ?)
+         OR
+         (TRIM(COALESCE(nationality, 'South African')) <> 'South African' AND passport_number = ?)
+       )
+       ORDER BY updated_at DESC
+       LIMIT 10`,
+      {
+        replacements: [isSa ? identityValue : null, isSa ? null : identityValue],
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    const openDraft = rows.find((r) => r.status === 'draft') || null;
+    const latest    = rows[0] || null;
+
+    return res.json({
+      ok: true,
+      data: {
+        identity_type:   isSa ? 'id_number' : 'passport_number',
+        identity_value:  identityValue,
+        nationality:     nationality.trim(),
+        has_records:     rows.length > 0,
+        has_open_draft:  Boolean(openDraft),
+        draft_id:        openDraft ? openDraft.id : null,
+        latest_status:   latest ? latest.status : null,
+        applications:    rows,
+      },
+    });
+  } catch (err) {
+    console.error('[identity/status]', err);
+    return res.status(500).json({ ok: false, message: 'Could not verify identity. Please try again.' });
+  }
+});
+
 module.exports = router;
