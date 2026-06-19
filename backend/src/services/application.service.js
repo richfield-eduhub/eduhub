@@ -2350,7 +2350,44 @@ class ApplicationService {
       }
     );
 
-    return this.getApplicationByIdAdmin(applicationId);
+    const updatedApplication = await this.getApplicationByIdAdmin(applicationId);
+
+    // Send email notification for approved/rejected status changes
+    if (status === APPLICATION_STATUS.APPROVED || status === APPLICATION_STATUS.REJECTED) {
+      const fullName = `${updatedApplication.first_name || ''} ${updatedApplication.last_name || ''}`.trim();
+
+      try {
+        if (status === APPLICATION_STATUS.APPROVED) {
+          await emailService.sendApplicationApprovedEmail({
+            to: updatedApplication.email,
+            fullName,
+            referenceNumber: updatedApplication.reference_number,
+            studentNumber: updatedApplication.student_number,
+            qualificationName: updatedApplication.qualification_name,
+            campusName: updatedApplication.campus_name,
+            reviewedAt: updatedApplication.reviewed_at,
+          });
+        } else if (status === APPLICATION_STATUS.REJECTED) {
+          await emailService.sendApplicationRejectedEmail({
+            to: updatedApplication.email,
+            fullName,
+            referenceNumber: updatedApplication.reference_number,
+            qualificationName: updatedApplication.qualification_name,
+            campusName: updatedApplication.campus_name,
+            rejectionReason: updatedApplication.rejection_reason,
+            reviewedAt: updatedApplication.reviewed_at,
+          });
+        }
+      } catch (emailError) {
+        console.error(
+          `[ApplicationService] Failed to send ${status} notification email:`,
+          emailError?.message || emailError
+        );
+        // Don't throw - email failure should not prevent status update
+      }
+    }
+
+    return updatedApplication;
   }
 
   /**

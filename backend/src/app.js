@@ -8,6 +8,10 @@ const { migrator } = require('./db/migrator');
 const corsMiddleware = require('./middleware/cors.middleware');
 const { sanitizeInputs } = require('./middleware/validator.middleware');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler.middleware');
+const { rateLimit } = require('./middleware/rateLimit.middleware');
+const securityHeaders = require('./middleware/securityHeaders.middleware');
+const { csrfToken } = require('./middleware/csrf.middleware');
+const cookieParser = require('cookie-parser');
 
 // Routes — core (Postgres/JWT)
 const authRoutes          = require('./routes/auth.routes');
@@ -20,6 +24,8 @@ const campusRoutes        = require('./routes/campus.routes');
 const applicationRoutes   = require('./routes/application.routes');
 const applicationCompatRoutes = require('./routes/applications.compat.routes');
 const documentRoutes      = require('./routes/document.routes');
+const emergencyContactRoutes = require('./routes/emergencyContact.routes');
+const announcementRoutes  = require('./routes/announcement.routes');
 
 // Routes — compatibility shims (used by frontend-html)
 const adminRoutes         = require('./routes/admin.routes');
@@ -33,7 +39,14 @@ const app = express();
 /**
  * Global Middleware
  */
+// Security headers
+app.use(securityHeaders);
+
+// Rate limiting (100 requests per minute per IP)
+app.use(rateLimit(100, 60000));
+
 app.use(corsMiddleware);
+app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(sanitizeInputs);
@@ -60,6 +73,16 @@ app.get('/api/health', (_, res) => {
 });
 
 /**
+ * CSRF Token Endpoint
+ */
+app.get('/api/csrf-token', csrfToken, (req, res) => {
+  res.json({
+    success: true,
+    csrfToken: res.locals.csrfToken,
+  });
+});
+
+/**
  * API Routes — core
  */
 app.use('/api/auth',           authRoutes);
@@ -72,6 +95,8 @@ app.use('/api/campuses',       campusRoutes);
 app.use('/api/applications',   applicationCompatRoutes); // auth-based list/approve/reject first
 app.use('/api/applications',   applicationRoutes);        // public create/lookup/get
 app.use('/api',                documentRoutes);            // document upload/download routes
+app.use('/api',                emergencyContactRoutes);    // emergency contact routes
+app.use('/api',                announcementRoutes);        // announcement routes
 
 // Compatibility shims (used by frontend-html shared.js)
 app.use('/api/admin',          adminRoutes);

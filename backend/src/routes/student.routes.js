@@ -9,6 +9,11 @@ const { authenticateToken } = require('../middleware/auth.middleware');
 const { staffOnly, ownerOrStaff, checkRole } = require('../middleware/roleCheck.middleware');
 const { validate } = require('../middleware/validator.middleware');
 const { LIFECYCLE_STATUS, ACADEMIC_STATUS, USER_ROLES } = require('../utils/constants');
+const {
+  uploadSingle,
+  handleUploadError,
+  validateUploadedFiles,
+} = require('../middleware/upload.middleware');
 
 const router = express.Router();
 
@@ -99,6 +104,25 @@ router.get(
   authenticateToken,
   ownerOrStaff,
   studentController.getStudentRegistrations
+);
+
+// POST /api/students/:id/profile-photo - Upload profile photo (owner or staff)
+router.post(
+  '/:id/profile-photo',
+  authenticateToken,
+  ownerOrStaff,
+  uploadSingle('photo'),
+  handleUploadError,
+  validateUploadedFiles,
+  studentController.uploadProfilePhoto
+);
+
+// DELETE /api/students/:id/profile-photo - Delete profile photo (owner or staff)
+router.delete(
+  '/:id/profile-photo',
+  authenticateToken,
+  ownerOrStaff,
+  studentController.deleteProfilePhoto
 );
 
 module.exports = router;

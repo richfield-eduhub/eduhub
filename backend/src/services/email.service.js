@@ -240,6 +240,169 @@ class EmailService {
 
     return { sent: true };
   }
+
+  /**
+   * Send application approval email
+   */
+  async sendApplicationApprovedEmail({
+    to,
+    fullName,
+    referenceNumber,
+    studentNumber,
+    qualificationName,
+    campusName,
+    reviewedAt,
+  }) {
+    if (!to) {
+      return { sent: false, reason: 'Missing recipient email' };
+    }
+
+    if (!this.transporter) {
+      console.warn('[EmailService] SMTP not configured. Skipping email send.');
+      return { sent: false, reason: 'SMTP not configured' };
+    }
+
+    const reviewedDateLabel = reviewedAt
+      ? new Date(reviewedAt).toLocaleDateString('en-ZA', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : 'N/A';
+
+    const portalUrl = `${process.env.FRONTEND_URL || 'http://localhost'}/student`;
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;color:#0f172a;line-height:1.6;max-width:700px;margin:0 auto">
+        <h2 style="color:#001A4D;margin-bottom:4px">EDUHUB</h2>
+        <div style="letter-spacing:1px;font-size:13px;color:#475569;margin-bottom:18px">STUDENT PORTAL</div>
+        <h3 style="color:#10b981;margin-bottom:12px">✓ YOUR APPLICATION HAS BEEN APPROVED</h3>
+        <p>Dear ${fullName || 'Applicant'},</p>
+        <p>Congratulations! We are pleased to inform you that your application to EduHub has been <strong>officially approved</strong>.</p>
+
+        <div style="background:#ecfdf5;border-left:4px solid #10b981;padding:16px;margin:20px 0;border-radius:4px">
+          <h4 style="margin:0 0 12px 0;color:#047857">Application Details</h4>
+          <table style="width:100%;border-collapse:collapse">
+            <tr><td style="padding:6px 0"><strong>Reference Number</strong></td><td style="padding:6px 0">${referenceNumber || 'N/A'}</td></tr>
+            <tr><td style="padding:6px 0"><strong>Student Number</strong></td><td style="padding:6px 0;font-family:monospace">${studentNumber || 'Pending'}</td></tr>
+            <tr><td style="padding:6px 0"><strong>Qualification</strong></td><td style="padding:6px 0">${qualificationName || 'N/A'}</td></tr>
+            <tr><td style="padding:6px 0"><strong>Campus</strong></td><td style="padding:6px 0">${campusName || 'N/A'}</td></tr>
+            <tr><td style="padding:6px 0"><strong>Approval Date</strong></td><td style="padding:6px 0">${reviewedDateLabel}</td></tr>
+          </table>
+        </div>
+
+        <h4 style="margin:24px 0 12px">Next Steps</h4>
+        <ol style="line-height:1.8">
+          <li><strong>Access Your Student Portal:</strong> Log in using your student email and password</li>
+          <li><strong>Complete Registration:</strong> Register for modules according to the academic calendar</li>
+          <li><strong>Attend Orientation:</strong> Check your portal for orientation dates and details</li>
+          <li><strong>Financial Clearance:</strong> Ensure all fees are paid or funding is confirmed</li>
+        </ol>
+
+        <div style="margin:24px 0">
+          <a href="${portalUrl}" style="background:#001A4D;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block">
+            Access Student Portal
+          </a>
+        </div>
+
+        <p><strong>Questions?</strong> Contact the Admissions Office at <a href="mailto:${this.admissionsEmail}">${this.admissionsEmail}</a></p>
+
+        <p>We look forward to welcoming you to EduHub!</p>
+        <p>Warm regards,<br/>The Admissions Team<br/>EduHub</p>
+      </div>
+    `;
+
+    await this.transporter.sendMail({
+      from: this.fromAddress,
+      to,
+      subject: 'EduHub Application Approved - Welcome to EduHub!',
+      html,
+    });
+
+    return { sent: true };
+  }
+
+  /**
+   * Send application rejection email
+   */
+  async sendApplicationRejectedEmail({
+    to,
+    fullName,
+    referenceNumber,
+    qualificationName,
+    campusName,
+    rejectionReason,
+    reviewedAt,
+  }) {
+    if (!to) {
+      return { sent: false, reason: 'Missing recipient email' };
+    }
+
+    if (!this.transporter) {
+      console.warn('[EmailService] SMTP not configured. Skipping email send.');
+      return { sent: false, reason: 'SMTP not configured' };
+    }
+
+    const reviewedDateLabel = reviewedAt
+      ? new Date(reviewedAt).toLocaleDateString('en-ZA', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : 'N/A';
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;color:#0f172a;line-height:1.6;max-width:700px;margin:0 auto">
+        <h2 style="color:#001A4D;margin-bottom:4px">EDUHUB</h2>
+        <div style="letter-spacing:1px;font-size:13px;color:#475569;margin-bottom:18px">STUDENT PORTAL</div>
+        <h3 style="color:#dc2626;margin-bottom:12px">APPLICATION OUTCOME UPDATE</h3>
+        <p>Dear ${fullName || 'Applicant'},</p>
+        <p>Thank you for your interest in EduHub and for taking the time to submit your application.</p>
+        <p>After careful review, we regret to inform you that we are unable to offer you admission at this time.</p>
+
+        <div style="background:#fef2f2;border-left:4px solid #dc2626;padding:16px;margin:20px 0;border-radius:4px">
+          <h4 style="margin:0 0 12px 0;color:#991b1b">Application Details</h4>
+          <table style="width:100%;border-collapse:collapse">
+            <tr><td style="padding:6px 0"><strong>Reference Number</strong></td><td style="padding:6px 0">${referenceNumber || 'N/A'}</td></tr>
+            <tr><td style="padding:6px 0"><strong>Qualification</strong></td><td style="padding:6px 0">${qualificationName || 'N/A'}</td></tr>
+            <tr><td style="padding:6px 0"><strong>Campus</strong></td><td style="padding:6px 0">${campusName || 'N/A'}</td></tr>
+            <tr><td style="padding:6px 0"><strong>Review Date</strong></td><td style="padding:6px 0">${reviewedDateLabel}</td></tr>
+          </table>
+          ${
+            rejectionReason
+              ? `<div style="margin-top:16px">
+                  <strong>Reason:</strong>
+                  <p style="margin:8px 0 0;color:#7f1d1d">${rejectionReason}</p>
+                </div>`
+              : ''
+          }
+        </div>
+
+        <h4 style="margin:24px 0 12px">Moving Forward</h4>
+        <ul style="line-height:1.8">
+          <li><strong>Explore Other Programs:</strong> We offer various qualifications that may suit your academic background and career goals</li>
+          <li><strong>Improve Your Qualifications:</strong> Consider enhancing your academic record and reapplying in the future</li>
+          <li><strong>Contact Admissions:</strong> Our team can provide guidance on alternative pathways</li>
+        </ul>
+
+        <p><strong>Need More Information?</strong> Contact the Admissions Office at <a href="mailto:${this.admissionsEmail}">${this.admissionsEmail}</a> for further clarification or to discuss alternative options.</p>
+
+        <p>We appreciate your interest in EduHub and wish you success in your educational journey.</p>
+        <p>Warm regards,<br/>The Admissions Team<br/>EduHub</p>
+      </div>
+    `;
+
+    await this.transporter.sendMail({
+      from: this.fromAddress,
+      to,
+      subject: 'EduHub Application Outcome Update',
+      html,
+    });
+
+    return { sent: true };
+  }
 }
 
 module.exports = new EmailService();

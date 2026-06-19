@@ -8,7 +8,9 @@ const {
   PAGINATION,
   LIFECYCLE_STATUS,
   ACADEMIC_STATUS,
+  USER_ROLES,
 } = require("../utils/constants");
+const { FileUploadUtility } = require('../utils/fileUpload');
 
 class StudentService {
   /**
@@ -347,6 +349,100 @@ class StudentService {
     );
 
     return outRows[0];
+  }
+
+  /**
+   * Upload profile photo for student
+   */
+  async uploadProfilePhoto(studentUserId, file) {
+    // Get student record
+    const [student] = await sequelize.query(
+      `SELECT user_id, profile_photo_url
+       FROM Students
+       WHERE user_id = ?`,
+      {
+        replacements: [studentUserId],
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (!student) {
+      throw { statusCode: 404, message: 'Student not found' };
+    }
+
+    // Delete old photo if exists
+    if (student.profile_photo_url) {
+      try {
+        await FileUploadUtility.deleteFile(student.profile_photo_url);
+      } catch (error) {
+        console.warn('[StudentService] Failed to delete old profile photo:', error.message);
+      }
+    }
+
+    // Get file metadata
+    const metadata = file.metadata || FileUploadUtility.getFileMetadata(
+      file,
+      file.filename,
+      file.destination
+    );
+
+    // Update student record with new photo URL
+    await sequelize.query(
+      `UPDATE Students
+       SET profile_photo_url = ?,
+           updated_at = NOW()
+       WHERE user_id = ?`,
+      {
+        replacements: [metadata.storagePath, studentUserId],
+      }
+    );
+
+    return {
+      profile_photo_url: metadata.storagePath,
+      file_name: metadata.originalName,
+      file_size: file.size,
+      formatted_size: FileUploadUtility.formatFileSize(file.size),
+    };
+  }
+
+  /**
+   * Delete profile photo for student
+   */
+  async deleteProfilePhoto(studentUserId) {
+    // Get student record
+    const [student] = await sequelize.query(
+      `SELECT user_id, profile_photo_url
+       FROM Students
+       WHERE user_id = ?`,
+      {
+        replacements: [studentUserId],
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (!student) {
+      throw { statusCode: 404, message: 'Student not found' };
+    }
+
+    if (!student.profile_photo_url) {
+      throw { statusCode: 404, message: 'No profile photo to delete' };
+    }
+
+    // Delete file from storage
+    await FileUploadUtility.deleteFile(student.profile_photo_url);
+
+    // Update student record
+    await sequelize.query(
+      `UPDATE Students
+       SET profile_photo_url = NULL,
+           updated_at = NOW()
+       WHERE user_id = ?`,
+      {
+        replacements: [studentUserId],
+      }
+    );
+
+    return { success: true, message: 'Profile photo deleted successfully' };
   }
 }
 

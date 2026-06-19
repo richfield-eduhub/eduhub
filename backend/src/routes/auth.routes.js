@@ -9,6 +9,7 @@ const mfaController = require('../controllers/mfa.controller');
 const { authenticateToken } = require('../middleware/auth.middleware');
 const { validate } = require('../middleware/validator.middleware');
 const { USER_ROLES } = require('../utils/constants');
+const { strictRateLimit } = require('../middleware/rateLimit.middleware');
 
 const router = express.Router();
 
@@ -71,9 +72,10 @@ router.post(
   authController.register
 );
 
-// POST /api/auth/login - Login user
+// POST /api/auth/login - Login user (strict rate limit: 5 attempts per minute)
 router.post(
   '/login',
+  strictRateLimit(5, 60000),
   loginValidation,
   validate,
   authController.login
@@ -124,17 +126,19 @@ router.post(
 // Password Reset Routes
 // ============================================
 
-// POST /api/auth/forgot-password - Request password reset
+// POST /api/auth/forgot-password - Request password reset (strict rate limit)
 router.post(
   '/forgot-password',
+  strictRateLimit(3, 60000),
   [body('email').isEmail().normalizeEmail().withMessage('Valid email is required')],
   validate,
   authController.forgotPassword
 );
 
-// POST /api/auth/reset-password - Reset password with token
+// POST /api/auth/reset-password - Reset password with token (strict rate limit)
 router.post(
   '/reset-password',
+  strictRateLimit(5, 60000),
   [
     body('token').notEmpty().withMessage('Reset token is required'),
     body('password')
