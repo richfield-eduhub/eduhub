@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Security Settings — EduHub</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .security-card { background: white; border: 1px solid var(--rf-border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    .security-card.success { border-left: 4px solid #059669; background: #f0fdf4; }
+    .security-card.warning { border-left: 4px solid #f59e0b; background: #fffbeb; }
+    .qr-code-container { display: flex; flex-direction: column; align-items: center; padding: 24px; background: white; border-radius: 12px; border: 2px dashed var(--rf-border); }
+    .backup-code { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--rf-navy); padding: 12px; background: #f3f4f6; border-radius: 6px; margin: 4px 0; text-align: center; }
+  </style>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content" style="max-width:800px">
+  <h1 class="section-title">SECURITY SETTINGS</h1>
+  <p class="section-subtitle">Manage two-factor authentication and security preferences</p>
+
+  <!-- MFA Status Card -->
+  <div id="mfa-status-card" class="security-card">
+    <div style="text-align:center;padding:20px">
+      <div class="spinner"></div>
+      <p style="color:var(--rf-gray);margin-top:12px">Loading security settings...</p>
+    </div>
+  </div>
+
+  <!-- MFA Setup Card (hidden initially) -->
+  <div id="mfa-setup-card" style="display:none">
+    <div class="security-card">
+      <h3 style="font-size:18px;font-weight:800;color:var(--rf-navy);margin-bottom:16px">
+        🔐 Enable Two-Factor Authentication
+      </h3>
+      <p style="color:var(--rf-gray);margin-bottom:20px;line-height:1.6">
+        Two-factor authentication adds an extra layer of security to your account. You'll need to enter a code from your authenticator app in addition to your password when logging in.
+      </p>
+
+      <div id="setup-step-1" style="display:none">
+        <h4 style="font-size:15px;font-weight:700;color:var(--rf-navy);margin-bottom:12px">
+          Step 1: Scan QR Code
+        </h4>
+        <p style="color:var(--rf-gray);font-size:14px;margin-bottom:16px">
+          Scan this QR code with your authenticator app (Google Authenticator, Authy, Microsoft Authenticator, etc.)
+        </p>
+        <div class="qr-code-container">
+          <div id="qr-code"></div>
+          <p style="margin-top:16px;font-size:13px;color:var(--rf-gray)">Or enter this code manually:</p>
+          <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--rf-navy);margin-top:8px" id="mfa-secret"></div>
+        </div>
+      </div>
+
+      <div id="setup-step-2" style="display:none;margin-top:24px">
+        <h4 style="font-size:15px;font-weight:700;color:var(--rf-navy);margin-bottom:12px">
+          Step 2: Verify Code
+        </h4>
+        <p style="color:var(--rf-gray);font-size:14px;margin-bottom:16px">
+          Enter the 6-digit code from your authenticator app to complete setup:
+        </p>
+        <div id="verify-alert"></div>
+        <div style="display:flex;gap:12px;max-width:400px">
+          <input type="text" id="verification-code" class="form-input" placeholder="000000" maxlength="6" pattern="[0-9]{6}" style="text-align:center;font-size:24px;font-weight:700;letter-spacing:4px;font-family:var(--font-mono)"/>
+          <button class="btn btn-primary" onclick="verifyMFASetup()" id="verify-btn">✓ Verify</button>
+        </div>
+      </div>
+
+      <div id="setup-step-3" style="display:none;margin-top:24px">
+        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:16px;margin-bottom:16px">
+          <h4 style="font-size:15px;font-weight:700;color:#059669;margin-bottom:8px">
+            ✓ MFA Successfully Enabled!
+          </h4>
+          <p style="color:#065f46;font-size:14px">
+            Your account is now protected with two-factor authentication.
+          </p>
+        </div>
+
+        <h4 style="font-size:15px;font-weight:700;color:var(--rf-navy);margin-bottom:12px">
+          📋 Backup Codes
+        </h4>
+        <p style="color:var(--rf-gray);font-size:14px;margin-bottom:16px">
+          Save these backup codes in a safe place. You can use them to access your account if you lose access to your authenticator app.
+        </p>
+        <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:16px;margin-bottom:16px">
+          <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:8px">⚠️ Important:</div>
+          <ul style="margin:0;padding-left:20px;color:#92400e;font-size:13px">
+            <li>Each code can only be used once</li>
+            <li>Keep these codes in a secure location</li>
+            <li>You can regenerate new codes anytime</li>
+          </ul>
+        </div>
+        <div id="backup-codes-container" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px"></div>
+        <button class="btn btn-secondary btn-sm" onclick="copyBackupCodes()">📋 Copy All Codes</button>
+      </div>
+
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--rf-border)">
+        <button class="btn btn-primary" onclick="startMFASetup()" id="start-setup-btn">🔐 Start Setup</button>
+        <button class="btn btn-secondary" onclick="cancelMFASetup()" id="cancel-setup-btn" style="display:none">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../shared.js"></script>
+<script>
+const user = requireAuth();
+renderNavbar();
+
+let mfaSecret = '';
+let backupCodes = [];
+
+// Load MFA status on page load
+loadMFAStatus();
+
+async function loadMFAStatus() {
+  try {
+    const currentUser = getCurrentUser();
+    const response = await fetch(`${APP_CONFIG.API_URL}/auth/mfa/status`, {
+      headers: {
+        'Authorization': `Bearer ${currentUser.accessToken}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      renderMFAStatus(data.data);
+    } else {
+      document.getElementById('mfa-status-card').innerHTML = `
+        <div style="text-align:center;padding:20px">
+          <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+          <h3 style="color:var(--rf-navy);margin-bottom:8px">Failed to Load Settings</h3>
+          <p style="color:var(--rf-gray)">Please refresh the page to try again.</p>
+        </div>`;
+    }
+  } catch (error) {
+    console.error('Error loading MFA status:', error);
+  }
+}
+
+function renderMFAStatus(status) {
+  const statusCard = document.getElementById('mfa-status-card');
+  const setupCard = document.getElementById('mfa-setup-card');
+
+  if (status.mfa_enabled) {
+    statusCard.className = 'security-card success';
+    statusCard.innerHTML = `
+      <div style="display:flex;align-items:flex-start;gap:20px">
+        <div style="font-size:48px;flex-shrink:0">✓</div>
+        <div style="flex:1">
+          <h3 style="font-size:18px;font-weight:800;color:#059669;margin-bottom:8px">
+            Two-Factor Authentication Enabled
+          </h3>
+          <p style="color:#065f46;margin-bottom:16px;line-height:1.6">
+            Your account is protected with two-factor authentication. You'll need to enter a code from your authenticator app when logging in.
+          </p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-secondary btn-sm" onclick="regenerateBackupCodes()">🔄 Regenerate Backup Codes</button>
+            <button class="btn btn-danger btn-sm" onclick="disableMFA()">🔓 Disable MFA</button>
+          </div>
+        </div>
+      </div>
+    `;
+    setupCard.style.display = 'none';
+  } else {
+    statusCard.className = 'security-card warning';
+    statusCard.innerHTML = `
+      <div style="display:flex;align-items:flex-start;gap:20px">
+        <div style="font-size:48px;flex-shrink:0">⚠️</div>
+        <div style="flex:1">
+          <h3 style="font-size:18px;font-weight:800;color:#f59e0b;margin-bottom:8px">
+            Two-Factor Authentication Disabled
+          </h3>
+          <p style="color:#92400e;margin-bottom:0;line-height:1.6">
+            Your account is not protected by two-factor authentication. We recommend enabling it to secure your account.
+          </p>
+        </div>
+      </div>
+    `;
+    setupCard.style.display = 'block';
+  }
+}
+
+async function startMFASetup() {
+  try {
+    const currentUser = getCurrentUser();
+    setLoading('start-setup-btn', true, 'Setting up...');
+
+    const response = await fetch(`${APP_CONFIG.API_URL}/auth/mfa/setup`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${currentUser.accessToken}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      mfaSecret = data.data.secret;
+
+      // Generate QR code
+      const qrCodeUrl = data.data.qr_code_url;
+      document.getElementById('qr-code').innerHTML = `<img src="${qrCodeUrl}" alt="QR Code" style="width:200px;height:200px;border-radius:8px"/>`;
+      document.getElementById('mfa-secret').textContent = mfaSecret;
+
+      // Show setup steps
+      document.getElementById('setup-step-1').style.display = 'block';
+      document.getElementById('setup-step-2').style.display = 'block';
+      document.getElementById('start-setup-btn').style.display = 'none';
+      document.getElementById('cancel-setup-btn').style.display = 'inline-block';
+    } else {
+      showToast(data.message || 'Failed to start MFA setup', 'error');
+    }
+  } catch (error) {
+    console.error('Setup error:', error);
+    showToast('An error occurred while setting up MFA', 'error');
+  } finally {
+    setLoading('start-setup-btn', false, '🔐 Start Setup');
+  }
+}
+
+async function verifyMFASetup() {
+  const code = document.getElementById('verification-code').value.trim();
+
+  if (!code || code.length !== 6) {
+    showAlert('verify-alert', 'Please enter a 6-digit code', 'error');
+    return;
+  }
+
+  try {
+    const currentUser = getCurrentUser();
+    setLoading('verify-btn', true, 'Verifying...');
+    clearAlert('verify-alert');
+
+    const response = await fetch(`${APP_CONFIG.API_URL}/auth/mfa/verify-setup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentUser.accessToken}`,
+      },
+      body: JSON.stringify({ code }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      backupCodes = data.data.backup_codes;
+
+      // Render backup codes
+      document.getElementById('backup-codes-container').innerHTML = backupCodes
+        .map(code => `<div class="backup-code">${code}</div>`)
+        .join('');
+
+      // Show success step
+      document.getElementById('setup-step-3').style.display = 'block';
+      document.getElementById('cancel-setup-btn').textContent = 'Done';
+
+      showToast('MFA successfully enabled!', 'success');
+
+      // Reload status after a delay
+      setTimeout(() => {
+        loadMFAStatus();
+        cancelMFASetup();
+      }, 5000);
+    } else {
+      showAlert('verify-alert', data.message || 'Invalid code. Please try again.', 'error');
+    }
+  } catch (error) {
+    console.error('Verify error:', error);
+    showAlert('verify-alert', 'An error occurred while verifying the code', 'error');
+  } finally {
+    setLoading('verify-btn', false, '✓ Verify');
+  }
+}
+
+function cancelMFASetup() {
+  document.getElementById('setup-step-1').style.display = 'none';
+  document.getElementById('setup-step-2').style.display = 'none';
+  document.getElementById('setup-step-3').style.display = 'none';
+  document.getElementById('start-setup-btn').style.display = 'inline-block';
+  document.getElementById('cancel-setup-btn').style.display = 'none';
+  document.getElementById('verification-code').value = '';
+  clearAlert('verify-alert');
+  mfaSecret = '';
+  backupCodes = [];
+}
+
+async function disableMFA() {
+  const password = prompt('Enter your password to disable MFA:');
+  if (!password) return;
+
+  try {
+    const currentUser = getCurrentUser();
+    const response = await fetch(`${APP_CONFIG.API_URL}/auth/mfa/disable`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentUser.accessToken}`,
+      },
+      body: JSON.stringify({ password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showToast('MFA disabled successfully', 'success');
+      await loadMFAStatus();
+    } else {
+      showToast(data.message || 'Failed to disable MFA', 'error');
+    }
+  } catch (error) {
+    console.error('Disable error:', error);
+    showToast('An error occurred while disabling MFA', 'error');
+  }
+}
+
+async function regenerateBackupCodes() {
+  const password = prompt('Enter your password to regenerate backup codes:');
+  if (!password) return;
+
+  try {
+    const currentUser = getCurrentUser();
+    const response = await fetch(`${APP_CONFIG.API_URL}/auth/mfa/regenerate-codes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentUser.accessToken}`,
+      },
+      body: JSON.stringify({ password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const codes = data.data.backup_codes;
+      const codesText = codes.join('\n');
+
+      alert(`New Backup Codes:\n\n${codesText}\n\nSave these codes in a secure location!`);
+      showToast('Backup codes regenerated successfully', 'success');
+    } else {
+      showToast(data.message || 'Failed to regenerate codes', 'error');
+    }
+  } catch (error) {
+    console.error('Regenerate error:', error);
+    showToast('An error occurred while regenerating codes', 'error');
+  }
+}
+
+function copyBackupCodes() {
+  const codesText = backupCodes.join('\n');
+  navigator.clipboard.writeText(codesText).then(() => {
+    showToast('Backup codes copied to clipboard', 'success');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = codesText;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Backup codes copied to clipboard', 'success');
+  });
+}
+</script>
+</body>
+</html>

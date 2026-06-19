@@ -106,9 +106,9 @@ app.use('/api/courses',        coursesRoutes);
 app.use('/api/registrations',  registrationsRoutes);
 
 /**
- * Static Frontend (frontend-html)
+ * Static Frontend
  */
-const FRONTEND = path.join(__dirname, '../../frontend-html');
+const FRONTEND = path.join(__dirname, '../../frontend');
 app.use(express.static(FRONTEND));
 
 const page = (file) => (_, res) => res.sendFile(path.join(FRONTEND, file));
@@ -118,6 +118,8 @@ app.get('/home',             page('public/Home.html'));
 app.get('/login',            page('public/Login.html'));
 app.get('/register',         page('public/Register.html'));
 app.get('/forgot-password',  page('public/ForgotPassword.html'));
+app.get('/verify-email',     page('public/VerifyEmail.html'));
+app.get('/security',         page('shared/Security.html'));
 app.get('/apply',            page('public/Apply.html'));
 app.get('/programmes',       page('public/Programmes.html'));
 app.get('/programmes/:slug', page('public/Programmes.html'));
@@ -130,14 +132,18 @@ app.get('/admin/students',      page('admin/Students.html'));
 app.get('/admin/courses',       page('admin/Courses.html'));
 app.get('/admin/users',         page('admin/Users.html'));
 app.get('/admin/reports',       page('admin/Reports.html'));
+app.get('/admin/settings',      page('admin/Settings.html'));
 
-app.get('/student',              page('student/Dashboard.html'));
-app.get('/student/courses',      page('student/Courses.html'));
-app.get('/student/register',     page('student/Register.html'));
-app.get('/student/mycourses',    page('student/MyCourses.html'));
-app.get('/student/modules',      page('student/MyCourses.html'));
-app.get('/student/profile',      page('student/Profile.html'));
-app.get('/student/applications', page('student/Applications.html'));
+app.get('/student',                    page('student/Dashboard.html'));
+app.get('/student/courses',            page('student/Courses.html'));
+app.get('/student/register',           page('student/Register.html'));
+app.get('/student/register-modules',   page('student/RegisterModules.html'));
+app.get('/student/mycourses',          page('student/MyCourses.html'));
+app.get('/student/modules',            page('student/MyCourses.html'));
+app.get('/student/profile',            page('student/Profile.html'));
+app.get('/student/emergency-contacts', page('student/EmergencyContacts.html'));
+app.get('/student/announcements',      page('student/Announcements.html'));
+app.get('/student/applications',       page('student/Applications.html'));
 
 app.get('/lecturer',               page('lecturer/Dashboard.html'));
 app.get('/lecturer/courses',       page('lecturer/MyCourses.html'));

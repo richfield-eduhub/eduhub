@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Register for Modules — EduHub</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .module-card { background: white; border: 2px solid var(--rf-border); border-radius: 12px; padding: 20px; margin-bottom: 16px; transition: all 0.2s; cursor: pointer; }
+    .module-card:hover { border-color: var(--rf-blue); box-shadow: 0 4px 12px rgba(0,20,77,0.08); }
+    .module-card.selected { border-color: var(--rf-blue); background: #EEF2FF; }
+    .module-card.disabled { opacity: 0.6; cursor: not-allowed; background: #f9fafb; }
+    .module-card.disabled:hover { border-color: var(--rf-border); box-shadow: none; }
+    .prerequisite-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin: 2px; }
+    .prerequisite-badge.met { background: #d1fae5; color: #065f46; }
+    .prerequisite-badge.not-met { background: #fee2e2; color: #991b1b; }
+    .conflict-badge { background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .credit-bar { background: #e5e7eb; height: 24px; border-radius: 12px; overflow: hidden; position: relative; }
+    .credit-fill { background: var(--rf-blue); height: 100%; transition: width 0.3s, background 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700; }
+    .credit-fill.warning { background: #f59e0b; }
+    .credit-fill.danger { background: #dc2626; }
+  </style>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">REGISTER FOR MODULES</h1>
+  <p class="section-subtitle">Select modules for the upcoming semester</p>
+
+  <!-- Semester Selection -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-body">
+      <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <label class="form-label">Select Semester</label>
+          <select id="semester-select" class="form-input" onchange="loadAvailableModules()">
+            <option value="">Choose semester...</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <label class="form-label">Academic Year</label>
+          <select id="year-select" class="form-input" onchange="loadAvailableModules()">
+            <option value="">Choose year...</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Credit Summary -->
+  <div id="credit-summary" style="display:none;margin-bottom:24px">
+    <div class="card">
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div>
+            <span style="font-weight:700;color:var(--rf-navy);font-size:15px">Selected Credits:</span>
+            <span style="font-size:24px;font-weight:900;color:var(--rf-blue);margin-left:12px" id="selected-credits">0</span>
+            <span style="color:var(--rf-gray);margin-left:4px">/ <span id="max-credits">120</span></span>
+          </div>
+          <div>
+            <span style="font-weight:700;color:var(--rf-navy);font-size:15px">Modules:</span>
+            <span style="font-size:24px;font-weight:900;color:var(--rf-blue);margin-left:12px" id="selected-count">0</span>
+          </div>
+        </div>
+        <div class="credit-bar">
+          <div class="credit-fill" id="credit-fill" style="width:0%"></div>
+        </div>
+        <div id="credit-warning" style="display:none;margin-top:12px;padding:12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;font-size:13px;color:#92400e">
+          <strong>⚠️ Warning:</strong> <span id="credit-warning-text"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Available Modules -->
+  <div id="modules-container">
+    <div style="text-align:center;padding:60px;background:white;border-radius:12px;border:1px solid var(--rf-border)">
+      <div style="font-size:48px;margin-bottom:16px">📚</div>
+      <h3 style="color:var(--rf-navy);margin-bottom:8px">Select a Semester</h3>
+      <p style="color:var(--rf-gray)">Choose a semester and year to view available modules</p>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div id="action-buttons" style="display:none;margin-top:24px;padding-top:24px;border-top:2px solid var(--rf-border)">
+    <div style="display:flex;gap:12px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="clearSelection()">Clear Selection</button>
+      <button class="btn btn-primary" onclick="submitRegistration()" id="submit-btn">📝 Register for Selected Modules</button>
+    </div>
+  </div>
+</div>
+
+<script src="../shared.js"></script>
+<script>
+const user = requireAuth('student');
+renderNavbar('student-register');
+
+let availableModules = [];
+let selectedModules = new Set();
+let completedModules = [];
+let currentRegistrations = [];
+let maxCredits = 120; // Default, will be fetched from system settings
+let studentData = null;
+
+// Load initial data
+loadStudentData();
+
+async function loadStudentData() {
+  try {
+    const currentUser = getCurrentUser();
+
+    // Load student info
+    const studentRes = await fetch(`${APP_CONFIG.API_URL}/students/${currentUser.user_id}`, {
+      headers: { 'Authorization': `Bearer ${currentUser.accessToken}` }
+    });
+
+    if (studentRes.ok) {
+      const data = await studentRes.json();
+      studentData = data.data;
+
+      // Populate year dropdown based on student's current year
+      const yearSelect = document.getElementById('year-select');
+      const currentYear = studentData.current_year || 1;
+
+      for (let i = 1; i <= 4; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `Year ${i}`;
+        if (i === currentYear) option.selected = true;
+        yearSelect.appendChild(option);
+      }
+
+      // Populate semester dropdown
+      const semesterSelect = document.getElementById('semester-select');
+      [1, 2].forEach(sem => {
+        const option = document.createElement('option');
+        option.value = sem;
+        option.textContent = `Semester ${sem}`;
+        semesterSelect.appendChild(option);
+      });
+
+      // Load completed modules
+      await loadCompletedModules();
+    }
+  } catch (error) {
+    console.error('Error loading student data:', error);
+    showToast('Failed to load student information', 'error');
+  }
+}
+
+async function loadCompletedModules() {
+  try {
+    const currentUser = getCurrentUser();
+    const response = await fetch(`${APP_CONFIG.API_URL}/students/${currentUser.user_id}/completed-modules`, {
+      headers: { 'Authorization': `Bearer ${currentUser.accessToken}` }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      completedModules = data.data || [];
+    }
+  } catch (error) {
+    console.error('Error loading completed modules:', error);
+  }
+}
+
+async function loadAvailableModules() {
+  const semesterId = document.getElementById('semester-select').value;
+  const year = document.getElementById('year-select').value;
+
+  if (!semesterId || !year) return;
+
+  try {
+    const currentUser = getCurrentUser();
+    const response = await fetch(
+      `${APP_CONFIG.API_URL}/modules?year=${year}&semester=${semesterId}`,
+      {
+        headers: { 'Authorization': `Bearer ${currentUser.accessToken}` }
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      availableModules = data.data || [];
+
+      // Load current registrations for this semester
+      await loadCurrentRegistrations(semesterId);
+
+      renderModules();
+    } else {
+      document.getElementById('modules-container').innerHTML = `
+        <div class="card">
+          <div class="card-body" style="text-align:center;padding:40px">
+            <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+            <h3 style="color:var(--rf-navy);margin-bottom:8px">Failed to Load Modules</h3>
+            <p style="color:var(--rf-gray)">Please try again or contact support</p>
+          </div>
+        </div>`;
+    }
+  } catch (error) {
+    console.error('Error loading modules:', error);
+    showToast('An error occurred while loading modules', 'error');
+  }
+}
+
+async function loadCurrentRegistrations(semesterId) {
+  try {
+    const currentUser = getCurrentUser();
+    const response = await fetch(
+      `${APP_CONFIG.API_URL}/students/${currentUser.user_id}/registrations?semester=${semesterId}`,
+      {
+        headers: { 'Authorization': `Bearer ${currentUser.accessToken}` }
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      currentRegistrations = data.data || [];
+
+      // Pre-select already registered modules
+      currentRegistrations.forEach(reg => {
+        if (reg.module_id) {
+          selectedModules.add(reg.module_id);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error loading registrations:', error);
+  }
+}
+
+function renderModules() {
+  const container = document.getElementById('modules-container');
+
+  if (availableModules.length === 0) {
+    container.innerHTML = `
+      <div class="card">
+        <div class="card-body" style="text-align:center;padding:40px">
+          <div style="font-size:48px;margin-bottom:16px">📭</div>
+          <h3 style="color:var(--rf-navy);margin-bottom:8px">No Modules Available</h3>
+          <p style="color:var(--rf-gray)">No modules are available for the selected semester</p>
+        </div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = availableModules.map(module => {
+    const isSelected = selectedModules.has(module.id);
+    const isAlreadyRegistered = currentRegistrations.some(reg => reg.module_id === module.id);
+    const prerequisitesStatus = checkPrerequisites(module);
+    const canRegister = prerequisitesStatus.canRegister && !isAlreadyRegistered;
+
+    return `
+      <div class="module-card ${isSelected ? 'selected' : ''} ${!canRegister ? 'disabled' : ''}"
+           onclick="${canRegister ? `toggleModule('${module.id}')` : ''}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+              <h3 style="font-size:17px;font-weight:800;color:var(--rf-navy);margin:0">${escapeHtml(module.module_name)}</h3>
+              ${isSelected ? '<span style="font-size:20px">✓</span>' : ''}
+            </div>
+            <div style="font-size:13px;color:var(--rf-gray);font-family:var(--font-mono);margin-bottom:8px">
+              ${module.module_code} · ${module.credits} Credits
+            </div>
+            ${module.description ? `<p style="font-size:14px;color:var(--rf-gray);line-height:1.6;margin-bottom:12px">${escapeHtml(module.description)}</p>` : ''}
+          </div>
+        </div>
+
+        ${module.schedule ? `
+          <div style="margin-bottom:12px;padding:10px;background:#f9fafb;border-radius:6px;font-size:13px">
+            <strong>📅 Schedule:</strong> ${module.schedule}
+          </div>
+        ` : ''}
+
+        ${module.prerequisites && module.prerequisites.length > 0 ? `
+          <div style="margin-bottom:8px">
+            <strong style="font-size:13px;color:var(--rf-gray)">Prerequisites:</strong><br/>
+            ${module.prerequisites.map(prereq => {
+              const isMet = completedModules.some(cm => cm.module_id === prereq.prerequisite_module_id);
+              return `<span class="prerequisite-badge ${isMet ? 'met' : 'not-met'}">
+                ${isMet ? '✓' : '✗'} ${prereq.prerequisite_module_code || prereq.prerequisite_module_id}
+              </span>`;
+            }).join('')}
+          </div>
+        ` : ''}
+
+        ${!prerequisitesStatus.canRegister ? `
+          <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:6px;padding:10px;font-size:13px;color:#991b1b;margin-top:12px">
+            <strong>❌ Cannot Register:</strong> ${prerequisitesStatus.reason}
+          </div>
+        ` : ''}
+
+        ${isAlreadyRegistered ? `
+          <div style="background:#d1fae5;border:1px solid #86efac;border-radius:6px;padding:10px;font-size:13px;color:#065f46;margin-top:12px">
+            <strong>✅ Already Registered</strong>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  updateCreditSummary();
+}
+
+function checkPrerequisites(module) {
+  if (!module.prerequisites || module.prerequisites.length === 0) {
+    return { canRegister: true, reason: '' };
+  }
+
+  const unmetPrereqs = module.prerequisites.filter(prereq => {
+    return !completedModules.some(cm => cm.module_id === prereq.prerequisite_module_id);
+  });
+
+  if (unmetPrereqs.length > 0) {
+    const prereqNames = unmetPrereqs.map(p => p.prerequisite_module_code || p.prerequisite_module_id).join(', ');
+    return {
+      canRegister: false,
+      reason: `Prerequisites not met: ${prereqNames}`
+    };
+  }
+
+  return { canRegister: true, reason: '' };
+}
+
+function toggleModule(moduleId) {
+  if (selectedModules.has(moduleId)) {
+    selectedModules.delete(moduleId);
+  } else {
+    selectedModules.add(moduleId);
+  }
+  renderModules();
+}
+
+function updateCreditSummary() {
+  const summaryDiv = document.getElementById('credit-summary');
+  const actionButtons = document.getElementById('action-buttons');
+
+  if (selectedModules.size === 0) {
+    summaryDiv.style.display = 'none';
+    actionButtons.style.display = 'none';
+    return;
+  }
+
+  summaryDiv.style.display = 'block';
+  actionButtons.style.display = 'block';
+
+  // Calculate total credits
+  const totalCredits = availableModules
+    .filter(m => selectedModules.has(m.id))
+    .reduce((sum, m) => sum + (m.credits || 0), 0);
+
+  const percentage = Math.min(100, Math.round((totalCredits / maxCredits) * 100));
+
+  document.getElementById('selected-credits').textContent = totalCredits;
+  document.getElementById('selected-count').textContent = selectedModules.size;
+  document.getElementById('max-credits').textContent = maxCredits;
+
+  const fillBar = document.getElementById('credit-fill');
+  fillBar.style.width = `${percentage}%`;
+  fillBar.textContent = `${totalCredits} credits`;
+
+  // Update color based on percentage
+  fillBar.className = 'credit-fill';
+  if (percentage >= 100) {
+    fillBar.classList.add('danger');
+  } else if (percentage >= 85) {
+    fillBar.classList.add('warning');
+  }
+
+  // Show warning if over limit
+  const warningDiv = document.getElementById('credit-warning');
+  const warningText = document.getElementById('credit-warning-text');
+
+  if (totalCredits > maxCredits) {
+    warningDiv.style.display = 'block';
+    warningText.textContent = `You have selected ${totalCredits - maxCredits} credits over the maximum limit of ${maxCredits}.`;
+  } else {
+    warningDiv.style.display = 'none';
+  }
+}
+
+function clearSelection() {
+  // Don't clear already registered modules
+  const registeredIds = currentRegistrations.map(r => r.module_id);
+  selectedModules = new Set(registeredIds);
+  renderModules();
+}
+
+async function submitRegistration() {
+  if (selectedModules.size === 0) {
+    return showToast('Please select at least one module', 'warning');
+  }
+
+  const semesterId = document.getElementById('semester-select').value;
+  const moduleIds = Array.from(selectedModules);
+
+  // Filter out already registered modules
+  const registeredIds = currentRegistrations.map(r => r.module_id);
+  const newModuleIds = moduleIds.filter(id => !registeredIds.includes(id));
+
+  if (newModuleIds.length === 0) {
+    return showToast('No new modules to register', 'info');
+  }
+
+  if (!confirm(`Register for ${newModuleIds.length} module(s)?`)) {
+    return;
+  }
+
+  try {
+    const currentUser = getCurrentUser();
+    setLoading('submit-btn', true, 'Registering...');
+
+    const results = [];
+    const errors = [];
+
+    // Register for each module
+    for (const moduleId of newModuleIds) {
+      try {
+        const response = await fetch(`${APP_CONFIG.API_URL}/registrations`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentUser.accessToken}`,
+          },
+          body: JSON.stringify({
+            moduleId: moduleId,
+            semesterId: semesterId,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          results.push(data.data);
+        } else {
+          const module = availableModules.find(m => m.id === moduleId);
+          errors.push({
+            module: module?.module_code || moduleId,
+            error: data.message
+          });
+        }
+      } catch (error) {
+        const module = availableModules.find(m => m.id === moduleId);
+        errors.push({
+          module: module?.module_code || moduleId,
+          error: error.message
+        });
+      }
+    }
+
+    // Show results
+    if (results.length > 0) {
+      showToast(`Successfully registered for ${results.length} module(s)`, 'success');
+    }
+
+    if (errors.length > 0) {
+      const errorMessages = errors.map(e => `${e.module}: ${e.error}`).join('\n');
+      alert(`Some registrations failed:\n\n${errorMessages}`);
+    }
+
+    // Reload modules
+    await loadAvailableModules();
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    showToast('An error occurred during registration', 'error');
+  } finally {
+    setLoading('submit-btn', false, '📝 Register for Selected Modules');
+  }
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+</script>
+</body>
+</html>

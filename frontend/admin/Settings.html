@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>System Settings — EduHub Admin</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .setting-card { background: white; border: 1px solid var(--rf-border); border-radius: 12px; padding: 20px; margin-bottom: 16px; transition: box-shadow 0.2s; }
+    .setting-card:hover { box-shadow: 0 4px 12px rgba(0,20,77,0.08); }
+    .setting-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .setting-title { font-weight: 800; font-size: 15px; color: var(--rf-navy); }
+    .setting-description { font-size: 13px; color: var(--rf-gray); line-height: 1.6; margin-bottom: 12px; }
+    .setting-value { display: flex; gap: 12px; align-items: center; }
+    .setting-input { flex: 1; max-width: 400px; }
+    .category-header { background: linear-gradient(135deg, var(--rf-navy), var(--rf-blue)); color: white; padding: 16px 20px; border-radius: 12px; margin-bottom: 20px; margin-top: 32px; }
+    .category-header:first-of-type { margin-top: 0; }
+  </style>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;flex-wrap:wrap;gap:12px">
+    <div>
+      <h1 class="section-title">SYSTEM SETTINGS</h1>
+      <p class="section-subtitle">Configure system-wide parameters and limits</p>
+    </div>
+    <button class="btn btn-success" onclick="saveAllSettings()" id="save-all-btn">💾 Save All Changes</button>
+  </div>
+
+  <div id="settings-container">
+    <div style="text-align:center;padding:60px">
+      <div class="spinner"></div>
+      <p style="color:var(--rf-gray);margin-top:12px">Loading settings...</p>
+    </div>
+  </div>
+</div>
+
+<script src="../shared.js"></script>
+<script>
+requireAuth('admin');
+renderNavbar('admin');
+
+let allSettings = [];
+let settingsByCategory = {};
+let hasChanges = false;
+
+// Load settings on page load
+loadSettings();
+
+async function loadSettings() {
+  try {
+    const currentUser = getCurrentUser();
+    const response = await fetch(`${APP_CONFIG.API_URL}/admin/settings/categorized`, {
+      headers: {
+        'Authorization': `Bearer ${currentUser.accessToken}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      settingsByCategory = data.data || {};
+      renderSettings();
+    } else {
+      document.getElementById('settings-container').innerHTML = `
+        <div class="card">
+          <div class="card-body" style="text-align:center;padding:40px">
+            <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+            <h3 style="color:var(--rf-navy);margin-bottom:8px">Failed to Load Settings</h3>
+            <p style="color:var(--rf-gray)">Please refresh the page to try again.</p>
+          </div>
+        </div>`;
+    }
+  } catch (error) {
+    console.error('Error loading settings:', error);
+    document.getElementById('settings-container').innerHTML = `
+      <div class="card">
+        <div class="card-body" style="text-align:center;padding:40px">
+          <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+          <h3 style="color:var(--rf-navy);margin-bottom:8px">Error Loading Settings</h3>
+          <p style="color:var(--rf-gray)">${error.message}</p>
+        </div>
+      </div>`;
+  }
+}
+
+function renderSettings() {
+  const container = document.getElementById('settings-container');
+
+  if (Object.keys(settingsByCategory).length === 0) {
+    container.innerHTML = `
+      <div class="card">
+        <div class="card-body" style="text-align:center;padding:40px">
+          <div style="font-size:48px;margin-bottom:16px">⚙️</div>
+          <h3 style="color:var(--rf-navy);margin-bottom:8px">No Settings Found</h3>
+          <p style="color:var(--rf-gray)">No system settings are configured.</p>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const categoryOrder = ['Academic', 'Application', 'System', 'Registration', 'General'];
+
+  container.innerHTML = categoryOrder.map(category => {
+    const settings = settingsByCategory[category];
+    if (!settings || settings.length === 0) return '';
+
+    return `
+      <div class="category-header">
+        <div style="font-weight:900;font-size:16px;letter-spacing:0.5px">${category.toUpperCase()} SETTINGS</div>
+        <div style="font-size:13px;opacity:0.9;margin-top:4px">${settings.length} setting${settings.length !== 1 ? 's' : ''}</div>
+      </div>
+
+      ${settings.map(setting => renderSettingCard(setting)).join('')}
+    `;
+  }).join('');
+}
+
+function renderSettingCard(setting) {
+  const inputId = `setting-${setting.setting_key}`;
+
+  return `
+    <div class="setting-card">
+      <div class="setting-header">
+        <div class="setting-title">${formatSettingKey(setting.setting_key)}</div>
+        <span class="badge badge-info">${setting.setting_type}</span>
+      </div>
+      <div class="setting-description">${setting.description || 'No description available'}</div>
+      <div class="setting-value">
+        ${renderSettingInput(setting, inputId)}
+        <button class="btn btn-sm btn-secondary" onclick="resetSetting('${setting.setting_key}')" title="Reset to default">
+          ↺ Reset
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderSettingInput(setting, inputId) {
+  const value = setting.setting_value;
+
+  switch (setting.setting_type) {
+    case 'boolean':
+      return `
+        <select id="${inputId}" class="form-input setting-input" onchange="markChanged()">
+          <option value="true" ${value === 'true' ? 'selected' : ''}>Enabled</option>
+          <option value="false" ${value === 'false' ? 'selected' : ''}>Disabled</option>
+        </select>
+      `;
+
+    case 'integer':
+      return `
+        <input type="number"
+               id="${inputId}"
+               class="form-input setting-input"
+               value="${value}"
+               onchange="markChanged()"
+               step="1" />
+      `;
+
+    case 'date':
+      return `
+        <input type="date"
+               id="${inputId}"
+               class="form-input setting-input"
+               value="${value}"
+               onchange="markChanged()" />
+      `;
+
+    case 'string':
+    default:
+      return `
+        <input type="text"
+               id="${inputId}"
+               class="form-input setting-input"
+               value="${escapeHtml(value)}"
+               onchange="markChanged()" />
+      `;
+  }
+}
+
+function formatSettingKey(key) {
+  return key
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+function markChanged() {
+  hasChanges = true;
+  const btn = document.getElementById('save-all-btn');
+  btn.style.background = '#f59e0b';
+  btn.textContent = '⚠️ Save All Changes';
+}
+
+async function resetSetting(settingKey) {
+  if (!confirm(`Reset "${formatSettingKey(settingKey)}" to its default value?`)) {
+    return;
+  }
+
+  try {
+    const currentUser = getCurrentUser();
+    const response = await fetch(`${APP_CONFIG.API_URL}/admin/settings/${settingKey}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${currentUser.accessToken}`,
+      },
+    });
+
+    if (response.ok) {
+      showToast('Setting reset to default', 'success');
+      await loadSettings();
+      hasChanges = false;
+    } else {
+      const data = await response.json();
+      showToast(data.message || 'Failed to reset setting', 'error');
+    }
+  } catch (error) {
+    console.error('Reset error:', error);
+    showToast('An error occurred while resetting the setting', 'error');
+  }
+}
+
+async function saveAllSettings() {
+  const updates = [];
+
+  // Collect all changed settings
+  Object.values(settingsByCategory).flat().forEach(setting => {
+    const inputId = `setting-${setting.setting_key}`;
+    const input = document.getElementById(inputId);
+
+    if (input) {
+      const newValue = input.value;
+      if (newValue !== setting.setting_value) {
+        updates.push({
+          setting_key: setting.setting_key,
+          setting_value: newValue,
+        });
+      }
+    }
+  });
+
+  if (updates.length === 0) {
+    return showToast('No changes to save', 'info');
+  }
+
+  try {
+    const currentUser = getCurrentUser();
+    setLoading('save-all-btn', true, 'Saving...');
+
+    const response = await fetch(`${APP_CONFIG.API_URL}/admin/settings/bulk-update`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentUser.accessToken}`,
+      },
+      body: JSON.stringify({ updates }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showToast(`Successfully updated ${updates.length} setting${updates.length !== 1 ? 's' : ''}`, 'success');
+      hasChanges = false;
+      const btn = document.getElementById('save-all-btn');
+      btn.style.background = '';
+      btn.textContent = '💾 Save All Changes';
+      await loadSettings();
+    } else {
+      showToast(data.message || 'Failed to save settings', 'error');
+    }
+  } catch (error) {
+    console.error('Save error:', error);
+    showToast('An error occurred while saving settings', 'error');
+  } finally {
+    setLoading('save-all-btn', false, '💾 Save All Changes');
+  }
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+// Warn before leaving with unsaved changes
+window.addEventListener('beforeunload', (e) => {
+  if (hasChanges) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+</script>
+</body>
+</html>

@@ -25,6 +25,19 @@
     ③ Admin allocates modules (📚) &nbsp;→&nbsp;
     ④ Student sees modules on portal
   </div>
+
+  <!-- Bulk Actions Toolbar -->
+  <div id="bulk-actions-bar" style="display:none;background:var(--rf-navy);color:white;padding:12px 20px;border-radius:8px;margin-bottom:16px;align-items:center;justify-content:space-between">
+    <div>
+      <span style="font-weight:700;margin-right:16px"><span id="selected-count">0</span> selected</span>
+      <button class="btn btn-sm" onclick="clearSelection()" style="background:rgba(255,255,255,0.2);color:white;border:none">Clear</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-sm btn-success" onclick="bulkApprove()" id="bulk-approve-btn">✓ Approve Selected</button>
+      <button class="btn btn-sm btn-danger" onclick="bulkReject()" id="bulk-reject-btn">✗ Reject Selected</button>
+    </div>
+  </div>
+
   <div id="filter-bar" style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap"></div>
   <div class="card" id="table-wrap"></div>
 </div>
@@ -88,6 +101,7 @@ renderNavbar('admin-apps');
 let currentFilter='all';
 let selectedApp=null;
 let allocApp=null, allocSemester=1, allocYear=1, allocSelected=[];
+let selectedApplications = new Set();
 
 function render(){
   const apps=getApplications();
@@ -101,10 +115,13 @@ function render(){
     document.getElementById('table-wrap').innerHTML=`<div style="padding:48px;text-align:center;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">📋</div><div>No ${currentFilter==='all'?'':currentFilter} applications found</div></div>`;
     return;
   }
-  document.getElementById('table-wrap').innerHTML=`<table class="data-table"><thead><tr><th>Student</th><th>Type</th><th>Qualification</th><th>Submitted</th><th>Status</th><th>Modules</th><th>Actions</th></tr></thead><tbody>
+  const canBulkAction = currentFilter === 'pending';
+  document.getElementById('table-wrap').innerHTML=`<table class="data-table"><thead><tr>${canBulkAction?'<th style="width:40px"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" style="cursor:pointer"/></th>':''}<th>Student</th><th>Type</th><th>Qualification</th><th>Submitted</th><th>Status</th><th>Modules</th><th>Actions</th></tr></thead><tbody>
   ${filtered.map(a=>{
     const alloc=regs.find(r=>r.studentId===a.studentId&&r.status==='allocated');
+    const isSelected = selectedApplications.has(a.id);
     return `<tr>
+      ${canBulkAction?`<td><input type="checkbox" class="app-checkbox" data-app-id="${a.id}" ${isSelected?'checked':''} onchange="toggleSelection('${a.id}', this.checked)" style="cursor:pointer"/></td>`:''}
       <td><div style="font-weight:600">${a.firstName} ${a.lastName}</div><div style="font-size:12px;color:var(--rf-gray)">${a.email}</div><div style="font-size:11px;font-family:var(--font-mono);color:var(--rf-blue)">${a.studentId}</div></td>
       <td><span style="font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;background:${a.applicationType==='returning'?'#FEF3C7':'#D1FAE5'};color:${a.applicationType==='returning'?'#92400e':'#065f46'}">${a.applicationType==='returning'?'🔄 Returning':'🆕 New'}</span><div style="font-size:11px;color:var(--rf-gray);margin-top:2px">Year ${a.studyYear}</div></td>
       <td><div style="font-weight:600;font-size:13px">${a.qualificationCode}</div><div style="font-size:12px;color:var(--rf-gray)">${a.qualificationName}</div></td>
@@ -119,9 +136,156 @@ function render(){
     </tr>`;
   }).join('')}
   </tbody></table>`;
+  updateBulkActionsBar();
 }
 
-function setFilter(f){currentFilter=f;render();}
+function toggleSelection(appId, checked) {
+  if (checked) {
+    selectedApplications.add(appId);
+  } else {
+    selectedApplications.delete(appId);
+  }
+  updateBulkActionsBar();
+}
+
+function toggleSelectAll(checked) {
+  const checkboxes = document.querySelectorAll('.app-checkbox');
+  checkboxes.forEach(cb => {
+    const appId = cb.dataset.appId;
+    if (checked) {
+      selectedApplications.add(appId);
+      cb.checked = true;
+    } else {
+      selectedApplications.delete(appId);
+      cb.checked = false;
+    }
+  });
+  updateBulkActionsBar();
+}
+
+function updateBulkActionsBar() {
+  const count = selectedApplications.size;
+  const bar = document.getElementById('bulk-actions-bar');
+  const countSpan = document.getElementById('selected-count');
+
+  if (count > 0) {
+    bar.style.display = 'flex';
+    countSpan.textContent = count;
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function clearSelection() {
+  selectedApplications.clear();
+  const checkboxes = document.querySelectorAll('.app-checkbox');
+  checkboxes.forEach(cb => cb.checked = false);
+  const selectAll = document.getElementById('select-all');
+  if (selectAll) selectAll.checked = false;
+  updateBulkActionsBar();
+}
+
+async function bulkApprove() {
+  if (selectedApplications.size === 0) {
+    return showToast('No applications selected', 'warning');
+  }
+
+  if (!confirm(`Approve ${selectedApplications.size} application(s)?`)) {
+    return;
+  }
+
+  const currentUser = getCurrentUser();
+  const applicationIds = Array.from(selectedApplications);
+
+  setLoading('bulk-approve-btn', true, 'Approving...');
+
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/admin/applications/bulk-update`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentUser.accessToken}`,
+      },
+      body: JSON.stringify({
+        applicationIds: applicationIds,
+        status: 'approved',
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const successCount = data.data.successful?.length || 0;
+      const failCount = data.data.failed?.length || 0;
+
+      showToast(`Successfully approved ${successCount} application(s)${failCount > 0 ? `, ${failCount} failed` : ''}`, 'success');
+      clearSelection();
+      render();
+    } else {
+      showToast(data.message || 'Failed to approve applications', 'error');
+    }
+  } catch (error) {
+    console.error('Bulk approve error:', error);
+    showToast('An error occurred while approving applications', 'error');
+  } finally {
+    setLoading('bulk-approve-btn', false, '✓ Approve Selected');
+  }
+}
+
+async function bulkReject() {
+  if (selectedApplications.size === 0) {
+    return showToast('No applications selected', 'warning');
+  }
+
+  const reason = prompt(`Enter rejection reason for ${selectedApplications.size} application(s):`);
+  if (!reason || !reason.trim()) {
+    return showToast('Rejection reason is required', 'error');
+  }
+
+  const currentUser = getCurrentUser();
+  const applicationIds = Array.from(selectedApplications);
+
+  setLoading('bulk-reject-btn', true, 'Rejecting...');
+
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/admin/applications/bulk-update`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentUser.accessToken}`,
+      },
+      body: JSON.stringify({
+        applicationIds: applicationIds,
+        status: 'rejected',
+        rejection_reason: reason.trim(),
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const successCount = data.data.successful?.length || 0;
+      const failCount = data.data.failed?.length || 0;
+
+      showToast(`Successfully rejected ${successCount} application(s)${failCount > 0 ? `, ${failCount} failed` : ''}`, 'success');
+      clearSelection();
+      render();
+    } else {
+      showToast(data.message || 'Failed to reject applications', 'error');
+    }
+  } catch (error) {
+    console.error('Bulk reject error:', error);
+    showToast('An error occurred while rejecting applications', 'error');
+  } finally {
+    setLoading('bulk-reject-btn', false, '✗ Reject Selected');
+  }
+}
+
+function setFilter(f){
+  currentFilter=f;
+  selectedApplications.clear();
+  render();
+}
 
 function openView(id){
   const apps=getApplications(),regs=getRegistrations();

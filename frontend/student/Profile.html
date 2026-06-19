@@ -26,10 +26,13 @@
         <div id="profile-name" style="font-weight:800;font-size:20px;color:var(--rf-navy)"></div>
         <div id="profile-meta" style="font-size:14px;color:var(--rf-gray);margin-top:4px"></div>
       </div>
-      <label class="btn btn-secondary btn-sm" style="cursor:pointer">
-        📷 Change Photo
-        <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"/>
-      </label>
+      <div style="display:flex;gap:8px">
+        <label class="btn btn-secondary btn-sm" style="cursor:pointer">
+          📷 Change Photo
+          <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"/>
+        </label>
+        <button id="delete-photo-btn" class="btn btn-secondary btn-sm" onclick="deleteProfilePhoto()" style="display:none">🗑️ Delete</button>
+      </div>
     </div>
   </div>
 
@@ -158,16 +161,30 @@ function getProfileData() {
   };
 }
 
-function renderProfile() {
+async function renderProfile() {
   const u = getCurrentUser();
   const p = getProfileData();
   document.getElementById('profile-name').textContent = p.name;
   document.getElementById('profile-meta').textContent = `${p.email}  ·  ${p.role.charAt(0).toUpperCase()+p.role.slice(1)}  ·  Student ID: ${p.studentId||'—'}`;
   document.getElementById('avatar-initials').textContent = p.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
-  if (p.avatarUrl) {
-    document.getElementById('avatar-img').src = p.avatarUrl;
-    document.getElementById('avatar-img').style.display = '';
-    document.getElementById('avatar-initials').style.display = 'none';
+
+  // Load profile photo from API
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/students/${u.user_id}`, {
+      headers: { 'Authorization': `Bearer ${u.accessToken}` }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.data && data.data.profile_photo_url) {
+        document.getElementById('avatar-img').src = `${APP_CONFIG.API_URL}${data.data.profile_photo_url}`;
+        document.getElementById('avatar-img').style.display = '';
+        document.getElementById('avatar-initials').style.display = 'none';
+        document.getElementById('delete-photo-btn').style.display = '';
+      }
+    }
+  } catch (error) {
+    console.error('Error loading profile photo:', error);
   }
   // Populate read-only view
   document.getElementById('view-firstName').textContent   = p.firstName   || '—';
@@ -226,16 +243,92 @@ function savePwd() {
   setTimeout(() => { closeModal('pwd-modal'); if (wasForced) window.location.href = '../student/Dashboard.html'; }, 1500);
 }
 
-function handleAvatarUpload(input) {
+async function handleAvatarUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    uploadAvatar(user.id, e.target.result);
-    showToast('Photo updated!', 'success');
-    renderProfile();
-  };
-  reader.readAsDataURL(file);
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select an image file', 'error');
+    return;
+  }
+
+  // Validate file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Image must be less than 5MB', 'error');
+    return;
+  }
+
+  try {
+    const currentUser = getCurrentUser();
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    const response = await fetch(`${APP_CONFIG.API_URL}/students/${currentUser.user_id}/profile-photo`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${currentUser.accessToken}`,
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Update the avatar display
+      document.getElementById('avatar-img').src = `${APP_CONFIG.API_URL}${data.data.profile_photo_url}`;
+      document.getElementById('avatar-img').style.display = '';
+      document.getElementById('avatar-initials').style.display = 'none';
+      document.getElementById('delete-photo-btn').style.display = '';
+
+      // Update user in localStorage
+      currentUser.profile_photo_url = data.data.profile_photo_url;
+      localStorage.setItem('user', JSON.stringify(currentUser));
+
+      showToast('Profile photo updated successfully!', 'success');
+    } else {
+      showToast(data.message || 'Failed to upload photo', 'error');
+    }
+  } catch (error) {
+    console.error('Upload error:', error);
+    showToast('An error occurred while uploading photo', 'error');
+  }
+}
+
+async function deleteProfilePhoto() {
+  if (!confirm('Are you sure you want to delete your profile photo?')) {
+    return;
+  }
+
+  try {
+    const currentUser = getCurrentUser();
+    const response = await fetch(`${APP_CONFIG.API_URL}/students/${currentUser.user_id}/profile-photo`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${currentUser.accessToken}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Reset avatar display to initials
+      document.getElementById('avatar-img').style.display = 'none';
+      document.getElementById('avatar-initials').style.display = '';
+      document.getElementById('delete-photo-btn').style.display = 'none';
+
+      // Update user in localStorage
+      delete currentUser.profile_photo_url;
+      localStorage.setItem('user', JSON.stringify(currentUser));
+
+      showToast('Profile photo deleted successfully!', 'success');
+    } else {
+      showToast(data.message || 'Failed to delete photo', 'error');
+    }
+  } catch (error) {
+    console.error('Delete error:', error);
+    showToast('An error occurred while deleting photo', 'error');
+  }
 }
 
 renderProfile();
