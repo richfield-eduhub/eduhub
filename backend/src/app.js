@@ -19,6 +19,7 @@ const moduleRoutes        = require('./routes/module.routes');
 const campusRoutes        = require('./routes/campus.routes');
 const applicationRoutes   = require('./routes/application.routes');
 const applicationCompatRoutes = require('./routes/applications.compat.routes');
+const documentRoutes      = require('./routes/document.routes');
 
 // Routes — compatibility shims (used by frontend-html)
 const adminRoutes         = require('./routes/admin.routes');
@@ -70,6 +71,7 @@ app.use('/api/modules',        moduleRoutes);
 app.use('/api/campuses',       campusRoutes);
 app.use('/api/applications',   applicationCompatRoutes); // auth-based list/approve/reject first
 app.use('/api/applications',   applicationRoutes);        // public create/lookup/get
+app.use('/api',                documentRoutes);            // document upload/download routes
 
 // Compatibility shims (used by frontend-html shared.js)
 app.use('/api/admin',          adminRoutes);
