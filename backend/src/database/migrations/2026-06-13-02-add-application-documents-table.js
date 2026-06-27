@@ -1,11 +1,9 @@
 /**
  * Migration: Add Application Documents Table
  *
- * Creates the application_documents table to store metadata about uploaded documents
- * for student applications (ID copies, certificates, transcripts, etc.).
- * This addresses the gap identified in MISSING_FEATURES.md section 1.1
- *
- * Design Specification: Page 26-27 of design-phase-final2.pdf
+ * Ensures the application_documents table exists with the expected schema.
+ * The base schema migration may already create this table with a subset of
+ * columns; this migration upgrades or creates as needed.
  */
 
 /** @type {{ migration: { name: string, up: Function } }} */
@@ -14,143 +12,189 @@ module.exports = {
     name: '2026-06-13-02-add-application-documents-table',
 
     up: async (queryInterface, Sequelize, transaction) => {
-      console.log('🔄 Creating application_documents table...');
+      const sequelize = queryInterface.sequelize;
 
-      // First, check if Applications table exists (it should be in the main schema)
-      await queryInterface.createTable(
-        'application_documents',
-        {
-          id: {
-            type: Sequelize.UUID,
-            primaryKey: true,
-            defaultValue: Sequelize.literal('uuid_generate_v4()'),
-            comment: 'Primary key for document',
-          },
-          application_id: {
-            type: Sequelize.INTEGER,
-            allowNull: false,
-            references: { model: 'Applications', key: 'id' },
-            onDelete: 'CASCADE',
-            onUpdate: 'CASCADE',
-            comment: 'Reference to the application this document belongs to',
-          },
-          document_type: {
-            type: Sequelize.ENUM('ID', 'Certificate', 'Transcript', 'Matric', 'ProofOfPayment', 'Other'),
-            allowNull: false,
-            comment: 'Type of document being uploaded',
-          },
-          file_name: {
-            type: Sequelize.STRING(255),
-            allowNull: false,
-            comment: 'Original filename',
-          },
-          file_path: {
-            type: Sequelize.STRING(500),
-            allowNull: false,
-            comment: 'Storage path on server or cloud storage URL',
-          },
-          file_size: {
-            type: Sequelize.INTEGER,
-            allowNull: false,
-            validate: {
-              max: 5242880, // 5MB in bytes
+      const tableExists = async (tableName) => {
+        const [rows] = await sequelize.query(
+          'SELECT to_regclass(:tableName) AS exists_name',
+          { replacements: { tableName: `public.${tableName}` }, transaction },
+        );
+        return Boolean(rows?.[0]?.exists_name);
+      };
+
+      const columnExists = async (tableName, columnName) => {
+        const [rows] = await sequelize.query(
+          `SELECT 1
+           FROM information_schema.columns
+           WHERE table_schema = 'public'
+             AND table_name = :tableName
+             AND column_name = :columnName`,
+          { replacements: { tableName, columnName }, transaction },
+        );
+        return rows.length > 0;
+      };
+
+      const indexExists = async (indexName) => {
+        const [rows] = await sequelize.query(
+          'SELECT 1 FROM pg_indexes WHERE indexname = :indexName',
+          { replacements: { indexName }, transaction },
+        );
+        return rows.length > 0;
+      };
+
+      if (!(await tableExists('application_documents'))) {
+        console.log('🔄 Creating application_documents table...');
+        await queryInterface.createTable(
+          'application_documents',
+          {
+            id: {
+              type: Sequelize.UUID,
+              primaryKey: true,
+              defaultValue: Sequelize.literal('uuid_generate_v4()'),
             },
-            comment: 'File size in bytes (max 5MB)',
+            application_id: {
+              type: Sequelize.UUID,
+              allowNull: false,
+              references: { model: 'applications', key: 'id' },
+              onDelete: 'CASCADE',
+              onUpdate: 'CASCADE',
+            },
+            document_type: {
+              type: Sequelize.ENUM(
+                'id_document',
+                'matric_certificate',
+                'tertiary_transcript',
+                'proof_of_payment',
+                'passport_photo',
+                'study_permit',
+                'saqa_evaluation',
+                'other',
+              ),
+              allowNull: false,
+            },
+            file_name: { type: Sequelize.STRING(255), allowNull: false },
+            file_path: { type: Sequelize.STRING(500), allowNull: false },
+            file_size: { type: Sequelize.INTEGER, allowNull: true },
+            mime_type: { type: Sequelize.STRING(100), allowNull: true },
+            uploaded_by: {
+              type: Sequelize.UUID,
+              allowNull: true,
+              references: { model: 'users', key: 'id' },
+              onDelete: 'SET NULL',
+              onUpdate: 'CASCADE',
+            },
+            is_verified: { type: Sequelize.BOOLEAN, defaultValue: false },
+            verified_by: {
+              type: Sequelize.UUID,
+              allowNull: true,
+              references: { model: 'users', key: 'id' },
+              onDelete: 'SET NULL',
+            },
+            verified_at: { type: Sequelize.DATE, allowNull: true },
+            notes: { type: Sequelize.TEXT, allowNull: true },
+            uploaded_at: {
+              type: Sequelize.DATE,
+              allowNull: false,
+              defaultValue: Sequelize.literal('NOW()'),
+            },
+            created_at: {
+              type: Sequelize.DATE,
+              allowNull: false,
+              defaultValue: Sequelize.literal('NOW()'),
+            },
+            updated_at: {
+              type: Sequelize.DATE,
+              allowNull: false,
+              defaultValue: Sequelize.literal('NOW()'),
+            },
           },
-          mime_type: {
-            type: Sequelize.STRING(100),
-            allowNull: false,
-            comment: 'MIME type (e.g., application/pdf, image/jpeg)',
-          },
-          uploaded_by: {
-            type: Sequelize.INTEGER,
-            allowNull: true,
-            references: { model: 'Users', key: 'id' },
-            onDelete: 'SET NULL',
-            onUpdate: 'CASCADE',
-            comment: 'User who uploaded the document (applicant or admin)',
-          },
-          is_verified: {
-            type: Sequelize.BOOLEAN,
-            defaultValue: false,
-            comment: 'Whether document has been verified by admin',
-          },
-          verified_by: {
-            type: Sequelize.INTEGER,
-            allowNull: true,
-            references: { model: 'Users', key: 'id' },
-            onDelete: 'SET NULL',
-            onUpdate: 'CASCADE',
-            comment: 'Admin who verified the document',
-          },
-          verified_at: {
-            type: Sequelize.DATE,
-            allowNull: true,
-            comment: 'When the document was verified',
-          },
-          notes: {
-            type: Sequelize.TEXT,
-            allowNull: true,
-            comment: 'Admin notes about the document',
-          },
-          uploaded_at: {
-            type: Sequelize.DATE,
-            allowNull: false,
-            defaultValue: Sequelize.literal('NOW()'),
-            comment: 'When the document was uploaded',
-          },
-          created_at: {
-            type: Sequelize.DATE,
-            allowNull: false,
-            defaultValue: Sequelize.literal('NOW()'),
-          },
-          updated_at: {
-            type: Sequelize.DATE,
-            allowNull: false,
-            defaultValue: Sequelize.literal('NOW()'),
-          },
-        },
-        { transaction }
-      );
+          { transaction },
+        );
+      } else {
+        console.log('🔄 Upgrading existing application_documents table...');
 
-      // Add indexes for better query performance
-      await queryInterface.addIndex(
-        'application_documents',
-        ['application_id'],
-        {
-          name: 'idx_application_documents_application_id',
-          transaction,
-        }
-      );
+        const addColumnIfMissing = async (columnName, definition) => {
+          if (!(await columnExists('application_documents', columnName))) {
+            await queryInterface.addColumn(
+              'application_documents',
+              columnName,
+              definition,
+              { transaction },
+            );
+          }
+        };
 
-      await queryInterface.addIndex(
-        'application_documents',
-        ['application_id', 'document_type'],
-        {
-          name: 'idx_application_documents_app_type',
-          transaction,
-        }
-      );
+        await addColumnIfMissing('uploaded_by', {
+          type: Sequelize.UUID,
+          allowNull: true,
+          references: { model: 'users', key: 'id' },
+          onDelete: 'SET NULL',
+          onUpdate: 'CASCADE',
+        });
 
-      await queryInterface.addIndex(
-        'application_documents',
-        ['uploaded_by'],
-        {
-          name: 'idx_application_documents_uploaded_by',
-          transaction,
-        }
-      );
+        await addColumnIfMissing('notes', {
+          type: Sequelize.TEXT,
+          allowNull: true,
+        });
 
-      await queryInterface.addIndex(
-        'application_documents',
-        ['is_verified'],
-        {
-          name: 'idx_application_documents_is_verified',
-          transaction,
-        }
-      );
+        await addColumnIfMissing('created_at', {
+          type: Sequelize.DATE,
+          allowNull: false,
+          defaultValue: Sequelize.literal('NOW()'),
+        });
 
-      console.log('✅ Created application_documents table');
+        await addColumnIfMissing('updated_at', {
+          type: Sequelize.DATE,
+          allowNull: false,
+          defaultValue: Sequelize.literal('NOW()'),
+        });
+      }
+
+      if (!(await indexExists('idx_application_documents_application_id'))) {
+        await queryInterface.addIndex(
+          'application_documents',
+          ['application_id'],
+          {
+            name: 'idx_application_documents_application_id',
+            transaction,
+          },
+        );
+      }
+
+      if (!(await indexExists('idx_application_documents_app_type'))) {
+        await queryInterface.addIndex(
+          'application_documents',
+          ['application_id', 'document_type'],
+          {
+            name: 'idx_application_documents_app_type',
+            transaction,
+          },
+        );
+      }
+
+      if (!(await indexExists('idx_application_documents_uploaded_by'))) {
+        await queryInterface.addIndex(
+          'application_documents',
+          ['uploaded_by'],
+          {
+            name: 'idx_application_documents_uploaded_by',
+            transaction,
+          },
+        );
+      }
+
+      if (!(await indexExists('idx_application_documents_is_verified'))) {
+        await queryInterface.addIndex(
+          'application_documents',
+          ['is_verified'],
+          {
+            name: 'idx_application_documents_is_verified',
+            transaction,
+          },
+        );
+      }
+
+      console.log('✅ application_documents table is ready');
     },
   },
 };

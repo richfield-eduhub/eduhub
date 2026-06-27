@@ -1,8 +1,9 @@
 /**
  * Rate Limiting Middleware
  *
- * Limits requests per IP address to prevent DDoS attacks
- * Default: 100 requests per minute per IP
+ * Limits requests per IP address to prevent DDoS attacks.
+ * Each limiter uses its own counter (namespace) so a global cap
+ * does not consume login/password-reset budgets.
  */
 
 const rateStore = new Map();
@@ -10,55 +11,59 @@ const rateStore = new Map();
 // Clean up old entries every 5 minutes
 setInterval(() => {
   const now = Date.now();
-  for (const [ip, data] of rateStore.entries()) {
-    if (now - data.resetTime > 60000) {
-      rateStore.delete(ip);
+  for (const [key, data] of rateStore.entries()) {
+    if (now - data.resetTime > data.windowMs) {
+      rateStore.delete(key);
     }
   }
 }, 5 * 60 * 1000);
+
+function clientIp(req) {
+  return req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown';
+}
 
 /**
  * Rate limit middleware
  * @param {number} maxRequests - Maximum requests per window (default: 100)
  * @param {number} windowMs - Time window in milliseconds (default: 60000 = 1 minute)
+ * @param {string} namespace - Separate counter bucket per limiter
  */
-function rateLimit(maxRequests = 100, windowMs = 60000) {
+function rateLimit(maxRequests = 100, windowMs = 60000, namespace = 'global') {
   return (req, res, next) => {
-    // Get client IP
-    const ip = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+    if (process.env.NODE_ENV === 'development' && process.env.DISABLE_RATE_LIMIT === 'true') {
+      return next();
+    }
 
+    const ip = clientIp(req);
+    const storeKey = `${namespace}:${ip}`;
     const now = Date.now();
 
-    // Get or create rate limit data for this IP
-    let ipData = rateStore.get(ip);
+    let bucket = rateStore.get(storeKey);
 
-    if (!ipData) {
-      ipData = {
+    if (!bucket) {
+      bucket = {
         count: 0,
         resetTime: now + windowMs,
+        windowMs,
       };
-      rateStore.set(ip, ipData);
+      rateStore.set(storeKey, bucket);
     }
 
-    // Reset if window has passed
-    if (now > ipData.resetTime) {
-      ipData.count = 0;
-      ipData.resetTime = now + windowMs;
+    if (now > bucket.resetTime) {
+      bucket.count = 0;
+      bucket.resetTime = now + windowMs;
     }
 
-    // Increment request count
-    ipData.count++;
+    bucket.count++;
 
-    // Set rate limit headers
-    const remaining = Math.max(0, maxRequests - ipData.count);
-    const resetTime = Math.ceil((ipData.resetTime - now) / 1000);
+    const remaining = Math.max(0, maxRequests - bucket.count);
+    const resetTime = Math.ceil((bucket.resetTime - now) / 1000);
 
     res.setHeader('X-RateLimit-Limit', maxRequests);
     res.setHeader('X-RateLimit-Remaining', remaining);
     res.setHeader('X-RateLimit-Reset', resetTime);
 
-    // Check if rate limit exceeded
-    if (ipData.count > maxRequests) {
+    if (bucket.count > maxRequests) {
       res.setHeader('Retry-After', resetTime);
       return res.status(429).json({
         success: false,
@@ -75,7 +80,11 @@ function rateLimit(maxRequests = 100, windowMs = 60000) {
  * Strict rate limit for sensitive endpoints (login, password reset, etc.)
  */
 function strictRateLimit(maxRequests = 5, windowMs = 60000) {
-  return rateLimit(maxRequests, windowMs);
+  const limit =
+    process.env.NODE_ENV === 'development'
+      ? Math.max(maxRequests, 30)
+      : maxRequests;
+  return rateLimit(limit, windowMs, 'auth');
 }
 
 module.exports = {

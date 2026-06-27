@@ -20,6 +20,29 @@ module.exports = {
     name: '2026-06-13-03-add-system-settings-table',
 
     up: async (queryInterface, Sequelize, transaction) => {
+      const sequelize = queryInterface.sequelize;
+
+      const tableExists = async (tableName) => {
+        const [rows] = await sequelize.query(
+          'SELECT to_regclass(:tableName) AS exists_name',
+          { replacements: { tableName: `public.${tableName}` }, transaction },
+        );
+        return Boolean(rows?.[0]?.exists_name);
+      };
+
+      const indexExists = async (indexName) => {
+        const [rows] = await sequelize.query(
+          'SELECT 1 FROM pg_indexes WHERE indexname = :indexName',
+          { replacements: { indexName }, transaction },
+        );
+        return rows.length > 0;
+      };
+
+      if (await tableExists('system_settings')) {
+        console.log('✅ system_settings table already exists — skipping create');
+        return;
+      }
+
       console.log('🔄 Creating system_settings table...');
 
       await queryInterface.createTable(
@@ -63,9 +86,9 @@ module.exports = {
             comment: 'Whether this setting can be viewed by non-admin users',
           },
           updated_by: {
-            type: Sequelize.INTEGER,
+            type: Sequelize.UUID,
             allowNull: true,
-            references: { model: 'Users', key: 'id' },
+            references: { model: 'users', key: 'id' },
             onDelete: 'SET NULL',
             onUpdate: 'CASCADE',
             comment: 'User who last updated this setting',
@@ -85,33 +108,39 @@ module.exports = {
       );
 
       // Add indexes
-      await queryInterface.addIndex(
-        'system_settings',
-        ['setting_key'],
-        {
-          name: 'idx_system_settings_key',
-          unique: true,
-          transaction,
-        }
-      );
+      if (!(await indexExists('idx_system_settings_key'))) {
+        await queryInterface.addIndex(
+          'system_settings',
+          ['setting_key'],
+          {
+            name: 'idx_system_settings_key',
+            unique: true,
+            transaction,
+          },
+        );
+      }
 
-      await queryInterface.addIndex(
-        'system_settings',
-        ['category'],
-        {
-          name: 'idx_system_settings_category',
-          transaction,
-        }
-      );
+      if (!(await indexExists('idx_system_settings_category'))) {
+        await queryInterface.addIndex(
+          'system_settings',
+          ['category'],
+          {
+            name: 'idx_system_settings_category',
+            transaction,
+          },
+        );
+      }
 
-      await queryInterface.addIndex(
-        'system_settings',
-        ['is_public'],
-        {
-          name: 'idx_system_settings_is_public',
-          transaction,
-        }
-      );
+      if (!(await indexExists('idx_system_settings_is_public'))) {
+        await queryInterface.addIndex(
+          'system_settings',
+          ['is_public'],
+          {
+            name: 'idx_system_settings_is_public',
+            transaction,
+          },
+        );
+      }
 
       console.log('✅ Created system_settings table');
 

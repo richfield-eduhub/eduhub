@@ -36,6 +36,9 @@ const registrationsRoutes = require('./routes/registrations.routes');
 
 const app = express();
 
+// Behind nginx in docker/production — use X-Forwarded-For for client IP
+app.set('trust proxy', 1);
+
 /**
  * Global Middleware
  */
@@ -43,7 +46,7 @@ const app = express();
 app.use(securityHeaders);
 
 // Rate limiting (100 requests per minute per IP)
-app.use(rateLimit(100, 60000));
+app.use(rateLimit(100, 60000, 'global'));
 
 app.use(corsMiddleware);
 app.use(cookieParser());
@@ -108,7 +111,7 @@ app.use('/api/registrations',  registrationsRoutes);
 /**
  * Static Frontend
  */
-const FRONTEND = path.join(__dirname, '../../frontend');
+const FRONTEND = process.env.FRONTEND_PATH || path.join(__dirname, '../../frontend');
 app.use(express.static(FRONTEND));
 
 const page = (file) => (_, res) => res.sendFile(path.join(FRONTEND, file));

@@ -5,6 +5,7 @@ RUN apk add --no-cache curl
 
 # Copy nginx configuration
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx/frontend-routes.conf /etc/nginx/frontend-routes.conf
 
 # Copy frontend static files into image
 COPY frontend/ /usr/share/nginx/html/

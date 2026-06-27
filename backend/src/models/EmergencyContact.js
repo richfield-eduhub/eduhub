@@ -56,6 +56,10 @@ const EmergencyContact = sequelize.define('EmergencyContact', {
     defaultValue: false,
     field: 'is_primary',
   },
+  address: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+  },
 }, {
   tableName: 'emergency_contacts',
   underscored: true,

@@ -1,46 +1,90 @@
 /**
  * Migration: Add announcements table
- * Date: 2026-06-19
  */
 
-module.exports.migration = {
-  name: '2026-06-19-01-add-announcements-table',
+/** @type {{ migration: { name: string, up: Function } }} */
+module.exports = {
+  migration: {
+    name: '2026-06-19-01-add-announcements-table',
 
-  async up(sequelize) {
-    await sequelize.query(`
-      CREATE TABLE IF NOT EXISTS announcements (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        module_id UUID NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
-        created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        title VARCHAR(255) NOT NULL,
-        content TEXT NOT NULL,
-        priority VARCHAR(20) DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high', 'urgent')),
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
+    up: async (queryInterface, Sequelize, transaction) => {
+      const sequelize = queryInterface.sequelize;
 
-    await sequelize.query(`
-      CREATE INDEX idx_announcements_module_id ON announcements(module_id);
-    `);
+      const tableExists = async (tableName) => {
+        const [rows] = await sequelize.query(
+          'SELECT to_regclass(:tableName) AS exists_name',
+          { replacements: { tableName: `public.${tableName}` }, transaction },
+        );
+        return Boolean(rows?.[0]?.exists_name);
+      };
 
-    await sequelize.query(`
-      CREATE INDEX idx_announcements_created_by ON announcements(created_by);
-    `);
+      const indexExists = async (indexName) => {
+        const [rows] = await sequelize.query(
+          'SELECT 1 FROM pg_indexes WHERE indexname = :indexName',
+          { replacements: { indexName }, transaction },
+        );
+        return rows.length > 0;
+      };
 
-    await sequelize.query(`
-      CREATE INDEX idx_announcements_priority ON announcements(priority);
-    `);
+      if (!(await tableExists('announcements'))) {
+        await queryInterface.createTable(
+          'announcements',
+          {
+            id: {
+              type: Sequelize.UUID,
+              primaryKey: true,
+              defaultValue: Sequelize.literal('uuid_generate_v4()'),
+            },
+            module_id: {
+              type: Sequelize.UUID,
+              allowNull: false,
+              references: { model: 'modules', key: 'id' },
+              onDelete: 'CASCADE',
+            },
+            created_by: {
+              type: Sequelize.UUID,
+              allowNull: false,
+              references: { model: 'users', key: 'id' },
+              onDelete: 'CASCADE',
+            },
+            title: { type: Sequelize.STRING(255), allowNull: false },
+            content: { type: Sequelize.TEXT, allowNull: false },
+            priority: {
+              type: Sequelize.ENUM('low', 'normal', 'high', 'urgent'),
+              defaultValue: 'normal',
+            },
+            created_at: {
+              type: Sequelize.DATE,
+              allowNull: false,
+              defaultValue: Sequelize.literal('NOW()'),
+            },
+            updated_at: {
+              type: Sequelize.DATE,
+              allowNull: false,
+              defaultValue: Sequelize.literal('NOW()'),
+            },
+          },
+          { transaction },
+        );
+      }
 
-    await sequelize.query(`
-      CREATE INDEX idx_announcements_created_at ON announcements(created_at DESC);
-    `);
+      const indexes = [
+        { fields: ['module_id'], name: 'idx_announcements_module_id' },
+        { fields: ['created_by'], name: 'idx_announcements_created_by' },
+        { fields: ['priority'], name: 'idx_announcements_priority' },
+        { fields: ['created_at'], name: 'idx_announcements_created_at' },
+      ];
 
-    console.log('✅ Announcements table created successfully');
-  },
+      for (const index of indexes) {
+        if (!(await indexExists(index.name))) {
+          await queryInterface.addIndex('announcements', index.fields, {
+            name: index.name,
+            transaction,
+          });
+        }
+      }
 
-  async down(sequelize) {
-    await sequelize.query(`DROP TABLE IF EXISTS announcements CASCADE;`);
-    console.log('✅ Announcements table dropped');
+      console.log('✅ Announcements table is ready');
+    },
   },
 };

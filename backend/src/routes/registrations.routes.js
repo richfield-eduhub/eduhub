@@ -20,12 +20,15 @@ router.get('/', async (req, res, next) => {
     let registrations;
     if (req.user.role === 'admin' || req.user.role === 'lecturer') {
       registrations = await sequelize.query(
-        `SELECT r.id, r.status, r.created_at,
+        `SELECT r.id, r.status, r.created_at, r.decline_reason, r.quotation_amount,
                 m.code AS module_code, m.name AS module_name, m.credits,
+                m.semester_number, m.year_of_study,
+                q.code AS qualification_code, q.name AS qualification_name,
                 s.student_number,
                 ud.first_name, ud.last_name
          FROM registrations r
          JOIN modules m ON r.module_id = m.id
+         JOIN qualifications q ON m.qualification_id = q.id
          JOIN students s ON r.student_id = s.id
          JOIN users u ON s.user_id = u.id
          LEFT JOIN user_details ud ON u.id = ud.user_id
