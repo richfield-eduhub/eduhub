@@ -5,12 +5,15 @@
   <title>Applications — EduHub Admin</title>
   <link rel="stylesheet" href="../shared.css"/>
   <style>
+    .main-content { max-width: 1600px !important; }
     .module-row{display:flex;align-items:center;gap:14px;padding:13px 16px;border-radius:10px;cursor:pointer;border:2px solid #e5e7eb;background:white;transition:all .15s;margin-bottom:8px}
     .module-row.picked{border-color:#123f7a;background:#EEF2FF}
     .chk{width:22px;height:22px;border-radius:5px;border:2px solid #d1d5db;background:white;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0;font-size:13px;font-weight:700}
     .module-row.picked .chk{background:#123f7a;border-color:#123f7a;color:white}
     .filter-btn{padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--rf-border);background:white;color:var(--rf-navy);transition:all .15s}
     .filter-btn.active{background:var(--rf-blue);color:white;border-color:var(--rf-blue)}
+    .data-table td { white-space: nowrap; vertical-align: middle; }
+    .data-table th { white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -178,7 +181,7 @@ function render(){
     const isSelected = selectedApplications.has(a.id);
     return `<tr>
       ${canBulkAction?`<td><input type="checkbox" class="app-checkbox" data-app-id="${a.id}" ${isSelected?'checked':''} onchange="toggleSelection('${a.id}', this.checked)" style="cursor:pointer"/></td>`:''}
-      <td><div style="font-weight:600">${a.firstName || ''} ${a.lastName || ''}</div><div style="font-size:12px;color:var(--rf-gray)">${a.email || ''}</div><div style="font-size:11px;font-family:var(--font-mono);color:var(--rf-blue)">${a.studentId || ''}</div></td>
+      <td><div style="font-weight:600">${a.firstName || ''} ${a.lastName || ''}</div><div style="font-size:12px;color:var(--rf-gray)">${a.email || ''}</div></td>
       <td><span style="font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;background:${a.applicationType==='returning'?'#FEF3C7':'#D1FAE5'};color:${a.applicationType==='returning'?'#92400e':'#065f46'}">${a.applicationType==='returning'?'🔄 Returning':'🆕 New'}</span><div style="font-size:11px;color:var(--rf-gray);margin-top:2px">Year ${a.studyYear || 1}</div></td>
       <td><div style="font-weight:600;font-size:13px">${a.qualificationCode || ''}</div><div style="font-size:12px;color:var(--rf-gray)">${a.qualificationName || ''}</div></td>
       <td style="font-size:13px;color:var(--rf-gray)">${fmtDate(a.submittedAt)}</td>

@@ -54,7 +54,7 @@ module.exports = {
             {
               id: johnSmithLecturerId,
               user_id: johnSmithUserId,
-              employee_number: "EMP2024001",
+              employee_number: "2620000006",
               department: "Information Technology",
               title: "Dr.",
               specialization: "Software Engineering & Web Development",
@@ -155,7 +155,8 @@ module.exports = {
         },
       ];
 
-      // Insert modules (ignore if they already exist)
+      // Insert modules (ignore if they already exist) and get actual IDs
+      const actualModuleIds = [];
       for (const module of modules) {
         const [existing] = await queryInterface.sequelize.query(
           `SELECT id FROM modules WHERE code = :code LIMIT 1`,
@@ -164,9 +165,19 @@ module.exports = {
 
         if (!existing || existing.length === 0) {
           await queryInterface.bulkInsert("modules", [module], { transaction });
+          actualModuleIds.push({ code: module.code, id: module.id });
           console.log(`✅ Created module: ${module.code}`);
         } else {
+          actualModuleIds.push({ code: module.code, id: existing[0].id });
           console.log(`ℹ️  Module ${module.code} already exists`);
+        }
+      }
+
+      // Update modules array with actual IDs from database
+      for (let i = 0; i < modules.length; i++) {
+        const actual = actualModuleIds.find(m => m.code === modules[i].code);
+        if (actual) {
+          modules[i].id = actual.id;
         }
       }
 
@@ -275,7 +286,7 @@ module.exports = {
           email: "thabo.molefe@student.eduhub.ac.za",
           firstName: "Thabo",
           lastName: "Molefe",
-          studentNumber: "2026-0001",
+          studentNumber: "2610000008",
           userId: "20000003-0000-4000-8000-000000000003",
           detailsId: "41000001-0000-4000-8000-000000000001",
           studentId: "42000001-0000-4000-8000-000000000001",
@@ -289,7 +300,7 @@ module.exports = {
           email: "lerato.khumalo@student.eduhub.ac.za",
           firstName: "Lerato",
           lastName: "Khumalo",
-          studentNumber: "2026-0002",
+          studentNumber: "2610000016",
           userId: "50000001-0001-4000-8000-000000000001",
           detailsId: "51000001-0001-4000-8000-000000000001",
           studentId: "52000001-0001-4000-8000-000000000001",
@@ -302,7 +313,7 @@ module.exports = {
           email: "sipho.dlamini@student.eduhub.ac.za",
           firstName: "Sipho",
           lastName: "Dlamini",
-          studentNumber: "2026-0003",
+          studentNumber: "2610000024",
           userId: "50000002-0002-4000-8000-000000000002",
           detailsId: "51000002-0002-4000-8000-000000000002",
           studentId: "52000002-0002-4000-8000-000000000002",
@@ -315,7 +326,7 @@ module.exports = {
           email: "zanele.mahlangu@student.eduhub.ac.za",
           firstName: "Zanele",
           lastName: "Mahlangu",
-          studentNumber: "2026-0004",
+          studentNumber: "2610000032",
           userId: "50000003-0003-4000-8000-000000000003",
           detailsId: "51000003-0003-4000-8000-000000000003",
           studentId: "52000003-0003-4000-8000-000000000003",
@@ -328,7 +339,7 @@ module.exports = {
           email: "lungile.sithole@student.eduhub.ac.za",
           firstName: "Lungile",
           lastName: "Sithole",
-          studentNumber: "2026-0005",
+          studentNumber: "2610000040",
           userId: "50000004-0004-4000-8000-000000000004",
           detailsId: "51000004-0004-4000-8000-000000000004",
           studentId: "52000004-0004-4000-8000-000000000004",
@@ -341,7 +352,7 @@ module.exports = {
           email: "nomsa.zulu@student.eduhub.ac.za",
           firstName: "Nomsa",
           lastName: "Zulu",
-          studentNumber: "2026-0006",
+          studentNumber: "2610000057",
           userId: "50000005-0005-4000-8000-000000000005",
           detailsId: "51000005-0005-4000-8000-000000000005",
           studentId: "52000005-0005-4000-8000-000000000005",
@@ -354,7 +365,7 @@ module.exports = {
           email: "bongani.mthembu@student.eduhub.ac.za",
           firstName: "Bongani",
           lastName: "Mthembu",
-          studentNumber: "2026-0007",
+          studentNumber: "2610000065",
           userId: "50000006-0006-4000-8000-000000000006",
           detailsId: "51000006-0006-4000-8000-000000000006",
           studentId: "52000006-0006-4000-8000-000000000006",
@@ -367,7 +378,7 @@ module.exports = {
           email: "thandiwe.ngcobo@student.eduhub.ac.za",
           firstName: "Thandiwe",
           lastName: "Ngcobo",
-          studentNumber: "2026-0008",
+          studentNumber: "2610000073",
           userId: "50000007-0007-4000-8000-000000000007",
           detailsId: "51000007-0007-4000-8000-000000000007",
           studentId: "52000007-0007-4000-8000-000000000007",
@@ -380,7 +391,7 @@ module.exports = {
           email: "mandla.ndlovu@student.eduhub.ac.za",
           firstName: "Mandla",
           lastName: "Ndlovu",
-          studentNumber: "2026-0009",
+          studentNumber: "2610000081",
           userId: "50000008-0008-4000-8000-000000000008",
           detailsId: "51000008-0008-4000-8000-000000000008",
           studentId: "52000008-0008-4000-8000-000000000008",
@@ -393,7 +404,7 @@ module.exports = {
           email: "precious.radebe@student.eduhub.ac.za",
           firstName: "Precious",
           lastName: "Radebe",
-          studentNumber: "2026-0010",
+          studentNumber: "2610000099",
           userId: "50000009-0009-4000-8000-000000000009",
           detailsId: "51000009-0009-4000-8000-000000000009",
           studentId: "52000009-0009-4000-8000-000000000009",

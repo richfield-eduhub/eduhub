@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Lecturers — EduHub Admin</title>
+  <link rel="stylesheet" href="../shared.css"/>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">LECTURERS</h1>
+  <p class="section-subtitle" id="subtitle"></p>
+  <div class="card" id="table-wrap"></div>
+</div>
+
+<!-- Modal for viewing lecturer modules -->
+<div id="modules-modal" class="modal" style="display:none">
+  <div class="modal-content" style="max-width:900px">
+    <div class="modal-header">
+      <h2 id="modal-title">Lecturer Modules</h2>
+      <button class="modal-close" onclick="closeModulesModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <!-- Modules will be loaded here -->
+    </div>
+  </div>
+</div>
+
+<script src="../shared.js"></script>
+<script>
+requireAuth('admin');
+renderNavbar('admin-lecturers');
+
+let lecturersData = [];
+let currentLecturer = null;
+
+async function fetchLecturers() {
+  const res = await api('GET', '/admin/lecturers');
+  if (!res.ok || !res.success) {
+    console.error('Failed to fetch lecturers:', res);
+    return [];
+  }
+  return res.data || [];
+}
+
+async function fetchLecturerModules(lecturerId) {
+  const res = await api('GET', `/admin/lecturers/${lecturerId}/modules`);
+  if (!res.ok || !res.success) {
+    console.error('Failed to fetch lecturer modules:', res);
+    return [];
+  }
+  return res.data || [];
+}
+
+async function viewLecturerModules(lecturerId) {
+  currentLecturer = lecturersData.find(l => l.lecturer_id === lecturerId);
+  if (!currentLecturer) return;
+
+  const displayName = `${currentLecturer.title || ''} ${currentLecturer.first_name || ''} ${currentLecturer.last_name || ''}`.trim() || currentLecturer.email;
+  document.getElementById('modal-title').textContent = `Modules - ${displayName}`;
+  document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:24px;color:var(--rf-gray)">Loading modules...</div>';
+  document.getElementById('modules-modal').style.display = 'flex';
+
+  const modules = await fetchLecturerModules(lecturerId);
+
+  if (modules.length === 0) {
+    document.getElementById('modal-body').innerHTML = `
+      <div style="padding:48px;text-align:center;color:var(--rf-gray)">
+        <div style="font-size:40px;margin-bottom:12px">📚</div>
+        <div>No modules assigned to this lecturer yet.</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('modal-body').innerHTML = `
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Module Code</th>
+          <th>Module Name</th>
+          <th>Qualification</th>
+          <th>Year</th>
+          <th>Semester</th>
+          <th>Credits</th>
+          <th>Students</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${modules.map(m => `
+          <tr>
+            <td style="font-family:var(--font-mono);font-weight:600;color:var(--rf-blue)">${m.code}</td>
+            <td>${m.name}</td>
+            <td style="font-size:12px">${m.qualification_code}</td>
+            <td style="text-align:center">${m.year}</td>
+            <td style="text-align:center">${m.semester}</td>
+            <td style="text-align:center">${m.credits}</td>
+            <td style="text-align:center;color:${m.students_enrolled > 0 ? 'var(--rf-green)' : 'var(--rf-gray)'}">${m.students_enrolled}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <div style="margin-top:16px;padding:12px;background:var(--rf-bg-light);border-radius:8px;font-size:13px;color:var(--rf-gray)">
+      <strong>Total:</strong> ${modules.length} module${modules.length !== 1 ? 's' : ''} assigned
+    </div>
+  `;
+}
+
+function closeModulesModal() {
+  document.getElementById('modules-modal').style.display = 'none';
+  currentLecturer = null;
+}
+
+// Close modal when clicking outside
+document.getElementById('modules-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'modules-modal') {
+    closeModulesModal();
+  }
+});
+
+async function renderLecturersTable() {
+  lecturersData = await fetchLecturers();
+
+  document.getElementById('subtitle').textContent = `${lecturersData.length} lecturers`;
+
+  if (lecturersData.length === 0) {
+    document.getElementById('table-wrap').innerHTML = `<div style="padding:48px;text-align:center;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">👨‍🏫</div><div>No lecturers found. Add lecturers to get started.</div></div>`;
+    return;
+  }
+
+  document.getElementById('table-wrap').innerHTML = `<table class="data-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Employee Number</th>
+        <th>Email</th>
+        <th>Department</th>
+        <th>Modules Teaching</th>
+        <th>Account</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+    ${lecturersData.map(l => {
+      const displayName = `${l.title || ''} ${l.first_name || ''} ${l.last_name || ''}`.trim() || l.email;
+      const employeeNumber = l.employee_number || l.member_number || '—';
+      const modulesCount = l.modules_count > 0 ? `${l.modules_count} module${l.modules_count > 1 ? 's' : ''}` : 'None';
+
+      return `<tr>
+        <td style="font-weight:600">${displayName}</td>
+        <td style="font-family:var(--font-mono);font-size:12px;color:var(--rf-blue)">${employeeNumber}</td>
+        <td style="font-size:13px;color:var(--rf-gray)">${l.email}</td>
+        <td style="font-size:13px">${l.department || '—'}</td>
+        <td style="font-size:13px;color:${l.modules_count > 0 ? 'var(--rf-green)' : 'var(--rf-gray)'}">${modulesCount}</td>
+        <td><span class="badge ${l.temp_password ? 'badge-pending' : 'badge-approved'}">${l.temp_password ? '⚠ Temp password' : '✓ Active'}</span></td>
+        <td>
+          <button class="btn btn-sm" onclick="viewLecturerModules('${l.lecturer_id}')" style="font-size:12px">
+            📚 View Modules
+          </button>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>`;
+}
+
+(async () => {
+  await ensureDashboardData();
+  await renderLecturersTable();
+})();
+</script>
+</body>
+</html>

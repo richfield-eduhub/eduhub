@@ -50,8 +50,8 @@ class StudentService {
     const [countResult] = await sequelize.query(
       `SELECT COUNT(*)::int as total
        FROM students s
-       INNER JOIN users u ON s.user_id = u.user_id
-       LEFT JOIN user_details ud ON u.user_id = ud.user_id
+       INNER JOIN users u ON s.user_id = u.id
+       LEFT JOIN user_details ud ON u.id = ud.user_id
        WHERE 1=1 ${whereClause}`,
       {
         bind: bindings,
@@ -62,15 +62,15 @@ class StudentService {
     // Get students
     bindings.push(limitValue, offset);
     const students = await sequelize.query(
-      `SELECT s.student_id, s.user_id, s.student_number, s.qualification_id,
+      `SELECT s.id as student_id, s.user_id, s.student_number, s.qualification_id,
               s.lifecycle_status, s.academic_status, s.enrollment_date,
               u.email, u.account_status,
-              ud.first_name, ud.last_name, ud.phone_number,
+              ud.first_name, ud.last_name, ud.phone,
               q.name as qualification_name, q.code as qualification_code
        FROM students s
-       INNER JOIN users u ON s.user_id = u.user_id
-       LEFT JOIN user_details ud ON u.user_id = ud.user_id
-       LEFT JOIN qualifications q ON s.qualification_id = q.qualification_id
+       INNER JOIN users u ON s.user_id = u.id
+       LEFT JOIN user_details ud ON u.id = ud.user_id
+       LEFT JOIN qualifications q ON s.qualification_id = q.id
        WHERE 1=1 ${whereClause}
        ORDER BY s.created_at DESC
        LIMIT $${bindIndex} OFFSET $${bindIndex + 1}`,

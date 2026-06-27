@@ -1525,6 +1525,7 @@ function renderNavbar(activePage) {
         highlight: true,
       },
       { href: "/admin/students", label: "Students", key: "students" },
+      { href: "/admin/lecturers", label: "Lecturers", key: "admin-lecturers" },
     ],
     student: [
       { href: "/student", label: "Dashboard", key: "dashboard" },

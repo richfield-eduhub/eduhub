@@ -22,7 +22,7 @@ router.get('/', async (req, res, next) => {
       registrations = await sequelize.query(
         `SELECT r.id, r.status, r.created_at, r.decline_reason, r.quotation_amount,
                 m.code AS module_code, m.name AS module_name, m.credits,
-                m.semester_number, m.year_of_study,
+                m.semester, m.year,
                 q.code AS qualification_code, q.name AS qualification_name,
                 s.student_number,
                 ud.first_name, ud.last_name
@@ -39,7 +39,7 @@ router.get('/', async (req, res, next) => {
       // Student sees only their own
       registrations = await sequelize.query(
         `SELECT r.id, r.status, r.created_at,
-                m.code AS module_code, m.name AS module_name, m.credits, m.semester_number, m.year_of_study,
+                m.code AS module_code, m.name AS module_name, m.credits, m.semester, m.year,
                 q.name AS qualification_name
          FROM registrations r
          JOIN modules m ON r.module_id = m.id
@@ -59,12 +59,12 @@ router.get('/eligible', async (req, res, next) => {
   try {
     // Return all active modules as eligible (student can self-service register)
     const modules = await sequelize.query(
-      `SELECT m.id, m.code, m.name, m.credits, m.semester_number, m.year_of_study,
+      `SELECT m.id, m.code, m.name, m.credits, m.semester, m.year,
               q.name AS qualification_name, q.code AS qualification_code
        FROM modules m
        JOIN qualifications q ON m.qualification_id = q.id
        WHERE m.is_active = true
-       ORDER BY q.code, m.year_of_study, m.semester_number`,
+       ORDER BY q.code, m.year, m.semester`,
       { type: sequelize.QueryTypes.SELECT }
     ).catch(() => []);
     res.json({ ok: true, modules, total: modules.length });
