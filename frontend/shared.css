@@ -66,8 +66,11 @@ input, select, textarea { font-family: var(--font-body); outline: none; }
 
 /* ── BADGES ── */
 .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+.badge-draft     { background: #FEF3C7; color: #92400E; }
 .badge-pending   { background: #FEF3C7; color: #92400E; }
+.badge-applied   { background: #DBEAFE; color: #1E40AF; }
 .badge-approved  { background: #D1FAE5; color: #065F46; }
+.badge-rejected  { background: #FEE2E2; color: #991B1B; }
 .badge-declined  { background: #FEE2E2; color: #991B1B; }
 .badge-allocated { background: #D1FAE5; color: #065F46; }
 .badge-info      { background: var(--rf-light); color: var(--rf-blue); }

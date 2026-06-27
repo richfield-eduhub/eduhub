@@ -35,7 +35,6 @@
     <div style="display:flex;gap:8px">
       <button class="btn btn-sm btn-success" onclick="bulkApprove()" id="bulk-approve-btn">✓ Approve Selected</button>
       <button class="btn btn-sm btn-danger" onclick="bulkReject()" id="bulk-reject-btn">✗ Reject Selected</button>
-      <button class="btn btn-sm" onclick="bulkDelete()" id="bulk-delete-btn" style="background:#DC2626;color:white;border:none">🗑️ Delete Selected</button>
     </div>
   </div>
 
@@ -105,35 +104,90 @@ let allocApp=null, allocSemester=1, allocYear=1, allocSelected=[];
 let selectedApplications = new Set();
 
 function render(){
-  const apps=getApplications();
+  let apps=getApplications();
+
+  // DEBUG: Log the raw data structure
+  console.log('Raw applications data:', apps);
+  console.log('Total applications before dedup:', apps.length);
+
+  // Flatten if nested (in case data is double-nested)
+  apps = apps.flat(Infinity);
+
+  // Deduplicate applications by ID (keep first occurrence with complete data)
+  const seen = new Set();
+  apps = apps.filter(a => {
+    // Skip if invalid, null, or missing required fields
+    if (!a || typeof a !== 'object' || !a.id || !a.firstName || !a.email) {
+      console.warn('Skipping invalid application:', a);
+      return false;
+    }
+
+    // Skip if already seen
+    if (seen.has(a.id)) {
+      console.warn('Skipping duplicate application ID:', a.id);
+      return false;
+    }
+
+    seen.add(a.id);
+    return true;
+  });
+
+  console.log('Total applications after dedup:', apps.length);
+
+  // Save deduplicated data back to localStorage
+  localStorage.setItem('applications', JSON.stringify(apps));
+
   const regs=getRegistrations();
-  const counts={all:apps.length,pending:apps.filter(a=>a.status==='pending').length,approved:apps.filter(a=>a.status==='approved').length,declined:apps.filter(a=>a.status==='declined').length};
-  document.getElementById('filter-bar').innerHTML=['all','pending','approved','declined'].map(f=>
+
+  // Count by actual status values in the data
+  const counts = {
+    all: apps.length,
+    draft: apps.filter(a => a.status === 'draft').length,
+    pending: apps.filter(a => a.status === 'pending' || a.status === 'applied').length,
+    approved: apps.filter(a => a.status === 'approved').length,
+    declined: apps.filter(a => a.status === 'declined' || a.status === 'rejected').length
+  };
+
+  console.log('Status counts:', counts);
+  console.log('Unique statuses:', [...new Set(apps.map(a => a.status))]);
+
+  document.getElementById('filter-bar').innerHTML=['all','draft','pending','approved','declined'].map(f=>
     `<button class="filter-btn ${currentFilter===f?'active':''}" onclick="setFilter('${f}')">${f} (${counts[f]})</button>`
   ).join('');
-  const filtered=currentFilter==='all'?apps:apps.filter(a=>a.status===currentFilter);
+
+  // Filter applications based on selected filter
+  let filtered;
+  if (currentFilter === 'all') {
+    filtered = apps;
+  } else if (currentFilter === 'pending') {
+    filtered = apps.filter(a => a.status === 'pending' || a.status === 'applied');
+  } else if (currentFilter === 'declined') {
+    filtered = apps.filter(a => a.status === 'declined' || a.status === 'rejected');
+  } else {
+    filtered = apps.filter(a => a.status === currentFilter);
+  }
+
   if(filtered.length===0){
     document.getElementById('table-wrap').innerHTML=`<div style="padding:48px;text-align:center;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">📋</div><div>No ${currentFilter==='all'?'':currentFilter} applications found</div></div>`;
     return;
   }
-  const canBulkAction = currentFilter === 'pending';
+  const canBulkAction = currentFilter === 'pending' || currentFilter === 'draft';
   document.getElementById('table-wrap').innerHTML=`<table class="data-table"><thead><tr>${canBulkAction?'<th style="width:40px"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" style="cursor:pointer"/></th>':''}<th>Student</th><th>Type</th><th>Qualification</th><th>Submitted</th><th>Status</th><th>Modules</th><th>Actions</th></tr></thead><tbody>
   ${filtered.map(a=>{
     const alloc=regs.find(r=>r.studentId===a.studentId&&(r.status==='allocated'||r.status==='approved'));
     const isSelected = selectedApplications.has(a.id);
     return `<tr>
       ${canBulkAction?`<td><input type="checkbox" class="app-checkbox" data-app-id="${a.id}" ${isSelected?'checked':''} onchange="toggleSelection('${a.id}', this.checked)" style="cursor:pointer"/></td>`:''}
-      <td><div style="font-weight:600">${a.firstName} ${a.lastName}</div><div style="font-size:12px;color:var(--rf-gray)">${a.email}</div><div style="font-size:11px;font-family:var(--font-mono);color:var(--rf-blue)">${a.studentId}</div></td>
-      <td><span style="font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;background:${a.applicationType==='returning'?'#FEF3C7':'#D1FAE5'};color:${a.applicationType==='returning'?'#92400e':'#065f46'}">${a.applicationType==='returning'?'🔄 Returning':'🆕 New'}</span><div style="font-size:11px;color:var(--rf-gray);margin-top:2px">Year ${a.studyYear}</div></td>
-      <td><div style="font-weight:600;font-size:13px">${a.qualificationCode}</div><div style="font-size:12px;color:var(--rf-gray)">${a.qualificationName}</div></td>
+      <td><div style="font-weight:600">${a.firstName || ''} ${a.lastName || ''}</div><div style="font-size:12px;color:var(--rf-gray)">${a.email || ''}</div><div style="font-size:11px;font-family:var(--font-mono);color:var(--rf-blue)">${a.studentId || ''}</div></td>
+      <td><span style="font-size:12px;font-weight:700;padding:3px 8px;border-radius:99px;background:${a.applicationType==='returning'?'#FEF3C7':'#D1FAE5'};color:${a.applicationType==='returning'?'#92400e':'#065f46'}">${a.applicationType==='returning'?'🔄 Returning':'🆕 New'}</span><div style="font-size:11px;color:var(--rf-gray);margin-top:2px">Year ${a.studyYear || 1}</div></td>
+      <td><div style="font-weight:600;font-size:13px">${a.qualificationCode || ''}</div><div style="font-size:12px;color:var(--rf-gray)">${a.qualificationName || ''}</div></td>
       <td style="font-size:13px;color:var(--rf-gray)">${fmtDate(a.submittedAt)}</td>
       <td>${badge(a.status)}</td>
       <td>${alloc?`<span style="font-size:12px;color:#059669;font-weight:700">✅ ${alloc.modules.length} allocated</span>`:a.status==='approved'?'<span style="font-size:12px;color:#f59e0b;font-weight:600">⏳ Pending</span>':'<span style="font-size:12px;color:var(--rf-gray)">—</span>'}</td>
       <td><div style="display:flex;gap:5px;flex-wrap:wrap">
         <button class="btn btn-sm btn-secondary" onclick="openView('${a.id}')">View</button>
         ${a.status==='approved'?`<button class="btn btn-sm" onclick="openAlloc('${a.id}')" style="background:${alloc?'#D1FAE5':'#001A4D'};color:${alloc?'#065f46':'white'};border:none;font-weight:700">📚 ${alloc?'Reallocate':'Allocate'}</button>`:''}
-        ${a.status==='pending'?`<button class="btn btn-sm btn-success" onclick="handleApprove('${a.id}')">✓ Approve</button><button class="btn btn-sm btn-danger" onclick="openDecline('${a.id}')">✗ Reject</button>`:''}
-        <button class="btn btn-sm" onclick="handleDelete('${a.id}')" style="background:#DC2626;color:white;border:none" title="Delete application">🗑️</button>
+        ${(a.status==='pending' || a.status==='applied' || a.status==='draft')?`<button class="btn btn-sm btn-success" onclick="handleApprove('${a.id}')">✓ Approve</button><button class="btn btn-sm btn-danger" onclick="openDecline('${a.id}')">✗ Reject</button>`:''}
       </div></td>
     </tr>`;
   }).join('')}
@@ -283,29 +337,6 @@ async function bulkReject() {
   }
 }
 
-function bulkDelete() {
-  if (selectedApplications.size === 0) {
-    return showToast('No applications selected', 'warning');
-  }
-
-  const confirmMsg = `⚠️ WARNING: You are about to DELETE ${selectedApplications.size} application(s).\n\nThis action CANNOT be undone!\n\nAre you absolutely sure?`;
-
-  if (!confirm(confirmMsg)) {
-    return;
-  }
-
-  const apps = getApplications();
-  const applicationIds = Array.from(selectedApplications);
-
-  // Remove selected applications from localStorage
-  const updatedApps = apps.filter(a => !applicationIds.includes(a.id));
-  localStorage.setItem('applications', JSON.stringify(updatedApps));
-
-  showToast(`Successfully deleted ${applicationIds.length} application(s)`, 'success');
-  clearSelection();
-  render();
-}
-
 function setFilter(f){
   currentFilter=f;
   selectedApplications.clear();
@@ -338,7 +369,7 @@ function openView(id){
     ${a.declineReason?`<div class="alert alert-error"><span>❌</span> ${a.declineReason}</div>`:''}`;
   document.getElementById('view-footer').innerHTML=`
     ${a.status==='approved'?`<button class="btn btn-primary" onclick="closeModal('view-modal');openAlloc('${a.id}')">📚 Allocate Modules</button>`:''}
-    ${a.status==='pending'?`<button class="btn btn-danger" onclick="closeModal('view-modal');openDecline('${a.id}')">✗ Decline</button><button class="btn btn-success" onclick="closeModal('view-modal');handleApprove('${a.id}')">✓ Approve & Notify</button>`:''}`;
+    ${(a.status==='pending' || a.status==='applied' || a.status==='draft')?`<button class="btn btn-danger" onclick="closeModal('view-modal');openDecline('${a.id}')">✗ Decline</button><button class="btn btn-success" onclick="closeModal('view-modal');handleApprove('${a.id}')">✓ Approve & Notify</button>`:''}`;
   openModal('view-modal');
 }
 
@@ -359,29 +390,19 @@ function openDecline(id){
   openModal('decline-modal');
 }
 
-function confirmDecline(){
+async function confirmDecline(){
   const reason=document.getElementById('decline-reason').value.trim();
   if(!reason)return showToast('Please provide a reason','error');
-  declineApplication(selectedApp.id,reason);
-  closeModal('decline-modal');
-  showToast('Application declined.','info');
-  render();
-}
 
-function handleDelete(id){
-  const apps=getApplications();
-  const a=apps.find(x=>x.id===id); if(!a)return;
-
-  const confirmMsg = `Are you sure you want to DELETE this application?\n\nStudent: ${a.firstName} ${a.lastName}\nEmail: ${a.email}\nStatus: ${a.status}\n\nThis action cannot be undone!`;
-
-  if(!confirm(confirmMsg)) return;
-
-  // Remove from localStorage
-  const updatedApps = apps.filter(x => x.id !== id);
-  localStorage.setItem('applications', JSON.stringify(updatedApps));
-
-  showToast(`Application for ${a.firstName} ${a.lastName} has been deleted.`, 'success');
-  render();
+  try {
+    await rejectApplication(selectedApp.id, reason);
+    closeModal('decline-modal');
+    showToast('Application declined.','success');
+    render();
+  } catch (error) {
+    console.error('Error declining application:', error);
+    showToast('Failed to decline application','error');
+  }
 }
 
 function openAlloc(id){
@@ -454,14 +475,21 @@ function toggleAllocMod(code){
   renderAllocModal();
 }
 
-function confirmAllocation(){
+async function confirmAllocation(){
   if(!allocApp||allocSelected.length===0)return;
   const qual=QUALIFICATIONS.find(q=>q.code===allocApp.qualificationCode);
   const mods=qual?qual.modules.filter(m=>allocSelected.includes(m.code)):[];
-  doAllocateModules(allocApp.id,mods,allocSemester,allocYear);
-  showToast(`✅ ${mods.length} modules allocated to ${allocApp.firstName} ${allocApp.lastName}!`,'success');
-  closeModal('alloc-modal');
-  render();
+
+  try {
+    await allocateModules(allocApp.id, mods, allocSemester, allocYear);
+    showToast(`✅ ${mods.length} modules allocated to ${allocApp.firstName} ${allocApp.lastName}!`,'success');
+    closeModal('alloc-modal');
+    await refreshDashboardData(true);
+    render();
+  } catch (error) {
+    console.error('Error allocating modules:', error);
+    showToast('Failed to allocate modules','error');
+  }
 }
 
 (async () => {

@@ -230,7 +230,16 @@
     {icon:'📝',label:'Pending Registrations',value:pendingReg,bg:'#FCE7F3'},
   ].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span style="font-size:22px">${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
 
-  const recent = [...apps].sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt)).slice(0,5);
+  // Deduplicate applications by ID (keep first occurrence with complete data)
+  const seen = new Set();
+  const uniqueApps = apps.filter(a => {
+    if (!a || typeof a !== 'object' || !a.id || !a.firstName || !a.email) return false;
+    if (seen.has(a.id)) return false;
+    seen.add(a.id);
+    return true;
+  });
+
+  const recent = [...uniqueApps].sort((a,b)=>new Date(b.submittedAt)-new Date(a.submittedAt)).slice(0,5);
   document.getElementById('recent-apps').innerHTML = recent.length===0
     ?'<div style="padding:24px;text-align:center;color:var(--rf-gray);font-size:14px">No applications yet</div>'
     :`<table class="data-table"><thead><tr><th>Name</th><th>Qualification</th><th>Status</th></tr></thead><tbody>

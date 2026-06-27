@@ -1434,8 +1434,11 @@ function setLoading(btnId, loading, text) {
 
 function badge(status) {
   const map = {
+    draft: "badge-draft",
     pending: "badge-pending",
+    applied: "badge-applied",
     approved: "badge-approved",
+    rejected: "badge-rejected",
     declined: "badge-declined",
     allocated: "badge-allocated",
   };
