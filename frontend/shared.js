@@ -1492,6 +1492,35 @@ function showToast(msg, type, ms) {
 /* ═══════════════════════════════════════════════════
    NAVBAR
    ═══════════════════════════════════════════════════ */
+function escapeHtml(text) {
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getNavUserDisplay(user) {
+  const displayName =
+    user.name ||
+    `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+    user.email.split("@")[0];
+  const roleLabels = {
+    admin: "Administrator",
+    student: "Student",
+    lecturer: "Lecturer",
+  };
+  const roleLabel = roleLabels[user.role] || user.role;
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+  return { displayName, roleLabel, initials: initials || "?" };
+}
+
 function renderNavbar(activePage) {
   const user = getCachedUser();
   const links = {
@@ -1502,7 +1531,6 @@ function renderNavbar(activePage) {
         href: "/apply",
         label: "New Application",
         key: "apply",
-        highlight: true,
       },
       { href: "/login", label: "Login", key: "login" },
     ],
@@ -1522,7 +1550,6 @@ function renderNavbar(activePage) {
         href: "/admin/allocations",
         label: "Allocate Modules",
         key: "allocations",
-        highlight: true,
       },
       { href: "/admin/students", label: "Students", key: "students" },
       { href: "/admin/lecturers", label: "Lecturers", key: "admin-lecturers" },
@@ -1552,20 +1579,27 @@ function renderNavbar(activePage) {
   const linksHtml = navLinks
     .map(
       (l) =>
-        `<a href="${l.href}" class="nav-link${activePage === l.key ? " active" : ""}${l.highlight ? " highlight" : ""}">${l.label}</a>`,
+        `<a href="${l.href}" class="nav-link${activePage === l.key ? " active" : ""}">${l.label}</a>`,
     )
     .join("");
   const cachedCount = parseInt(localStorage.getItem("_unreadCount") || "0");
+  const navUser = user ? getNavUserDisplay(user) : null;
   const userHtml = user
     ? `
-    <div style="position:relative;margin-left:8px">
-      <button class="notif-btn" id="notif-btn" onclick="toggleNotifs(event)">🔔
-        <span id="notif-badge" style="position:absolute;top:4px;right:4px;width:16px;height:16px;background:#e8192c;border-radius:50%;font-size:10px;font-weight:700;display:${cachedCount > 0 ? "flex" : "none"};align-items:center;justify-content:center">${cachedCount}</span>
-      </button>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-left:12px">
-      <div style="text-align:right"><div style="font-size:13px;font-weight:600">${user.first_name || user.email.split("@")[0]}</div><div style="font-size:11px;opacity:.7;text-transform:capitalize">${user.role}</div></div>
-      <button onclick="doLogout()" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">Logout</button>
+    <div class="navbar-actions">
+      <div style="position:relative">
+        <button class="notif-btn" id="notif-btn" onclick="toggleNotifs(event)" aria-label="Notifications">🔔
+          <span id="notif-badge" class="notif-badge" style="display:${cachedCount > 0 ? "flex" : "none"}">${cachedCount}</span>
+        </button>
+      </div>
+      <div class="navbar-user" title="${escapeHtml(navUser.displayName)}">
+        <div class="navbar-user-avatar" aria-hidden="true">${escapeHtml(navUser.initials)}</div>
+        <div class="navbar-user-info">
+          <div class="navbar-user-name">${escapeHtml(navUser.displayName)}</div>
+          <div class="navbar-user-role">${escapeHtml(navUser.roleLabel)}</div>
+        </div>
+      </div>
+      <button class="navbar-logout-btn" onclick="doLogout()">Logout</button>
     </div>`
     : "";
   const notifHtml = user
@@ -1582,11 +1616,14 @@ function renderNavbar(activePage) {
     : "";
   const navMarkup = `
       <nav class="navbar">
-        <a href="${user ? "/" + user.role : "/"}" style="display:flex;align-items:center;gap:8px">
-          <img src="${EDUHUB_LOGO}" alt="EduHub" style="height:36px" onerror="this.style.display='none'">
-          <span class="navbar-logo-text" style="color:white">EDUHUB</span>
+        <a href="${user ? "/" + user.role : "/"}" class="navbar-brand">
+          <img src="${EDUHUB_LOGO}" alt="EduHub" onerror="this.style.display='none'">
+          <span class="navbar-logo-text">EDUHUB</span>
         </a>
-        <div class="navbar-links">${linksHtml}${userHtml}</div>
+        <div class="navbar-right">
+          <div class="navbar-links">${linksHtml}</div>
+          ${userHtml}
+        </div>
       </nav>${notifHtml}`;
   const placeholder =
     document.getElementById("navbar-placeholder") ||

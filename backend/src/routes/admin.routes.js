@@ -97,6 +97,285 @@ router.get('/lecturers/:id/modules', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// POST /api/admin/lecturers - Create a new lecturer (hire)
+router.post('/lecturers',
+  [
+    body('email').isEmail().withMessage('Valid email is required'),
+    body('firstName').notEmpty().withMessage('First name is required'),
+    body('lastName').notEmpty().withMessage('Last name is required'),
+    body('employeeNumber').notEmpty().withMessage('Employee number is required'),
+    body('department').notEmpty().withMessage('Department is required'),
+    body('title').optional().isString(),
+    body('specialization').optional().isString(),
+    body('hireDate').optional().isString(),
+  ],
+  validate,
+  async (req, res, next) => {
+    try {
+      const { email, firstName, lastName, employeeNumber, department, title, specialization, hireDate } = req.body;
+      const bcrypt = require('bcrypt');
+
+      // Check if email already exists
+      const [existingUser] = await sequelize.query(
+        `SELECT id FROM users WHERE email = :email LIMIT 1`,
+        { replacements: { email }, type: sequelize.QueryTypes.SELECT }
+      );
+
+      if (existingUser) {
+        return res.status(400).json({ ok: false, success: false, message: 'Email already exists' });
+      }
+
+      // Check if employee number already exists
+      const [existingLecturer] = await sequelize.query(
+        `SELECT id FROM lecturers WHERE employee_number = :empNum LIMIT 1`,
+        { replacements: { empNum: employeeNumber }, type: sequelize.QueryTypes.SELECT }
+      );
+
+      if (existingLecturer) {
+        return res.status(400).json({ ok: false, success: false, message: 'Employee number already exists' });
+      }
+
+      const defaultPassword = await bcrypt.hash('Password123!', 10);
+      const userId = require('crypto').randomUUID();
+      const userDetailsId = require('crypto').randomUUID();
+      const lecturerId = require('crypto').randomUUID();
+
+      // Create user account
+      await sequelize.query(
+        `INSERT INTO users (id, email, password_hash, member_number, role, account_status, is_verified, is_default_password, created_at, updated_at)
+         VALUES (:id, :email, :pw, :mn, 'lecturer', 'active', true, true, NOW(), NOW())`,
+        {
+          replacements: {
+            id: userId,
+            email: email,
+            pw: defaultPassword,
+            mn: employeeNumber
+          }
+        }
+      );
+
+      // Create user details
+      await sequelize.query(
+        `INSERT INTO user_details (id, user_id, first_name, last_name, date_of_birth, gender, nationality, id_number, phone, city, province, created_at, updated_at)
+         VALUES (:id, :uid, :firstName, :lastName, '1980-01-01', 'Prefer not to say', 'South African', '8001010001088', '0000000000', 'Johannesburg', 'Gauteng', NOW(), NOW())`,
+        {
+          replacements: {
+            id: userDetailsId,
+            uid: userId,
+            firstName: firstName,
+            lastName: lastName
+          }
+        }
+      );
+
+      // Create lecturer record
+      await sequelize.query(
+        `INSERT INTO lecturers (id, user_id, employee_number, department, title, specialization, hire_date, created_at, updated_at)
+         VALUES (:id, :uid, :empNum, :dept, :title, :spec, :hireDate, NOW(), NOW())`,
+        {
+          replacements: {
+            id: lecturerId,
+            uid: userId,
+            empNum: employeeNumber,
+            dept: department,
+            title: title || null,
+            spec: specialization || null,
+            hireDate: hireDate || new Date().toISOString().split('T')[0]
+          }
+        }
+      );
+
+      res.json({
+        ok: true,
+        success: true,
+        message: 'Lecturer hired successfully',
+        data: {
+          lecturer_id: lecturerId,
+          user_id: userId,
+          email: email
+        }
+      });
+    } catch (err) { next(err); }
+  }
+);
+
+// DELETE /api/admin/lecturers/:id - Delete a lecturer (fire)
+router.delete('/lecturers/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // Get lecturer's user_id
+    const [lecturer] = await sequelize.query(
+      `SELECT user_id FROM lecturers WHERE id = :id LIMIT 1`,
+      { replacements: { id }, type: sequelize.QueryTypes.SELECT }
+    );
+
+    if (!lecturer) {
+      return res.status(404).json({ ok: false, success: false, message: 'Lecturer not found' });
+    }
+
+    // Delete module assignments first (foreign key constraint)
+    await sequelize.query(
+      `DELETE FROM module_lecturers WHERE lecturer_id = :id`,
+      { replacements: { id } }
+    );
+
+    // Delete lecturer record
+    await sequelize.query(
+      `DELETE FROM lecturers WHERE id = :id`,
+      { replacements: { id } }
+    );
+
+    // Optionally, deactivate the user account instead of deleting
+    await sequelize.query(
+      `UPDATE users SET account_status = 'terminated', updated_at = NOW() WHERE id = :userId`,
+      { replacements: { userId: lecturer.user_id } }
+    );
+
+    res.json({
+      ok: true,
+      success: true,
+      message: 'Lecturer removed successfully'
+    });
+  } catch (err) { next(err); }
+});
+
+// POST /api/admin/lecturers/:id/modules - Allocate modules to a lecturer
+router.post('/lecturers/:id/modules',
+  [
+    body('moduleIds').isArray({ min: 1 }).withMessage('At least one module ID is required'),
+    body('semesterId').notEmpty().withMessage('Semester ID is required'),
+  ],
+  validate,
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { moduleIds, semesterId } = req.body;
+
+      // Verify lecturer exists
+      const [lecturer] = await sequelize.query(
+        `SELECT id FROM lecturers WHERE id = :id LIMIT 1`,
+        { replacements: { id }, type: sequelize.QueryTypes.SELECT }
+      );
+
+      if (!lecturer) {
+        return res.status(404).json({ ok: false, success: false, message: 'Lecturer not found' });
+      }
+
+      // Allocate each module
+      let allocated = 0;
+      let skipped = 0;
+
+      for (const moduleId of moduleIds) {
+        // Check if already allocated
+        const [existing] = await sequelize.query(
+          `SELECT id FROM module_lecturers
+           WHERE module_id = :moduleId AND lecturer_id = :lecturerId AND semester_id = :semesterId
+           LIMIT 1`,
+          {
+            replacements: { moduleId, lecturerId: id, semesterId },
+            type: sequelize.QueryTypes.SELECT
+          }
+        );
+
+        if (existing) {
+          skipped++;
+          continue;
+        }
+
+        // Allocate module
+        await sequelize.query(
+          `INSERT INTO module_lecturers (id, module_id, lecturer_id, semester_id, is_primary, created_at, updated_at)
+           VALUES (gen_random_uuid(), :moduleId, :lecturerId, :semesterId, true, NOW(), NOW())`,
+          {
+            replacements: {
+              moduleId,
+              lecturerId: id,
+              semesterId
+            }
+          }
+        );
+        allocated++;
+      }
+
+      res.json({
+        ok: true,
+        success: true,
+        message: `${allocated} module(s) allocated, ${skipped} already assigned`,
+        data: { allocated, skipped }
+      });
+    } catch (err) { next(err); }
+  }
+);
+
+// DELETE /api/admin/lecturers/:lecturerId/modules/:moduleId - Remove module from lecturer
+router.delete('/lecturers/:lecturerId/modules/:moduleId', async (req, res, next) => {
+  try {
+    const { lecturerId, moduleId } = req.params;
+
+    const result = await sequelize.query(
+      `DELETE FROM module_lecturers
+       WHERE lecturer_id = :lecturerId AND module_id = :moduleId`,
+      { replacements: { lecturerId, moduleId } }
+    );
+
+    res.json({
+      ok: true,
+      success: true,
+      message: 'Module removed from lecturer'
+    });
+  } catch (err) { next(err); }
+});
+
+// GET /api/admin/modules - Get all available modules
+router.get('/modules', async (req, res, next) => {
+  try {
+    const modules = await sequelize.query(
+      `SELECT
+        m.id,
+        m.code,
+        m.name,
+        m.credits,
+        m.year,
+        m.semester,
+        m.is_active,
+        q.code as qualification_code,
+        q.name as qualification_name
+       FROM modules m
+       LEFT JOIN qualifications q ON m.qualification_id = q.id
+       WHERE m.is_active = true
+       ORDER BY q.code, m.year, m.semester, m.code`,
+      { type: sequelize.QueryTypes.SELECT }
+    );
+
+    res.json({
+      ok: true,
+      success: true,
+      data: modules,
+      total: modules.length
+    });
+  } catch (err) { next(err); }
+});
+
+// GET /api/admin/semesters - Get all semesters
+router.get('/semesters', async (req, res, next) => {
+  try {
+    const semesters = await sequelize.query(
+      `SELECT id, name, year, semester_number, start_date, end_date, is_active
+       FROM semesters
+       ORDER BY year DESC, semester_number DESC`,
+      { type: sequelize.QueryTypes.SELECT }
+    );
+
+    res.json({
+      ok: true,
+      success: true,
+      data: semesters,
+      total: semesters.length
+    });
+  } catch (err) { next(err); }
+});
+
 // GET /api/admin/users
 router.get('/users', async (req, res, next) => {
   try {

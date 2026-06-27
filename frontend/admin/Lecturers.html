@@ -8,20 +8,120 @@
 <body>
 <div id="navbar-root"></div>
 <div class="main-content">
-  <h1 class="section-title">LECTURERS</h1>
-  <p class="section-subtitle" id="subtitle"></p>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <div>
+      <h1 class="section-title" style="margin:0">LECTURERS</h1>
+      <p class="section-subtitle" id="subtitle" style="margin:8px 0 0 0"></p>
+    </div>
+    <button class="btn btn-primary" onclick="showHireModal()">+ Hire Lecturer</button>
+  </div>
   <div class="card" id="table-wrap"></div>
 </div>
 
-<!-- Modal for viewing lecturer modules -->
-<div id="modules-modal" class="modal" style="display:none">
-  <div class="modal-content" style="max-width:900px">
+<!-- Modal for viewing/managing lecturer modules -->
+<div id="modules-modal" class="modal-overlay hidden">
+  <div class="modal modal-lg" style="max-width:1000px">
     <div class="modal-header">
-      <h2 id="modal-title">Lecturer Modules</h2>
+      <h2 class="modal-title" id="modal-title">Lecturer Modules</h2>
       <button class="modal-close" onclick="closeModulesModal()">&times;</button>
     </div>
     <div class="modal-body" id="modal-body">
       <!-- Modules will be loaded here -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="showAllocateModal()">Allocate Modules</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for hiring new lecturer -->
+<div id="hire-modal" class="modal-overlay hidden">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <h2 class="modal-title">Hire New Lecturer</h2>
+      <button class="modal-close" onclick="closeHireModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="hire-form" onsubmit="handleHire(event)">
+        <div class="form-group" style="margin-bottom:16px">
+          <label>First Name *</label>
+          <input type="text" name="firstName" required class="form-input"/>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Last Name *</label>
+          <input type="text" name="lastName" required class="form-input"/>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Email *</label>
+          <input type="email" name="email" required class="form-input"/>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Employee Number *</label>
+          <input type="text" name="employeeNumber" required class="form-input"/>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Department *</label>
+          <select name="department" required class="form-select">
+            <option value="">Select Department</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Business & Commerce">Business & Commerce</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Arts & Humanities">Arts & Humanities</option>
+            <option value="Sciences">Sciences</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Title</label>
+          <select name="title" class="form-select">
+            <option value="">Select Title</option>
+            <option value="Prof.">Prof.</option>
+            <option value="Dr.">Dr.</option>
+            <option value="Mr.">Mr.</option>
+            <option value="Ms.">Ms.</option>
+            <option value="Mrs.">Mrs.</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Specialization</label>
+          <input type="text" name="specialization" class="form-input"/>
+        </div>
+        <div class="form-group" style="margin-bottom:16px">
+          <label>Hire Date</label>
+          <input type="date" name="hireDate" class="form-input"/>
+        </div>
+        <div style="margin-top:24px;display:flex;gap:12px;justify-content:flex-end">
+          <button type="button" class="btn" onclick="closeHireModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Hire Lecturer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for allocating modules -->
+<div id="allocate-modal" class="modal-overlay hidden">
+  <div class="modal" style="max-width:800px">
+    <div class="modal-header">
+      <h2 class="modal-title">Allocate Modules</h2>
+      <button class="modal-close" onclick="closeAllocateModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Semester *</label>
+        <select id="semester-select" class="form-select" required>
+          <option value="">Select Semester</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Select Modules *</label>
+        <div id="modules-list" style="max-height:400px;overflow-y:auto;border:1px solid var(--rf-border);border-radius:8px;padding:12px;margin-top:8px">
+          <div style="text-align:center;padding:24px;color:var(--rf-gray)">Loading modules...</div>
+        </div>
+      </div>
+      <div style="margin-top:24px;display:flex;gap:12px;justify-content:flex-end">
+        <button type="button" class="btn" onclick="closeAllocateModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="handleAllocateModules()">Allocate Selected</button>
+      </div>
     </div>
   </div>
 </div>
@@ -33,7 +133,11 @@ renderNavbar('admin-lecturers');
 
 let lecturersData = [];
 let currentLecturer = null;
+let allModules = [];
+let allSemesters = [];
+let selectedModules = new Set();
 
+// Fetch functions
 async function fetchLecturers() {
   const res = await api('GET', '/admin/lecturers');
   if (!res.ok || !res.success) {
@@ -52,6 +156,25 @@ async function fetchLecturerModules(lecturerId) {
   return res.data || [];
 }
 
+async function fetchAllModules() {
+  const res = await api('GET', '/admin/modules');
+  if (!res.ok || !res.success) {
+    console.error('Failed to fetch modules:', res);
+    return [];
+  }
+  return res.data || [];
+}
+
+async function fetchSemesters() {
+  const res = await api('GET', '/admin/semesters');
+  if (!res.ok || !res.success) {
+    console.error('Failed to fetch semesters:', res);
+    return [];
+  }
+  return res.data || [];
+}
+
+// View lecturer modules
 async function viewLecturerModules(lecturerId) {
   currentLecturer = lecturersData.find(l => l.lecturer_id === lecturerId);
   if (!currentLecturer) return;
@@ -59,7 +182,7 @@ async function viewLecturerModules(lecturerId) {
   const displayName = `${currentLecturer.title || ''} ${currentLecturer.first_name || ''} ${currentLecturer.last_name || ''}`.trim() || currentLecturer.email;
   document.getElementById('modal-title').textContent = `Modules - ${displayName}`;
   document.getElementById('modal-body').innerHTML = '<div style="text-align:center;padding:24px;color:var(--rf-gray)">Loading modules...</div>';
-  document.getElementById('modules-modal').style.display = 'flex';
+  document.getElementById('modules-modal').classList.remove('hidden');
 
   const modules = await fetchLecturerModules(lecturerId);
 
@@ -68,6 +191,7 @@ async function viewLecturerModules(lecturerId) {
       <div style="padding:48px;text-align:center;color:var(--rf-gray)">
         <div style="font-size:40px;margin-bottom:12px">📚</div>
         <div>No modules assigned to this lecturer yet.</div>
+        <button class="btn btn-primary" onclick="showAllocateModal()" style="margin-top:16px">Allocate Modules</button>
       </div>`;
     return;
   }
@@ -83,6 +207,7 @@ async function viewLecturerModules(lecturerId) {
           <th>Semester</th>
           <th>Credits</th>
           <th>Students</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -95,6 +220,9 @@ async function viewLecturerModules(lecturerId) {
             <td style="text-align:center">${m.semester}</td>
             <td style="text-align:center">${m.credits}</td>
             <td style="text-align:center;color:${m.students_enrolled > 0 ? 'var(--rf-green)' : 'var(--rf-gray)'}">${m.students_enrolled}</td>
+            <td>
+              <button class="btn btn-sm btn-danger" onclick="removeModule('${currentLecturer.lecturer_id}', '${m.id}')" style="font-size:11px">Remove</button>
+            </td>
           </tr>
         `).join('')}
       </tbody>
@@ -106,24 +234,175 @@ async function viewLecturerModules(lecturerId) {
 }
 
 function closeModulesModal() {
-  document.getElementById('modules-modal').style.display = 'none';
+  document.getElementById('modules-modal').classList.add('hidden');
   currentLecturer = null;
 }
 
-// Close modal when clicking outside
-document.getElementById('modules-modal').addEventListener('click', (e) => {
-  if (e.target.id === 'modules-modal') {
-    closeModulesModal();
-  }
-});
+// Hire lecturer functions
+function showHireModal() {
+  document.getElementById('hire-modal').classList.remove('hidden');
+  document.getElementById('hire-form').reset();
+}
 
+function closeHireModal() {
+  document.getElementById('hire-modal').classList.add('hidden');
+}
+
+async function handleHire(e) {
+  e.preventDefault();
+  const form = e.target;
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData);
+
+  const res = await api('POST', '/admin/lecturers', data);
+
+  if (res.ok && res.success) {
+    alert('Lecturer hired successfully! Default password: Password123!');
+    closeHireModal();
+    await renderLecturersTable();
+  } else {
+    alert('Failed to hire lecturer: ' + (res.message || 'Unknown error'));
+  }
+}
+
+// Fire lecturer
+async function fireLecturer(lecturerId, lecturerName) {
+  if (!confirm(`Are you sure you want to fire ${lecturerName}? This will remove all module assignments and deactivate their account.`)) {
+    return;
+  }
+
+  const res = await api('DELETE', `/admin/lecturers/${lecturerId}`);
+
+  if (res.ok && res.success) {
+    alert('Lecturer removed successfully');
+    await renderLecturersTable();
+  } else {
+    alert('Failed to remove lecturer: ' + (res.message || 'Unknown error'));
+  }
+}
+
+// Allocate modules functions
+async function showAllocateModal() {
+  if (!currentLecturer) return;
+
+  document.getElementById('allocate-modal').classList.remove('hidden');
+  selectedModules.clear();
+
+  // Load semesters
+  if (allSemesters.length === 0) {
+    allSemesters = await fetchSemesters();
+  }
+
+  const semesterSelect = document.getElementById('semester-select');
+  semesterSelect.innerHTML = '<option value="">Select Semester</option>' +
+    allSemesters.map(s => `<option value="${s.id}">${s.name} (${s.year})</option>`).join('');
+
+  // Load modules
+  if (allModules.length === 0) {
+    allModules = await fetchAllModules();
+  }
+
+  renderModulesList();
+}
+
+function renderModulesList() {
+  const modulesList = document.getElementById('modules-list');
+
+  if (allModules.length === 0) {
+    modulesList.innerHTML = '<div style="text-align:center;padding:24px;color:var(--rf-gray)">No modules available</div>';
+    return;
+  }
+
+  // Group by qualification
+  const grouped = {};
+  allModules.forEach(m => {
+    const key = m.qualification_code || 'Other';
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(m);
+  });
+
+  modulesList.innerHTML = Object.keys(grouped).map(qual => `
+    <div style="margin-bottom:16px">
+      <div style="font-weight:600;margin-bottom:8px;color:var(--rf-blue)">${qual}</div>
+      ${grouped[qual].map(m => `
+        <label style="display:flex;align-items:center;padding:8px;cursor:pointer;border-radius:4px"
+               onmouseover="this.style.background='var(--rf-bg-light)'"
+               onmouseout="this.style.background='transparent'">
+          <input type="checkbox" value="${m.id}" onchange="toggleModule('${m.id}')"
+                 style="margin-right:8px"/>
+          <div style="flex:1">
+            <div style="font-weight:500">${m.code} - ${m.name}</div>
+            <div style="font-size:11px;color:var(--rf-gray)">Year ${m.year}, Semester ${m.semester} • ${m.credits} credits</div>
+          </div>
+        </label>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function toggleModule(moduleId) {
+  if (selectedModules.has(moduleId)) {
+    selectedModules.delete(moduleId);
+  } else {
+    selectedModules.add(moduleId);
+  }
+}
+
+function closeAllocateModal() {
+  document.getElementById('allocate-modal').classList.add('hidden');
+  selectedModules.clear();
+}
+
+async function handleAllocateModules() {
+  const semesterId = document.getElementById('semester-select').value;
+
+  if (!semesterId) {
+    alert('Please select a semester');
+    return;
+  }
+
+  if (selectedModules.size === 0) {
+    alert('Please select at least one module');
+    return;
+  }
+
+  const res = await api('POST', `/admin/lecturers/${currentLecturer.lecturer_id}/modules`, {
+    moduleIds: Array.from(selectedModules),
+    semesterId: semesterId
+  });
+
+  if (res.ok && res.success) {
+    alert(res.message || 'Modules allocated successfully');
+    closeAllocateModal();
+    await viewLecturerModules(currentLecturer.lecturer_id);
+  } else {
+    alert('Failed to allocate modules: ' + (res.message || 'Unknown error'));
+  }
+}
+
+// Remove module
+async function removeModule(lecturerId, moduleId) {
+  if (!confirm('Are you sure you want to remove this module from the lecturer?')) {
+    return;
+  }
+
+  const res = await api('DELETE', `/admin/lecturers/${lecturerId}/modules/${moduleId}`);
+
+  if (res.ok && res.success) {
+    await viewLecturerModules(lecturerId);
+  } else {
+    alert('Failed to remove module: ' + (res.message || 'Unknown error'));
+  }
+}
+
+// Render table
 async function renderLecturersTable() {
   lecturersData = await fetchLecturers();
 
   document.getElementById('subtitle').textContent = `${lecturersData.length} lecturers`;
 
   if (lecturersData.length === 0) {
-    document.getElementById('table-wrap').innerHTML = `<div style="padding:48px;text-align:center;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">👨‍🏫</div><div>No lecturers found. Add lecturers to get started.</div></div>`;
+    document.getElementById('table-wrap').innerHTML = `<div style="padding:48px;text-align:center;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">👨‍🏫</div><div>No lecturers found. Click "Hire Lecturer" to get started.</div></div>`;
     return;
   }
 
@@ -152,10 +431,9 @@ async function renderLecturersTable() {
         <td style="font-size:13px">${l.department || '—'}</td>
         <td style="font-size:13px;color:${l.modules_count > 0 ? 'var(--rf-green)' : 'var(--rf-gray)'}">${modulesCount}</td>
         <td><span class="badge ${l.temp_password ? 'badge-pending' : 'badge-approved'}">${l.temp_password ? '⚠ Temp password' : '✓ Active'}</span></td>
-        <td>
-          <button class="btn btn-sm" onclick="viewLecturerModules('${l.lecturer_id}')" style="font-size:12px">
-            📚 View Modules
-          </button>
+        <td style="white-space:nowrap">
+          <button class="btn btn-sm" onclick="viewLecturerModules('${l.lecturer_id}')" style="font-size:12px">📚 Modules</button>
+          <button class="btn btn-sm btn-danger" onclick="fireLecturer('${l.lecturer_id}', '${displayName.replace(/'/g, "\\'")}')" style="font-size:12px;margin-left:4px">Fire</button>
         </td>
       </tr>`;
     }).join('')}
@@ -163,6 +441,18 @@ async function renderLecturersTable() {
   </table>`;
 }
 
+// Close modals when clicking outside
+document.getElementById('modules-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'modules-modal') closeModulesModal();
+});
+document.getElementById('hire-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'hire-modal') closeHireModal();
+});
+document.getElementById('allocate-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'allocate-modal') closeAllocateModal();
+});
+
+// Initialize
 (async () => {
   await ensureDashboardData();
   await renderLecturersTable();
