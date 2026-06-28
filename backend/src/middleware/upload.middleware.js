@@ -59,13 +59,21 @@ try {
     },
   });
 } catch (error) {
-  console.warn('⚠️  multer not installed. File upload functionality will not work.');
-  console.warn('   Run: npm install multer');
+  console.warn('⚠️  File upload middleware failed to initialize:', error.message);
+  if (error.code === 'MODULE_NOT_FOUND') {
+    console.warn('   Run: npm install multer');
+  }
 
-  // Create mock upload functions for development
+  // Create mock upload functions so the app still starts
   upload = {
     single: () => (req, res, next) => {
-      next(new Error('multer is not installed. Run: npm install multer'));
+      next(
+        new Error(
+          error.code === 'MODULE_NOT_FOUND'
+            ? 'multer is not installed. Run: npm install multer'
+            : `File upload unavailable: ${error.message}`,
+        ),
+      );
     },
     array: () => (req, res, next) => {
       next(new Error('multer is not installed. Run: npm install multer'));

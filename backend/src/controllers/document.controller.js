@@ -5,6 +5,7 @@
  */
 
 const documentService = require('../services/document.service');
+const AuditService = require('../services/audit.service');
 const ResponseHandler = require('../utils/responseHandler');
 const path = require('path');
 const { FILE_CONFIG } = require('../utils/fileUpload');
@@ -90,6 +91,17 @@ class DocumentController {
       if (!fs.existsSync(filePath)) {
         return ResponseHandler.notFound(res, 'File not found on server');
       }
+
+      // Log the download for audit purposes
+      await AuditService.logDocumentDownload(
+        req.user?.user_id || null,
+        document.id,
+        document.application_id,
+        document.file_name,
+        document.document_type,
+        req.ip || req.connection.remoteAddress,
+        req.headers['user-agent']
+      );
 
       // Set headers for file download
       res.setHeader('Content-Disposition', `attachment; filename="${document.file_name}"`);

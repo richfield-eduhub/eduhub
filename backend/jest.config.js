@@ -6,6 +6,7 @@ module.exports = {
     '!src/db/**',
   ],
   coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov', 'json-summary'],
   coverageThreshold: {
     './src/utils/passwordValidator.js': {
       branches: 85,

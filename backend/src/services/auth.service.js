@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const sequelize = require('../config/database');
 const { JWT, USER_ROLES, ACCOUNT_STATUS } = require('../utils/constants');
 const PasswordValidator = require('../utils/passwordValidator');
+const { normalizeContactEmail, assertContactAvailable } = require('../utils/contactValidator');
 const emailService = require('./email.service');
 const AuditService = require('./audit.service');
 
@@ -31,10 +32,11 @@ class AuthService {
       }
 
       // Check if user already exists
+      const normalizedEmail = normalizeContactEmail(email);
       const [existingUser] = await sequelize.query(
-        'SELECT id FROM users WHERE email = ?',
+        'SELECT id FROM users WHERE LOWER(TRIM(email)) = ?',
         {
-          replacements: [email],
+          replacements: [normalizedEmail],
           type: sequelize.QueryTypes.SELECT,
           transaction,
         }
@@ -53,7 +55,7 @@ class AuthService {
          VALUES (?, ?, ?, ?, ?)
          RETURNING id as user_id, email, role, account_status, created_at`,
         {
-          replacements: [email, password_hash, role, ACCOUNT_STATUS.ACTIVE, false],
+          replacements: [normalizedEmail, password_hash, role, ACCOUNT_STATUS.ACTIVE, false],
           transaction,
         }
       );

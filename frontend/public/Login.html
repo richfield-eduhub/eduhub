@@ -136,7 +136,7 @@
 
       // Check if user has an incomplete application
       try {
-        const appRes = await apiCall(`/applications/user/${r.user.user_id}`, 'GET');
+        const appRes = await api('GET', `/applications/user/${r.user.user_id}`);
         if (appRes.ok && appRes.data) {
           const drafts = appRes.data.filter(app => app.status === 'draft' || app.status === 'pending');
           if (drafts.length > 0) {

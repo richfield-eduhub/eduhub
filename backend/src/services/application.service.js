@@ -10,6 +10,11 @@ const emailService = require('./email.service');
 const AuditService = require('./audit.service');
 
 const { APPLICATION_STATUS, PAGINATION } = require('../utils/constants');
+const { isValidSouthAfricanIdNumber, genderMatchesSaId } = require('../utils/saIdValidator');
+const {
+  assertContactAvailable,
+  findContactConflicts,
+} = require('../utils/contactValidator');
 
 const ADMIN_APPLICATION_STATUSES = [
   APPLICATION_STATUS.UNDER_REVIEW,
@@ -190,6 +195,12 @@ function assertIdentityForSubmit(nationality, idNumber, passportNumber) {
         message: 'South African applicants must provide a valid 13-digit ID number',
       };
     }
+    if (!isValidSouthAfricanIdNumber(id)) {
+      throw {
+        statusCode: 400,
+        message: 'South African ID number is invalid. The check digit (last digit) does not match.',
+      };
+    }
   } else {
     const pass = String(passportNumber || '').trim();
     if (pass.length < 5) {
@@ -224,6 +235,17 @@ function assertFullApplicationForSubmit(payload) {
     throw {
       statusCode: 400,
       message: `gender is required to submit and must be one of: ${GENDER_VALUES.join(', ')}`,
+    };
+  }
+  if (
+    isSouthAfricanNationality(payload.nationality) &&
+    payload.id_number &&
+    !genderMatchesSaId(payload.id_number, gender)
+  ) {
+    throw {
+      statusCode: 400,
+      message:
+        'Gender must match your SA ID number (digits 7–10: 0000–4999 Female, 5000–9999 Male)',
     };
   }
   if (!street_address || !city || !province) {
@@ -380,11 +402,49 @@ class ApplicationService {
     return { campusId: null, campuses, campus_mode: 'multiple' };
   }
 
+  async checkContactAvailability({
+    email,
+    phone,
+    draft_id,
+    id_number,
+    passport_number,
+  }) {
+    const conflicts = await findContactConflicts({
+      email,
+      phone,
+      excludeApplicationId: draft_id || null,
+      idNumber: id_number || null,
+      passportNumber: passport_number || null,
+    });
+
+    return {
+      email_available: !conflicts.email,
+      phone_available: !conflicts.phone,
+      email_conflict: conflicts.email
+        ? { source: conflicts.email.source, reference_number: conflicts.email.reference_number || null }
+        : null,
+      phone_conflict: conflicts.phone
+        ? { source: conflicts.phone.source, reference_number: conflicts.phone.reference_number || null }
+        : null,
+    };
+  }
+
   async ensureUserAccountForSubmittedDraft(draft, studentNumber, temporaryPassword, transaction) {
     const applicantEmail = normalizeEmail(draft.email);
     if (!applicantEmail) {
       throw { statusCode: 400, message: 'Applicant email is required before submission' };
     }
+
+    await assertContactAvailable(
+      {
+        email: applicantEmail,
+        phone: draft.phone,
+        excludeApplicationId: draft.id,
+        idNumber: draft.id_number,
+        passportNumber: draft.passport_number,
+      },
+      transaction
+    );
 
     const [existingUser] = await sequelize.query(
       `SELECT id, role
@@ -744,6 +804,18 @@ class ApplicationService {
         };
       }
 
+      if (payload.email || payload.phone) {
+        await assertContactAvailable(
+          {
+            email: payload.email,
+            phone: payload.phone,
+            idNumber,
+            passportNumber,
+          },
+          transaction
+        );
+      }
+
       const [inserted] = await sequelize.query(
         `INSERT INTO applications (
           user_id, reference_number, qualification_id, campus_id,
@@ -799,6 +871,17 @@ class ApplicationService {
       campus_options: campuses,
       campus_mode: campuses.length > 1 ? 'multiple' : campuses.length === 1 ? 'single' : 'none',
     };
+  }
+
+  async assertDraftAllowsUpload(draftId) {
+    const existing = await this._loadApplicationWithLabels(draftId);
+    if (existing.status !== APPLICATION_STATUS.DRAFT) {
+      throw {
+        statusCode: 409,
+        message: 'Documents can only be uploaded while the application is still a draft',
+      };
+    }
+    return existing;
   }
 
   async updateDraft(draftId, payload) {
@@ -906,6 +989,21 @@ class ApplicationService {
       },
       null
     );
+
+    const nextEmail =
+      payload.email !== undefined ? normalizeEmail(payload.email) : existing.email;
+    const nextPhone =
+      payload.phone !== undefined ? String(payload.phone).trim() : existing.phone;
+
+    if (nextEmail || nextPhone) {
+      await assertContactAvailable({
+        email: nextEmail,
+        phone: nextPhone,
+        excludeApplicationId: draftId,
+        idNumber: isSa ? idNumber : null,
+        passportNumber: isSa ? null : passportNumber,
+      });
+    }
 
     await sequelize.query(
       `UPDATE applications SET
@@ -1205,7 +1303,7 @@ class ApplicationService {
       const emailResult = await emailService.sendAdmissionsOutcomeEmail({
         to: finalRow.email,
         fullName: `${finalRow.first_name || ''} ${finalRow.last_name || ''}`.trim(),
-        studentNumber: finalRow.student_number || null,
+        studentNumber: generatedStudentNumber || finalRow.student_number || null,
         qualificationName:
           finalRow.resolved_qualification_name || finalRow.qualification_name || null,
         admittedFor: finalRow.admission_for,
@@ -1624,6 +1722,16 @@ class ApplicationService {
           },
         };
       }
+
+      await assertContactAvailable(
+        {
+          email,
+          phone,
+          idNumber: id_number,
+          passportNumber: passport_number,
+        },
+        transaction
+      );
 
       const reference_number = generateReferenceNumber();
       const matricJson =
@@ -2512,6 +2620,34 @@ class ApplicationService {
     }
 
     console.log(`[ApplicationService] Auto-allocated ${qualificationModules.length} modules for student ${studentId}`);
+
+    // Send module allocation email
+    if (qualificationModules.length > 0) {
+      try {
+        const fullName = `${application.first_name || ''} ${application.last_name || ''}`.trim();
+        const semesterInfo = await sequelize.query(
+          `SELECT name FROM semesters WHERE id = :semesterId`,
+          {
+            replacements: { semesterId },
+            type: sequelize.QueryTypes.SELECT,
+          }
+        );
+
+        await emailService.sendModuleAllocationEmail({
+          to: application.email,
+          fullName,
+          studentNumber: application.student_number,
+          modules: qualificationModules,
+          qualificationName: application.qualification_name || 'Your selected qualification',
+          semester: semesterInfo[0]?.name || 'Current Semester',
+        });
+
+        console.log(`[ApplicationService] Module allocation email sent to ${application.email}`);
+      } catch (emailError) {
+        console.error('[ApplicationService] Failed to send module allocation email:', emailError?.message);
+        // Don't throw - email failure should not prevent module allocation
+      }
+    }
   }
 
   /**

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Messages — EduHub Lecturer</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .message-card { background: white; border-radius: 10px; border: 1px solid var(--rf-border); margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
+    .message-card:hover { box-shadow: 0 3px 10px rgba(0,20,77,0.08); transform: translateY(-1px); }
+    .message-card.unread { border-left: 4px solid #d97706; }
+    .message-header { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+    .message-subject { font-weight: 600; font-size: 14px; color: var(--rf-navy); margin-bottom: 4px; }
+    .message-from { font-size: 12px; color: var(--rf-gray); }
+    .message-date { font-size: 12px; color: var(--rf-gray); white-space: nowrap; }
+    .unread-badge { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #d97706; margin-right: 8px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--rf-border); }
+    .tab { padding: 12px 20px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--rf-gray); position: relative; }
+    .tab.active { color: #d97706; }
+    .tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: #d97706; }
+    .compose-form { display: flex; flex-direction: column; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-weight: 600; font-size: 13px; color: var(--rf-navy); }
+    .form-select, .form-input, .form-textarea { padding: 10px 12px; border: 1.5px solid var(--rf-border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+    .form-select:focus, .form-input:focus, .form-textarea:focus { outline: none; border-color: #d97706; }
+    .form-textarea { resize: vertical; min-height: 150px; }
+    .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 12px; border: 1px solid var(--rf-border); }
+  </style>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">MESSAGES</h1>
+  <p class="section-subtitle">Communication with students and administrators</p>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('inbox')">📥 Inbox <span id="unread-count"></span></button>
+    <button class="tab" onclick="switchTab('sent')">📤 Sent</button>
+  </div>
+
+  <!-- Messages List -->
+  <div id="messages-container">
+    <div style="text-align:center;padding:40px">
+      <div class="spinner"></div>
+      <p style="color:var(--rf-gray);margin-top:12px">Loading messages...</p>
+    </div>
+  </div>
+</div>
+
+<!-- View Message Modal (with Reply option) -->
+<div id="view-modal" class="modal-overlay hidden">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="view-subject"></div>
+      <button class="modal-close" onclick="closeModal('view-modal')">×</button>
+    </div>
+    <div class="modal-body" id="view-body"></div>
+    <div class="modal-footer" id="view-footer">
+      <button class="btn btn-secondary" onclick="closeModal('view-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reply Modal -->
+<div id="reply-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Reply to Message</div>
+      <button class="modal-close" onclick="closeModal('reply-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="padding:12px;background:var(--rf-offwhite);border-radius:8px;margin-bottom:16px;font-size:13px">
+        <div><strong>To:</strong> <span id="reply-to-name"></span></div>
+        <div><strong>Re:</strong> <span id="reply-subject"></span></div>
+      </div>
+      <form class="compose-form" onsubmit="sendReply(event)">
+        <div class="form-group">
+          <label class="form-label">Your Reply <span class="required">*</span></label>
+          <textarea id="reply-body" class="form-textarea" placeholder="Type your reply here..." required></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('reply-modal')">Cancel</button>
+      <button class="btn btn-success" onclick="sendReply(event)">📤 Send Reply</button>
+    </div>
+  </div>
+</div>
+
+<script src="../shared.js"></script>
+<script>
+requireAuth('lecturer');
+renderNavbar('lecturer-messages');
+
+let currentTab = 'inbox';
+let allMessages = [];
+let sentMessages = [];
+let currentReplyTo = null;
+let currentReplySubject = '';
+
+// Load data on page load
+loadMessages();
+
+async function loadMessages() {
+  try {
+    // Load inbox
+    const inboxResponse = await fetch(`${APP_CONFIG.API_URL}/messages`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (inboxResponse.ok) {
+      const data = await inboxResponse.json();
+      allMessages = data.messages || [];
+    }
+
+    // Load sent messages
+    const sentResponse = await fetch(`${APP_CONFIG.API_URL}/messages/sent`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (sentResponse.ok) {
+      const data = await sentResponse.json();
+      sentMessages = data.messages || [];
+    }
+
+    renderMessages();
+  } catch (error) {
+    console.error('Error loading messages:', error);
+    document.getElementById('messages-container').innerHTML = `
+      <div class="empty-state">
+        <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+        <h3 style="color:var(--rf-navy);margin-bottom:8px">Failed to Load Messages</h3>
+        <p style="color:var(--rf-gray)">Please refresh the page to try again.</p>
+      </div>`;
+  }
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderMessages();
+}
+
+function renderMessages() {
+  const messages = currentTab === 'inbox' ? allMessages : sentMessages;
+  const unreadCount = allMessages.filter(m => !m.is_read).length;
+
+  // Update unread badge
+  const badge = document.getElementById('unread-count');
+  if (badge) {
+    badge.textContent = unreadCount > 0 ? `(${unreadCount})` : '';
+    badge.style.color = '#d97706';
+    badge.style.fontWeight = '700';
+  }
+
+  if (messages.length === 0) {
+    document.getElementById('messages-container').innerHTML = `
+      <div class="empty-state">
+        <div style="font-size:48px;margin-bottom:16px">📭</div>
+        <h3 style="color:var(--rf-navy);margin-bottom:8px">No ${currentTab === 'inbox' ? 'Received' : 'Sent'} Messages</h3>
+        <p style="color:var(--rf-gray)">${currentTab === 'inbox' ? 'Messages from students and admins will appear here.' : 'Messages you send will appear here.'}</p>
+      </div>`;
+    return;
+  }
+
+  const container = document.getElementById('messages-container');
+  container.innerHTML = messages.map(msg => `
+    <div class="message-card ${!msg.is_read && currentTab === 'inbox' ? 'unread' : ''}" onclick="viewMessage('${msg.id}', '${currentTab}')">
+      <div class="message-header">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center">
+            ${!msg.is_read && currentTab === 'inbox' ? '<span class="unread-badge"></span>' : ''}
+            <div class="message-subject">${escapeHtml(msg.subject)}</div>
+          </div>
+          <div class="message-from">
+            ${currentTab === 'inbox'
+              ? (msg.is_broadcast
+                  ? `📢 Broadcast from Admin`
+                  : `From: ${msg.sender_first_name || ''} ${msg.sender_last_name || ''} (${msg.sender_email || ''})`)
+              : `To: ${msg.recipient_first_name || ''} ${msg.recipient_last_name || ''} (${msg.recipient_email || ''})`}
+          </div>
+        </div>
+        <div class="message-date">${fmtDateTime(msg.created_at)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function viewMessage(id, tab) {
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/messages/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const msg = data.message;
+
+      document.getElementById('view-subject').textContent = msg.subject;
+      document.getElementById('view-body').innerHTML = `
+        <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--rf-border)">
+          <div style="font-size:12px;color:var(--rf-gray);margin-bottom:8px">
+            ${tab === 'inbox'
+              ? (msg.is_broadcast
+                  ? `<strong>📢 Broadcast Message</strong>`
+                  : `<strong>From:</strong> ${msg.sender_first_name} ${msg.sender_last_name} (${msg.sender_email})`)
+              : `<strong>To:</strong> ${msg.recipient_first_name} ${msg.recipient_last_name} (${msg.recipient_email})`}
+          </div>
+          <div style="font-size:12px;color:var(--rf-gray)">
+            <strong>Date:</strong> ${fmtDateTime(msg.created_at)}
+          </div>
+        </div>
+        <div style="white-space:pre-wrap;line-height:1.7;font-size:14px;color:var(--rf-navy)">
+          ${escapeHtml(msg.body)}
+        </div>
+      `;
+
+      // Add Reply button for student messages
+      const footer = document.getElementById('view-footer');
+      if (tab === 'inbox' && !msg.is_broadcast && msg.sender_role === 'student') {
+        footer.innerHTML = `
+          <button class="btn btn-secondary" onclick="closeModal('view-modal')">Close</button>
+          <button class="btn btn-success" onclick="openReplyModal('${msg.sender_id}', '${escapeHtml(msg.sender_first_name + ' ' + msg.sender_last_name)}', '${escapeHtml(msg.subject)}')">↩️ Reply</button>
+        `;
+      } else {
+        footer.innerHTML = `
+          <button class="btn btn-secondary" onclick="closeModal('view-modal')">Close</button>
+        `;
+      }
+
+      openModal('view-modal');
+
+      // Reload messages to update unread count
+      if (tab === 'inbox' && !msg.is_read) {
+        setTimeout(() => loadMessages(), 500);
+      }
+    }
+  } catch (error) {
+    console.error('Error viewing message:', error);
+    showToast('Failed to load message', 'error');
+  }
+}
+
+function openReplyModal(senderId, senderName, originalSubject) {
+  currentReplyTo = senderId;
+  currentReplySubject = originalSubject.startsWith('Re: ') ? originalSubject : 'Re: ' + originalSubject;
+
+  document.getElementById('reply-to-name').textContent = senderName;
+  document.getElementById('reply-subject').textContent = currentReplySubject;
+  document.getElementById('reply-body').value = '';
+
+  closeModal('view-modal');
+  openModal('reply-modal');
+}
+
+async function sendReply(event) {
+  event.preventDefault();
+
+  const body = document.getElementById('reply-body').value.trim();
+
+  if (!body) {
+    showToast('Please enter your reply', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        recipientId: currentReplyTo,
+        subject: currentReplySubject,
+        body,
+      }),
+    });
+
+    if (response.ok) {
+      showToast('Reply sent successfully!', 'success');
+      closeModal('reply-modal');
+      await loadMessages();
+    } else {
+      const error = await response.json();
+      showToast(error.message || 'Failed to send reply', 'error');
+    }
+  } catch (error) {
+    console.error('Error sending reply:', error);
+    showToast('Failed to send reply', 'error');
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>

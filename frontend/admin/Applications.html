@@ -347,12 +347,16 @@ function setFilter(f){
   render();
 }
 
-function openView(id){
+async function openView(id){
   const apps=getApplications(),regs=getRegistrations();
   const a=apps.find(x=>x.id===id); if(!a)return;
   selectedApp=a;
   const alloc=regs.find(r=>r.studentId===a.studentId&&(r.status==='allocated'||r.status==='approved'));
   document.getElementById('view-title').textContent=`Application: ${a.firstName} ${a.lastName}`;
+
+  // Load documents
+  let documentsHtml = '<div style="padding:12px 14px;text-align:center;color:var(--rf-gray)">Loading documents...</div>';
+
   document.getElementById('view-body').innerHTML=`
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
       ${badge(a.status)}<span class="badge badge-info" style="font-family:var(--font-mono)">${a.studentId}</span>
@@ -363,18 +367,100 @@ function openView(id){
       {title:'Personal',rows:[['Name',a.firstName+' '+a.lastName],[a.nationality==='South African'?'SA ID':'Passport',a.nationality==='South African'?a.idNumber:a.passportNumber],['DOB',a.dateOfBirth],['Gender',a.gender],['Nationality',a.nationality]]},
       {title:'Contact',rows:[['Phone',a.phone],['Email',a.email],['Address',`${a.streetAddress}, ${a.city}, ${a.province}`]]},
       {title:'Qualification & Enrolment',rows:[['Code',a.qualificationCode],['Name',a.qualificationName],['Admission For',a.admissionFor||'—'],['Study Year',`Year ${a.studyYear}`]]},
-      {title:'Documents Ticked',rows:a.docsUploaded.length>0?a.docsUploaded.map((d,i)=>[`Doc ${i+1}`,d]):[['Status','No documents ticked']]},
     ].map(sec=>`<div style="border:1px solid var(--rf-border);border-radius:8px;overflow:hidden;margin-bottom:12px">
       <div style="background:var(--rf-offwhite);padding:8px 14px;font-weight:700;font-size:13px;border-bottom:1px solid var(--rf-border)">${sec.title}</div>
       <div style="padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
         ${sec.rows.map(([k,v])=>`<div style="font-size:13px"><div style="color:var(--rf-gray);font-size:11px;font-weight:600;text-transform:uppercase">${k}</div><div style="font-weight:500">${v||'—'}</div></div>`).join('')}
       </div>
     </div>`).join('')}
+    <div style="border:1px solid var(--rf-border);border-radius:8px;overflow:hidden;margin-bottom:12px">
+      <div style="background:var(--rf-offwhite);padding:8px 14px;font-weight:700;font-size:13px;border-bottom:1px solid var(--rf-border)">Documents</div>
+      <div id="documents-section">${documentsHtml}</div>
+    </div>
     ${a.declineReason?`<div class="alert alert-error"><span>❌</span> ${a.declineReason}</div>`:''}`;
   document.getElementById('view-footer').innerHTML=`
     ${a.status==='approved'?`<button class="btn btn-primary" onclick="closeModal('view-modal');openAlloc('${a.id}')">📚 Allocate Modules</button>`:''}
     ${(a.status==='pending' || a.status==='applied' || a.status==='draft')?`<button class="btn btn-danger" onclick="closeModal('view-modal');openDecline('${a.id}')">✗ Decline</button><button class="btn btn-success" onclick="closeModal('view-modal');handleApprove('${a.id}')">✓ Approve & Notify</button>`:''}`;
   openModal('view-modal');
+
+  // Load documents asynchronously
+  loadApplicationDocuments(a.id);
+}
+
+async function loadApplicationDocuments(applicationId) {
+  const docSection = document.getElementById('documents-section');
+  if (!docSection) return;
+
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/applications/${applicationId}/documents`, {
+      headers: {
+        'Authorization': `Bearer ${getToken()}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to load documents');
+    }
+
+    const data = await response.json();
+    const documents = data.data || [];
+
+    if (documents.length === 0) {
+      docSection.innerHTML = '<div style="padding:12px 14px;text-align:center;color:var(--rf-gray);font-size:13px">No documents uploaded</div>';
+      return;
+    }
+
+    // Helper to format file size
+    const formatFileSize = (bytes) => {
+      if (!bytes) return '—';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    };
+
+    // Document type labels
+    const docTypeLabels = {
+      id_document: 'ID Document',
+      matric_certificate: 'Matric Certificate',
+      tertiary_transcript: 'Tertiary Qualifications',
+      proof_of_payment: 'Proof of Payment',
+      passport_photo: 'Passport Photo',
+      study_permit: 'Study Permit',
+      saqa_evaluation: 'SAQA Evaluation',
+      other: 'Other Document'
+    };
+
+    docSection.innerHTML = `
+      <div style="padding:12px 14px">
+        ${documents.map(doc => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px;background:white">
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:13px;color:#374151;margin-bottom:3px">
+                ${docTypeLabels[doc.document_type] || doc.document_type}
+              </div>
+              <div style="font-size:12px;color:var(--rf-gray);font-family:var(--font-mono)">
+                ${doc.file_name || doc.file_path?.split('/').pop() || 'Unknown file'}
+              </div>
+              <div style="font-size:11px;color:var(--rf-gray);margin-top:2px">
+                ${formatFileSize(doc.file_size)} • Uploaded ${fmtDate(doc.uploaded_at)}
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;margin-left:12px">
+              <a href="${APP_CONFIG.API_URL}/documents/${doc.id}/download?token=${getToken()}"
+                 target="_blank"
+                 class="btn btn-sm btn-secondary"
+                 style="text-decoration:none;display:inline-flex;align-items:center;gap:4px">
+                📥 Download
+              </a>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } catch (error) {
+    console.error('Error loading documents:', error);
+    docSection.innerHTML = '<div style="padding:12px 14px;text-align:center;color:#dc2626;font-size:13px">Failed to load documents</div>';
+  }
 }
 
 function handleApprove(id){

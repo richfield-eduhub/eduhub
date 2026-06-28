@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # PostgreSQL Database
   db:
@@ -66,9 +64,12 @@ services:
     container_name: eduhub_backend
     restart: unless-stopped
     command: ${BACKEND_COMMAND:-npm run dev}
+    env_file:
+      - ./backend/.env
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
+      # Docker network overrides (backend/.env uses localhost for bare-metal dev)
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-eduhub}
@@ -78,14 +79,6 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_this_refresh_secret_too}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
-      # SMTP configuration
-      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_SECURE: ${SMTP_SECURE:-false}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASS: ${SMTP_PASS}
-      EMAIL_FROM: ${EMAIL_FROM:-admissions@eduhub.ac.za}
-      ADMISSIONS_EMAIL: ${ADMISSIONS_EMAIL:-admissions@eduhub.ac.za}
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     volumes:

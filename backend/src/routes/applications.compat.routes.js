@@ -8,6 +8,7 @@ const router    = express.Router();
 const sequelize = require('../config/database');
 const { authenticateToken }      = require('../middleware/auth.middleware');
 const { adminOnly, staffOnly }   = require('../middleware/roleCheck.middleware');
+const applicationService = require('../services/application.service');
 
 // GET /api/applications  (authenticated — admin sees all, student sees own)
 router.get('/', authenticateToken, async (req, res, next) => {
@@ -40,9 +41,10 @@ router.get('/', authenticateToken, async (req, res, next) => {
 // PUT /api/applications/:id/approve  (admin only)
 router.put('/:id/approve', authenticateToken, adminOnly, async (req, res, next) => {
   try {
-    await sequelize.query(
-      `UPDATE applications SET status = 'approved', updated_at = NOW() WHERE id = ?`,
-      { replacements: [req.params.id] }
+    await applicationService.updateApplicationStatusAdmin(
+      req.params.id,
+      req.user.user_id,
+      { status: 'approved', rejection_reason: null }
     );
     res.json({ ok: true, message: 'Application approved.' });
   } catch (err) { next(err); }
@@ -52,18 +54,17 @@ router.put('/:id/approve', authenticateToken, adminOnly, async (req, res, next) 
 router.put('/:id/reject', authenticateToken, adminOnly, async (req, res, next) => {
   try {
     const { reason } = req.body;
-    await sequelize.query(
-      `UPDATE applications SET status = 'rejected', rejection_reason = ?, updated_at = NOW() WHERE id = ?`,
-      { replacements: [reason || null, req.params.id] }
+    await applicationService.updateApplicationStatusAdmin(
+      req.params.id,
+      req.user.user_id,
+      { status: 'rejected', rejection_reason: reason || 'No reason provided' }
     );
     res.json({ ok: true, message: 'Application rejected.' });
   } catch (err) { next(err); }
 });
 
-// POST /api/applications/:id/documents  (stub)
-router.post('/:id/documents', authenticateToken, async (req, res) => {
-  res.json({ ok: true, message: 'Document recorded.', documentName: req.body.documentName });
-});
+// Document upload for submitted applications — use /api/applications/:id/documents (document.routes.js)
+// Draft uploads (no login required) — use /api/applications/drafts/:draftId/documents (application.routes.js)
 
 // ──────────────────────────────────────────────────────────
 // GET /api/applications/identity/status  — public (no auth)

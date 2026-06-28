@@ -863,6 +863,16 @@ async function checkApplicationIdentityStatus(payload) {
   const qs = params.toString();
   return api("GET", `/applications/identity/status${qs ? `?${qs}` : ""}`);
 }
+async function checkApplicationContactAvailability(payload) {
+  const params = new URLSearchParams();
+  if (payload?.email) params.set("email", payload.email);
+  if (payload?.phone) params.set("phone", payload.phone);
+  if (payload?.draft_id) params.set("draft_id", payload.draft_id);
+  if (payload?.id_number) params.set("id_number", payload.id_number);
+  if (payload?.passport_number) params.set("passport_number", payload.passport_number);
+  const qs = params.toString();
+  return api("GET", `/applications/contact/check${qs ? `?${qs}` : ""}`);
+}
 async function getApplicationDraft(draftId) {
   return api("GET", `/applications/drafts/${draftId}`);
 }
@@ -1511,16 +1521,28 @@ function closeModal(id) {
   document.getElementById(id)?.classList.add("hidden");
 }
 
+const TOAST_COLORS = {
+  success: { background: "#059669", color: "#ffffff" },
+  error: { background: "#dc2626", color: "#ffffff" },
+  info: { background: "#3730a3", color: "#ffffff" },
+  warning: { background: "#d97706", color: "#ffffff" },
+};
+
 function showToast(msg, type, ms) {
+  const knownTypes = ["success", "error", "info", "warning"];
+  const toastType = knownTypes.includes(type) ? type : "success";
+  const colors = TOAST_COLORS[toastType];
+
   let t = document.getElementById("_toast");
   if (!t) {
     t = document.createElement("div");
     t.id = "_toast";
-    t.className = "toast hidden";
     document.body.appendChild(t);
   }
   t.textContent = msg;
-  t.className = `toast toast-${type || "success"}`;
+  t.className = `toast toast-${toastType}`;
+  t.style.background = colors.background;
+  t.style.color = colors.color;
   clearTimeout(t._timer);
   t._timer = setTimeout(
     () => t.classList.add("hidden"),
@@ -1592,6 +1614,7 @@ function renderNavbar(activePage) {
       },
       { href: "/admin/students", label: "Students", key: "students" },
       { href: "/admin/lecturers", label: "Lecturers", key: "admin-lecturers" },
+      { href: "/admin/messages", label: "Messages", key: "admin-messages" },
       { href: "/admin/audits", label: "Audits", key: "audits" },
       { href: "/settings", label: "Settings", key: "settings" },
     ],
@@ -1599,6 +1622,7 @@ function renderNavbar(activePage) {
       { href: "/student", label: "Dashboard", key: "dashboard" },
       { href: "/student/register", label: "Register Modules", key: "register" },
       { href: "/student/modules", label: "My Modules", key: "modules" },
+      { href: "/student/messages", label: "Messages", key: "student-messages" },
       { href: "/settings", label: "Settings", key: "settings" },
     ],
     lecturer: [
@@ -1614,6 +1638,7 @@ function renderNavbar(activePage) {
         label: "Announcements",
         key: "lecturer-announcements",
       },
+      { href: "/lecturer/messages", label: "Messages", key: "lecturer-messages" },
       { href: "/settings", label: "Settings", key: "settings" },
     ],
   };

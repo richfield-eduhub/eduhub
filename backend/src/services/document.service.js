@@ -12,6 +12,47 @@ const { FileUploadUtility } = require('../utils/fileUpload');
 
 class DocumentService {
   /**
+   * Map human-readable document type labels to database enum values
+   */
+  mapDocumentTypeToEnum(documentType) {
+    const mapping = {
+      // SA documents
+      'Certified copy of SA ID document': 'id_document',
+      'Certified copy of Matric certificate': 'matric_certificate',
+      'Certified copy of Matric certificate / latest Grade 12 results': 'matric_certificate',
+      'Certified copy of tertiary qualifications': 'tertiary_transcript',
+      'Proof of payment / funding letter': 'proof_of_payment',
+      'Passport photo': 'passport_photo',
+
+      // Foreign documents
+      'Certified copy of Passport (all pages)': 'id_document',
+      'Study permit / visa': 'study_permit',
+      'Certified copy of highest qualification': 'tertiary_transcript',
+      'SAQA evaluation letter': 'saqa_evaluation',
+
+      // Direct enum values (in case they're already mapped)
+      'id_document': 'id_document',
+      'matric_certificate': 'matric_certificate',
+      'tertiary_transcript': 'tertiary_transcript',
+      'proof_of_payment': 'proof_of_payment',
+      'passport_photo': 'passport_photo',
+      'study_permit': 'study_permit',
+      'saqa_evaluation': 'saqa_evaluation',
+      'other': 'other',
+    };
+
+    const enumValue = mapping[documentType];
+    if (!enumValue) {
+      throw {
+        statusCode: 400,
+        message: `Invalid document type: "${documentType}". Expected one of: ${Object.keys(mapping).join(', ')}`
+      };
+    }
+
+    return enumValue;
+  }
+
+  /**
    * Save document metadata to database
    */
   async saveDocument({
@@ -26,6 +67,9 @@ class DocumentService {
       file.destination
     );
 
+    // Map document type to enum value
+    const enumDocumentType = this.mapDocumentTypeToEnum(documentType);
+
     try {
       const [result] = await sequelize.query(
         `INSERT INTO application_documents
@@ -35,7 +79,7 @@ class DocumentService {
         {
           replacements: [
             applicationId,
-            documentType,
+            enumDocumentType,
             metadata.originalName,
             metadata.storagePath,
             file.size,

@@ -139,14 +139,25 @@ class EmailService {
       </div>
     `;
 
-    await this.transporter.sendMail({
-      from: this.fromAddress,
-      to,
-      subject: subjectMap[normalizedDecision] || subjectMap.conditionally_accepted,
-      html,
-    });
+    console.log('[EmailService] Attempting to send admissions email to:', to);
+    console.log('[EmailService] Student Number:', studentNumber);
+    console.log('[EmailService] Transporter configured:', Boolean(this.transporter));
 
-    return { sent: true };
+    try {
+      const result = await this.transporter.sendMail({
+        from: this.fromAddress,
+        to,
+        subject: subjectMap[normalizedDecision] || subjectMap.conditionally_accepted,
+        html,
+      });
+      console.log('[EmailService] ✓ Email sent successfully to:', to);
+      console.log('[EmailService] Message ID:', result.messageId);
+      return { sent: true };
+    } catch (error) {
+      console.error('[EmailService] ✗ Failed to send email to:', to);
+      console.error('[EmailService] Error:', error.message);
+      throw error;
+    }
   }
 
   /**
@@ -398,6 +409,80 @@ class EmailService {
       from: this.fromAddress,
       to,
       subject: 'EduHub Application Outcome Update',
+      html,
+    });
+
+    return { sent: true };
+  }
+
+  /**
+   * Send module allocation notification email
+   */
+  async sendModuleAllocationEmail({
+    to,
+    fullName,
+    studentNumber,
+    modules = [],
+    qualificationName,
+    semester,
+  }) {
+    if (!to) return { sent: false, reason: 'Missing recipient email' };
+    if (!this.transporter) {
+      console.warn('[EmailService] SMTP not configured. Skipping email send.');
+      return { sent: false, reason: 'SMTP not configured' };
+    }
+
+    const modulesListHtml = modules.map(m =>
+      `<li><strong>${m.code}</strong> - ${m.name} (${m.credits} credits)</li>`
+    ).join('');
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#f9fafb">
+        <div style="background:#123f7a;color:white;padding:24px;text-align:center;border-radius:8px 8px 0 0">
+          <h1 style="margin:0;font-size:24px">MODULE ALLOCATION</h1>
+        </div>
+
+        <div style="background:white;padding:32px;border-radius:0 0 8px 8px">
+          <p>Dear ${fullName},</p>
+
+          <p>We are pleased to inform you that modules have been allocated to your student account.</p>
+
+          <div style="background:#eef2ff;border-left:4px solid #123f7a;padding:16px;margin:20px 0">
+            <p style="margin:0 0 8px"><strong>Student Number:</strong> ${studentNumber}</p>
+            <p style="margin:0 0 8px"><strong>Qualification:</strong> ${qualificationName}</p>
+            <p style="margin:0"><strong>Semester:</strong> ${semester}</p>
+          </div>
+
+          <h3 style="color:#123f7a;margin-top:24px">Allocated Modules:</h3>
+          <ul style="line-height:1.8;color:#374151">
+            ${modulesListHtml}
+          </ul>
+
+          <div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:16px;margin:24px 0">
+            <p style="margin:0;color:#92400e"><strong>⚠️ Next Steps:</strong></p>
+            <ol style="margin:8px 0 0;padding-left:20px;color:#92400e">
+              <li>Log in to your student portal</li>
+              <li>Review your allocated modules</li>
+              <li>Check the module schedule and requirements</li>
+              <li>Ensure your registration is confirmed</li>
+            </ol>
+          </div>
+
+          <p><strong>Need Assistance?</strong> If you have any questions about your module allocation, please contact the Academic Office or log in to your student portal.</p>
+
+          <p>We wish you all the best in your studies!</p>
+
+          <p>Best regards,<br/>
+          Academic Administration<br/>
+          EduHub Graduate Institute</p>
+        </div>
+      </div>
+    `;
+
+    await this.transporter.sendMail({
+      from: this.fromAddress,
+      to,
+      subject: `EduHub - Module Allocation for ${semester}`,
       html,
     });
 

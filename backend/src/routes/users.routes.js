@@ -7,6 +7,7 @@ const router    = express.Router();
 const bcrypt    = require('bcryptjs');
 const sequelize = require('../config/database');
 const { authenticateToken } = require('../middleware/auth.middleware');
+const { assertContactAvailable } = require('../utils/contactValidator');
 
 router.use(authenticateToken);
 
@@ -45,6 +46,21 @@ router.put('/profile', async (req, res, next) => {
     const ln  = lastName   || last_name;
     const dob = dateOfBirth || date_of_birth;
     const sa  = address    || street_address;
+
+    if (phone) {
+      const [identity] = await sequelize.query(
+        `SELECT id_number, passport_number
+         FROM user_details
+         WHERE user_id = ?`,
+        { replacements: [req.user.user_id], type: sequelize.QueryTypes.SELECT }
+      );
+      await assertContactAvailable({
+        phone,
+        excludeUserId: req.user.user_id,
+        idNumber: identity?.id_number || null,
+        passportNumber: identity?.passport_number || null,
+      });
+    }
 
     await sequelize.query(
       `UPDATE user_details

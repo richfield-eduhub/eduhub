@@ -171,19 +171,20 @@ shell-nginx: ## Access nginx container shell
 
 BACKEND := backend
 
-test: ## Run all tests (unit + integration; integration needs test DB — see test-db-up)
+test: test-db-up ## Run all tests (unit + integration; starts test DB automatically)
 	@echo "$(BLUE)Running all tests...$(NC)"
 	cd $(BACKEND) && npm run test:all
+	@echo "$(GREEN)✓ Full test run complete (263 tests when DB is healthy)$(NC)"
 
 test-unit: ## Run unit tests only (no database required)
 	@echo "$(BLUE)Running unit tests...$(NC)"
 	cd $(BACKEND) && npm run test:unit
 
-test-integration: ## Run integration tests (requires test database)
+test-integration: test-db-up ## Run integration tests (starts test DB automatically)
 	@echo "$(BLUE)Running integration tests...$(NC)"
 	cd $(BACKEND) && npm run test:integration
 
-test-coverage: ## Run all tests with coverage report
+test-coverage: test-db-up ## Run all tests with coverage (starts test DB automatically)
 	@echo "$(BLUE)Running tests with coverage...$(NC)"
 	cd $(BACKEND) && npm run test:coverage
 	@echo "$(GREEN)✓ Coverage report: $(BACKEND)/coverage/lcov-report/index.html$(NC)"
@@ -201,8 +202,7 @@ test-db-down: ## Stop and remove the integration test database
 	docker compose -f docker-compose.test.yml down -v
 	@echo "$(YELLOW)✓ Test database stopped$(NC)"
 
-test-with-db: test-db-up test ## Start test DB, run all tests (unit + integration)
-	@echo "$(GREEN)✓ Full test run complete$(NC)"
+test-with-db: test ## Alias — same as make test (DB started automatically)
 
 test-api: ## Smoke-test live API endpoints (requires make up)
 	@echo "$(BLUE)Testing API endpoints...$(NC)"

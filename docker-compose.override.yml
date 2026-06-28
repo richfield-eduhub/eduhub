@@ -1,5 +1,3 @@
-version: "3.8"
-
 # This file is automatically merged with docker-compose.yml for local development.
 # Just run: docker compose up
 

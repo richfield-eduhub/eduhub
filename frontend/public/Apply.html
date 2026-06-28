@@ -89,6 +89,44 @@
   </head>
   <body>
     <div id="navbar-root"></div>
+
+    <!-- Loading Overlay -->
+    <div
+      id="loading-overlay"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <div style="text-align: center; color: white">
+        <div
+          style="
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+          "
+        ></div>
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px">
+          Submitting Your Application
+        </div>
+        <div style="font-size: 14px; color: rgba(255, 255, 255, 0.8)">
+          Please wait while we process your submission...
+        </div>
+      </div>
+    </div>
+
     <div
       id="app"
       style="
@@ -246,6 +284,7 @@
         submitted: false,
         submittedApp: null,
         draftId: null,
+        savedApplicationId: null,
         draftStarted: false,
         savingDraft: false,
         submittingDraft: false,
@@ -391,6 +430,24 @@
         return `${fullYear}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
       }
 
+      // SA ID digits 7–10: 0000–4999 = Female, 5000–9999 = Male
+      function deriveGenderFromSaId(idNumber) {
+        const digits = String(idNumber || "").replace(/\D/g, "");
+        if (digits.length < 10) return "";
+        const sequence = Number(digits.slice(6, 10));
+        if (!Number.isFinite(sequence)) return "";
+        return sequence < 5000 ? "Female" : "Male";
+      }
+
+      function applySaIdDerivedFields(idNumber) {
+        if (isForeign()) return;
+        const digits = String(idNumber || "").replace(/\D/g, "");
+        set("dateOfBirth", deriveDobFromSaId(digits) || "");
+        set("gender", deriveGenderFromSaId(digits) || "");
+        const dobInput = document.getElementById("date-of-birth-input");
+        if (dobInput) dobInput.value = state.form.dateOfBirth || "";
+      }
+
       function validateSAIdDOB(idNumber, dateOfBirth) {
         const derivedDob = deriveDobFromSaId(idNumber);
         if (!derivedDob || !dateOfBirth) return false;
@@ -398,23 +455,30 @@
         return derivedDob === dob;
       }
 
-      // SA ID checksum (Luhn) validation
+      // SA ID checksum validation (last digit)
       function isValidSouthAfricanIdNumber(idNumber) {
         const digits = String(idNumber || "").replace(/\D/g, "");
         if (!/^\d{13}$/.test(digits)) return false;
-        let sum = 0;
-        let shouldDouble = false;
-        for (let i = digits.length - 1; i >= 0; i -= 1) {
-          let n = Number(digits[i]);
-          if (shouldDouble) {
-            n *= 2;
-            if (n > 9) n -= 9;
-          }
-          sum += n;
-          shouldDouble = !shouldDouble;
+
+        let oddSum = 0;
+        let evenDigits = "";
+        for (let i = 0; i < 12; i += 1) {
+          if (i % 2 === 0) oddSum += Number(digits[i]);
+          else evenDigits += digits[i];
         }
-        return sum % 10 === 0;
+        const sumEven = String(Number(evenDigits) * 2)
+          .split("")
+          .reduce((total, digit) => total + Number(digit), 0);
+        const checkDigit = (10 - ((oddSum + sumEven) % 10)) % 10;
+        return checkDigit === Number(digits[12]);
       }
+
+      const SA_ID_CHECKSUM_ERROR =
+        "Invalid SA ID number. The check digit (last digit) does not match — please re-check your ID.";
+      const CONTACT_EMAIL_ERROR =
+        "This email is already in use by another user. Use a different email or log in to your existing account.";
+      const CONTACT_PHONE_ERROR =
+        "This phone number is already in use by another user. Please use a different number.";
 
       function isValidCompanyRegistrationNumber(value) {
         const normalized = String(value || "")
@@ -431,17 +495,13 @@
         inputEl.value = digits;
         set("idNumber", digits);
         if (isForeign()) return;
-        const derivedDob = deriveDobFromSaId(digits);
-        set("dateOfBirth", derivedDob || "");
-        const dobInput = document.getElementById("date-of-birth-input");
-        if (dobInput) dobInput.value = state.form.dateOfBirth || "";
+        applySaIdDerivedFields(digits);
       }
 
       function setNationality(value) {
         state.form.nationality = value;
         if (value === "South African") {
-          const derivedDob = deriveDobFromSaId(state.form.idNumber);
-          state.form.dateOfBirth = derivedDob || "";
+          applySaIdDerivedFields(state.form.idNumber || state.identityNumber);
         }
         render();
       }
@@ -475,6 +535,9 @@
         const draftDob =
           draft.date_of_birth ||
           (!isPassportIdentity ? deriveDobFromSaId(draftIdNumber) : "");
+        const draftGender =
+          draft.gender ||
+          (!isPassportIdentity ? deriveGenderFromSaId(draftIdNumber) : "");
         const draftSubjectEntries = ensureMinimumSubjectRows(
           (Array.isArray(draft.mark_entries) ? draft.mark_entries : []).map(
             (entry) => ({
@@ -497,7 +560,7 @@
           idNumber: draftIdNumber,
           passportNumber: draft.passport_number || "",
           dateOfBirth: draftDob,
-          gender: draft.gender || "",
+          gender: draftGender,
           nationality: draft.nationality || "South African",
           phone: draft.phone || "",
           email: draft.email || "",
@@ -546,6 +609,7 @@
               ? "other"
               : "new";
         state.draftId = draft.id || draft.draft_id || state.draftId;
+        state.savedApplicationId = state.draftId;
         state.apsResult = draft.aps_result || null;
       }
 
@@ -702,12 +766,21 @@
               if (!isForeign()) {
                 if (!f.idNumber || f.idNumber.length < 13)
                   e.idNumber = "Enter a valid 13-digit SA ID";
+                else if (!isValidSouthAfricanIdNumber(f.idNumber))
+                  e.idNumber = SA_ID_CHECKSUM_ERROR;
                 else if (
                   f.dateOfBirth &&
                   !validateSAIdDOB(f.idNumber, f.dateOfBirth)
                 )
                   e.idNumber =
                     "First 6 digits of your ID must match your date of birth (YYMMDD). E.g. born 2002-09-08 → ID starts with 020908";
+                else if (
+                  f.gender &&
+                  deriveGenderFromSaId(f.idNumber) &&
+                  f.gender !== deriveGenderFromSaId(f.idNumber)
+                )
+                  e.gender =
+                    "Gender must match your SA ID (digits 7–10: 0000–4999 Female, 5000–9999 Male)";
               }
               if (
                 isForeign() &&
@@ -758,8 +831,7 @@
                 if (!f.guardianIdNumber)
                   e.guardianIdNumber = "Guardian ID number is required";
                 else if (!isValidSouthAfricanIdNumber(f.guardianIdNumber))
-                  e.guardianIdNumber =
-                    "Enter a valid South African ID number (13 digits).";
+                  e.guardianIdNumber = SA_ID_CHECKSUM_ERROR;
                 if (!f.payerEmail || !f.payerEmail.includes("@"))
                   e.payerEmail = "Valid email is required";
                 if (!f.payerAddress)
@@ -798,6 +870,38 @@
         state.errors = e;
         render();
         return Object.keys(e).length === 0;
+      }
+
+      async function validateContactAvailability() {
+        if (!state.form.email && !state.form.phone) return true;
+
+        const res = await checkApplicationContactAvailability({
+          email: state.form.email,
+          phone: state.form.phone,
+          draft_id: state.draftId || undefined,
+          id_number: state.form.idNumber || undefined,
+          passport_number: state.form.passportNumber || undefined,
+        });
+
+        if (!res.ok || !res.data) {
+          showToast(
+            res.message || "Could not verify contact details.",
+            "error",
+          );
+          return false;
+        }
+
+        let valid = true;
+        if (res.data.email_available === false) {
+          state.errors.email = CONTACT_EMAIL_ERROR;
+          valid = false;
+        }
+        if (res.data.phone_available === false) {
+          state.errors.phone = CONTACT_PHONE_ERROR;
+          valid = false;
+        }
+        if (!valid) render();
+        return valid;
       }
 
       function admissionToYear(af) {
@@ -1003,7 +1107,10 @@
 
       async function ensureDraftStarted() {
         if (state.reenrolMode || state.appType === "returning") return true;
-        if (state.draftId) return true;
+        if (state.draftId) {
+          state.savedApplicationId = state.draftId;
+          return true;
+        }
         const res = await startApplicationDraft(buildMinimalDraftPayload());
         if (!res.ok || !res.data || !res.data.draft || !res.data.draft.id) {
           showToast(
@@ -1013,6 +1120,7 @@
           return false;
         }
         state.draftId = res.data.draft.id;
+        state.savedApplicationId = res.data.draft.id; // Save for document uploads
         state.draftStarted = true;
         return true;
       }
@@ -1028,10 +1136,16 @@
         );
         state.savingDraft = false;
         if (!res.ok) {
-          showToast(
-            res.message || "Autosave failed. Please try again.",
-            "error",
-          );
+          const message = res.message || "Autosave failed. Please try again.";
+          if (res.status === 409) {
+            if (message.toLowerCase().includes("email")) {
+              state.errors.email = CONTACT_EMAIL_ERROR;
+            } else if (message.toLowerCase().includes("phone")) {
+              state.errors.phone = CONTACT_PHONE_ERROR;
+            }
+            render();
+          }
+          showToast(message, "error");
           return false;
         }
         return true;
@@ -1047,6 +1161,14 @@
           return;
         }
         if (!validate()) return;
+        if (
+          !state.reenrolMode &&
+          (state.appType === "new" || state.appType === "other") &&
+          state.step === 1
+        ) {
+          const contactOk = await validateContactAvailability();
+          if (!contactOk) return;
+        }
         if (
           !state.reenrolMode &&
           state.appType !== "returning" &&
@@ -1097,7 +1219,10 @@
           reenrolMode: state.reenrolMode,
           appType: state.appType,
           draftId: state.draftId,
-          willUseDraftFlow: !state.reenrolMode && state.appType !== "returning" && state.draftId
+          willUseDraftFlow:
+            !state.reenrolMode &&
+            state.appType !== "returning" &&
+            state.draftId,
         });
 
         if (
@@ -1107,6 +1232,7 @@
         ) {
           console.log("[Apply] Using draft flow - Starting payment intent...");
           state.submittingDraft = true;
+          render(); // Show loading spinner immediately
           const paymentIntent = await createApplicationPaymentIntent(
             state.draftId,
           );
@@ -1133,7 +1259,9 @@
             );
             return;
           }
-          console.log("[Apply] Submitting draft to generate student number and send email...");
+          console.log(
+            "[Apply] Submitting draft to generate student number and send email...",
+          );
           const submitted = await submitApplicationDraft(state.draftId);
           console.log("[Apply] Submit result:", submitted);
           state.submittingDraft = false;
@@ -1144,7 +1272,10 @@
             );
             return;
           }
-          console.log("[Apply] Draft submitted successfully! Student number:", submitted.data.student_number);
+          console.log(
+            "[Apply] Draft submitted successfully! Student number:",
+            submitted.data.student_number,
+          );
           setState({
             submitted: true,
             submittedApp: {
@@ -1158,7 +1289,9 @@
           return;
         }
 
-        console.log("[Apply] Using direct submission flow (bypassing draft submit - no email will be sent)");
+        console.log(
+          "[Apply] Using direct submission flow (bypassing draft submit - no email will be sent)",
+        );
 
         const app = await submitApplication(submissionPayload);
         const fallbackId =
@@ -1329,6 +1462,14 @@
           return;
         }
         if (
+          state.identityDocumentType === "id" &&
+          !isValidSouthAfricanIdNumber(normalized)
+        ) {
+          state.identityError = SA_ID_CHECKSUM_ERROR;
+          render();
+          return;
+        }
+        if (
           state.identityDocumentType === "passport" &&
           (!normalized || normalized.length < 5)
         ) {
@@ -1343,6 +1484,7 @@
         if (!isPassport) {
           state.form.nationality = "South African";
           state.form.dateOfBirth = deriveDobFromSaId(normalized) || "";
+          state.form.gender = deriveGenderFromSaId(normalized) || "";
         }
 
         state.checkingIdentity = true;
@@ -1363,25 +1505,26 @@
         // Check if user already exists and needs to login
         if (statusRes.data.requires_login && statusRes.data.existing_user) {
           const user = statusRes.data.existing_user;
-          const userName = user.first_name && user.last_name
-            ? `${user.first_name} ${user.last_name}`
-            : user.email;
+          const userName =
+            user.first_name && user.last_name
+              ? `${user.first_name} ${user.last_name}`
+              : user.email;
 
           const shouldLogin = confirm(
-            `Welcome back${user.first_name ? ', ' + user.first_name : ''}!\n\n` +
-            `We found an existing account (${user.email}) with this ${statusRes.data.identity_type === 'id_number' ? 'ID number' : 'passport number'}.\n\n` +
-            `Please login to continue your application with your saved information.\n\n` +
-            `Click OK to go to login page, or Cancel to stay here.`
+            `Welcome back${user.first_name ? ", " + user.first_name : ""}!\n\n` +
+              `We found an existing account (${user.email}) with this ${statusRes.data.identity_type === "id_number" ? "ID number" : "passport number"}.\n\n` +
+              `Please login to continue your application with your saved information.\n\n` +
+              `Click OK to go to login page, or Cancel to stay here.`,
           );
 
           if (shouldLogin) {
             // Redirect to login with return URL
-            window.location.href = `/login?returnTo=${encodeURIComponent('/apply')}`;
+            window.location.href = `/login?returnTo=${encodeURIComponent("/apply")}`;
             return;
           } else {
             // User chose to cancel - show error message
             state.identityError =
-              `This ${statusRes.data.identity_type === 'id_number' ? 'ID number' : 'passport'} is already registered. ` +
+              `This ${statusRes.data.identity_type === "id_number" ? "ID number" : "passport"} is already registered. ` +
               `Please login to continue.`;
             state.identityChecked = false;
             render();
@@ -1526,6 +1669,14 @@
         const app = document.getElementById("app");
         const f = state.form;
 
+        // Control loading overlay
+        const loadingOverlay = document.getElementById("loading-overlay");
+        if (loadingOverlay) {
+          loadingOverlay.style.display = state.submittingDraft
+            ? "flex"
+            : "none";
+        }
+
         // ── SUBMITTED ──
         if (state.submitted && state.submittedApp) {
           app.innerHTML = `
@@ -1541,7 +1692,7 @@
           <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3;margin-bottom:16px">
             ⏱ <strong>Next Steps:</strong> Our admissions team will review within <strong>3–5 business days</strong>. You'll be contacted at <strong>${f.email}</strong>.
           </div>
-          <a href="#" onclick="window.location.href=rootPath('index.html')" style="display:block;background:#123f7a;color:white;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none">← Back to Home</a>
+          <a href="/" style="display:block;background:#123f7a;color:white;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none">← Back to Home</a>
         </div>
       </div>`;
           return;
@@ -1949,7 +2100,8 @@
   <div class="form-row" style="margin-bottom:10px">
     <div class="form-group">
       <label class="form-label">${state.identityDocumentType === "passport" ? "Passport Number" : "SA ID Number"} <span class="required">*</span></label>
-      <input value="${state.identityNumber || ""}" oninput="state.identityNumber=normalizeIdentityInput(this.value,state.identityDocumentType);this.value=state.identityNumber" placeholder="${state.identityDocumentType === "passport" ? "A12345678" : "0001015009087"}" style="width:100%;padding:10px 14px;border:1.5px solid ${state.identityError ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px"/>
+      <input value="${state.identityNumber || ""}" oninput="state.identityNumber=normalizeIdentityInput(this.value,state.identityDocumentType);this.value=state.identityNumber" placeholder="${state.identityDocumentType === "passport" ? "A12345678" : "9001015800088"}" maxlength="${state.identityDocumentType === "passport" ? "20" : "13"}" inputmode="${state.identityDocumentType === "passport" ? "text" : "numeric"}" style="width:100%;padding:10px 14px;border:1.5px solid ${state.identityError ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px"/>
+      ${state.identityDocumentType === "id" ? `<div style="font-size:12px;color:#6b7280;margin-top:6px">13 digits including the check digit (last number).</div>` : ""}
     </div>
     <div class="form-group">
       <label class="form-label">Applicant Country <span class="required">*</span></label>
@@ -1981,6 +2133,9 @@
 
       function renderPersonalContact() {
         const f = state.form;
+        const saIdGenderOptions = ["Male", "Female"];
+        const genderOptions = isForeign() ? getGenders() : saIdGenderOptions;
+        const genderLocked = !isForeign();
         return `<div class="form-section-header"><span style="font-size:20px">👤</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Personal & Contact Details</h3></div>
   <div style="background:#F4F6FB;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:13px;color:#374151;margin-bottom:12px">${state.identityDocumentType === "passport" ? "Passport" : "SA ID"}: <strong>${state.identityNumber || "Not set"}</strong></div>
   <div class="form-row">
@@ -1989,12 +2144,12 @@
   </div>
 
   <div class="form-row">
-    <div class="form-group"><label class="form-label">Date of Birth <span class="required">*</span></label><input id="date-of-birth-input" type="date" value="${f.dateOfBirth}" oninput="set('dateOfBirth',this.value)" ${!isForeign() ? "disabled" : ""} style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.dateOfBirth ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px;${!isForeign() ? "background:#f9fafb;color:#6b7280;cursor:not-allowed;" : ""}"/>
+    <div class="form-group"><label class="form-label">Date of Birth <span class="required">*</span></label><input id="date-of-birth-input" type="date" value="${f.dateOfBirth}" oninput="set('dateOfBirth',this.value)" ${genderLocked ? "disabled" : ""} style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.dateOfBirth ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px;${genderLocked ? "background:#f9fafb;color:#6b7280;cursor:not-allowed;" : ""}"/>
     ${errSpan("dateOfBirth")}</div>
     <div class="form-group"><label class="form-label">Gender <span class="required">*</span></label>
-    <select onchange="set('gender',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.gender ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px;background:white">
-      <option value="">Select...</option>
-      ${getGenders()
+    <select onchange="set('gender',this.value)" ${genderLocked ? "disabled" : ""} style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.gender ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px;${genderLocked ? "background:#f9fafb;color:#6b7280;cursor:not-allowed;" : "background:white"}">
+      <option value="">${genderLocked ? "Enter a valid 13-digit SA ID first" : "Select..."}</option>
+      ${genderOptions
         .map(
           (g) =>
             `<option value="${g}" ${f.gender === g ? "selected" : ""}>${g}</option>`,
@@ -2002,7 +2157,7 @@
         .join("")}
     </select>${errSpan("gender")}</div>
   </div>
-  ${!isForeign() ? `<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3">🪪 <strong>SA ID detected:</strong> Date of birth is auto-filled from the first 6 digits of your ID number.</div>` : ""}
+  ${!isForeign() ? `<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3">🪪 <strong>SA ID detected:</strong> Date of birth and gender are auto-filled from your ID number (YYMMDD and digits 7–10).</div>` : ""}
   ${isForeign() ? `<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3">🌍 <strong>Foreign National:</strong> You'll need certified passport copy and valid study permit/visa.</div>` : ""}
   <div class="form-row">
     <div class="form-group"><label class="form-label">Phone <span class="required">*</span></label>${inp("phone", "+27 XX XXX XXXX", "tel")}${errSpan("phone")}</div>
@@ -2099,12 +2254,16 @@
 
       // Check if user already has an application for this qualification
       function checkDuplicateQualification(qualCode) {
-        if (!qualCode || !state.existingApplications || state.existingApplications.length === 0) {
+        if (
+          !qualCode ||
+          !state.existingApplications ||
+          state.existingApplications.length === 0
+        ) {
           return null; // No duplicate
         }
 
         const duplicate = state.existingApplications.find(
-          app => app.qualification_code === qualCode
+          (app) => app.qualification_code === qualCode,
         );
 
         return duplicate || null;
@@ -2115,27 +2274,29 @@
         const duplicate = checkDuplicateQualification(qualCode);
 
         if (duplicate) {
-          const qualName = QUALIFICATIONS.find(q => q.code === qualCode)?.name || qualCode;
-          const statusText = duplicate.status === 'approved' ? 'approved' : 'pending approval';
+          const qualName =
+            QUALIFICATIONS.find((q) => q.code === qualCode)?.name || qualCode;
+          const statusText =
+            duplicate.status === "approved" ? "approved" : "pending approval";
 
           showToast(
             `You already have an application for "${qualName}" (Status: ${statusText}). Please select a different qualification.`,
-            'error'
+            "error",
           );
 
           // Clear the selection
-          set('qualificationCode', '');
-          set('qualificationName', '');
-          set('campusId', '');
+          set("qualificationCode", "");
+          set("qualificationName", "");
+          set("campusId", "");
           setState({});
           return;
         }
 
         // No duplicate - proceed with selection
-        const qual = QUALIFICATIONS.find(q => q.code === qualCode);
-        set('qualificationCode', qualCode);
-        set('qualificationName', qual?.name || '');
-        set('campusId', '');
+        const qual = QUALIFICATIONS.find((q) => q.code === qualCode);
+        set("qualificationCode", qualCode);
+        set("qualificationName", qual?.name || "");
+        set("campusId", "");
         setState({});
         refreshQualificationCampuses();
       }
@@ -2163,23 +2324,28 @@
           );
 
         // Show existing applications notice
-        const existingAppsNotice = state.existingApplications && state.existingApplications.length > 0
-          ? `<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:14px 16px;margin-bottom:20px">
+        const existingAppsNotice =
+          state.existingApplications && state.existingApplications.length > 0
+            ? `<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:14px 16px;margin-bottom:20px">
               <div style="font-weight:700;font-size:14px;color:#92400e;margin-bottom:6px;display:flex;align-items:center;gap:8px">
                 <span style="font-size:18px">ℹ️</span> Existing Applications
               </div>
               <div style="font-size:13px;color:#92400e;line-height:1.6;margin-bottom:10px">
                 You already have ${state.existingApplications.length} active application(s). Please select a different qualification.
               </div>
-              ${state.existingApplications.map(app => `
+              ${state.existingApplications
+                .map(
+                  (app) => `
                 <div style="background:white;border-radius:6px;padding:10px 12px;margin-top:8px;font-size:13px">
                   <div style="font-weight:600;color:#001A4D">${app.qualification_name || app.qualification_code}</div>
-                  <div style="color:#6b7280;margin-top:2px">Status: <span style="font-weight:600;color:${app.status === 'approved' ? '#059669' : '#f59e0b'}">${app.status === 'approved' ? 'Approved' : 'Pending'}</span></div>
-                  ${app.reference_number ? `<div style="color:#6b7280;margin-top:2px;font-family:var(--font-mono);font-size:12px">Ref: ${app.reference_number}</div>` : ''}
+                  <div style="color:#6b7280;margin-top:2px">Status: <span style="font-weight:600;color:${app.status === "approved" ? "#059669" : "#f59e0b"}">${app.status === "approved" ? "Approved" : "Pending"}</span></div>
+                  ${app.reference_number ? `<div style="color:#6b7280;margin-top:2px;font-family:var(--font-mono);font-size:12px">Ref: ${app.reference_number}</div>` : ""}
                 </div>
-              `).join('')}
+              `,
+                )
+                .join("")}
             </div>`
-          : '';
+            : "";
 
         return `<div class="form-section-header"><span style="font-size:20px">🧭</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Application Intent</h3></div>
   ${existingAppsNotice}
@@ -2229,7 +2395,7 @@
     ${QUALIFICATIONS.map((q) => {
       const isDuplicate = checkDuplicateQualification(q.code);
       const label = isDuplicate ? `${q.name} ⚠️ (Already Applied)` : q.name;
-      return `<option value="${q.code}" ${f.qualificationCode === q.code ? "selected" : ""} ${isDuplicate ? 'style="color:#dc2626;font-style:italic"' : ''}>${label}</option>`;
+      return `<option value="${q.code}" ${f.qualificationCode === q.code ? "selected" : ""} ${isDuplicate ? 'style="color:#dc2626;font-style:italic"' : ""}>${label}</option>`;
     }).join("")}
   </select>
   ${errSpan("qualificationCode")}
@@ -2311,11 +2477,11 @@
     <div style="background:#f3f4f6;padding:10px 12px;font-weight:700;font-size:13px;color:#111827">Compulsory Subjects (4)</div>
     <div style="padding:10px 12px">
       <div class="form-row" style="margin-bottom:8px">
-        <div class="form-group"><label class="form-label">Home Language</label>${renderSubjectCell(subjectRows[0], 0, "Select home language", LANGUAGE_SUBJECT_OPTIONS)}</div>
+        <div class="form-group"><label class="form-label">Language</label>${renderSubjectCell(subjectRows[0], 0, "Select language", LANGUAGE_SUBJECT_OPTIONS)}</div>
         <div class="form-group"><label class="form-label">Mark</label>${renderMarkCell(subjectRows[0], 0)}</div>
       </div>
       <div class="form-row" style="margin-bottom:8px">
-        <div class="form-group"><label class="form-label">First Additional Language</label>${renderSubjectCell(subjectRows[1], 1, "Select first additional language", LANGUAGE_SUBJECT_OPTIONS)}</div>
+        <div class="form-group"><label class="form-label">Language</label>${renderSubjectCell(subjectRows[1], 1, "Select another language", LANGUAGE_SUBJECT_OPTIONS)}</div>
         <div class="form-group"><label class="form-label">Mark</label>${renderMarkCell(subjectRows[1], 1)}</div>
       </div>
       <div class="form-row" style="margin-bottom:8px">
@@ -2716,7 +2882,7 @@
   ${
     isGuardian
       ? `<div class="form-row">
-    <div class="form-group"><label class="form-label">Guardian ID Number <span class="required">*</span></label><input value="${f.guardianIdNumber || ""}" oninput="set('guardianIdNumber',this.value.replace(/\\D/g,'').slice(0,13))" maxlength="13" placeholder="e.g. 8001015009087" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.guardianIdNumber ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px"/>${errSpan("guardianIdNumber")}</div>
+    <div class="form-group"><label class="form-label">Guardian ID Number <span class="required">*</span></label><input value="${f.guardianIdNumber || ""}" oninput="set('guardianIdNumber',this.value.replace(/\\D/g,'').slice(0,13))" maxlength="13" inputmode="numeric" placeholder="e.g. 9001015800088" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.guardianIdNumber ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px"/>${errSpan("guardianIdNumber")}</div>
     <div class="form-group"><label class="form-label">Billing/Residential Address <span class="required">*</span></label>${inp("payerAddress", "Street, suburb, city")}${errSpan("payerAddress")}</div>
   </div>
   <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;margin-top:4px">
@@ -2800,14 +2966,82 @@
         setState({ typeConfirmed: true, step: 0 });
       }
 
-      function handleDocFile(input, doc) {
-        if (input.files && input.files[0]) {
-          if (!state.form.docsUploaded.includes(doc)) {
-            state.form.docsUploaded = [...state.form.docsUploaded, doc];
-          }
-          render();
-          showToast(doc + " — file selected ✓", "success");
+      async function handleDocFile(input, docType) {
+        if (!input.files || !input.files[0]) return;
+
+        const file = input.files[0];
+        const maxSize = 10 * 1024 * 1024; // 10MB
+
+        // Validate file size
+        if (file.size > maxSize) {
+          showToast("File too large. Maximum size is 10MB", "error");
+          input.value = "";
+          return;
         }
+
+        // Validate file type
+        const allowedTypes = [
+          "application/pdf",
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+        ];
+        if (!allowedTypes.includes(file.type)) {
+          showToast("Invalid file type. Only PDF and images allowed", "error");
+          input.value = "";
+          return;
+        }
+
+        // Need a saved draft ID so files attach to your application record
+        const applicationId = state.draftId || state.savedApplicationId;
+        if (!applicationId) {
+          showToast(
+            "Your application draft is not saved yet. Click Continue on each previous step to save your progress, then upload documents here.",
+            "warning",
+          );
+          input.value = "";
+          return;
+        }
+
+        try {
+          showToast(`Uploading ${docType}...`, "info");
+
+          const formData = new FormData();
+          formData.append("document", file);
+          formData.append("documentType", docType);
+
+          const headers = {};
+          const token = getToken();
+          if (token) headers.Authorization = `Bearer ${token}`;
+
+          const response = await fetch(
+            `/api/applications/drafts/${applicationId}/documents`,
+            {
+              method: "POST",
+              headers,
+              body: formData,
+            },
+          );
+
+          const result = await response.json();
+
+          if (response.ok && (result.success || result.ok)) {
+            // Mark document as uploaded
+            if (!state.form.docsUploaded.includes(docType)) {
+              state.form.docsUploaded = [...state.form.docsUploaded, docType];
+            }
+            showToast(`${docType} uploaded successfully ✓`, "success");
+            render();
+          } else {
+            showToast(result.message || "Upload failed", "error");
+          }
+        } catch (error) {
+          console.error("Upload error:", error);
+          showToast("Upload failed. Please try again", "error");
+        }
+
+        // Reset input
+        input.value = "";
       }
       // Pre-populate form with logged-in user's profile data and check existing applications
       async function loadUserProfileData() {
@@ -2816,8 +3050,8 @@
 
         try {
           // Fetch user profile
-          const res = await fetch('/api/users/profile', {
-            headers: { Authorization: `Bearer ${currentUser.token}` }
+          const res = await fetch("/api/users/profile", {
+            headers: { Authorization: `Bearer ${currentUser.token}` },
           });
 
           if (!res.ok) return;
@@ -2831,13 +3065,21 @@
           state.form.firstName = user.first_name || state.form.firstName;
           state.form.lastName = user.last_name || state.form.lastName;
           state.form.idNumber = user.id_number || state.form.idNumber;
-          state.form.passportNumber = user.passport_number || state.form.passportNumber;
-          state.form.dateOfBirth = user.date_of_birth || state.form.dateOfBirth;
-          state.form.gender = user.gender || state.form.gender;
+          state.form.passportNumber =
+            user.passport_number || state.form.passportNumber;
+          state.form.dateOfBirth =
+            user.date_of_birth ||
+            deriveDobFromSaId(state.form.idNumber) ||
+            state.form.dateOfBirth;
+          state.form.gender =
+            user.gender ||
+            deriveGenderFromSaId(state.form.idNumber) ||
+            state.form.gender;
           state.form.nationality = user.nationality || state.form.nationality;
           state.form.phone = user.phone || state.form.phone;
           state.form.email = user.email || state.form.email;
-          state.form.streetAddress = user.street_address || state.form.streetAddress;
+          state.form.streetAddress =
+            user.street_address || state.form.streetAddress;
           state.form.suburb = user.suburb || state.form.suburb;
           state.form.city = user.city || state.form.city;
           state.form.province = user.province || state.form.province;
@@ -2845,16 +3087,16 @@
 
           // Set identity values for identity check
           if (user.id_number) {
-            state.identityDocumentType = 'id';
+            state.identityDocumentType = "id";
             state.identityNumber = user.id_number;
           } else if (user.passport_number) {
-            state.identityDocumentType = 'passport';
+            state.identityDocumentType = "passport";
             state.identityNumber = user.passport_number;
           }
 
           // Fetch existing applications to prevent duplicates
-          const appsRes = await fetch('/api/applications', {
-            headers: { Authorization: `Bearer ${currentUser.token}` }
+          const appsRes = await fetch("/api/applications", {
+            headers: { Authorization: `Bearer ${currentUser.token}` },
           });
 
           if (appsRes.ok) {
@@ -2862,15 +3104,18 @@
             if (appsData.ok && appsData.applications) {
               // Store existing applications in state for duplicate checking
               state.existingApplications = appsData.applications.filter(
-                app => app.status === 'pending' || app.status === 'approved'
+                (app) => app.status === "pending" || app.status === "approved",
               );
-              console.log('[Apply] Found existing applications:', state.existingApplications.length);
+              console.log(
+                "[Apply] Found existing applications:",
+                state.existingApplications.length,
+              );
             }
           }
 
-          console.log('[Apply] Pre-populated form with user profile data');
+          console.log("[Apply] Pre-populated form with user profile data");
         } catch (err) {
-          console.error('[Apply] Failed to load user profile:', err);
+          console.error("[Apply] Failed to load user profile:", err);
         }
       }
 

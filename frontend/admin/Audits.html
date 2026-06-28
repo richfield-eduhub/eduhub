@@ -14,9 +14,17 @@
     }
     .filter-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 16px;
+      grid-template-columns: 1.2fr 1.2fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+    @media (max-width: 1200px) {
+      .filter-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .filter-actions {
+        grid-column: 1 / -1;
+      }
     }
     .filter-field {
       display: flex;
@@ -44,6 +52,7 @@
     .filter-actions {
       display: flex;
       gap: 10px;
+      align-items: flex-end;
       justify-content: flex-end;
     }
     .audit-table {
@@ -63,7 +72,7 @@
       letter-spacing: 0.03em;
     }
     .audit-table td {
-      padding: 14px 16px;
+      padding: 10px 16px;
       border-bottom: 1px solid var(--rf-border);
       color: var(--rf-gray);
     }
@@ -85,35 +94,17 @@
     .action-registration { background: #FEF3C7; color: #92400e; }
     .action-user { background: #FCE7F3; color: #831843; }
     .action-mfa { background: #DBEAFE; color: #1e3a8a; }
+    .action-document { background: #E9D5FF; color: #6b21a8; }
     .action-default { background: #F3F4F6; color: #374151; }
     .user-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--rf-blue);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.72rem;
-      font-weight: 700;
-    }
-    .user-details {
-      display: flex;
-      flex-direction: column;
-    }
-    .user-name {
       font-weight: 600;
       color: var(--rf-navy);
+      font-size: 0.86rem;
     }
     .user-email {
-      font-size: 0.76rem;
+      font-weight: 400;
       color: var(--rf-gray);
+      font-size: 0.82rem;
     }
     .details-btn {
       padding: 6px 12px;
@@ -283,10 +274,10 @@
         <label>End Date</label>
         <input type="date" id="filterEndDate"/>
       </div>
-    </div>
-    <div class="filter-actions">
-      <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
-      <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+      <div class="filter-actions">
+        <button class="btn btn-secondary" onclick="clearFilters()">Clear</button>
+        <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
+      </div>
     </div>
   </div>
 
@@ -354,7 +345,7 @@
   async function loadFilterOptions() {
     try {
       // Load actions
-      const actionsRes = await apiCall('/audit/actions', 'GET');
+      const actionsRes = await api('GET', '/audit/actions');
       if (actionsRes.ok && actionsRes.data) {
         const actionSelect = document.getElementById('filterAction');
         actionsRes.data.forEach(action => {
@@ -366,7 +357,7 @@
       }
 
       // Load tables
-      const tablesRes = await apiCall('/audit/tables', 'GET');
+      const tablesRes = await api('GET', '/audit/tables');
       if (tablesRes.ok && tablesRes.data) {
         const tableSelect = document.getElementById('filterTable');
         tablesRes.data.forEach(table => {
@@ -384,7 +375,7 @@
   // Load statistics
   async function loadStats() {
     try {
-      const res = await apiCall('/audit/stats', 'GET');
+      const res = await api('GET', '/audit/stats');
       if (res.ok && res.data) {
         const stats = res.data;
         document.getElementById('stats').innerHTML = `
@@ -424,7 +415,7 @@
         ...currentFilters
       });
 
-      const res = await apiCall(`/audit/logs?${params}`, 'GET');
+      const res = await api('GET', `/audit/logs?${params}`);
 
       if (res.ok && res.data) {
         const { logs, total, hasMore } = res.data;
@@ -440,8 +431,10 @@
             const actionClass = getActionClass(log.action);
             const userName = log.first_name && log.last_name
               ? `${log.first_name} ${log.last_name}`
-              : log.user_email || 'System';
-            const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'SY';
+              : 'System';
+            const userDisplay = log.user_email
+              ? `<span class="user-info">${userName}</span> <span class="user-email">/ ${log.user_email}</span>`
+              : `<span class="user-info">${userName}</span>`;
             const timestamp = new Date(log.created_at).toLocaleString('en-ZA', {
               year: 'numeric',
               month: 'short',
@@ -452,15 +445,7 @@
 
             return `<tr>
               <td style="white-space:nowrap">${timestamp}</td>
-              <td>
-                <div class="user-info">
-                  <div class="user-avatar">${initials}</div>
-                  <div class="user-details">
-                    <span class="user-name">${userName}</span>
-                    ${log.user_email ? `<span class="user-email">${log.user_email}</span>` : ''}
-                  </div>
-                </div>
-              </td>
+              <td>${userDisplay}</td>
               <td><span class="action-badge ${actionClass}">${log.action.replace(/_/g, ' ')}</span></td>
               <td>${log.table_name || '-'}</td>
               <td>${log.ip_address || '-'}</td>
@@ -496,6 +481,7 @@
     if (action.includes('REGISTRATION')) return 'action-registration';
     if (action.includes('USER')) return 'action-user';
     if (action.includes('MFA')) return 'action-mfa';
+    if (action.includes('DOCUMENT')) return 'action-document';
     return 'action-default';
   }
 

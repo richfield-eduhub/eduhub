@@ -178,6 +178,26 @@ class AuditService {
   }
 
   /**
+   * Log document download
+   */
+  static async logDocumentDownload(userId, documentId, applicationId, fileName, documentType, ipAddress, userAgent) {
+    return this.log({
+      userId,
+      action: 'DOCUMENT_DOWNLOAD',
+      tableName: 'application_documents',
+      recordId: documentId,
+      ipAddress,
+      userAgent,
+      newData: {
+        application_id: applicationId,
+        file_name: fileName,
+        document_type: documentType,
+        timestamp: new Date(),
+      },
+    });
+  }
+
+  /**
    * Get audit logs with pagination and filtering
    * @param {Object} options - Query options
    * @param {number} options.limit - Number of records to return

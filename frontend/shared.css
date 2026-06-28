@@ -158,11 +158,27 @@ input, select, textarea { font-family: var(--font-body); outline: none; }
 .step.done .step-label { color: var(--rf-success); }
 
 /* ── TOAST ── */
-.toast { position: fixed; bottom: 28px; right: 28px; z-index: 2000; padding: 14px 22px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); font-size: 14px; font-weight: 600; max-width: 420px; line-height: 1.5; color: white; transition: all 0.3s; }
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 2000;
+  padding: 14px 22px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  font-weight: 600;
+  max-width: 420px;
+  line-height: 1.5;
+  color: #fff;
+  background: #374151;
+  transition: all 0.3s;
+}
 .toast.hidden { display: none; }
-.toast-success { background: #059669; }
-.toast-error   { background: #dc2626; }
-.toast-info    { background: #3730a3; }
+.toast.toast-success { background: #059669; color: #fff; }
+.toast.toast-error   { background: #dc2626; color: #fff; }
+.toast.toast-info    { background: #3730a3; color: #fff; }
+.toast.toast-warning { background: #d97706; color: #fff; }
 
 /* ── FOOTER ── */
 .footer { background: #173f77; color: white; padding: 60px 40px; }

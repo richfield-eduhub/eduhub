@@ -77,9 +77,17 @@ router.get(
 );
 
 // GET /api/documents/:documentId/download - Download document file
+// Accepts token from Authorization header OR query parameter
 router.get(
   '/documents/:documentId/download',
-  authenticateToken,
+  (req, res, next) => {
+    // Try to get token from query parameter first (for direct links), then header
+    const queryToken = req.query.token;
+    if (queryToken && !req.headers.authorization) {
+      req.headers.authorization = `Bearer ${queryToken}`;
+    }
+    authenticateToken(req, res, next);
+  },
   documentController.downloadDocument
 );
 

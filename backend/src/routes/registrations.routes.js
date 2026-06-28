@@ -24,8 +24,9 @@ router.get('/', async (req, res, next) => {
                 m.code AS module_code, m.name AS module_name, m.credits,
                 m.semester, m.year,
                 q.code AS qualification_code, q.name AS qualification_name,
-                s.student_number,
-                ud.first_name, ud.last_name
+                s.student_number, s.user_id,
+                ud.first_name, ud.last_name,
+                u.account_status
          FROM registrations r
          JOIN modules m ON r.module_id = m.id
          JOIN qualifications q ON m.qualification_id = q.id

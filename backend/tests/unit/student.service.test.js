@@ -27,4 +27,43 @@ describe('StudentService', () => {
       message: 'No valid update fields provided',
     });
   });
+
+  it('throws when student is not found by user id', async () => {
+    mockSequelize.query.mockResolvedValueOnce([]);
+
+    await expect(studentService.getStudentByUserId('missing-user')).rejects.toMatchObject({
+      statusCode: 404,
+      message: 'Student record not found',
+    });
+  });
+
+  it('returns student registrations list', async () => {
+    mockSequelize.query.mockResolvedValueOnce([
+      { registration_id: 1, module_code: 'IT101', semester_name: 'Semester 1' },
+    ]);
+
+    const registrations = await studentService.getStudentRegistrations(5);
+    expect(registrations).toHaveLength(1);
+    expect(registrations[0].module_code).toBe('IT101');
+  });
+
+  it('rejects invalid account status updates', async () => {
+    await expect(
+      studentService.setStudentAccountStatus(1, 2, { account_status: 'deleted' })
+    ).rejects.toMatchObject({
+      statusCode: 400,
+      message: 'account_status must be one of: active, blocked, suspended',
+    });
+  });
+
+  it('prevents admin from changing their own account status', async () => {
+    mockSequelize.query.mockResolvedValueOnce([{ user_id: 'admin-1', role: 'student' }]);
+
+    await expect(
+      studentService.setStudentAccountStatus(1, 'admin-1', { account_status: 'blocked' })
+    ).rejects.toMatchObject({
+      statusCode: 403,
+      message: 'You cannot change your own account status',
+    });
+  });
 });

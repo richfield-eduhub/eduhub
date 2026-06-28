@@ -30,10 +30,21 @@ jobs:
               - '.env.example'
               - 'README.md'
 
-  # ─── Build Backend ────────────────────────────────────────────────────────
-  build-backend:
+  # ─── Backend tests (unit + integration + coverage) ────────────────────────
+  backend-tests:
     needs: changes
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.root == 'true'
+    uses: ./.github/workflows/backend-tests.yml
+    with:
+      with_coverage: true
+
+  # ─── Build Backend ────────────────────────────────────────────────────────
+  build-backend:
+    needs: [changes, backend-tests]
+    if: |
+      always() &&
+      (needs.backend-tests.result == 'success' || needs.backend-tests.result == 'skipped') &&
+      (needs.changes.outputs.backend == 'true' || needs.changes.outputs.root == 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -83,8 +94,13 @@ jobs:
 
   # ─── Deploy ───────────────────────────────────────────────────────────────
   deploy:
-    needs: [changes, build-backend, build-nginx]
-    if: always() && (needs.build-backend.result == 'success' || needs.build-backend.result == 'skipped') && (needs.build-nginx.result == 'success' || needs.build-nginx.result == 'skipped') && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.nginx == 'true' || needs.changes.outputs.root == 'true')
+    needs: [changes, backend-tests, build-backend, build-nginx]
+    if: |
+      always() &&
+      (needs.backend-tests.result == 'success' || needs.backend-tests.result == 'skipped') &&
+      (needs.build-backend.result == 'success' || needs.build-backend.result == 'skipped') &&
+      (needs.build-nginx.result == 'success' || needs.build-nginx.result == 'skipped') &&
+      (needs.changes.outputs.backend == 'true' || needs.changes.outputs.nginx == 'true' || needs.changes.outputs.root == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

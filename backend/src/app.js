@@ -27,6 +27,7 @@ const documentRoutes      = require('./routes/document.routes');
 const emergencyContactRoutes = require('./routes/emergencyContact.routes');
 const announcementRoutes  = require('./routes/announcement.routes');
 const auditRoutes         = require('./routes/audit.routes');
+const messagesRoutes      = require('./routes/messages.routes');
 
 // Routes — compatibility shims (used by frontend-html)
 const adminRoutes         = require('./routes/admin.routes');
@@ -102,6 +103,7 @@ app.use('/api',                documentRoutes);            // document upload/do
 app.use('/api',                emergencyContactRoutes);    // emergency contact routes
 app.use('/api',                announcementRoutes);        // announcement routes
 app.use('/api/audit',          auditRoutes);               // audit log routes
+app.use('/api/messages',       messagesRoutes);            // messaging routes
 
 // Compatibility shims (used by frontend-html shared.js)
 app.use('/api/admin',          adminRoutes);
@@ -139,6 +141,7 @@ app.get('/admin/users',         page('admin/Users.html'));
 app.get('/admin/reports',       page('admin/Reports.html'));
 app.get('/admin/audits',        page('admin/Audits.html'));
 app.get('/admin/settings',      page('admin/Settings.html'));
+app.get('/admin/messages',      page('admin/Messages.html'));
 
 app.get('/student',                    page('student/Dashboard.html'));
 app.get('/student/courses',            page('student/Courses.html'));
@@ -150,11 +153,13 @@ app.get('/student/profile',            page('student/Profile.html'));
 app.get('/student/emergency-contacts', page('student/EmergencyContacts.html'));
 app.get('/student/announcements',      page('student/Announcements.html'));
 app.get('/student/applications',       page('student/Applications.html'));
+app.get('/student/messages',           page('student/Messages.html'));
 
 app.get('/lecturer',               page('lecturer/Dashboard.html'));
 app.get('/lecturer/courses',       page('lecturer/MyCourses.html'));
 app.get('/lecturer/roster',        page('lecturer/Roster.html'));
 app.get('/lecturer/announcements', page('lecturer/Announcements.html'));
+app.get('/lecturer/messages',      page('lecturer/Messages.html'));
 
 /**
  * Error Handling — must be after all routes
