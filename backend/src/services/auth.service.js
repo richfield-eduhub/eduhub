@@ -99,11 +99,12 @@ class AuthService {
    * Login user
    */
   async login({ email, password, ipAddress = null }) {
-    // Get user with password hash and failed login tracking
+    // Get user with password hash and failed login tracking (including MFA status)
     const users = await sequelize.query(
       `SELECT u.id as user_id, u.email, u.password_hash, u.role, u.account_status,
               u.is_default_password, u.require_password_change,
               u.failed_login_attempts, u.last_failed_login,
+              u.mfa_enabled,
               ud.first_name, ud.last_name
        FROM users u
        LEFT JOIN user_details ud ON u.id = ud.user_id
@@ -177,12 +178,30 @@ class AuthService {
       }
     }
 
-    // Successful login - reset failed attempts and update last login
+    // Successful password verification - reset failed attempts
     await sequelize.query(
       `UPDATE users
        SET failed_login_attempts = 0,
-           last_failed_login = NULL,
-           last_login = NOW(),
+           last_failed_login = NULL
+       WHERE id = ?`,
+      { replacements: [user.user_id] }
+    );
+
+    // Check if MFA is enabled
+    if (user.mfa_enabled) {
+      // MFA is enabled - require MFA verification before issuing tokens
+      return {
+        mfaRequired: true,
+        userId: user.user_id,
+        email: user.email,
+        message: 'MFA verification required. Please enter your 6-digit code.',
+      };
+    }
+
+    // MFA not enabled - update last login and generate tokens
+    await sequelize.query(
+      `UPDATE users
+       SET last_login = NOW(),
            last_login_ip = ?
        WHERE id = ?`,
       { replacements: [ipAddress, user.user_id] }

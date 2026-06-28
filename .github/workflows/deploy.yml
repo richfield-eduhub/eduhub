@@ -165,6 +165,13 @@ jobs:
                   JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_this}
                   JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
                   JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
+                  SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+                  SMTP_PORT: ${SMTP_PORT:-587}
+                  SMTP_SECURE: ${SMTP_SECURE:-false}
+                  SMTP_USER: ${SMTP_USER}
+                  SMTP_PASS: ${SMTP_PASS}
+                  EMAIL_FROM: ${EMAIL_FROM:-admissions@eduhub.ac.za}
+                  ADMISSIONS_EMAIL: ${ADMISSIONS_EMAIL:-admissions@eduhub.ac.za}
                 ports:
                   - "${BACKEND_PORT:-3000}:3000"
                 volumes:
@@ -248,6 +255,13 @@ jobs:
             DOMAIN=edu-hub.duckdns.org
             LETSENCRYPT_EMAIL=admin@eduhub.co.za
             ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,https://edu-hub.duckdns.org
+            SMTP_HOST=smtp.gmail.com
+            SMTP_PORT=587
+            SMTP_SECURE=false
+            SMTP_USER=${{ secrets.SMTP_USER }}
+            SMTP_PASS=${{ secrets.SMTP_PASS }}
+            EMAIL_FROM=admissions@eduhub.ac.za
+            ADMISSIONS_EMAIL=admissions@eduhub.ac.za
             EOF
 
             # Login to GHCR

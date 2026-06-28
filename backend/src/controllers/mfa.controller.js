@@ -51,6 +51,7 @@ class MFAController {
   async verifyMFA(req, res, next) {
     try {
       const { userId, code, useBackupCode } = req.body;
+      const ipAddress = req.ip || req.connection.remoteAddress;
 
       if (!userId || !code) {
         return ResponseHandler.badRequest(res, 'User ID and code are required');
@@ -63,7 +64,7 @@ class MFAController {
       const sequelize = require('../config/database');
 
       const users = await sequelize.query(
-        `SELECT id as user_id, email, role FROM users WHERE id = ?`,
+        `SELECT id as user_id, email, role, is_default_password, require_password_change FROM users WHERE id = ?`,
         {
           replacements: [userId],
           type: sequelize.QueryTypes.SELECT,
@@ -75,6 +76,12 @@ class MFAController {
         return ResponseHandler.notFound(res, 'User not found');
       }
 
+      // Update last login timestamp after successful MFA
+      await sequelize.query(
+        `UPDATE users SET last_login = NOW(), last_login_ip = ? WHERE id = ?`,
+        { replacements: [ipAddress, userId] }
+      );
+
       const tokens = authService.generateTokens({
         user_id: user.user_id,
         email: user.email,
@@ -83,7 +90,16 @@ class MFAController {
 
       return ResponseHandler.success(
         res,
-        { ...result, ...tokens },
+        {
+          ...result,
+          ...tokens,
+          user: {
+            user_id: user.user_id,
+            email: user.email,
+            role: user.role,
+            tempPassword: Boolean(user.require_password_change || user.is_default_password),
+          },
+        },
         'MFA verification successful'
       );
     } catch (error) {

@@ -645,9 +645,39 @@ async function login(email, password) {
   const res = await api("POST", "/auth/login", { email, password });
   if (!res.ok)
     return { success: false, message: res.message || "Login failed." };
+
+  // Check if MFA is required
+  if (res.data.mfaRequired) {
+    return {
+      success: false,
+      mfaRequired: true,
+      userId: res.data.userId,
+      email: res.data.email,
+      message: res.data.message || "MFA verification required",
+    };
+  }
+
   setToken(res.data.accessToken);
   setCachedUser(res.data.user);
   return { success: true, user: res.data.user };
+}
+
+async function verifyMFA(userId, code, useBackupCode = false) {
+  const res = await fetch(`${APP_CONFIG.API_BASE}/auth/mfa/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, code, useBackupCode }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    return { success: false, message: data.message || "MFA verification failed." };
+  }
+
+  setToken(data.data.accessToken);
+  setCachedUser(data.data.user);
+  return { success: true, user: data.data.user };
 }
 
 async function logout() {
@@ -1562,11 +1592,13 @@ function renderNavbar(activePage) {
       },
       { href: "/admin/students", label: "Students", key: "students" },
       { href: "/admin/lecturers", label: "Lecturers", key: "admin-lecturers" },
+      { href: "/settings", label: "Settings", key: "settings" },
     ],
     student: [
       { href: "/student", label: "Dashboard", key: "dashboard" },
       { href: "/student/register", label: "Register Modules", key: "register" },
       { href: "/student/modules", label: "My Modules", key: "modules" },
+      { href: "/settings", label: "Settings", key: "settings" },
     ],
     lecturer: [
       { href: "/lecturer", label: "Dashboard", key: "lecturer-dashboard" },
@@ -1581,6 +1613,7 @@ function renderNavbar(activePage) {
         label: "Announcements",
         key: "lecturer-announcements",
       },
+      { href: "/settings", label: "Settings", key: "settings" },
     ],
   };
   const role = user ? user.role : "public";

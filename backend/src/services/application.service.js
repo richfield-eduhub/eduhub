@@ -1204,7 +1204,7 @@ class ApplicationService {
       const emailResult = await emailService.sendAdmissionsOutcomeEmail({
         to: finalRow.email,
         fullName: `${finalRow.first_name || ''} ${finalRow.last_name || ''}`.trim(),
-        studentNumber: finalRow.student_number ? formatNumber(finalRow.student_number) : null,
+        studentNumber: finalRow.student_number || null,
         qualificationName:
           finalRow.resolved_qualification_name || finalRow.qualification_name || null,
         admittedFor: finalRow.admission_for,

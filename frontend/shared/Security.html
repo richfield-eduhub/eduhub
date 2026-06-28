@@ -113,10 +113,10 @@ loadMFAStatus();
 
 async function loadMFAStatus() {
   try {
-    const currentUser = getCurrentUser();
+    const token = getToken();
     const response = await fetch(`${APP_CONFIG.API_URL}/auth/mfa/status`, {
       headers: {
-        'Authorization': `Bearer ${currentUser.accessToken}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
@@ -140,7 +140,7 @@ function renderMFAStatus(status) {
   const statusCard = document.getElementById('mfa-status-card');
   const setupCard = document.getElementById('mfa-setup-card');
 
-  if (status.mfa_enabled) {
+  if (status.mfaEnabled) {
     statusCard.className = 'security-card success';
     statusCard.innerHTML = `
       <div style="display:flex;align-items:flex-start;gap:20px">
@@ -181,13 +181,13 @@ function renderMFAStatus(status) {
 
 async function startMFASetup() {
   try {
-    const currentUser = getCurrentUser();
+    const token = getToken();
     setLoading('start-setup-btn', true, 'Setting up...');
 
     const response = await fetch(`${APP_CONFIG.API_URL}/auth/mfa/setup`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${currentUser.accessToken}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
@@ -226,7 +226,7 @@ async function verifyMFASetup() {
   }
 
   try {
-    const currentUser = getCurrentUser();
+    const token = getToken();
     setLoading('verify-btn', true, 'Verifying...');
     clearAlert('verify-alert');
 
@@ -234,7 +234,7 @@ async function verifyMFASetup() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${currentUser.accessToken}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({ code }),
     });
@@ -288,12 +288,12 @@ async function disableMFA() {
   if (!password) return;
 
   try {
-    const currentUser = getCurrentUser();
+    const token = getToken();
     const response = await fetch(`${APP_CONFIG.API_URL}/auth/mfa/disable`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${currentUser.accessToken}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({ password }),
     });
@@ -317,12 +317,12 @@ async function regenerateBackupCodes() {
   if (!password) return;
 
   try {
-    const currentUser = getCurrentUser();
+    const token = getToken();
     const response = await fetch(`${APP_CONFIG.API_URL}/auth/mfa/regenerate-codes`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${currentUser.accessToken}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({ password }),
     });

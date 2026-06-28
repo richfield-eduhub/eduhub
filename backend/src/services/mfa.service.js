@@ -5,16 +5,11 @@
  * Compatible with Google Authenticator and other authenticator apps
  *
  * Design Reference: MISSING_FEATURES.md section 2.1, Page 56
- *
- * NOTE: This service provides MFA functionality but requires the
- * 'speakeasy' npm package to be installed for full functionality:
- * npm install speakeasy
- *
- * For now, we'll implement a simplified version that can be upgraded
- * when the package is available.
  */
 
 const crypto = require('crypto');
+const speakeasy = require('speakeasy');
+const QRCode = require('qrcode');
 const sequelize = require('../config/database');
 
 class MFAService {
@@ -72,8 +67,14 @@ class MFAService {
       throw { statusCode: 400, message: 'MFA is already enabled for this account' };
     }
 
-    // Generate secret (32-character base32 string)
-    const secret = crypto.randomBytes(20).toString('base32');
+    // Generate secret using speakeasy
+    const secretObj = speakeasy.generateSecret({
+      name: `EduHub (${user.email})`,
+      issuer: 'EduHub',
+      length: 32,
+    });
+
+    const secret = secretObj.base32;
 
     // Generate backup codes
     const backupCodes = this.generateBackupCodes();
@@ -90,13 +91,13 @@ class MFAService {
       }
     );
 
-    // Generate QR code data for authenticator apps
-    // Format: otpauth://totp/EduHub:user@email.com?secret=SECRET&issuer=EduHub
-    const qrCodeData = `otpauth://totp/EduHub:${user.email}?secret=${secret}&issuer=EduHub`;
+    // Generate QR code as data URL
+    const otpauthUrl = secretObj.otpauth_url;
+    const qrCodeDataURL = await QRCode.toDataURL(otpauthUrl);
 
     return {
       secret,
-      qrCodeData,
+      qr_code_url: qrCodeDataURL, // Base64 data URL for frontend
       backupCodes, // Return plain backup codes only once
       message: 'MFA setup initiated. Please verify with a code from your authenticator app to complete setup.',
     };
@@ -107,7 +108,7 @@ class MFAService {
    */
   async verifyAndActivateMFA(userId, totpCode) {
     const users = await sequelize.query(
-      `SELECT mfa_secret, mfa_enabled
+      `SELECT mfa_secret, mfa_enabled, mfa_backup_codes
        FROM users
        WHERE id = ?`,
       {
@@ -142,22 +143,37 @@ class MFAService {
       { replacements: [userId] }
     );
 
-    return { message: 'MFA enabled successfully' };
+    // Generate new backup codes for the user to save
+    const backupCodes = this.generateBackupCodes();
+    const hashedBackupCodes = await this.hashBackupCodes(backupCodes);
+
+    // Update backup codes
+    await sequelize.query(
+      `UPDATE users SET mfa_backup_codes = ? WHERE id = ?`,
+      { replacements: [JSON.stringify(hashedBackupCodes), userId] }
+    );
+
+    return {
+      message: 'MFA enabled successfully',
+      backup_codes: backupCodes, // Return plain codes for user to save
+    };
   }
 
   /**
-   * Verify TOTP code
-   * Simplified implementation - in production, use speakeasy library
+   * Verify TOTP code using speakeasy
+   * Allows a time window of ±2 intervals (60 seconds) for clock drift
    */
   verifyTOTP(secret, code) {
     if (!secret || !code) return false;
 
-    // This is a simplified verification
-    // In production, use: speakeasy.totp.verify({ secret, encoding: 'base32', token: code, window: 2 })
-
-    // For now, accept any 6-digit code for testing
-    // TODO: Replace with proper TOTP verification when speakeasy is installed
-    return /^\d{6}$/.test(code);
+    // Verify TOTP code with speakeasy
+    // window: 2 allows ±60 seconds tolerance for clock drift
+    return speakeasy.totp.verify({
+      secret: secret,
+      encoding: 'base32',
+      token: code,
+      window: 2,
+    });
   }
 
   /**
