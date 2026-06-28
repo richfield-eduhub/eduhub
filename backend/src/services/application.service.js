@@ -144,6 +144,7 @@ const SYMBOL_TO_PERCENTAGE = {
 };
 
 function clampPercentage(value) {
+  if (value === null || value === undefined || value === '') return null;
   const num = Number(value);
   if (!Number.isFinite(num)) return null;
   if (num < 0) return 0;
@@ -1408,11 +1409,31 @@ class ApplicationService {
       })
       .filter((item) => item.name);
 
-    const apsScore = scoredSubjects
-      .filter((item) => item.aps_points != null && !item.ignored)
+    const apsEligible = scoredSubjects
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => item.aps_points != null && !item.ignored);
+
+    const topSixIndices = new Set(
+      apsEligible
+        .sort(
+          (a, b) =>
+            b.item.aps_points - a.item.aps_points ||
+            b.item.resolved_percentage - a.item.resolved_percentage
+        )
+        .slice(0, 6)
+        .map(({ index }) => index)
+    );
+
+    const subjectBreakdown = scoredSubjects.map((item, index) => ({
+      ...item,
+      counted_in_aps: topSixIndices.has(index),
+    }));
+
+    const apsScore = subjectBreakdown
+      .filter((item) => item.counted_in_aps)
       .reduce((total, subject) => total + subject.aps_points, 0);
 
-    const hasMath = scoredSubjects.some((subject) => {
+    const hasMath = subjectBreakdown.some((subject) => {
       const label = subject.name.toLowerCase();
       return (
         label === 'mathematics' ||
@@ -1478,7 +1499,7 @@ class ApplicationService {
 
     return {
       aps_score: apsScore,
-      subject_breakdown: scoredSubjects,
+      subject_breakdown: subjectBreakdown,
       recommended: eligibility.filter((item) => item.status === 'recommended'),
       possibly_eligible: eligibility.filter((item) => item.status === 'possibly_eligible'),
       not_eligible: eligibility.filter((item) => item.status === 'not_eligible'),

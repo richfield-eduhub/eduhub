@@ -192,6 +192,7 @@ jobs:
                   - "${BACKEND_PORT:-3000}:3000"
                 volumes:
                   - ./logs/backend:/app/logs
+                  - eduhub_uploads:/app/uploads
                 depends_on:
                   db:
                     condition: service_healthy
@@ -242,6 +243,8 @@ jobs:
               eduhub_pgdata:
                 driver: local
               eduhub_pgadmin:
+                driver: local
+              eduhub_uploads:
                 driver: local
             networks:
               eduhub_network:

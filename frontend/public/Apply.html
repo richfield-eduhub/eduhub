@@ -722,10 +722,47 @@
         state.form.additionalQualifications = list;
       }
 
+      function sanitizeMarkInput(rawValue) {
+        let value = String(rawValue || "")
+          .trim()
+          .toUpperCase()
+          .replace(/[^\dA-G\- ]/g, "");
+        if (!value) return "";
+        if (/^-+\d*$/.test(value)) value = value.replace(/^-+/, "");
+        if (!value) return "";
+
+        if (/^[A-G]$/.test(value)) return value;
+
+        if (/^\d+$/.test(value)) {
+          const num = Number(value);
+          if (num > 100) return "100";
+          return value;
+        }
+
+        const rangeMatch = value.match(/^(\d{1,3})\s*-\s*(\d{0,3})$/);
+        if (rangeMatch) {
+          const min = Math.min(Number(rangeMatch[1]), 100);
+          const maxPart = rangeMatch[2];
+          if (!maxPart) return `${min}-`;
+          const max = Math.min(Number(maxPart), 100);
+          return `${min}-${max}`;
+        }
+
+        if (/^\d{0,3}$/.test(value)) {
+          if (value && Number(value) > 100) return "100";
+          return value;
+        }
+
+        if (/^[A-G]?$/.test(value)) return value;
+
+        return value.slice(0, -1);
+      }
+
       function setSubjectEntryField(index, key, value) {
         const rows = [...(state.form.subjectEntries || [])];
         if (!rows[index]) return;
-        rows[index][key] = value;
+        rows[index][key] =
+          key === "mark" ? sanitizeMarkInput(value) : value;
         state.form.subjectEntries = rows;
       }
 
@@ -808,15 +845,37 @@
                 e.campusId = "Please select a campus for this qualification";
             }
             if (s === 3) {
-              const coreSubjects = getApsSubjectsPayload().filter(
-                (item) =>
-                  String(item.name || "")
-                    .trim()
-                    .toLowerCase() !== "life orientation",
-              );
-              if (coreSubjects.length < 6) {
+              const rows = state.form.subjectEntries || [];
+              const markWithoutSubject = rows.find((row) => {
+                const name = String(row?.subject || "").trim();
+                const mark = String(row?.mark || "").trim();
+                return mark && normalizeMarkToken(mark) && !name;
+              });
+              if (markWithoutSubject) {
                 e.subjectEntries =
-                  "Enter at least 6 subjects with marks (excluding Life Orientation).";
+                  "Select a subject for every mark entered.";
+              } else {
+                const invalidMarkRow = rows.find((row) => {
+                  const name = String(row?.subject || "").trim();
+                  const mark = String(row?.mark || "").trim();
+                  if (!name) return false;
+                  return !mark || !normalizeMarkToken(mark);
+                });
+                if (invalidMarkRow) {
+                  e.subjectEntries =
+                    "Each subject needs a valid mark: percentage 0–100, symbol A–G, or range like 70-79.";
+                } else {
+                  const coreSubjects = getApsSubjectsPayload().filter(
+                    (item) =>
+                      String(item.name || "")
+                        .trim()
+                        .toLowerCase() !== "life orientation",
+                  );
+                  if (coreSubjects.length < 6) {
+                    e.subjectEntries =
+                      "Enter at least 6 subjects with marks (excluding Life Orientation).";
+                  }
+                }
               }
             }
             if (s === 2) {
@@ -1012,19 +1071,61 @@
         return payload;
       }
 
+      const MARK_SYMBOL_AVERAGES = {
+        A: 85,
+        B: 75,
+        C: 65,
+        D: 55,
+        E: 45,
+        F: 35,
+        G: 20,
+      };
+
+      function resolveMarkPercentage(rawValue) {
+        const token = normalizeMarkToken(rawValue);
+        if (!token) return null;
+        if (token.percentage != null) return token.percentage;
+        if (token.symbol) return MARK_SYMBOL_AVERAGES[token.symbol] ?? null;
+        if (token.range) {
+          const [min, max] = token.range.split("-").map(Number);
+          return Math.round((min + max) / 2);
+        }
+        return null;
+      }
+
+      function formatMarkDisplay(rawValue) {
+        const mark = String(rawValue || "").trim().toUpperCase();
+        if (!mark) return "";
+        const token = normalizeMarkToken(mark);
+        if (!token) return mark;
+        if (token.symbol) {
+          return `${token.symbol} (${MARK_SYMBOL_AVERAGES[token.symbol]}%)`;
+        }
+        if (token.range) {
+          return `${token.range} (~${resolveMarkPercentage(mark)}%)`;
+        }
+        return `${token.percentage}%`;
+      }
+
       function normalizeMarkToken(rawValue) {
         const value = String(rawValue || "")
           .trim()
           .toUpperCase();
         if (!value) return null;
         if (/^\d{1,3}$/.test(value)) {
-          return { percentage: Number(value) };
+          const num = Number(value);
+          if (num < 0 || num > 100) return null;
+          return { percentage: num };
         }
         if (/^[A-G]$/.test(value)) {
           return { symbol: value };
         }
         if (/^\d{1,3}\s*-\s*\d{1,3}$/.test(value)) {
-          return { range: value.replace(/\s+/g, "") };
+          const [minStr, maxStr] = value.split(/\s*-\s*/);
+          const min = Number(minStr);
+          const max = Number(maxStr);
+          if (min < 0 || max > 100 || min > max) return null;
+          return { range: `${min}-${max}` };
         }
         return null;
       }
@@ -1046,6 +1147,31 @@
       }
 
       async function runApsEvaluation() {
+        const rows = state.form.subjectEntries || [];
+        const markWithoutSubject = rows.find((row) => {
+          const name = String(row?.subject || "").trim();
+          const mark = String(row?.mark || "").trim();
+          return mark && normalizeMarkToken(mark) && !name;
+        });
+        if (markWithoutSubject) {
+          showToast(
+            "Select a subject for every mark entered before calculating APS.",
+            "error",
+          );
+          return;
+        }
+        const invalidMarkRow = rows.find((row) => {
+          const name = String(row?.subject || "").trim();
+          const mark = String(row?.mark || "").trim();
+          return name && (!mark || !normalizeMarkToken(mark));
+        });
+        if (invalidMarkRow) {
+          showToast(
+            "Each subject needs a valid mark (0–100, A–G, or range like 70-79).",
+            "error",
+          );
+          return;
+        }
         const subjects = getApsSubjectsPayload();
         if (!subjects.length) {
           showToast("Enter at least one subject mark first.", "error");
@@ -2425,11 +2551,15 @@
         const subjectRows = ensureMinimumSubjectRows(state.form.subjectEntries);
         state.form.subjectEntries = subjectRows;
         const aps = state.apsResult;
-        const apsIncluded = Array.isArray(aps?.subject_breakdown)
-          ? aps.subject_breakdown.filter(
-              (item) => !item.ignored && item.resolved_percentage != null,
-            )
+        const breakdown = Array.isArray(aps?.subject_breakdown)
+          ? aps.subject_breakdown
           : [];
+        const hasCountedFlag = breakdown.some((item) => item.counted_in_aps);
+        const apsIncluded = hasCountedFlag
+          ? breakdown.filter((item) => item.counted_in_aps)
+          : breakdown.filter(
+              (item) => !item.ignored && item.resolved_percentage != null,
+            );
         const apsAverage = apsIncluded.length
           ? (
               apsIncluded.reduce(
@@ -2438,6 +2568,28 @@
               ) / apsIncluded.length
             ).toFixed(1)
           : null;
+        const formatBreakdownMark = (item) => {
+          if (item.source === "symbol" && item.source_symbol) {
+            return `${item.source_symbol} (${item.resolved_percentage}%)`;
+          }
+          if (item.source === "range" && item.source_range) {
+            return `${item.source_range} (~${item.resolved_percentage}%)`;
+          }
+          if (item.resolved_percentage != null) {
+            return `${item.resolved_percentage}%`;
+          }
+          return "—";
+        };
+        const breakdownRows = breakdown
+          .map(
+            (item) => `<tr>
+          <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb">${item.name}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb">${formatBreakdownMark(item)}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:center">${item.aps_points ?? "—"}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:center">${item.ignored ? "Excluded (LO)" : item.counted_in_aps ? "✓ Top 6" : "—"}</td>
+        </tr>`,
+          )
+          .join("");
         const renderSubjectCell = (
           row,
           index,
@@ -2446,11 +2598,16 @@
           locked = false,
         ) => {
           const safeSubject = String(row.subject || "").replace(/"/g, "&quot;");
+          const markFilled = Boolean(
+            String(row.mark || "").trim() && normalizeMarkToken(row.mark),
+          );
+          const subjectMissing = markFilled && !String(row.subject || "").trim();
+          const subjectBorder = subjectMissing ? "#dc2626" : "#d1d5db";
           if (locked) {
             return `<input value="${safeSubject}" disabled style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;background:#f3f4f6;color:#4b5563"/>`;
           }
           if (options.length) {
-            return `<select onchange="setSubjectEntryField(${index},'subject',this.value)" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;background:white">
+            return `<select onchange="setSubjectEntryField(${index},'subject',this.value)" title="${subjectMissing ? "Select a subject for this mark" : ""}" style="width:100%;padding:10px 12px;border:1px solid ${subjectBorder};border-radius:8px;font-size:13px;background:white">
               <option value="">${placeholder}</option>
               ${options
                 .map(
@@ -2460,15 +2617,22 @@
                 .join("")}
             </select>`;
           }
-          return `<input value="${safeSubject}" oninput="setSubjectEntryField(${index},'subject',this.value)" placeholder="${placeholder}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;background:white"/>`;
+          return `<input value="${safeSubject}" oninput="setSubjectEntryField(${index},'subject',this.value)" placeholder="${placeholder}" title="${subjectMissing ? "Enter a subject for this mark" : ""}" style="width:100%;padding:10px 12px;border:1px solid ${subjectBorder};border-radius:8px;font-size:13px;background:white"/>`;
         };
         const renderMarkCell = (row, index) => {
           const safeMark = String(row.mark || "").replace(/"/g, "&quot;");
-          return `<input value="${safeMark}" oninput="setSubjectEntryField(${index},'mark',this.value.toUpperCase())" placeholder="e.g. 74 / B / 70-79" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;background:white"/>`;
+          const hasSubject = String(row.subject || "").trim().length > 0;
+          const markValue = String(row.mark || "").trim();
+          const markInvalid =
+            hasSubject &&
+            markValue.length > 0 &&
+            !normalizeMarkToken(markValue);
+          const borderColor = markInvalid ? "#dc2626" : "#d1d5db";
+          return `<input value="${safeMark}" oninput="const v=sanitizeMarkInput(this.value);this.value=v;setSubjectEntryField(${index},'mark',v)" placeholder="e.g. 74 / B / 70-79" title="${markInvalid ? "Enter a percentage (0–100), symbol (A–G), or range (e.g. 70-79)" : ""}" style="width:100%;padding:10px 12px;border:1px solid ${borderColor};border-radius:8px;font-size:13px;background:white"/>`;
         };
         return `<div class="form-section-header"><span style="font-size:20px">📊</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Marks & APS</h3></div>
   <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:12px 14px;font-size:13px;color:#3730a3;margin-bottom:14px">
-    Enter marks as <strong>percentage</strong> (74), <strong>symbol</strong> (B), or <strong>range</strong> (70-79).
+    Enter marks as <strong>percentage</strong> (0–100), <strong>symbol</strong> (A–G), or <strong>range</strong> (e.g. 70-79). Symbols use NSC midpoints — A=85%, B=75%, C=65%, D=55%, E=45%, F=35%, G=20%. You can mix symbols and percentages.
   </div>
   <div style="background:#F4F6FB;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:13px;color:#374151;margin-bottom:12px">
     APS is calculated using your <strong>top 6 subjects</strong>, excluding <strong>Life Orientation</strong>.
@@ -2538,8 +2702,23 @@
       ? `<div style="margin-top:14px;background:#F4F6FB;border:1px solid #e5e7eb;border-radius:10px;padding:14px">
       <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap">
         <div><div style="font-size:13px;color:#6b7280">APS Score</div><div style="font-size:28px;font-weight:800;color:#123f7a">${aps.aps_score ?? 0}</div></div>
-        <div><div style="font-size:13px;color:#6b7280">APS Subjects Average</div><div style="font-size:24px;font-weight:800;color:#0f766e">${apsAverage !== null ? `${apsAverage}%` : "—"}</div></div>
+        <div><div style="font-size:13px;color:#6b7280">Top 6 Subjects Average</div><div style="font-size:24px;font-weight:800;color:#0f766e">${apsAverage !== null ? `${apsAverage}%` : "—"}</div></div>
       </div>
+      ${
+        breakdownRows
+          ? `<div style="margin-top:12px;overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:#eef2ff;color:#3730a3">
+            <th style="padding:8px 10px;text-align:left">Subject</th>
+            <th style="padding:8px 10px;text-align:left">Mark (resolved)</th>
+            <th style="padding:8px 10px;text-align:center">APS Pts</th>
+            <th style="padding:8px 10px;text-align:center">Counted</th>
+          </tr></thead>
+          <tbody>${breakdownRows}</tbody>
+        </table>
+      </div>`
+          : ""
+      }
       <div style="font-size:12px;color:#6b7280;margin-top:8px">
         Recommended: <strong>${aps.recommended?.length || 0}</strong> · Possibly eligible: <strong>${aps.possibly_eligible?.length || 0}</strong> · Not eligible: <strong>${aps.not_eligible?.length || 0}</strong>
       </div>

@@ -90,15 +90,21 @@ class FileUploadUtility {
   }
 
   /**
-   * Generate unique filename
-   * Format: uuid_timestamp.ext
+   * Generate unique filename with UUID folder
+   * Format: uuid/timestamp.ext
+   * This creates a folder per upload for better organization and security
    */
   static generateUniqueFilename(originalFilename) {
     const ext = path.extname(originalFilename).toLowerCase();
     const uuid = crypto.randomUUID();
     const timestamp = Date.now();
 
-    return `${uuid}_${timestamp}${ext}`;
+    // Return folder/filename format
+    return {
+      folder: uuid,
+      filename: `${timestamp}${ext}`,
+      fullPath: `${uuid}/${timestamp}${ext}`,
+    };
   }
 
   /**
@@ -180,7 +186,9 @@ class FileUploadUtility {
    * Get file metadata
    */
   static getFileMetadata(file, uniqueFilename, storagePath) {
-    const relativePath = path.relative(FILE_CONFIG.UPLOAD_BASE_PATH, path.join(storagePath, uniqueFilename));
+    // Calculate relative path from base uploads directory
+    const fullFilePath = path.join(storagePath, uniqueFilename);
+    const relativePath = path.relative(FILE_CONFIG.UPLOAD_BASE_PATH, fullFilePath);
 
     return {
       originalName: file.originalname,
@@ -189,8 +197,8 @@ class FileUploadUtility {
       size: file.size,
       mimetype: file.mimetype,
       extension: path.extname(file.originalname).toLowerCase(),
-      storagePath: relativePath,
-      fullPath: path.join(storagePath, uniqueFilename),
+      storagePath: relativePath, // e.g., "2026/06/uuid-folder/timestamp.pdf"
+      fullPath: fullFilePath,
     };
   }
 

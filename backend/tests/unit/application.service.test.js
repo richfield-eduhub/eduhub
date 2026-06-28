@@ -161,6 +161,35 @@ describe('ApplicationService', () => {
       expect(accounting.source).toBe('range');
     });
 
+    it('mixes symbols and percentages using symbol averages for APS', async () => {
+      mockSequelize.query.mockResolvedValueOnce([
+        { id: 1, code: 'BSCIT', name: 'BSc Information Technology', campuses: [] },
+      ]);
+
+      const result = await applicationService.evaluateApsEligibility({
+        subjects: [
+          { name: 'Mathematics', symbol: 'A' },
+          { name: 'English', percentage: 74 },
+          { name: 'Life Orientation', symbol: 'B' },
+          { name: 'Accounting', symbol: 'B' },
+        ],
+        study_level: 'undergraduate',
+      });
+
+      const maths = result.subject_breakdown.find((s) => s.name === 'Mathematics');
+      const english = result.subject_breakdown.find((s) => s.name === 'English');
+      const accounting = result.subject_breakdown.find((s) => s.name === 'Accounting');
+      const lifeOrientation = result.subject_breakdown.find((s) => s.name === 'Life Orientation');
+
+      expect(maths.resolved_percentage).toBe(85);
+      expect(english.resolved_percentage).toBe(74);
+      expect(accounting.resolved_percentage).toBe(75);
+      expect(lifeOrientation.ignored).toBe(true);
+      expect(lifeOrientation.counted_in_aps).toBe(false);
+      expect(maths.counted_in_aps).toBe(true);
+      expect(result.aps_score).toBeGreaterThan(0);
+    });
+
     it('counts prior qualifications for postgraduate eligibility', async () => {
       mockSequelize.query.mockResolvedValueOnce([
         { id: 2, code: 'MBA', name: 'Master of Business Administration', campuses: [] },

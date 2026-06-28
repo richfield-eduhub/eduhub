@@ -23,15 +23,33 @@ try {
   const storage = multer.diskStorage({
     destination: async (req, file, cb) => {
       try {
-        const storagePath = await FileUploadUtility.ensureUploadDirectory();
-        cb(null, storagePath);
+        // Generate UUID folder structure
+        const fileInfo = FileUploadUtility.generateUniqueFilename(file.originalname);
+
+        // Store fileInfo on request for later use
+        if (!req.fileInfo) req.fileInfo = {};
+        req.fileInfo[file.fieldname] = fileInfo;
+
+        // Create base upload directory
+        const basePath = await FileUploadUtility.ensureUploadDirectory();
+
+        // Create UUID subfolder
+        const fs = require('fs').promises;
+        const uuidFolderPath = require('path').join(basePath, fileInfo.folder);
+        await fs.mkdir(uuidFolderPath, { recursive: true });
+
+        cb(null, uuidFolderPath);
       } catch (error) {
         cb(error);
       }
     },
     filename: (req, file, cb) => {
-      const uniqueFilename = FileUploadUtility.generateUniqueFilename(file.originalname);
-      cb(null, uniqueFilename);
+      // Use the filename from fileInfo stored in destination callback
+      const fileInfo = req.fileInfo?.[file.fieldname];
+      if (!fileInfo) {
+        return cb(new Error('File info not generated'));
+      }
+      cb(null, fileInfo.filename);
     },
   });
 
