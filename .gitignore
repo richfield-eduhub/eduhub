@@ -1,2 +1,10 @@
 .DS_Store
 logs/
+
+# Environment files with secrets
+.env
+*.env
+!.env.example
+backend/.env
+backend/*.env
+!backend/.env.example
