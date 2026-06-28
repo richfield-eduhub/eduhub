@@ -17,11 +17,16 @@
 const user = requireAuth('student');
 renderNavbar('student-mycourses');
 
+(async () => {
+  // Load data from API first
+  await ensureDashboardData();
+
+const sid = user.studentId || user.student_number || user.student_id || '';
 const apps = getApplications();
 const regs = getRegistrations();
-const myApp = apps.find(a => a.studentId === user.studentId && a.status === 'approved');
+const myApp = apps.find(a => a.studentId === sid && a.status === 'approved');
 const qual  = QUALIFICATIONS.find(q => q.code === myApp?.qualificationCode);
-const myAllocs = regs.filter(r => r.studentId === user.studentId && (r.status === 'allocated' || r.status === 'approved'))
+const myAllocs = regs.filter(r => r.studentId === sid && (r.status === 'allocated' || r.status === 'approved'))
                      .sort((a,b) => a.studyYear !== b.studyYear ? a.studyYear-b.studyYear : a.semester-b.semester);
 
 if (!myApp) {
@@ -88,6 +93,7 @@ if (!myApp) {
     </div>`).join('')}
     <div class="alert alert-info"><span>📞</span><div>For queries about your course allocation, contact <strong>admissions@eduhub.ac.za</strong> or call <strong>0860 742 434</strong>.</div></div>`;
 }
+})();
 </script>
 </body>
 </html>

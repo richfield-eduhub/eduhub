@@ -33,7 +33,8 @@ class AnnouncementController {
 
       const announcement = await announcementService.createAnnouncement({
         moduleId,
-        createdBy: lecturer.id,
+        createdBy: lecturerUserId, // Use user_id, not lecturer.id
+        lecturerId: lecturer.id,   // Pass lecturer.id separately for module assignment check
         title,
         content,
         priority,

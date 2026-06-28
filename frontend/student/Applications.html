@@ -30,8 +30,14 @@
 const user = requireAuth('student');
 renderNavbar('student-applications');
 
+(async () => {
+  // Load data from API first
+  await ensureDashboardData();
+
+const sid = user.studentId || user.student_number || user.student_id || '';
+
 function render() {
-  const apps = getApplications().filter(a => a.studentId === user.studentId);
+  const apps = getApplications().filter(a => a.studentId === sid);
   if (!apps.length) {
     document.getElementById('content').innerHTML = `
       <div style="text-align:center;padding:60px 20px;background:white;border-radius:12px;border:1px solid var(--rf-border)">
@@ -90,6 +96,7 @@ function openDetail(id) {
 }
 
 render();
+})();
 </script>
 </body>
 </html>

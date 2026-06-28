@@ -14,7 +14,7 @@ class AnnouncementService {
   /**
    * Create a new announcement
    */
-  async createAnnouncement({ moduleId, createdBy, title, content, priority = 'normal' }) {
+  async createAnnouncement({ moduleId, createdBy, lecturerId, title, content, priority = 'normal' }) {
     if (!title || !content) {
       throw { statusCode: 400, message: 'Title and content are required' };
     }
@@ -38,11 +38,11 @@ class AnnouncementService {
       throw { statusCode: 404, message: 'Module not found' };
     }
 
-    // Verify lecturer is assigned to this module
+    // Verify lecturer is assigned to this module (use lecturerId for the check)
     const [assignment] = await sequelize.query(
       `SELECT id FROM module_lecturers WHERE module_id = ? AND lecturer_id = ?`,
       {
-        replacements: [moduleId, createdBy],
+        replacements: [moduleId, lecturerId],
         type: sequelize.QueryTypes.SELECT,
       }
     );
@@ -174,6 +174,19 @@ class AnnouncementService {
    * Get all announcements created by a lecturer
    */
   async getLecturerAnnouncements(lecturerId, { limit = 50, offset = 0 } = {}) {
+    // Get user_id for the lecturer
+    const [lecturer] = await sequelize.query(
+      `SELECT user_id FROM lecturers WHERE id = ?`,
+      {
+        replacements: [lecturerId],
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (!lecturer) {
+      return [];
+    }
+
     const announcements = await sequelize.query(
       `SELECT
          a.id,
@@ -191,7 +204,7 @@ class AnnouncementService {
        ORDER BY a.created_at DESC
        LIMIT ? OFFSET ?`,
       {
-        replacements: [lecturerId, limit, offset],
+        replacements: [lecturer.user_id, limit, offset],
         type: sequelize.QueryTypes.SELECT,
       }
     );
@@ -203,6 +216,19 @@ class AnnouncementService {
    * Update an announcement
    */
   async updateAnnouncement(announcementId, lecturerId, updateData) {
+    // Get user_id for the lecturer
+    const [lecturer] = await sequelize.query(
+      `SELECT user_id FROM lecturers WHERE id = ?`,
+      {
+        replacements: [lecturerId],
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (!lecturer) {
+      throw { statusCode: 403, message: 'Lecturer not found' };
+    }
+
     // Verify announcement exists and belongs to lecturer
     const [announcement] = await sequelize.query(
       `SELECT id, created_by FROM announcements WHERE id = ?`,
@@ -216,7 +242,7 @@ class AnnouncementService {
       throw { statusCode: 404, message: 'Announcement not found' };
     }
 
-    if (String(announcement.created_by) !== String(lecturerId)) {
+    if (String(announcement.created_by) !== String(lecturer.user_id)) {
       throw { statusCode: 403, message: 'You can only update your own announcements' };
     }
 
@@ -262,6 +288,19 @@ class AnnouncementService {
    * Delete an announcement
    */
   async deleteAnnouncement(announcementId, lecturerId) {
+    // Get user_id for the lecturer
+    const [lecturer] = await sequelize.query(
+      `SELECT user_id FROM lecturers WHERE id = ?`,
+      {
+        replacements: [lecturerId],
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (!lecturer) {
+      throw { statusCode: 403, message: 'Lecturer not found' };
+    }
+
     // Verify announcement exists and belongs to lecturer
     const [announcement] = await sequelize.query(
       `SELECT id, created_by FROM announcements WHERE id = ?`,
@@ -275,7 +314,7 @@ class AnnouncementService {
       throw { statusCode: 404, message: 'Announcement not found' };
     }
 
-    if (String(announcement.created_by) !== String(lecturerId)) {
+    if (String(announcement.created_by) !== String(lecturer.user_id)) {
       throw { statusCode: 403, message: 'You can only delete your own announcements' };
     }
 

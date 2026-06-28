@@ -45,6 +45,13 @@
         box-shadow: 0 8px 24px rgba(18, 63, 122, 0.15);
       }
 
+      #campus-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        text-align: left;
+      }
+
       /* Study Mode Picker */
       .study-picker {
         background: white;
@@ -581,7 +588,7 @@
       style="
         padding: 50px 40px 10px;
         text-align: center;
-        max-width: 1100px;
+        max-width: 1400px;
         margin: 0 auto;
       "
     >
@@ -598,15 +605,7 @@
       <p style="color: #6b7280; margin-bottom: 36px; font-size: 15px">
         Find a campus near you and start your learning journey
       </p>
-      <div
-        id="campus-grid"
-        style="
-          display: flex;
-          justify-content: center;
-          gap: 24px;
-          flex-wrap: wrap;
-        "
-      ></div>
+      <div id="campus-grid"></div>
       <div style="margin: 40px"></div>
     </div>
 
@@ -783,6 +782,35 @@
           .replace(/'/g, "&#39;");
       }
 
+      const DEFAULT_CAMPUS_IMAGE =
+        "https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=700&q=80";
+
+      const CAMPUS_IMAGES = {
+        BRYANSTON:
+          "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=700&q=80",
+        CENTURION:
+          "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=700&q=80",
+        NEWTOWN:
+          "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=700&q=80",
+        PRETORIA:
+          "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=700&q=80",
+        POLOKWANE:
+          "https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?auto=format&fit=crop&w=700&q=80",
+        CAPETOWN:
+          "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=700&q=80",
+        MUSGRAVE:
+          "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=700&q=80",
+        UMHLANGA:
+          "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=700&q=80",
+      };
+
+      function getCampusImage(code) {
+        const key = String(code || "")
+          .trim()
+          .toUpperCase();
+        return CAMPUS_IMAGES[key] || DEFAULT_CAMPUS_IMAGE;
+      }
+
       function renderCampusCards(campuses) {
         const grid = document.getElementById("campus-grid");
         if (!grid) return;
@@ -824,6 +852,7 @@
             const emailHref = String(campus.email || "").trim()
               ? `mailto:${encodeURIComponent(String(campus.email).trim())}`
               : "";
+            const imageUrl = getCampusImage(campus.code);
 
             return `
               <div
@@ -833,7 +862,7 @@
                   background:#ffffff;
                   border:1px solid #d1d5db;
                   box-shadow:0 8px 22px rgba(17, 24, 39, 0.12);
-                  width:320px;
+                  width:100%;
                   padding:14px 14px 20px;
                 "
               >
@@ -844,7 +873,7 @@
                     margin-bottom: 18px;
                     background:
                       linear-gradient(rgba(17, 24, 39, 0.08), rgba(17, 24, 39, 0.08)),
-                      url('https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=700&q=80')
+                      url('${imageUrl}')
                         center/cover;
                   "
                 ></div>

@@ -58,10 +58,9 @@ loadAnnouncements();
 
 async function loadAnnouncements() {
   try {
-    const currentUser = getCurrentUser();
-    const response = await fetch(`${APP_CONFIG.API_URL}/announcements/student/${currentUser.user_id}`, {
+    const response = await fetch(`${APP_CONFIG.API_URL}/students/me/announcements`, {
       headers: {
-        'Authorization': `Bearer ${currentUser.accessToken}`,
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
       },
     });
 

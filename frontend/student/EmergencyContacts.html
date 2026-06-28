@@ -113,7 +113,7 @@ async function loadContacts() {
     const currentUser = getCurrentUser();
     const response = await fetch(`${APP_CONFIG.API_URL}/students/${currentUser.user_id}/emergency-contacts`, {
       headers: {
-        'Authorization': `Bearer ${currentUser.accessToken}`,
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
       },
     });
 
@@ -245,7 +245,7 @@ async function setPrimaryContact(contactId) {
     const response = await fetch(`${APP_CONFIG.API_URL}/students/${currentUser.user_id}/emergency-contacts/${contactId}/set-primary`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${currentUser.accessToken}`,
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
       },
     });
 
@@ -273,7 +273,7 @@ async function deleteContact(contactId) {
     const response = await fetch(`${APP_CONFIG.API_URL}/students/${currentUser.user_id}/emergency-contacts/${contactId}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${currentUser.accessToken}`,
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
       },
     });
 
@@ -325,7 +325,7 @@ document.getElementById('contact-form').addEventListener('submit', async (e) => 
       method: method,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${currentUser.accessToken}`,
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
       },
       body: JSON.stringify(contactData),
     });

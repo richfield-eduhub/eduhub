@@ -17,13 +17,17 @@
 const user=requireAuth('student');
 renderNavbar('student-modules');
 
-const apps=getApplications();
-const regs=getRegistrations();
-const myApp=apps.find(a=>a.studentId===user.studentId&&a.status==='approved');
-const qual=QUALIFICATIONS.find(q=>q.code===myApp?.qualificationCode);
-const myAllocs=regs.filter(r=>r.studentId===user.studentId&&r.status==='allocated').sort((a,b)=>a.studyYear!==b.studyYear?a.studyYear-b.studyYear:a.semester-b.semester);
-const legacyApproved=regs.find(r=>r.studentId===user.studentId&&r.status==='approved');
-const allActive=[...myAllocs,...(legacyApproved?[legacyApproved]:[])];
+(async () => {
+  // Load data from API first
+  await ensureDashboardData();
+
+  const sid = user.studentId || user.student_number || user.student_id || '';
+  const apps=getApplications();
+  const regs=getRegistrations();
+  const myApp=apps.find(a=>a.studentId===sid&&a.status==='approved');
+  const qual=QUALIFICATIONS.find(q=>q.code===myApp?.qualificationCode);
+  // Include both 'allocated' and 'approved' status
+  const allActive=regs.filter(r=>r.studentId===sid&&(r.status==='allocated'||r.status==='approved')).sort((a,b)=>a.studyYear!==b.studyYear?a.studyYear-b.studyYear:a.semester-b.semester);
 
 if(!myApp){
   document.getElementById('content').innerHTML=`<div class="alert alert-warning"><span>⏳</span><div>Your application is still being reviewed. You'll be able to view your allocated modules once approved.</div></div>`;
@@ -83,6 +87,7 @@ if(!myApp){
       📞 For queries about your module allocation, contact <strong>admissions@eduhub.ac.za</strong> or call <strong>0860 742 434</strong>.
     </div>`;
 }
+})();
 </script>
 </body>
 </html>

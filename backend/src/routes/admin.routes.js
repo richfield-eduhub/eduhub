@@ -382,9 +382,11 @@ router.get('/users', async (req, res, next) => {
     const users = await sequelize.query(
       `SELECT u.id as user_id, u.email, u.role, u.account_status, u.created_at,
               u.is_default_password, u.require_password_change,
-              ud.first_name, ud.last_name, ud.phone
+              ud.first_name, ud.last_name, ud.phone,
+              s.student_number
        FROM users u
        LEFT JOIN user_details ud ON u.id = ud.user_id
+       LEFT JOIN students s ON u.id = s.user_id
        ORDER BY u.created_at DESC`,
       { type: sequelize.QueryTypes.SELECT }
     );

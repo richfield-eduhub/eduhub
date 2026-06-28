@@ -49,8 +49,6 @@ const getModulesValidation = [
 router.get(
   '/me/modules',
   authenticateToken,
-  getModulesValidation,
-  validate,
   lecturerController.getMyModules
 );
 

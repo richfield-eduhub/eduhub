@@ -349,6 +349,7 @@ function normalizeUser(u) {
   const lastName = pickField(u, "lastName", "last_name") || "";
   const id = pickField(u, "id", "user_id") || "";
   const name = pickField(u, "name") || `${firstName} ${lastName}`.trim();
+  const studentId = pickField(u, "studentId", "student_number", "student_id") || "";
   return {
     ...u,
     id,
@@ -359,6 +360,7 @@ function normalizeUser(u) {
     email: u.email || "",
     role: u.role || "",
     phone: pickField(u, "phone", "phone_number") || "",
+    studentId,
   };
 }
 
@@ -571,12 +573,19 @@ function normalizeCachedUser(u) {
   const firstName = pickField(u, "firstName", "first_name") || "";
   const lastName = pickField(u, "lastName", "last_name") || "";
   const id = pickField(u, "id", "user_id") || "";
+  const lecturerId = pickField(u, "lecturer_id", "lecturerId") || "";
+  const studentId = pickField(u, "studentId", "student_id", "student_number") || "";
   const name =
     pickField(u, "name") || `${firstName} ${lastName}`.trim() || u.email || "";
   return {
     ...u,
     id,
     user_id: id,
+    lecturer_id: lecturerId,
+    lecturerId: lecturerId,
+    studentId: studentId,
+    student_id: studentId,
+    student_number: studentId,
     firstName,
     lastName,
     first_name: firstName,

@@ -177,7 +177,8 @@ function render(){
   const canBulkAction = currentFilter === 'pending' || currentFilter === 'draft';
   document.getElementById('table-wrap').innerHTML=`<table class="data-table"><thead><tr>${canBulkAction?'<th style="width:40px"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" style="cursor:pointer"/></th>':''}<th>Student</th><th>Type</th><th>Qualification</th><th>Submitted</th><th>Status</th><th>Modules</th><th>Actions</th></tr></thead><tbody>
   ${filtered.map(a=>{
-    const alloc=regs.find(r=>r.studentId===a.studentId&&(r.status==='allocated'||r.status==='approved'));
+    const allocs=regs.filter(r=>r.studentId===a.studentId&&(r.status==='allocated'||r.status==='approved'));
+    const totalModules=allocs.reduce((sum,r)=>sum+r.modules.length,0);
     const isSelected = selectedApplications.has(a.id);
     return `<tr>
       ${canBulkAction?`<td><input type="checkbox" class="app-checkbox" data-app-id="${a.id}" ${isSelected?'checked':''} onchange="toggleSelection('${a.id}', this.checked)" style="cursor:pointer"/></td>`:''}
@@ -186,10 +187,10 @@ function render(){
       <td><div style="font-weight:600;font-size:13px">${a.qualificationCode || ''}</div><div style="font-size:12px;color:var(--rf-gray)">${a.qualificationName || ''}</div></td>
       <td style="font-size:13px;color:var(--rf-gray)">${fmtDate(a.submittedAt)}</td>
       <td>${badge(a.status)}</td>
-      <td>${alloc?`<span style="font-size:12px;color:#059669;font-weight:700">✅ ${alloc.modules.length} allocated</span>`:a.status==='approved'?'<span style="font-size:12px;color:#f59e0b;font-weight:600">⏳ Pending</span>':'<span style="font-size:12px;color:var(--rf-gray)">—</span>'}</td>
+      <td>${totalModules>0?`<span style="font-size:12px;color:#059669;font-weight:700">✅ ${totalModules} allocated</span>`:a.status==='approved'?'<span style="font-size:12px;color:#f59e0b;font-weight:600">⏳ Pending</span>':'<span style="font-size:12px;color:var(--rf-gray)">—</span>'}</td>
       <td><div style="display:flex;gap:5px;flex-wrap:wrap">
         <button class="btn btn-sm btn-secondary" onclick="openView('${a.id}')">View</button>
-        ${a.status==='approved'?`<button class="btn btn-sm" onclick="openAlloc('${a.id}')" style="background:${alloc?'#D1FAE5':'#001A4D'};color:${alloc?'#065f46':'white'};border:none;font-weight:700">📚 ${alloc?'Reallocate':'Allocate'}</button>`:''}
+        ${a.status==='approved'?`<button class="btn btn-sm" onclick="openAlloc('${a.id}')" style="background:${totalModules>0?'#D1FAE5':'#001A4D'};color:${totalModules>0?'#065f46':'white'};border:none;font-weight:700">📚 ${totalModules>0?'Reallocate':'Allocate'}</button>`:''}
         ${(a.status==='pending' || a.status==='applied' || a.status==='draft')?`<button class="btn btn-sm btn-success" onclick="handleApprove('${a.id}')">✓ Approve</button><button class="btn btn-sm btn-danger" onclick="openDecline('${a.id}')">✗ Reject</button>`:''}
       </div></td>
     </tr>`;
@@ -412,6 +413,14 @@ function openAlloc(id){
   const apps=getApplications();
   const a=apps.find(x=>x.id===id); if(!a)return;
   allocApp=a; allocYear=(a.studyYear||1); allocSemester=1; allocSelected=[];
+
+  // Pre-populate existing allocations for editing
+  const regs=getRegistrations();
+  const existing=regs.find(r=>r.studentId===a.studentId&&r.semester===allocSemester&&r.studyYear===allocYear&&(r.status==='allocated'||r.status==='approved'));
+  if(existing&&existing.modules){
+    allocSelected=existing.modules.map(m=>m.code);
+  }
+
   document.getElementById('alloc-subtitle').textContent=`${a.firstName} ${a.lastName} · ${a.studentId}`;
   renderAllocModal();
   openModal('alloc-modal');
@@ -420,9 +429,26 @@ function openAlloc(id){
 function renderAllocModal(){
   if(!allocApp)return;
   const qual=QUALIFICATIONS.find(q=>q.code===allocApp.qualificationCode);
-  const mods=qual?qual.modules.filter(m=>m.semester===allocSemester&&m.year===allocYear):[];
+  let mods=qual?qual.modules.filter(m=>m.semester===allocSemester&&m.year===allocYear):[];
   const regs=getRegistrations();
   const existing=regs.find(r=>r.studentId===allocApp.studentId&&r.semester===allocSemester&&r.studyYear===allocYear&&(r.status==='allocated'||r.status==='approved'));
+
+  // If no modules available but there's an existing allocation, show existing modules
+  if(mods.length===0&&existing&&existing.modules&&existing.modules.length>0){
+    mods=existing.modules.map(m=>({
+      code:m.code,
+      name:m.name||m.code,
+      credits:m.credits||0,
+      semester:allocSemester,
+      year:allocYear
+    }));
+  }
+
+  // Pre-populate allocSelected with existing modules if they match the available modules
+  if(existing&&existing.modules&&allocSelected.length===0){
+    allocSelected=existing.modules.map(m=>m.code).filter(code=>mods.some(m=>m.code===code));
+  }
+
   const selectedCount=allocSelected.length;
   const totalCredits=mods.filter(m=>allocSelected.includes(m.code)).reduce((s,m)=>s+m.credits,0);
   document.getElementById('alloc-body').innerHTML=`

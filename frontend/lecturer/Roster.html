@@ -15,7 +15,17 @@
   <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
     <input id="search" placeholder="🔍 Search by name, student ID or programme..." oninput="render()"
       style="flex:1;min-width:240px;padding:10px 14px;border:1.5px solid var(--rf-border);border-radius:8px;font-size:14px"/>
-    <div id="qual-filter" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+  </div>
+
+  <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+    <div>
+      <label style="display:block;font-size:12px;font-weight:700;color:var(--rf-gray);margin-bottom:6px;text-transform:uppercase">Programme</label>
+      <div id="qual-filter" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+    <div>
+      <label style="display:block;font-size:12px;font-weight:700;color:var(--rf-gray);margin-bottom:6px;text-transform:uppercase">Module</label>
+      <div id="module-filter" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
   </div>
 
   <div class="grid-3 mb-24" id="stats"></div>
@@ -27,39 +37,101 @@
 requireAuth('lecturer');
 renderNavbar('lecturer-roster');
 
-const regs  = getRegistrations().filter(r => r.status==='allocated'||r.status==='approved');
-const users = getUsers();
+let regs = [];
+let users = [];
 let qualFilter = 'all';
+let moduleFilter = 'all';
 
-// Stats
-const uniqueStudents = [...new Set(regs.map(r=>r.studentId))];
-const quals = [...new Set(regs.map(r=>r.qualificationCode))];
+(async () => {
+  // Load dashboard data from API first
+  await ensureDashboardData();
+  regs = getRegistrations().filter(r => r.status==='allocated'||r.status==='approved');
+  users = getUsers();
 
-document.getElementById('stats').innerHTML = [
-  {icon:'🎓',label:'Total Students',value:uniqueStudents.length,bg:'#E0E7FF'},
-  {icon:'📚',label:'Active Registrations',value:regs.length,bg:'#D1FAE5'},
-  {icon:'🏫',label:'Programmes',value:quals.length,bg:'#FEF3C7'},
-].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span>${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
+  // Stats
+  const uniqueStudents = [...new Set(regs.map(r=>r.studentId))];
+  const quals = [...new Set(regs.map(r=>r.qualificationCode))];
 
-// Qual filter buttons
-document.getElementById('qual-filter').innerHTML = ['all',...quals].map(q=>`
-  <button class="filter-btn ${q==='all'&&qualFilter==='all'?'active':q===qualFilter?'active':''}" onclick="setQual('${q}',this)">${q==='all'?'All':q}</button>`).join('');
+  // Get all unique modules
+  const moduleSet = new Set();
+  regs.forEach(r => {
+    if (r.modules && Array.isArray(r.modules)) {
+      r.modules.forEach(m => moduleSet.add(JSON.stringify({code: m.code, name: m.name})));
+    }
+  });
+  const modules = Array.from(moduleSet).map(m => JSON.parse(m)).sort((a,b) => a.code.localeCompare(b.code));
 
-function setQual(q,btn){
+  document.getElementById('stats').innerHTML = [
+    {icon:'🎓',label:'Total Students',value:uniqueStudents.length,bg:'#E0E7FF'},
+    {icon:'📚',label:'Active Registrations',value:regs.length,bg:'#D1FAE5'},
+    {icon:'🏫',label:'Programmes',value:quals.length,bg:'#FEF3C7'},
+  ].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span>${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
+
+  // Qual filter buttons
+  document.getElementById('qual-filter').innerHTML = ['all',...quals].map(q=>`
+    <button class="filter-btn ${q==='all'&&qualFilter==='all'?'active':q===qualFilter?'active':''}" onclick="setQual('${q}')">${q==='all'?'All':q}</button>`).join('');
+
+  // Module filter buttons
+  document.getElementById('module-filter').innerHTML = ['all',...modules].map((m,idx)=>{
+    const code = m === 'all' ? 'all' : m.code;
+    const label = m === 'all' ? 'All' : m.code;
+    return `<button class="filter-btn ${code==='all'?'active':''}" onclick="setModule('${code}')">${label}</button>`;
+  }).join('');
+
+  render();
+})();
+
+function setQual(q){
   qualFilter=q;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelectorAll('#qual-filter .filter-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  render();
+}
+
+function setModule(m){
+  moduleFilter=m;
+  document.querySelectorAll('#module-filter .filter-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
   render();
 }
 
 function render() {
   const q = document.getElementById('search').value.toLowerCase();
   let rows = regs;
-  if (qualFilter !== 'all') rows = rows.filter(r=>r.qualificationCode===qualFilter);
-  if (q) rows = rows.filter(r=>{
-    const s = users.find(u=>u.studentId===r.studentId);
-    return (s?.name||'').toLowerCase().includes(q) || r.studentId.toLowerCase().includes(q) || r.qualificationName.toLowerCase().includes(q);
-  });
+
+  // Filter by qualification
+  if (qualFilter !== 'all') {
+    rows = rows.filter(r => r.qualificationCode === qualFilter);
+  }
+
+  // Filter by module
+  if (moduleFilter !== 'all') {
+    rows = rows.filter(r => {
+      return r.modules && r.modules.some(m => m.code === moduleFilter);
+    });
+  }
+
+  // Search filter
+  if (q) {
+    rows = rows.filter(r => {
+      const studentName = r.name || (r.firstName && r.lastName ? `${r.firstName} ${r.lastName}` : '');
+      const moduleCodes = r.modules ? r.modules.map(m => m.code).join(' ') : '';
+      return studentName.toLowerCase().includes(q) ||
+             r.studentId.toLowerCase().includes(q) ||
+             r.qualificationName.toLowerCase().includes(q) ||
+             moduleCodes.toLowerCase().includes(q);
+    });
+  }
+
+  // Update stats based on filtered rows
+  const uniqueStudents = [...new Set(rows.map(r => r.studentId))];
+  const quals = [...new Set(rows.map(r => r.qualificationCode))];
+
+  document.getElementById('stats').innerHTML = [
+    {icon:'🎓',label:'Total Students',value:uniqueStudents.length,bg:'#E0E7FF'},
+    {icon:'📚',label:'Active Registrations',value:rows.length,bg:'#D1FAE5'},
+    {icon:'🏫',label:'Programmes',value:quals.length,bg:'#FEF3C7'},
+  ].map(s=>`<div class="stat-card"><div class="stat-icon" style="background:${s.bg}"><span>${s.icon}</span></div><div><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div></div>`).join('');
 
   if (!rows.length) {
     document.getElementById('table-wrap').innerHTML = '<div style="padding:48px;text-align:center;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">🔍</div><div>No students match your search.</div></div>';
@@ -68,17 +140,19 @@ function render() {
 
   document.getElementById('table-wrap').innerHTML = `
     <table class="data-table">
-      <thead><tr><th>Student</th><th>Student ID</th><th>Programme</th><th>Year</th><th>Semester</th><th>Modules</th><th>Fee Status</th></tr></thead>
+      <thead><tr><th>Student</th><th>Student ID</th><th>Programme</th><th>Year/Sem</th><th>Modules Enrolled</th></tr></thead>
       <tbody>${rows.map(r=>{
-        const s = users.find(u=>u.studentId===r.studentId);
+        // Get student name from registration data (has first_name, last_name)
+        const studentName = r.name || (r.firstName && r.lastName ? `${r.firstName} ${r.lastName}` : 'Unknown');
+        const modulesList = r.modules && r.modules.length > 0
+          ? r.modules.map(m => `<span style="display:inline-block;font-family:var(--font-mono);font-size:11px;background:#f0f4f8;padding:2px 6px;border-radius:4px;margin:2px">${m.code}</span>`).join('')
+          : '<span style="color:var(--rf-gray);font-size:12px">None</span>';
         return `<tr>
-          <td><div style="font-weight:600">${s?.name||'Unknown'}</div><div style="font-size:12px;color:var(--rf-gray)">${s?.email||'—'}</div></td>
+          <td><div style="font-weight:600">${studentName}</div><div style="font-size:12px;color:var(--rf-gray)">—</div></td>
           <td style="font-family:var(--font-mono);font-size:12px;color:var(--rf-blue)">${r.studentId}</td>
           <td><div style="font-weight:600;font-size:13px">${r.qualificationCode}</div><div style="font-size:12px;color:var(--rf-gray)">${r.qualificationName}</div></td>
-          <td>Year ${r.studyYear}</td>
-          <td>Sem ${r.semester}</td>
-          <td>${r.modules.length}</td>
-          <td><span style="font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:${r.feePaid?'#D1FAE5':'#FEE2E2'};color:${r.feePaid?'#065f46':'#dc2626'}">${r.feePaid?'✓ Paid':'✗ Unpaid'}</span></td>
+          <td><div style="font-size:13px">Year ${r.studyYear || r.year}</div><div style="font-size:12px;color:var(--rf-gray)">Sem ${r.semester}</div></td>
+          <td><div style="display:flex;flex-wrap:wrap;gap:3px">${modulesList}</div><div style="font-size:11px;color:var(--rf-gray);margin-top:4px">${r.modules?.length || 0} module${r.modules?.length !== 1 ? 's' : ''}</div></td>
         </tr>`;
       }).join('')}</tbody>
     </table>`;

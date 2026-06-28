@@ -31,7 +31,7 @@ let justAllocated=null;
 function render(){
   const apps=getApplications();
   const regs=getRegistrations();
-  const approvedApps=apps.filter(a=>a.status==='approved'&&a.applicationType!=='returning');
+  const approvedApps=apps.filter(a=>a.status==='approved');
   const allocatedSet=new Set(regs.filter(r=>r.status==='allocated').map(r=>r.studentId));
   const awaitingCount=approvedApps.filter(a=>!regs.some(r=>r.studentId===a.studentId&&r.status==='allocated')).length;
 
@@ -74,9 +74,26 @@ function render(){
   // ── STEP 2: ALLOCATE ──
   if(!selectedApp)return;
   const qual=QUALIFICATIONS.find(q=>q.code===selectedApp.qualificationCode);
-  const availMods=qual?qual.modules.filter(m=>m.year===studyYear&&m.semester===semester):[];
+  let availMods=qual?qual.modules.filter(m=>m.year===studyYear&&m.semester===semester):[];
   const allStudentAllocs=regs.filter(r=>r.studentId===selectedApp.studentId&&r.status==='allocated');
   const existingAlloc=regs.find(r=>r.studentId===selectedApp.studentId&&r.studyYear===studyYear&&r.semester===semester&&r.status==='allocated');
+
+  // If no modules available but there's an existing allocation, show existing modules for editing
+  if(availMods.length===0&&existingAlloc&&existingAlloc.modules&&existingAlloc.modules.length>0){
+    availMods=existingAlloc.modules.map(m=>({
+      code:m.code,
+      name:m.name||m.code,
+      credits:m.credits||0,
+      semester:semester,
+      year:studyYear
+    }));
+  }
+
+  // Pre-populate pickedModules with existing allocation if not already set
+  if(existingAlloc&&existingAlloc.modules&&pickedModules.length===0){
+    pickedModules=existingAlloc.modules.filter(m=>availMods.some(am=>am.code===m.code));
+  }
+
   const totalCredits=pickedModules.reduce((s,m)=>s+m.credits,0);
   const qualDur=qual?.duration||'';
   const maxYear=qualDur.startsWith('1')?1:qualDur.startsWith('2')?2:3;
@@ -195,7 +212,14 @@ function handleAllocate(){
   render();
 }
 
-render();
+(async () => {
+  await Promise.all([
+    ensureDashboardData(),
+    initReferenceData()
+  ]);
+  render();
+})();
+document.addEventListener('eduhub:dashboard-data-ready', render);
 </script>
 </body>
 </html>
