@@ -84,7 +84,7 @@ router.post(
       const { moduleId, semesterId } = req.body;
 
       // Get student record
-      const [students] = await sequelize.query(
+      const students = await sequelize.query(
         `SELECT id FROM students WHERE user_id = ?`,
         { replacements: [req.user.user_id], type: sequelize.QueryTypes.SELECT }
       );
@@ -113,7 +113,7 @@ router.post('/bulk', async (req, res, next) => {
     const { modules: moduleIds, semesterId } = req.body;
 
     // Get student record
-    const [students] = await sequelize.query(
+    const students = await sequelize.query(
       `SELECT id FROM students WHERE user_id = ?`,
       { replacements: [req.user.user_id], type: sequelize.QueryTypes.SELECT }
     );
@@ -125,12 +125,12 @@ router.post('/bulk', async (req, res, next) => {
     // Get or use current semester
     let activeSemesterId = semesterId;
     if (!activeSemesterId) {
-      const [semesters] = await sequelize.query(
+      const semesters = await sequelize.query(
         `SELECT id FROM semesters WHERE is_active = true ORDER BY start_date DESC LIMIT 1`,
         { type: sequelize.QueryTypes.SELECT }
       );
-      if (semesters) {
-        activeSemesterId = semesters.id;
+      if (semesters && semesters.length > 0) {
+        activeSemesterId = semesters[0].id;
       }
     }
 
@@ -173,7 +173,7 @@ router.post('/bulk', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     // Get student record
-    const [students] = await sequelize.query(
+    const students = await sequelize.query(
       `SELECT id FROM students WHERE user_id = ?`,
       { replacements: [req.user.user_id], type: sequelize.QueryTypes.SELECT }
     );
@@ -223,5 +223,93 @@ router.put(
     }
   }
 );
+
+// GET /api/registrations/proof - Generate proof of registration for current student
+router.get('/proof', async (req, res, next) => {
+  try {
+    // Get student record
+    const students = await sequelize.query(
+      `SELECT s.id, s.student_number, s.enrollment_date, s.qualification_id,
+              u.email, ud.first_name, ud.last_name, ud.id_number, ud.phone,
+              q.code AS qualification_code, q.name AS qualification_name
+       FROM students s
+       JOIN users u ON s.user_id = u.id
+       LEFT JOIN user_details ud ON u.id = ud.user_id
+       LEFT JOIN qualifications q ON s.qualification_id = q.id
+       WHERE s.user_id = ?`,
+      { replacements: [req.user.user_id], type: sequelize.QueryTypes.SELECT }
+    );
+
+    const student = students[0];
+    if (!student) {
+      return ResponseHandler.notFound(res, 'No student profile found for this account.');
+    }
+
+    // Get approved/active registrations for current semester
+    const registrations = await sequelize.query(
+      `SELECT r.id, r.status, r.created_at, r.quotation_amount,
+              m.code AS module_code, m.name AS module_name, m.credits,
+              sem.name AS semester_name, sem.year AS semester_year,
+              sem.start_date, sem.end_date
+       FROM registrations r
+       JOIN modules m ON r.module_id = m.id
+       JOIN semesters sem ON r.semester_id = sem.id
+       WHERE r.student_id = ?
+         AND r.status IN ('approved', 'completed')
+         AND sem.is_active = true
+       ORDER BY m.code ASC`,
+      { replacements: [student.id], type: sequelize.QueryTypes.SELECT }
+    );
+
+    if (registrations.length === 0) {
+      return ResponseHandler.badRequest(res, 'No approved registrations found for current semester.');
+    }
+
+    // Calculate totals
+    const totalCredits = registrations.reduce((sum, r) => sum + (r.credits || 0), 0);
+    const totalFees = registrations.reduce((sum, r) => sum + parseFloat(r.quotation_amount || 0), 0);
+
+    // Generate proof of registration data
+    const proofData = {
+      student: {
+        student_number: student.student_number,
+        first_name: student.first_name,
+        last_name: student.last_name,
+        id_number: student.id_number,
+        email: student.email,
+        phone: student.phone,
+        qualification: student.qualification_name,
+        qualification_code: student.qualification_code,
+        enrollment_date: student.enrollment_date
+      },
+      semester: {
+        name: registrations[0].semester_name,
+        year: registrations[0].semester_year,
+        start_date: registrations[0].start_date,
+        end_date: registrations[0].end_date
+      },
+      registrations: registrations.map(r => ({
+        module_code: r.module_code,
+        module_name: r.module_name,
+        credits: r.credits,
+        status: r.status,
+        fee: parseFloat(r.quotation_amount || 0).toFixed(2)
+      })),
+      summary: {
+        total_modules: registrations.length,
+        total_credits: totalCredits,
+        total_fees: totalFees.toFixed(2),
+        currency: 'ZAR'
+      },
+      generated_at: new Date().toISOString(),
+      generated_by: 'EduHub Graduate Institute',
+      document_id: `PROOF-${student.student_number}-${Date.now()}`
+    };
+
+    res.json({ ok: true, proof: proofData });
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = router;

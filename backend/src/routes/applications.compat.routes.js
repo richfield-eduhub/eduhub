@@ -83,6 +83,19 @@ router.get('/identity/status', async (req, res) => {
       return res.status(400).json({ ok: false, message: 'Identity value is required.' });
     }
 
+    // Check if user already exists in the system
+    const [existingUsers] = await sequelize.query(
+      `SELECT u.id, u.email, u.role, u.account_status,
+              ud.first_name, ud.last_name
+       FROM users u
+       LEFT JOIN user_details ud ON u.id = ud.user_id
+       WHERE ${isSa ? 'ud.id_number = ?' : 'ud.passport_number = ?'}`,
+      { replacements: [identityValue] }
+    );
+
+    const existingUser = existingUsers.length > 0 ? existingUsers[0] : null;
+
+    // Check for existing applications
     const rows = await sequelize.query(
       `SELECT id, reference_number, status, qualification_code, qualification_name, submitted_at, updated_at
        FROM applications
@@ -113,6 +126,15 @@ router.get('/identity/status', async (req, res) => {
         draft_id:        openDraft ? openDraft.id : null,
         latest_status:   latest ? latest.status : null,
         applications:    rows,
+        // NEW: Existing user information
+        existing_user:   existingUser ? {
+          email: existingUser.email,
+          first_name: existingUser.first_name,
+          last_name: existingUser.last_name,
+          role: existingUser.role,
+          account_status: existingUser.account_status,
+        } : null,
+        requires_login:  Boolean(existingUser),
       },
     });
   } catch (err) {

@@ -304,6 +304,7 @@
         apsResult: null,
         apsLoading: false,
         errors: {},
+        existingApplications: [], // Store user's existing applications to prevent duplicates
       };
 
       // If re-enrol mode and student found, pre-fill form from existing record
@@ -1358,6 +1359,36 @@
         }
 
         state.identityStatus = statusRes.data;
+
+        // Check if user already exists and needs to login
+        if (statusRes.data.requires_login && statusRes.data.existing_user) {
+          const user = statusRes.data.existing_user;
+          const userName = user.first_name && user.last_name
+            ? `${user.first_name} ${user.last_name}`
+            : user.email;
+
+          const shouldLogin = confirm(
+            `Welcome back${user.first_name ? ', ' + user.first_name : ''}!\n\n` +
+            `We found an existing account (${user.email}) with this ${statusRes.data.identity_type === 'id_number' ? 'ID number' : 'passport number'}.\n\n` +
+            `Please login to continue your application with your saved information.\n\n` +
+            `Click OK to go to login page, or Cancel to stay here.`
+          );
+
+          if (shouldLogin) {
+            // Redirect to login with return URL
+            window.location.href = `/login?returnTo=${encodeURIComponent('/apply')}`;
+            return;
+          } else {
+            // User chose to cancel - show error message
+            state.identityError =
+              `This ${statusRes.data.identity_type === 'id_number' ? 'ID number' : 'passport'} is already registered. ` +
+              `Please login to continue.`;
+            state.identityChecked = false;
+            render();
+            return;
+          }
+        }
+
         const latest = statusRes.data.latest_status;
         if (latest && latest !== "draft") {
           const statusUi = getIdentityStatusInfo(latest);
@@ -2066,6 +2097,49 @@
   </div>`;
       }
 
+      // Check if user already has an application for this qualification
+      function checkDuplicateQualification(qualCode) {
+        if (!qualCode || !state.existingApplications || state.existingApplications.length === 0) {
+          return null; // No duplicate
+        }
+
+        const duplicate = state.existingApplications.find(
+          app => app.qualification_code === qualCode
+        );
+
+        return duplicate || null;
+      }
+
+      // Handle qualification selection with duplicate check
+      function handleQualificationChange(qualCode) {
+        const duplicate = checkDuplicateQualification(qualCode);
+
+        if (duplicate) {
+          const qualName = QUALIFICATIONS.find(q => q.code === qualCode)?.name || qualCode;
+          const statusText = duplicate.status === 'approved' ? 'approved' : 'pending approval';
+
+          showToast(
+            `You already have an application for "${qualName}" (Status: ${statusText}). Please select a different qualification.`,
+            'error'
+          );
+
+          // Clear the selection
+          set('qualificationCode', '');
+          set('qualificationName', '');
+          set('campusId', '');
+          setState({});
+          return;
+        }
+
+        // No duplicate - proceed with selection
+        const qual = QUALIFICATIONS.find(q => q.code === qualCode);
+        set('qualificationCode', qualCode);
+        set('qualificationName', qual?.name || '');
+        set('campusId', '');
+        setState({});
+        refreshQualificationCampuses();
+      }
+
       function renderIntentStep() {
         const f = state.form;
         const typeOptions = [
@@ -2087,7 +2161,28 @@
           /online|distance|remote/i.test(
             `${campus?.name || ""} ${campus?.code || ""} ${campus?.city || ""}`,
           );
+
+        // Show existing applications notice
+        const existingAppsNotice = state.existingApplications && state.existingApplications.length > 0
+          ? `<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:14px 16px;margin-bottom:20px">
+              <div style="font-weight:700;font-size:14px;color:#92400e;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+                <span style="font-size:18px">ℹ️</span> Existing Applications
+              </div>
+              <div style="font-size:13px;color:#92400e;line-height:1.6;margin-bottom:10px">
+                You already have ${state.existingApplications.length} active application(s). Please select a different qualification.
+              </div>
+              ${state.existingApplications.map(app => `
+                <div style="background:white;border-radius:6px;padding:10px 12px;margin-top:8px;font-size:13px">
+                  <div style="font-weight:600;color:#001A4D">${app.qualification_name || app.qualification_code}</div>
+                  <div style="color:#6b7280;margin-top:2px">Status: <span style="font-weight:600;color:${app.status === 'approved' ? '#059669' : '#f59e0b'}">${app.status === 'approved' ? 'Approved' : 'Pending'}</span></div>
+                  ${app.reference_number ? `<div style="color:#6b7280;margin-top:2px;font-family:var(--font-mono);font-size:12px">Ref: ${app.reference_number}</div>` : ''}
+                </div>
+              `).join('')}
+            </div>`
+          : '';
+
         return `<div class="form-section-header"><span style="font-size:20px">🧭</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Application Intent</h3></div>
+  ${existingAppsNotice}
   <div style="font-weight:700;font-size:15px;color:#001A4D;margin-bottom:12px">Application Type <span class="required">*</span></div>
   <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px">
     ${typeOptions
@@ -2129,9 +2224,13 @@
   </div>
   ${errSpan("admissionStartSemester")}
   <div style="font-weight:700;font-size:15px;color:#001A4D;margin:14px 0 12px">Course Applied For <span class="required">*</span></div>
-  <select onchange="set('qualificationCode',this.value);set('qualificationName',QUALIFICATIONS.find(q=>q.code===this.value)?.name||'');set('campusId','');setState({});refreshQualificationCampuses()" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.qualificationCode ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px;color:#001A4D;background:white">
+  <select onchange="handleQualificationChange(this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.qualificationCode ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px;color:#001A4D;background:white">
     <option value="">Please Select</option>
-    ${QUALIFICATIONS.map((q) => `<option value="${q.code}" ${f.qualificationCode === q.code ? "selected" : ""}>${q.name}</option>`).join("")}
+    ${QUALIFICATIONS.map((q) => {
+      const isDuplicate = checkDuplicateQualification(q.code);
+      const label = isDuplicate ? `${q.name} ⚠️ (Already Applied)` : q.name;
+      return `<option value="${q.code}" ${f.qualificationCode === q.code ? "selected" : ""} ${isDuplicate ? 'style="color:#dc2626;font-style:italic"' : ''}>${label}</option>`;
+    }).join("")}
   </select>
   ${errSpan("qualificationCode")}
   <div style="font-weight:700;font-size:15px;color:#001A4D;margin:14px 0 12px">Campus / Online Study Option <span class="required">*</span></div>
@@ -2710,6 +2809,71 @@
           showToast(doc + " — file selected ✓", "success");
         }
       }
+      // Pre-populate form with logged-in user's profile data and check existing applications
+      async function loadUserProfileData() {
+        const currentUser = getCurrentUser();
+        if (!currentUser) return;
+
+        try {
+          // Fetch user profile
+          const res = await fetch('/api/users/profile', {
+            headers: { Authorization: `Bearer ${currentUser.token}` }
+          });
+
+          if (!res.ok) return;
+
+          const data = await res.json();
+          if (!data.ok || !data.user) return;
+
+          const user = data.user;
+
+          // Pre-populate form fields with user profile data
+          state.form.firstName = user.first_name || state.form.firstName;
+          state.form.lastName = user.last_name || state.form.lastName;
+          state.form.idNumber = user.id_number || state.form.idNumber;
+          state.form.passportNumber = user.passport_number || state.form.passportNumber;
+          state.form.dateOfBirth = user.date_of_birth || state.form.dateOfBirth;
+          state.form.gender = user.gender || state.form.gender;
+          state.form.nationality = user.nationality || state.form.nationality;
+          state.form.phone = user.phone || state.form.phone;
+          state.form.email = user.email || state.form.email;
+          state.form.streetAddress = user.street_address || state.form.streetAddress;
+          state.form.suburb = user.suburb || state.form.suburb;
+          state.form.city = user.city || state.form.city;
+          state.form.province = user.province || state.form.province;
+          state.form.postalCode = user.postal_code || state.form.postalCode;
+
+          // Set identity values for identity check
+          if (user.id_number) {
+            state.identityDocumentType = 'id';
+            state.identityNumber = user.id_number;
+          } else if (user.passport_number) {
+            state.identityDocumentType = 'passport';
+            state.identityNumber = user.passport_number;
+          }
+
+          // Fetch existing applications to prevent duplicates
+          const appsRes = await fetch('/api/applications', {
+            headers: { Authorization: `Bearer ${currentUser.token}` }
+          });
+
+          if (appsRes.ok) {
+            const appsData = await appsRes.json();
+            if (appsData.ok && appsData.applications) {
+              // Store existing applications in state for duplicate checking
+              state.existingApplications = appsData.applications.filter(
+                app => app.status === 'pending' || app.status === 'approved'
+              );
+              console.log('[Apply] Found existing applications:', state.existingApplications.length);
+            }
+          }
+
+          console.log('[Apply] Pre-populated form with user profile data');
+        } catch (err) {
+          console.error('[Apply] Failed to load user profile:', err);
+        }
+      }
+
       async function startPage() {
         renderNavbar("apply");
         const app = document.getElementById("app");
@@ -2717,6 +2881,10 @@
           app.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;min-height:220px;color:#6b7280;font-size:14px">Loading application data...</div>`;
         }
         await initReferenceData();
+
+        // Load user profile if logged in
+        await loadUserProfileData();
+
         if (state.form.qualificationCode) {
           await refreshQualificationCampuses();
         }

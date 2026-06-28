@@ -10,6 +10,7 @@ const sequelize = require('../config/database');
 const { JWT, USER_ROLES, ACCOUNT_STATUS } = require('../utils/constants');
 const PasswordValidator = require('../utils/passwordValidator');
 const emailService = require('./email.service');
+const AuditService = require('./audit.service');
 
 class AuthService {
   /**
@@ -40,7 +41,6 @@ class AuthService {
       );
 
       if (existingUser) {
-        await transaction.rollback();
         throw { statusCode: 409, message: 'Email already registered' };
       }
 
@@ -206,6 +206,9 @@ class AuthService {
        WHERE id = ?`,
       { replacements: [ipAddress, user.user_id] }
     );
+
+    // Log successful login
+    await AuditService.logLogin(user.user_id, ipAddress, null, true);
 
     // Generate tokens
     const tokens = this.generateTokens({

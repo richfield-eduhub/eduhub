@@ -927,7 +927,45 @@
           .join("");
       }
 
+      const PROGRAMME_ICONS = {
+        BBA: "💼",
+        BCOM: "📊",
+        BCOMAGA: "📊",
+        BCOMAGIT: "📈",
+        BCOMAGAIT: "📈",
+        BCOMACC: "💳",
+        BSCIT: "💻",
+        DIT: "🖥️",
+        HCIT: "📱",
+        HCCF: "📘",
+        BSCITH: "🎓",
+        BPM: "📈",
+        DBA: "📋",
+        DLGM: "🏛️",
+        HCBA: "💳",
+        HCOA: "🗂️",
+        HCLGM: "🏢",
+        MBA: "👔",
+      };
+
+      function normalizeProgrammeCode(code) {
+        return String(code || "")
+          .trim()
+          .toUpperCase()
+          .replace(/[\s-]/g, "");
+      }
+
       function getProgrammeIcon(qualification) {
+        const codeKey = normalizeProgrammeCode(qualification?.code);
+        if (PROGRAMME_ICONS[codeKey]) {
+          return PROGRAMME_ICONS[codeKey];
+        }
+
+        const name = String(qualification?.name || "").toLowerCase();
+        if (name.includes("accounting")) return "💳";
+        if (name.includes("aga-it") || name.includes("aga it")) return "📈";
+        if (name.includes("business administration")) return "💼";
+
         const text =
           `${qualification?.faculty || ""} ${qualification?.name || ""}`.toLowerCase();
         if (

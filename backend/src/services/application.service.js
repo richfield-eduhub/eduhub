@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const sequelize = require('../config/database');
 const { generateStudentNumber, formatNumber } = require('../studentNumber');
 const emailService = require('./email.service');
+const AuditService = require('./audit.service');
 
 const { APPLICATION_STATUS, PAGINATION } = require('../utils/constants');
 
@@ -2352,6 +2353,18 @@ class ApplicationService {
 
     const updatedApplication = await this.getApplicationByIdAdmin(applicationId);
 
+    // Log audit for application status change
+    const actionType = status === APPLICATION_STATUS.APPROVED ? 'APPROVE' :
+                       status === APPLICATION_STATUS.REJECTED ? 'REJECT' : 'UPDATE';
+    await AuditService.logApplicationAction(
+      reviewerUserId,
+      applicationId,
+      actionType,
+      existing.status,
+      status,
+      rejectionReason
+    );
+
     // Send email notification for approved/rejected status changes
     if (status === APPLICATION_STATUS.APPROVED || status === APPLICATION_STATUS.REJECTED) {
       const fullName = `${updatedApplication.first_name || ''} ${updatedApplication.last_name || ''}`.trim();
@@ -2387,7 +2400,118 @@ class ApplicationService {
       }
     }
 
+    // Auto-allocate all Year 1 Semester 1 modules when application is approved
+    if (status === APPLICATION_STATUS.APPROVED) {
+      try {
+        await this.autoAllocateModules(updatedApplication);
+      } catch (autoAllocError) {
+        console.error(
+          '[ApplicationService] Failed to auto-allocate modules:',
+          autoAllocError?.message || autoAllocError
+        );
+        // Don't throw - allocation failure should not prevent approval
+      }
+    }
+
     return updatedApplication;
+  }
+
+  /**
+   * Auto-allocate all modules for Year 1, Semester 1 when application is approved
+   */
+  async autoAllocateModules(application) {
+    // Get the student's qualification
+    const qualificationModules = await sequelize.query(
+      `SELECT id, code, name, credits, year, semester
+       FROM modules
+       WHERE qualification_id = :qualId
+         AND year = 1
+         AND semester = 1
+         AND is_active = true
+       ORDER BY code ASC`,
+      {
+        replacements: { qualId: application.qualification_id },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (qualificationModules.length === 0) {
+      console.log(`[ApplicationService] No Year 1 Semester 1 modules found for qualification ${application.qualification_id}`);
+      return;
+    }
+
+    // Get active semester
+    const activeSemester = await sequelize.query(
+      `SELECT id FROM semesters WHERE is_active = true ORDER BY start_date DESC LIMIT 1`,
+      { type: sequelize.QueryTypes.SELECT }
+    );
+
+    if (!activeSemester || activeSemester.length === 0) {
+      console.log('[ApplicationService] No active semester found for auto-allocation');
+      return;
+    }
+
+    const semesterId = activeSemester[0].id;
+
+    // Get student ID from application
+    const studentRecord = await sequelize.query(
+      `SELECT id FROM students WHERE id = :studentId`,
+      {
+        replacements: { studentId: application.student_id },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (!studentRecord || studentRecord.length === 0) {
+      console.log(`[ApplicationService] Student record not found: ${application.student_id}`);
+      return;
+    }
+
+    const studentId = studentRecord[0].id;
+
+    // Register each module
+    const { v4: uuidv4 } = require('uuid');
+    for (const module of qualificationModules) {
+      try {
+        // Check if already registered
+        const existing = await sequelize.query(
+          `SELECT id FROM registrations
+           WHERE student_id = :studentId
+           AND module_id = :moduleId
+           AND semester_id = :semesterId`,
+          {
+            replacements: { studentId, moduleId: module.id, semesterId },
+            type: sequelize.QueryTypes.SELECT,
+          }
+        );
+
+        if (existing && existing.length > 0) {
+          console.log(`[ApplicationService] Module ${module.code} already registered for student`);
+          continue;
+        }
+
+        // Create registration
+        await sequelize.query(
+          `INSERT INTO registrations (id, student_id, module_id, semester_id, status, created_at, updated_at)
+           VALUES (:id, :studentId, :moduleId, :semesterId, 'approved', NOW(), NOW())`,
+          {
+            replacements: {
+              id: uuidv4(),
+              studentId,
+              moduleId: module.id,
+              semesterId,
+            },
+          }
+        );
+
+        console.log(`[ApplicationService] Auto-allocated module ${module.code} to student ${studentId}`);
+      } catch (error) {
+        console.error(`[ApplicationService] Failed to allocate module ${module.code}:`, error.message);
+        // Continue with next module
+      }
+    }
+
+    console.log(`[ApplicationService] Auto-allocated ${qualificationModules.length} modules for student ${studentId}`);
   }
 
   /**

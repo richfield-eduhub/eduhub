@@ -73,25 +73,23 @@ function render(){
 
   // ── STEP 2: ALLOCATE ──
   if(!selectedApp)return;
-  const qual=QUALIFICATIONS.find(q=>q.code===selectedApp.qualificationCode);
-  let availMods=qual?qual.modules.filter(m=>m.year===studyYear&&m.semester===semester):[];
+  // Find qualification by ID or code (applications use qualification_id, some legacy code uses qualificationCode)
+  const qual=QUALIFICATIONS.find(q=>q.id===selectedApp.qualification_id || q.code===selectedApp.qualificationCode);
+  // ALWAYS show all available modules from the qualification for the selected year/semester
+  const availMods=qual?qual.modules.filter(m=>m.year===studyYear&&m.semester===semester):[];
   const allStudentAllocs=regs.filter(r=>r.studentId===selectedApp.studentId&&r.status==='allocated');
   const existingAlloc=regs.find(r=>r.studentId===selectedApp.studentId&&r.studyYear===studyYear&&r.semester===semester&&r.status==='allocated');
 
-  // If no modules available but there's an existing allocation, show existing modules for editing
-  if(availMods.length===0&&existingAlloc&&existingAlloc.modules&&existingAlloc.modules.length>0){
-    availMods=existingAlloc.modules.map(m=>({
-      code:m.code,
-      name:m.name||m.code,
-      credits:m.credits||0,
-      semester:semester,
-      year:studyYear
-    }));
-  }
-
-  // Pre-populate pickedModules with existing allocation if not already set
+  // Pre-populate pickedModules with existing allocation to pre-select them
   if(existingAlloc&&existingAlloc.modules&&pickedModules.length===0){
-    pickedModules=existingAlloc.modules.filter(m=>availMods.some(am=>am.code===m.code));
+    // Pre-select modules that are both in the existing allocation AND in the available modules
+    pickedModules=existingAlloc.modules
+      .filter(m=>availMods.some(am=>am.code===m.code))
+      .map(m=>{
+        // Use the module definition from availMods to ensure we have correct year/semester/credits
+        const availMod=availMods.find(am=>am.code===m.code);
+        return availMod||m;
+      });
   }
 
   const totalCredits=pickedModules.reduce((s,m)=>s+m.credits,0);
@@ -203,13 +201,18 @@ function openStudent(id){
   step='allocate'; render();
 }
 
-function handleAllocate(){
+async function handleAllocate(){
   if(!selectedApp||pickedModules.length===0)return;
-  doAllocateModules(selectedApp.id,pickedModules,semester,studyYear);
-  justAllocated=selectedApp.studentId;
-  showToast(`✅ ${pickedModules.length} modules allocated to ${selectedApp.firstName} ${selectedApp.lastName}`,'success');
-  pickedModules=[];
-  render();
+  try {
+    await allocateModules(selectedApp.id,pickedModules,semester,studyYear);
+    justAllocated=selectedApp.studentId;
+    showToast(`✅ ${pickedModules.length} modules allocated to ${selectedApp.firstName} ${selectedApp.lastName}`,'success');
+    pickedModules=[];
+    step='select_student';
+    render();
+  } catch(err) {
+    showToast(`❌ Failed to allocate modules: ${err.message}`,'error');
+  }
 }
 
 (async () => {

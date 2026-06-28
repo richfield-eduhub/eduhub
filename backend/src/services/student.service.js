@@ -144,15 +144,15 @@ class StudentService {
    * Get student by user ID
    */
   async getStudentByUserId(userId) {
-    const [students] = await sequelize.query(
-      `SELECT s.student_id, s.user_id, s.student_number, s.qualification_id,
+    const students = await sequelize.query(
+      `SELECT s.id as student_id, s.user_id, s.student_number, s.qualification_id,
               s.lifecycle_status, s.academic_status, s.enrollment_date,
-              s.expected_graduation, s.graduation_date,
               ud.first_name, ud.last_name,
               q.name as qualification_name
        FROM students s
-       LEFT JOIN user_details ud ON s.user_id = ud.user_id
-       LEFT JOIN qualifications q ON s.qualification_id = q.qualification_id
+       INNER JOIN users u ON s.user_id = u.id
+       LEFT JOIN user_details ud ON u.id = ud.user_id
+       LEFT JOIN qualifications q ON s.qualification_id = q.id
        WHERE s.user_id = $1`,
       {
         bind: [userId],

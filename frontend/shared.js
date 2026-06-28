@@ -30,7 +30,7 @@ const DEFAULT_APP_CONFIG = {
     toastMs: 4000,
     minuteMs: 60000,
     referenceDataTtlMs: 24 * 60 * 60 * 1000,
-    referenceDataVersion: "v2",
+    referenceDataVersion: "v3",
     homeConfigTtlMs: 24 * 60 * 60 * 1000,
     homeConfigVersion: "v1",
     popularProgrammesLimit: 4,
@@ -1592,6 +1592,7 @@ function renderNavbar(activePage) {
       },
       { href: "/admin/students", label: "Students", key: "students" },
       { href: "/admin/lecturers", label: "Lecturers", key: "admin-lecturers" },
+      { href: "/admin/audits", label: "Audits", key: "audits" },
       { href: "/settings", label: "Settings", key: "settings" },
     ],
     student: [

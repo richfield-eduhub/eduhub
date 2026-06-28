@@ -26,6 +26,7 @@ const applicationCompatRoutes = require('./routes/applications.compat.routes');
 const documentRoutes      = require('./routes/document.routes');
 const emergencyContactRoutes = require('./routes/emergencyContact.routes');
 const announcementRoutes  = require('./routes/announcement.routes');
+const auditRoutes         = require('./routes/audit.routes');
 
 // Routes — compatibility shims (used by frontend-html)
 const adminRoutes         = require('./routes/admin.routes');
@@ -100,6 +101,7 @@ app.use('/api/applications',   applicationRoutes);        // public create/looku
 app.use('/api',                documentRoutes);            // document upload/download routes
 app.use('/api',                emergencyContactRoutes);    // emergency contact routes
 app.use('/api',                announcementRoutes);        // announcement routes
+app.use('/api/audit',          auditRoutes);               // audit log routes
 
 // Compatibility shims (used by frontend-html shared.js)
 app.use('/api/admin',          adminRoutes);
@@ -135,6 +137,7 @@ app.get('/admin/students',      page('admin/Students.html'));
 app.get('/admin/courses',       page('admin/Courses.html'));
 app.get('/admin/users',         page('admin/Users.html'));
 app.get('/admin/reports',       page('admin/Reports.html'));
+app.get('/admin/audits',        page('admin/Audits.html'));
 app.get('/admin/settings',      page('admin/Settings.html'));
 
 app.get('/student',                    page('student/Dashboard.html'));
@@ -160,14 +163,15 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 /**
- * Start Server
+ * Start Server (skip when imported by tests)
  */
 const PORT = process.env.PORT || 3000;
 
-migrator()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`
+if (require.main === module) {
+  migrator()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`
   ╔══════════════════════════════════════════════════════════╗
   ║   EduHub is running →  http://localhost:${PORT}              ║
   ╠══════════════════════════════════════════════════════════╣
@@ -179,9 +183,13 @@ migrator()
   ║  Pages                                                   ║
   ║    /login   /admin   /student   /lecturer                ║
   ╚══════════════════════════════════════════════════════════╝`);
+      });
+    })
+    .catch((err) => {
+      console.error('Startup failed:', err.message);
+      console.error(err.stack);
+      process.exit(1);
     });
-  })
-  .catch((err) => {
-    console.error('Startup failed:', err.message);
-    process.exit(1);
-  });
+}
+
+module.exports = app;
