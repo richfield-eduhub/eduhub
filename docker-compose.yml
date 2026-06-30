@@ -150,3 +150,5 @@ volumes:
 networks:
   eduhub_network:
     driver: bridge
+
+
