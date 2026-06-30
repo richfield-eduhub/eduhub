@@ -39,7 +39,7 @@ jobs:
   integration-tests:
     name: Integration tests
     runs-on: ubuntu-latest
-    needs: unit-tests  # Run sequentially after unit tests
+    # No 'needs' - runs in parallel with unit-tests for speed
 
     services:
       postgres:
@@ -86,7 +86,7 @@ jobs:
     name: Coverage
     if: inputs.with_coverage
     runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests]  # Run sequentially after both test jobs
+    # No 'needs' - runs in parallel with other test jobs for speed
 
     services:
       postgres:

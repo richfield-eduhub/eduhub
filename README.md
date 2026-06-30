@@ -392,3 +392,5 @@ For complete endpoint documentation with request/response examples, see:
 | JWT_SECRET         | (required)   | JWT signing secret              |
 | JWT_REFRESH_SECRET | (optional)   | Refresh token secret            |
 | JWT_EXPIRES_IN     | 7d           | Token expiry                    |
+
+
