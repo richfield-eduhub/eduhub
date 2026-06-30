@@ -39,11 +39,27 @@ describe('FileUploadUtility', () => {
 
   describe('generateUniqueFilename', () => {
     it('produces unique names preserving extension', () => {
-      const name1 = FileUploadUtility.generateUniqueFilename('report.pdf');
-      const name2 = FileUploadUtility.generateUniqueFilename('report.pdf');
-      expect(name1).toMatch(/\.pdf$/);
-      expect(name2).toMatch(/\.pdf$/);
-      expect(name1).not.toBe(name2);
+      const result1 = FileUploadUtility.generateUniqueFilename('report.pdf');
+      const result2 = FileUploadUtility.generateUniqueFilename('report.pdf');
+
+      // Should return an object with folder, filename, and fullPath
+      expect(result1).toHaveProperty('folder');
+      expect(result1).toHaveProperty('filename');
+      expect(result1).toHaveProperty('fullPath');
+
+      // Filenames should preserve extension
+      expect(result1.filename).toMatch(/\.pdf$/);
+      expect(result2.filename).toMatch(/\.pdf$/);
+
+      // Folders should be unique (UUID-based)
+      expect(result1.folder).not.toBe(result2.folder);
+
+      // Full paths should be unique (combination of unique folder + filename)
+      expect(result1.fullPath).not.toBe(result2.fullPath);
+
+      // fullPath should match folder/filename format
+      expect(result1.fullPath).toBe(`${result1.folder}/${result1.filename}`);
+      expect(result2.fullPath).toBe(`${result2.folder}/${result2.filename}`);
     });
   });
 

@@ -171,21 +171,36 @@ shell-nginx: ## Access nginx container shell
 
 BACKEND := backend
 
-test: test-db-up ## Run all tests (unit + integration; starts test DB automatically)
+test: ## Run all tests (unit + integration; starts test DB automatically unless CI=true)
 	@echo "$(BLUE)Running all tests...$(NC)"
+	@if [ "$(CI)" != "true" ]; then \
+		$(MAKE) test-db-up; \
+	else \
+		echo "$(YELLOW)CI mode: Skipping docker-compose database startup (using GitHub Actions services)$(NC)"; \
+	fi
 	cd $(BACKEND) && npm run test:all
-	@echo "$(GREEN)✓ Full test run complete (263 tests when DB is healthy)$(NC)"
+	@echo "$(GREEN)✓ Full test run complete (275 tests when DB is healthy)$(NC)"
 
 test-unit: ## Run unit tests only (no database required)
 	@echo "$(BLUE)Running unit tests...$(NC)"
 	cd $(BACKEND) && npm run test:unit
 
-test-integration: test-db-up ## Run integration tests (starts test DB automatically)
+test-integration: ## Run integration tests (starts test DB automatically unless CI=true)
 	@echo "$(BLUE)Running integration tests...$(NC)"
+	@if [ "$(CI)" != "true" ]; then \
+		$(MAKE) test-db-up; \
+	else \
+		echo "$(YELLOW)CI mode: Skipping docker-compose database startup (using GitHub Actions services)$(NC)"; \
+	fi
 	cd $(BACKEND) && npm run test:integration
 
-test-coverage: test-db-up ## Run all tests with coverage (starts test DB automatically)
+test-coverage: ## Run all tests with coverage (starts test DB automatically unless CI=true)
 	@echo "$(BLUE)Running tests with coverage...$(NC)"
+	@if [ "$(CI)" != "true" ]; then \
+		$(MAKE) test-db-up; \
+	else \
+		echo "$(YELLOW)CI mode: Skipping docker-compose database startup (using GitHub Actions services)$(NC)"; \
+	fi
 	cd $(BACKEND) && npm run test:coverage
 	@echo "$(GREEN)✓ Coverage report: $(BACKEND)/coverage/lcov-report/index.html$(NC)"
 
