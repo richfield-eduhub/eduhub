@@ -7,8 +7,14 @@ const bcrypt = require('bcryptjs');
 const sequelize = require('../config/database');
 const { generateStudentNumber, formatNumber } = require('../studentNumber');
 const emailService = require('./email.service');
+const AuditService = require('./audit.service');
 
 const { APPLICATION_STATUS, PAGINATION } = require('../utils/constants');
+const { isValidSouthAfricanIdNumber, genderMatchesSaId } = require('../utils/saIdValidator');
+const {
+  assertContactAvailable,
+  findContactConflicts,
+} = require('../utils/contactValidator');
 
 const ADMIN_APPLICATION_STATUSES = [
   APPLICATION_STATUS.UNDER_REVIEW,
@@ -138,6 +144,7 @@ const SYMBOL_TO_PERCENTAGE = {
 };
 
 function clampPercentage(value) {
+  if (value === null || value === undefined || value === '') return null;
   const num = Number(value);
   if (!Number.isFinite(num)) return null;
   if (num < 0) return 0;
@@ -189,6 +196,12 @@ function assertIdentityForSubmit(nationality, idNumber, passportNumber) {
         message: 'South African applicants must provide a valid 13-digit ID number',
       };
     }
+    if (!isValidSouthAfricanIdNumber(id)) {
+      throw {
+        statusCode: 400,
+        message: 'South African ID number is invalid. The check digit (last digit) does not match.',
+      };
+    }
   } else {
     const pass = String(passportNumber || '').trim();
     if (pass.length < 5) {
@@ -223,6 +236,17 @@ function assertFullApplicationForSubmit(payload) {
     throw {
       statusCode: 400,
       message: `gender is required to submit and must be one of: ${GENDER_VALUES.join(', ')}`,
+    };
+  }
+  if (
+    isSouthAfricanNationality(payload.nationality) &&
+    payload.id_number &&
+    !genderMatchesSaId(payload.id_number, gender)
+  ) {
+    throw {
+      statusCode: 400,
+      message:
+        'Gender must match your SA ID number (digits 7–10: 0000–4999 Female, 5000–9999 Male)',
     };
   }
   if (!street_address || !city || !province) {
@@ -379,11 +403,49 @@ class ApplicationService {
     return { campusId: null, campuses, campus_mode: 'multiple' };
   }
 
+  async checkContactAvailability({
+    email,
+    phone,
+    draft_id,
+    id_number,
+    passport_number,
+  }) {
+    const conflicts = await findContactConflicts({
+      email,
+      phone,
+      excludeApplicationId: draft_id || null,
+      idNumber: id_number || null,
+      passportNumber: passport_number || null,
+    });
+
+    return {
+      email_available: !conflicts.email,
+      phone_available: !conflicts.phone,
+      email_conflict: conflicts.email
+        ? { source: conflicts.email.source, reference_number: conflicts.email.reference_number || null }
+        : null,
+      phone_conflict: conflicts.phone
+        ? { source: conflicts.phone.source, reference_number: conflicts.phone.reference_number || null }
+        : null,
+    };
+  }
+
   async ensureUserAccountForSubmittedDraft(draft, studentNumber, temporaryPassword, transaction) {
     const applicantEmail = normalizeEmail(draft.email);
     if (!applicantEmail) {
       throw { statusCode: 400, message: 'Applicant email is required before submission' };
     }
+
+    await assertContactAvailable(
+      {
+        email: applicantEmail,
+        phone: draft.phone,
+        excludeApplicationId: draft.id,
+        idNumber: draft.id_number,
+        passportNumber: draft.passport_number,
+      },
+      transaction
+    );
 
     const [existingUser] = await sequelize.query(
       `SELECT id, role
@@ -743,6 +805,18 @@ class ApplicationService {
         };
       }
 
+      if (payload.email || payload.phone) {
+        await assertContactAvailable(
+          {
+            email: payload.email,
+            phone: payload.phone,
+            idNumber,
+            passportNumber,
+          },
+          transaction
+        );
+      }
+
       const [inserted] = await sequelize.query(
         `INSERT INTO applications (
           user_id, reference_number, qualification_id, campus_id,
@@ -798,6 +872,17 @@ class ApplicationService {
       campus_options: campuses,
       campus_mode: campuses.length > 1 ? 'multiple' : campuses.length === 1 ? 'single' : 'none',
     };
+  }
+
+  async assertDraftAllowsUpload(draftId) {
+    const existing = await this._loadApplicationWithLabels(draftId);
+    if (existing.status !== APPLICATION_STATUS.DRAFT) {
+      throw {
+        statusCode: 409,
+        message: 'Documents can only be uploaded while the application is still a draft',
+      };
+    }
+    return existing;
   }
 
   async updateDraft(draftId, payload) {
@@ -905,6 +990,21 @@ class ApplicationService {
       },
       null
     );
+
+    const nextEmail =
+      payload.email !== undefined ? normalizeEmail(payload.email) : existing.email;
+    const nextPhone =
+      payload.phone !== undefined ? String(payload.phone).trim() : existing.phone;
+
+    if (nextEmail || nextPhone) {
+      await assertContactAvailable({
+        email: nextEmail,
+        phone: nextPhone,
+        excludeApplicationId: draftId,
+        idNumber: isSa ? idNumber : null,
+        passportNumber: isSa ? null : passportNumber,
+      });
+    }
 
     await sequelize.query(
       `UPDATE applications SET
@@ -1204,7 +1304,7 @@ class ApplicationService {
       const emailResult = await emailService.sendAdmissionsOutcomeEmail({
         to: finalRow.email,
         fullName: `${finalRow.first_name || ''} ${finalRow.last_name || ''}`.trim(),
-        studentNumber: finalRow.student_number ? formatNumber(finalRow.student_number) : null,
+        studentNumber: generatedStudentNumber || finalRow.student_number || null,
         qualificationName:
           finalRow.resolved_qualification_name || finalRow.qualification_name || null,
         admittedFor: finalRow.admission_for,
@@ -1309,11 +1409,31 @@ class ApplicationService {
       })
       .filter((item) => item.name);
 
-    const apsScore = scoredSubjects
-      .filter((item) => item.aps_points != null && !item.ignored)
+    const apsEligible = scoredSubjects
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => item.aps_points != null && !item.ignored);
+
+    const topSixIndices = new Set(
+      apsEligible
+        .sort(
+          (a, b) =>
+            b.item.aps_points - a.item.aps_points ||
+            b.item.resolved_percentage - a.item.resolved_percentage
+        )
+        .slice(0, 6)
+        .map(({ index }) => index)
+    );
+
+    const subjectBreakdown = scoredSubjects.map((item, index) => ({
+      ...item,
+      counted_in_aps: topSixIndices.has(index),
+    }));
+
+    const apsScore = subjectBreakdown
+      .filter((item) => item.counted_in_aps)
       .reduce((total, subject) => total + subject.aps_points, 0);
 
-    const hasMath = scoredSubjects.some((subject) => {
+    const hasMath = subjectBreakdown.some((subject) => {
       const label = subject.name.toLowerCase();
       return (
         label === 'mathematics' ||
@@ -1379,7 +1499,7 @@ class ApplicationService {
 
     return {
       aps_score: apsScore,
-      subject_breakdown: scoredSubjects,
+      subject_breakdown: subjectBreakdown,
       recommended: eligibility.filter((item) => item.status === 'recommended'),
       possibly_eligible: eligibility.filter((item) => item.status === 'possibly_eligible'),
       not_eligible: eligibility.filter((item) => item.status === 'not_eligible'),
@@ -1623,6 +1743,16 @@ class ApplicationService {
           },
         };
       }
+
+      await assertContactAvailable(
+        {
+          email,
+          phone,
+          idNumber: id_number,
+          passportNumber: passport_number,
+        },
+        transaction
+      );
 
       const reference_number = generateReferenceNumber();
       const matricJson =
@@ -2350,7 +2480,195 @@ class ApplicationService {
       }
     );
 
-    return this.getApplicationByIdAdmin(applicationId);
+    const updatedApplication = await this.getApplicationByIdAdmin(applicationId);
+
+    // Log audit for application status change
+    const actionType = status === APPLICATION_STATUS.APPROVED ? 'APPROVE' :
+                       status === APPLICATION_STATUS.REJECTED ? 'REJECT' : 'UPDATE';
+    await AuditService.logApplicationAction(
+      reviewerUserId,
+      applicationId,
+      actionType,
+      existing.status,
+      status,
+      rejectionReason
+    );
+
+    // Send email notification for approved/rejected status changes
+    if (status === APPLICATION_STATUS.APPROVED || status === APPLICATION_STATUS.REJECTED) {
+      const fullName = `${updatedApplication.first_name || ''} ${updatedApplication.last_name || ''}`.trim();
+
+      try {
+        if (status === APPLICATION_STATUS.APPROVED) {
+          await emailService.sendApplicationApprovedEmail({
+            to: updatedApplication.email,
+            fullName,
+            referenceNumber: updatedApplication.reference_number,
+            studentNumber: updatedApplication.student_number,
+            qualificationName: updatedApplication.qualification_name,
+            campusName: updatedApplication.campus_name,
+            reviewedAt: updatedApplication.reviewed_at,
+          });
+        } else if (status === APPLICATION_STATUS.REJECTED) {
+          await emailService.sendApplicationRejectedEmail({
+            to: updatedApplication.email,
+            fullName,
+            referenceNumber: updatedApplication.reference_number,
+            qualificationName: updatedApplication.qualification_name,
+            campusName: updatedApplication.campus_name,
+            rejectionReason: updatedApplication.rejection_reason,
+            reviewedAt: updatedApplication.reviewed_at,
+          });
+        }
+      } catch (emailError) {
+        console.error(
+          `[ApplicationService] Failed to send ${status} notification email:`,
+          emailError?.message || emailError
+        );
+        // Don't throw - email failure should not prevent status update
+      }
+    }
+
+    // Auto-allocate all Year 1 Semester 1 modules when application is approved
+    if (status === APPLICATION_STATUS.APPROVED) {
+      try {
+        await this.autoAllocateModules(updatedApplication);
+      } catch (autoAllocError) {
+        console.error(
+          '[ApplicationService] Failed to auto-allocate modules:',
+          autoAllocError?.message || autoAllocError
+        );
+        // Don't throw - allocation failure should not prevent approval
+      }
+    }
+
+    return updatedApplication;
+  }
+
+  /**
+   * Auto-allocate all modules for Year 1, Semester 1 when application is approved
+   */
+  async autoAllocateModules(application) {
+    // Get the student's qualification
+    const qualificationModules = await sequelize.query(
+      `SELECT id, code, name, credits, year, semester
+       FROM modules
+       WHERE qualification_id = :qualId
+         AND year = 1
+         AND semester = 1
+         AND is_active = true
+       ORDER BY code ASC`,
+      {
+        replacements: { qualId: application.qualification_id },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (qualificationModules.length === 0) {
+      console.log(`[ApplicationService] No Year 1 Semester 1 modules found for qualification ${application.qualification_id}`);
+      return;
+    }
+
+    // Get active semester
+    const activeSemester = await sequelize.query(
+      `SELECT id FROM semesters WHERE is_active = true ORDER BY start_date DESC LIMIT 1`,
+      { type: sequelize.QueryTypes.SELECT }
+    );
+
+    if (!activeSemester || activeSemester.length === 0) {
+      console.log('[ApplicationService] No active semester found for auto-allocation');
+      return;
+    }
+
+    const semesterId = activeSemester[0].id;
+
+    // Get student ID from application
+    const studentRecord = await sequelize.query(
+      `SELECT id FROM students WHERE id = :studentId`,
+      {
+        replacements: { studentId: application.student_id },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (!studentRecord || studentRecord.length === 0) {
+      console.log(`[ApplicationService] Student record not found: ${application.student_id}`);
+      return;
+    }
+
+    const studentId = studentRecord[0].id;
+
+    // Register each module
+    const { v4: uuidv4 } = require('uuid');
+    for (const module of qualificationModules) {
+      try {
+        // Check if already registered
+        const existing = await sequelize.query(
+          `SELECT id FROM registrations
+           WHERE student_id = :studentId
+           AND module_id = :moduleId
+           AND semester_id = :semesterId`,
+          {
+            replacements: { studentId, moduleId: module.id, semesterId },
+            type: sequelize.QueryTypes.SELECT,
+          }
+        );
+
+        if (existing && existing.length > 0) {
+          console.log(`[ApplicationService] Module ${module.code} already registered for student`);
+          continue;
+        }
+
+        // Create registration
+        await sequelize.query(
+          `INSERT INTO registrations (id, student_id, module_id, semester_id, status, created_at, updated_at)
+           VALUES (:id, :studentId, :moduleId, :semesterId, 'approved', NOW(), NOW())`,
+          {
+            replacements: {
+              id: uuidv4(),
+              studentId,
+              moduleId: module.id,
+              semesterId,
+            },
+          }
+        );
+
+        console.log(`[ApplicationService] Auto-allocated module ${module.code} to student ${studentId}`);
+      } catch (error) {
+        console.error(`[ApplicationService] Failed to allocate module ${module.code}:`, error.message);
+        // Continue with next module
+      }
+    }
+
+    console.log(`[ApplicationService] Auto-allocated ${qualificationModules.length} modules for student ${studentId}`);
+
+    // Send module allocation email
+    if (qualificationModules.length > 0) {
+      try {
+        const fullName = `${application.first_name || ''} ${application.last_name || ''}`.trim();
+        const semesterInfo = await sequelize.query(
+          `SELECT name FROM semesters WHERE id = :semesterId`,
+          {
+            replacements: { semesterId },
+            type: sequelize.QueryTypes.SELECT,
+          }
+        );
+
+        await emailService.sendModuleAllocationEmail({
+          to: application.email,
+          fullName,
+          studentNumber: application.student_number,
+          modules: qualificationModules,
+          qualificationName: application.qualification_name || 'Your selected qualification',
+          semester: semesterInfo[0]?.name || 'Current Semester',
+        });
+
+        console.log(`[ApplicationService] Module allocation email sent to ${application.email}`);
+      } catch (emailError) {
+        console.error('[ApplicationService] Failed to send module allocation email:', emailError?.message);
+        // Don't throw - email failure should not prevent module allocation
+      }
+    }
   }
 
   /**

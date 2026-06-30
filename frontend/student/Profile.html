@@ -26,10 +26,13 @@
         <div id="profile-name" style="font-weight:800;font-size:20px;color:var(--rf-navy)"></div>
         <div id="profile-meta" style="font-size:14px;color:var(--rf-gray);margin-top:4px"></div>
       </div>
-      <label class="btn btn-secondary btn-sm" style="cursor:pointer">
-        📷 Change Photo
-        <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"/>
-      </label>
+      <div style="display:flex;gap:8px">
+        <label class="btn btn-secondary btn-sm" style="cursor:pointer">
+          📷 Change Photo
+          <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"/>
+        </label>
+        <button id="delete-photo-btn" class="btn btn-secondary btn-sm" onclick="deleteProfilePhoto()" style="display:none">🗑️ Delete</button>
+      </div>
     </div>
   </div>
 
@@ -124,6 +127,7 @@
     <div class="card-body">
       <div id="pwd-alert"></div>
       <div style="display:flex;flex-direction:column;gap:14px;max-width:400px">
+        <div class="form-group" id="current-pwd-group" style="display:none"><label class="form-label">Current Password</label><input type="password" id="current-pwd" class="form-input" placeholder="Your temporary password"/></div>
         <div class="form-group"><label class="form-label">New Password</label><input type="password" id="new-pwd" class="form-input" placeholder="Min 8 characters"/></div>
         <div class="form-group"><label class="form-label">Confirm New Password</label><input type="password" id="confirm-pwd" class="form-input" placeholder="Repeat new password"/></div>
         <button class="btn btn-secondary" onclick="savePwd()">Update Password</button>
@@ -138,36 +142,80 @@ const user = requireAuth('student');
 renderNavbar('student-profile');
 
 function getProfileData() {
-  const u = getCurrentUser();
-  // Try to pull richer data from the student's application
-  const apps = getApplications ? getApplications() : [];
-  const app = apps.find(a => a.studentId === u.studentId || a.email === u.email);
+  const u = getCurrentUser() || {};
+  const apps = getApplications();
+  const sid = u.studentId || u.student_number || u.student_id || "";
+  const app = apps.find(
+    (a) => a.studentId === sid || a.email === u.email,
+  );
+  const firstName =
+    u.firstName || (app && app.firstName) || u.first_name || "";
+  const lastName = u.lastName || (app && app.lastName) || u.last_name || "";
+  const displayName =
+    u.name || `${firstName} ${lastName}`.trim() || u.email || "Student";
   return {
-    firstName:   u.firstName  || (app && app.firstName)  || u.name.split(' ')[0] || '',
-    lastName:    u.lastName   || (app && app.lastName)   || u.name.split(' ').slice(1).join(' ') || '',
-    email:       u.email      || (app && app.email)      || '',
-    phone:       u.phone      || (app && app.phone)      || '',
-    dateOfBirth: u.dateOfBirth|| (app && app.dateOfBirth)|| '',
-    address:     u.address    || (app && app.streetAddress ? [app.streetAddress, app.suburb, app.city, app.province].filter(Boolean).join(', ') : '') || '',
-    gender:      u.gender     || (app && app.gender)     || '',
-    nationality: u.nationality|| (app && app.nationality)|| '',
-    avatarUrl:   u.avatarUrl  || '',
-    name:        u.name,
-    role:        u.role,
-    studentId:   u.studentId,
+    firstName,
+    lastName,
+    email: u.email || (app && app.email) || "",
+    phone: u.phone || (app && app.phone) || "",
+    dateOfBirth:
+      u.dateOfBirth || u.date_of_birth || (app && app.dateOfBirth) || "",
+    address:
+      u.address ||
+      (app && app.streetAddress
+        ? [app.streetAddress, app.suburb, app.city, app.province]
+            .filter(Boolean)
+            .join(", ")
+        : "") ||
+      "",
+    gender: u.gender || (app && app.gender) || "",
+    nationality: u.nationality || (app && app.nationality) || "",
+    avatarUrl: u.avatarUrl || u.profile_photo_url || "",
+    name: displayName,
+    role: u.role || "student",
+    studentId: sid || (app && app.studentId) || "",
   };
 }
 
-function renderProfile() {
+function initialsFor(name) {
+  return String(name || "S")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+async function renderProfile() {
   const u = getCurrentUser();
+  if (!u) return;
   const p = getProfileData();
   document.getElementById('profile-name').textContent = p.name;
-  document.getElementById('profile-meta').textContent = `${p.email}  ·  ${p.role.charAt(0).toUpperCase()+p.role.slice(1)}  ·  Student ID: ${p.studentId||'—'}`;
-  document.getElementById('avatar-initials').textContent = p.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
-  if (p.avatarUrl) {
-    document.getElementById('avatar-img').src = p.avatarUrl;
-    document.getElementById('avatar-img').style.display = '';
-    document.getElementById('avatar-initials').style.display = 'none';
+  document.getElementById('profile-meta').textContent = `${p.email}  ·  ${(p.role || 'student').charAt(0).toUpperCase() + (p.role || 'student').slice(1)}  ·  Student ID: ${p.studentId || '—'}`;
+  document.getElementById('avatar-initials').textContent = initialsFor(p.name);
+
+  // Load profile photo from API
+  try {
+    const userId = u.user_id || u.id;
+    const response = await fetch(`${APP_CONFIG.API_BASE}/students/${userId}`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const photoUrl = data.data?.profile_photo_url || data.profile_photo_url;
+      if (photoUrl) {
+        document.getElementById('avatar-img').src = photoUrl.startsWith('http')
+          ? photoUrl
+          : `${APP_CONFIG.API_BASE}${photoUrl}`;
+        document.getElementById('avatar-img').style.display = '';
+        document.getElementById('avatar-initials').style.display = 'none';
+        document.getElementById('delete-photo-btn').style.display = '';
+      }
+    }
+  } catch (error) {
+    console.error('Error loading profile photo:', error);
   }
   // Populate read-only view
   document.getElementById('view-firstName').textContent   = p.firstName   || '—';
@@ -193,59 +241,169 @@ function toggleEditMode(editing) {
   if (!editing) renderProfile();
 }
 
-function saveProfile() {
+async function saveProfile() {
   clearAlert('profile-edit-alert');
   const patch = {
-    firstName:   document.getElementById('firstName').value.trim(),
-    lastName:    document.getElementById('lastName').value.trim(),
-    phone:       document.getElementById('phone').value.trim(),
+    firstName: document.getElementById('firstName').value.trim(),
+    lastName: document.getElementById('lastName').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
     dateOfBirth: document.getElementById('dob').value,
-    address:     document.getElementById('address').value.trim(),
+    address: document.getElementById('address').value.trim(),
   };
-  const result = updateProfile(user.id, patch);
-  if (result.success) {
+  const result = await updateProfile(patch);
+  if (result.ok) {
     showToast('Profile updated successfully!', 'success');
     toggleEditMode(false);
-    renderProfile();
+    await renderProfile();
   } else {
-    showAlert('profile-edit-alert', result.message, 'error');
+    showAlert('profile-edit-alert', result.message || 'Could not update profile.', 'error');
   }
 }
 
-function savePwd() {
+async function savePwd() {
   clearAlert('pwd-alert');
   const p = document.getElementById('new-pwd').value;
   const c = document.getElementById('confirm-pwd').value;
   if (!p || p.length < 8) return showAlert('pwd-alert', 'Password must be at least 8 characters.', 'error');
   if (p !== c) return showAlert('pwd-alert', 'Passwords do not match.', 'error');
-  doChangePassword(user.id, p);
+
+  const wasForced = new URLSearchParams(window.location.search).get('forceChange') === '1';
+  let currentPassword = document.getElementById('current-pwd')?.value || '';
+  if (!currentPassword && wasForced) {
+    currentPassword = window.prompt('Enter your current (temporary) password to confirm:') || '';
+    if (!currentPassword) return showAlert('pwd-alert', 'Current password is required.', 'error');
+  }
+  if (!currentPassword) {
+    return showAlert('pwd-alert', 'Please enter your current password.', 'error');
+  }
+
+  const result = await changePassword(currentPassword, p);
+  if (!result.ok) {
+    return showAlert('pwd-alert', result.message || 'Could not change password.', 'error');
+  }
+
   document.getElementById('new-pwd').value = '';
   document.getElementById('confirm-pwd').value = '';
+  if (document.getElementById('current-pwd')) {
+    document.getElementById('current-pwd').value = '';
+  }
   showToast('Password changed successfully!', 'success');
-  const wasForced = new URLSearchParams(window.location.search).get('forceChange') === '1';
-  setTimeout(() => { closeModal('pwd-modal'); if (wasForced) window.location.href = '../student/Dashboard.html'; }, 1500);
+  if (wasForced) {
+    setTimeout(() => { window.location.href = '/student'; }, 1500);
+  }
 }
 
-function handleAvatarUpload(input) {
+async function handleAvatarUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    uploadAvatar(user.id, e.target.result);
-    showToast('Photo updated!', 'success');
-    renderProfile();
-  };
-  reader.readAsDataURL(file);
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select an image file', 'error');
+    return;
+  }
+
+  // Validate file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Image must be less than 5MB', 'error');
+    return;
+  }
+
+  try {
+    const currentUser = getCurrentUser();
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    const response = await fetch(`${APP_CONFIG.API_BASE}/students/${currentUser.user_id}/profile-photo`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Update the avatar display
+      document.getElementById('avatar-img').src = data.data.profile_photo_url.startsWith('http')
+        ? data.data.profile_photo_url
+        : `${APP_CONFIG.API_BASE}${data.data.profile_photo_url}`;
+      document.getElementById('avatar-img').style.display = '';
+      document.getElementById('avatar-initials').style.display = 'none';
+      document.getElementById('delete-photo-btn').style.display = '';
+
+      // Update user in localStorage
+      currentUser.profile_photo_url = data.data.profile_photo_url;
+      setCachedUser(currentUser);
+
+      showToast('Profile photo updated successfully!', 'success');
+    } else {
+      showToast(data.message || 'Failed to upload photo', 'error');
+    }
+  } catch (error) {
+    console.error('Upload error:', error);
+    showToast('An error occurred while uploading photo', 'error');
+  }
 }
 
-renderProfile();
+async function deleteProfilePhoto() {
+  if (!confirm('Are you sure you want to delete your profile photo?')) {
+    return;
+  }
 
-// Populate the student email display card
-(function() {
+  try {
+    const currentUser = getCurrentUser();
+    const response = await fetch(`${APP_CONFIG.API_BASE}/students/${currentUser.user_id}/profile-photo`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Reset avatar display to initials
+      document.getElementById('avatar-img').style.display = 'none';
+      document.getElementById('avatar-initials').style.display = '';
+      document.getElementById('delete-photo-btn').style.display = 'none';
+
+      // Update user in localStorage
+      delete currentUser.profile_photo_url;
+      setCachedUser(currentUser);
+
+      showToast('Profile photo deleted successfully!', 'success');
+    } else {
+      showToast(data.message || 'Failed to delete photo', 'error');
+    }
+  } catch (error) {
+    console.error('Delete error:', error);
+    showToast('An error occurred while deleting photo', 'error');
+  }
+}
+
+(async () => {
+  await ensureDashboardData();
+  await renderProfile();
   const p = getProfileData();
   const emailEl = document.getElementById('my-email-display');
   if (emailEl && p.email) emailEl.textContent = p.email;
 })();
+
+// Auto-prompt password change after first login with temp password
+if (new URLSearchParams(window.location.search).get('forceChange') === '1') {
+  document.body.insertAdjacentHTML('afterbegin',
+    '<div style="background:#ffc72c;color:#001A4D;padding:14px 24px;text-align:center;font-weight:700;font-size:14px;position:sticky;top:64px;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.1)">' +
+    '🔑 You are using a temporary password. Please set a new password below to continue.' +
+    '</div>');
+  const currentPwdGroup = document.getElementById('current-pwd-group');
+  if (currentPwdGroup) currentPwdGroup.style.display = '';
+  setTimeout(() => {
+    document.querySelector('.card:last-of-type')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('current-pwd')?.focus();
+  }, 400);
+}
 
 function copyEmail() {
   const p = getProfileData();
@@ -256,7 +414,6 @@ function copyEmail() {
     btn.style.background = '#1a9e8f';
     setTimeout(() => { btn.textContent = 'Copy'; btn.style.background = ''; }, 2000);
   }).catch(() => {
-    // Fallback
     const ta = document.createElement('textarea');
     ta.value = p.email;
     document.body.appendChild(ta);
@@ -267,15 +424,6 @@ function copyEmail() {
     btn.textContent = '✅ Copied!';
     setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
   });
-}
-
-// Auto-open password modal if redirected from first login
-if (new URLSearchParams(window.location.search).get('forceChange') === '1') {
-  document.body.insertAdjacentHTML('afterbegin',
-    '<div style="background:#ffc72c;color:#001A4D;padding:14px 24px;text-align:center;font-weight:700;font-size:14px;position:sticky;top:64px;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.1)">' +
-    '🔑 You are using a temporary password. Please set a new password to continue.' +
-    '</div>');
-  setTimeout(() => openModal('pwd-modal'), 400);
 }
 </script>
 </body>

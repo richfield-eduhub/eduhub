@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Messages — EduHub Admin</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .message-card { background: white; border-radius: 10px; border: 1px solid var(--rf-border); margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
+    .message-card:hover { box-shadow: 0 3px 10px rgba(0,20,77,0.08); transform: translateY(-1px); }
+    .message-card.broadcast { border-left: 4px solid #7c3aed; }
+    .message-header { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+    .message-subject { font-weight: 600; font-size: 14px; color: var(--rf-navy); margin-bottom: 4px; }
+    .message-from { font-size: 12px; color: var(--rf-gray); }
+    .message-date { font-size: 12px; color: var(--rf-gray); white-space: nowrap; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--rf-border); }
+    .tab { padding: 12px 20px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--rf-gray); position: relative; }
+    .tab.active { color: #7c3aed; }
+    .tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: #7c3aed; }
+    .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: #7c3aed; color: white; border: none; cursor: pointer; font-size: 24px; box-shadow: 0 4px 12px rgba(124,58,237,0.3); transition: all 0.2s; z-index: 100; }
+    .fab:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
+    .compose-form { display: flex; flex-direction: column; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-weight: 600; font-size: 13px; color: var(--rf-navy); }
+    .form-select, .form-input, .form-textarea { padding: 10px 12px; border: 1.5px solid var(--rf-border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+    .form-select:focus, .form-input:focus, .form-textarea:focus { outline: none; border-color: #7c3aed; }
+    .form-textarea { resize: vertical; min-height: 150px; }
+    .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 12px; border: 1px solid var(--rf-border); }
+    .message-type-switch { display: flex; gap: 12px; padding: 12px; background: var(--rf-offwhite); border-radius: 8px; }
+    .message-type-option { flex: 1; padding: 10px; border-radius: 6px; border: 2px solid var(--rf-border); background: white; cursor: pointer; text-align: center; font-weight: 600; font-size: 13px; transition: all 0.2s; }
+    .message-type-option:hover { border-color: #7c3aed; }
+    .message-type-option.active { background: #7c3aed; color: white; border-color: #7c3aed; }
+    .broadcast-badge { display: inline-block; padding: 3px 10px; background: #7c3aed; color: white; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 8px; }
+  </style>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">MESSAGES</h1>
+  <p class="section-subtitle">Send broadcasts or view all system messages</p>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('sent')">📤 Sent Messages</button>
+    <button class="tab" onclick="switchTab('all')">📊 All Messages</button>
+  </div>
+
+  <!-- Messages List -->
+  <div id="messages-container">
+    <div style="text-align:center;padding:40px">
+      <div class="spinner"></div>
+      <p style="color:var(--rf-gray);margin-top:12px">Loading messages...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Compose FAB -->
+<button class="fab" onclick="openComposeModal()" title="New Message">✉️</button>
+
+<!-- Compose Modal -->
+<div id="compose-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">New Message</div>
+      <button class="modal-close" onclick="closeModal('compose-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <form class="compose-form" onsubmit="sendMessage(event)">
+        <!-- Message Type Selection -->
+        <div class="form-group">
+          <label class="form-label">Message Type</label>
+          <div class="message-type-switch">
+            <div class="message-type-option active" onclick="setMessageType('broadcast')">📢 Broadcast</div>
+            <div class="message-type-option" onclick="setMessageType('direct')">✉️ Direct Message</div>
+          </div>
+        </div>
+
+        <!-- Broadcast Recipients -->
+        <div class="form-group" id="broadcast-group">
+          <label class="form-label">Send To <span class="required">*</span></label>
+          <select id="broadcast-recipient" class="form-select" required>
+            <option value="all">📢 Everyone (All Students & Lecturers)</option>
+            <option value="student">👨‍🎓 All Students</option>
+            <option value="lecturer">👨‍🏫 All Lecturers</option>
+          </select>
+        </div>
+
+        <!-- Direct Message Recipients -->
+        <div class="form-group hidden" id="direct-group">
+          <label class="form-label">To (User) <span class="required">*</span></label>
+          <select id="direct-recipient" class="form-select">
+            <option value="">Select a user...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Subject <span class="required">*</span></label>
+          <input type="text" id="subject" class="form-input" placeholder="Enter subject..." required maxlength="255"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message <span class="required">*</span></label>
+          <textarea id="body" class="form-textarea" placeholder="Type your message here..." required></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('compose-modal')">Cancel</button>
+      <button class="btn btn-success" onclick="sendMessage(event)">📤 Send Message</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Message Modal -->
+<div id="view-modal" class="modal-overlay hidden">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="view-subject"></div>
+      <button class="modal-close" onclick="closeModal('view-modal')">×</button>
+    </div>
+    <div class="modal-body" id="view-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('view-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="../shared.js"></script>
+<script>
+requireAuth('admin');
+renderNavbar('admin-messages');
+
+let currentTab = 'sent';
+let sentMessages = [];
+let allMessages = [];
+let messageType = 'broadcast';
+let allUsers = [];
+
+// Load data on page load
+(async () => {
+  await loadUsers();
+  await loadMessages();
+})();
+
+async function loadUsers() {
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/admin/users`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      allUsers = data.users || [];
+      populateUsersDropdown();
+    }
+  } catch (error) {
+    console.error('Error loading users:', error);
+  }
+}
+
+function populateUsersDropdown() {
+  const select = document.getElementById('direct-recipient');
+  select.innerHTML = '<option value="">Select a user...</option>';
+
+  // Group by role
+  const students = allUsers.filter(u => u.role === 'student');
+  const lecturers = allUsers.filter(u => u.role === 'lecturer');
+
+  if (students.length > 0) {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = '👨‍🎓 Students';
+    students.forEach(user => {
+      const option = document.createElement('option');
+      option.value = user.id;
+      option.textContent = `${user.first_name || ''} ${user.last_name || ''} (${user.email})`.trim();
+      optgroup.appendChild(option);
+    });
+    select.appendChild(optgroup);
+  }
+
+  if (lecturers.length > 0) {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = '👨‍🏫 Lecturers';
+    lecturers.forEach(user => {
+      const option = document.createElement('option');
+      option.value = user.id;
+      option.textContent = `${user.first_name || ''} ${user.last_name || ''} (${user.email})`.trim();
+      optgroup.appendChild(option);
+    });
+    select.appendChild(optgroup);
+  }
+}
+
+async function loadMessages() {
+  try {
+    // Load sent messages
+    const sentResponse = await fetch(`${APP_CONFIG.API_URL}/messages/sent`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (sentResponse.ok) {
+      const data = await sentResponse.json();
+      sentMessages = data.messages || [];
+    }
+
+    // For admins, we could load all system messages here
+    // For now, just show sent messages in both tabs
+    allMessages = sentMessages;
+
+    renderMessages();
+  } catch (error) {
+    console.error('Error loading messages:', error);
+    document.getElementById('messages-container').innerHTML = `
+      <div class="empty-state">
+        <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+        <h3 style="color:var(--rf-navy);margin-bottom:8px">Failed to Load Messages</h3>
+        <p style="color:var(--rf-gray)">Please refresh the page to try again.</p>
+      </div>`;
+  }
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderMessages();
+}
+
+function renderMessages() {
+  const messages = currentTab === 'sent' ? sentMessages : allMessages;
+
+  if (messages.length === 0) {
+    document.getElementById('messages-container').innerHTML = `
+      <div class="empty-state">
+        <div style="font-size:48px;margin-bottom:16px">📭</div>
+        <h3 style="color:var(--rf-navy);margin-bottom:8px">No Messages</h3>
+        <p style="color:var(--rf-gray)">Click the ✉️ button to send a new message.</p>
+      </div>`;
+    return;
+  }
+
+  const container = document.getElementById('messages-container');
+  container.innerHTML = messages.map(msg => `
+    <div class="message-card ${msg.is_broadcast ? 'broadcast' : ''}" onclick="viewMessage('${msg.id}')">
+      <div class="message-header">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center">
+            <div class="message-subject">
+              ${escapeHtml(msg.subject)}
+              ${msg.is_broadcast ? '<span class="broadcast-badge">BROADCAST</span>' : ''}
+            </div>
+          </div>
+          <div class="message-from">
+            ${msg.is_broadcast
+              ? `To: ${msg.recipient_role === 'all' ? 'Everyone' : msg.recipient_role === 'student' ? 'All Students' : 'All Lecturers'}`
+              : `To: ${msg.recipient_first_name || ''} ${msg.recipient_last_name || ''} (${msg.recipient_email || ''})`}
+          </div>
+        </div>
+        <div class="message-date">${fmtDateTime(msg.created_at)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function viewMessage(id) {
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/messages/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const msg = data.message;
+
+      document.getElementById('view-subject').innerHTML = `
+        ${escapeHtml(msg.subject)}
+        ${msg.is_broadcast ? '<span class="broadcast-badge">BROADCAST</span>' : ''}
+      `;
+
+      document.getElementById('view-body').innerHTML = `
+        <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--rf-border)">
+          <div style="font-size:12px;color:var(--rf-gray);margin-bottom:8px">
+            ${msg.is_broadcast
+              ? `<strong>📢 Broadcast to:</strong> ${msg.recipient_role === 'all' ? 'Everyone' : msg.recipient_role === 'student' ? 'All Students' : 'All Lecturers'}`
+              : `<strong>To:</strong> ${msg.recipient_first_name} ${msg.recipient_last_name} (${msg.recipient_email})`}
+          </div>
+          <div style="font-size:12px;color:var(--rf-gray)">
+            <strong>Sent:</strong> ${fmtDateTime(msg.created_at)}
+          </div>
+        </div>
+        <div style="white-space:pre-wrap;line-height:1.7;font-size:14px;color:var(--rf-navy)">
+          ${escapeHtml(msg.body)}
+        </div>
+      `;
+
+      openModal('view-modal');
+    }
+  } catch (error) {
+    console.error('Error viewing message:', error);
+    showToast('Failed to load message', 'error');
+  }
+}
+
+function openComposeModal() {
+  document.getElementById('subject').value = '';
+  document.getElementById('body').value = '';
+  document.getElementById('broadcast-recipient').value = 'all';
+  document.getElementById('direct-recipient').value = '';
+  setMessageType('broadcast');
+  openModal('compose-modal');
+}
+
+function setMessageType(type) {
+  messageType = type;
+
+  document.querySelectorAll('.message-type-option').forEach(opt => {
+    opt.classList.remove('active');
+  });
+  event.target.classList.add('active');
+
+  // Show/hide appropriate recipient groups
+  if (type === 'broadcast') {
+    document.getElementById('broadcast-group').classList.remove('hidden');
+    document.getElementById('direct-group').classList.add('hidden');
+    document.getElementById('broadcast-recipient').required = true;
+    document.getElementById('direct-recipient').required = false;
+  } else {
+    document.getElementById('broadcast-group').classList.add('hidden');
+    document.getElementById('direct-group').classList.remove('hidden');
+    document.getElementById('broadcast-recipient').required = false;
+    document.getElementById('direct-recipient').required = true;
+  }
+}
+
+async function sendMessage(event) {
+  event.preventDefault();
+
+  const subject = document.getElementById('subject').value.trim();
+  const body = document.getElementById('body').value.trim();
+
+  if (!subject || !body) {
+    showToast('Please fill in all fields', 'error');
+    return;
+  }
+
+  let payload;
+  if (messageType === 'broadcast') {
+    const recipientRole = document.getElementById('broadcast-recipient').value;
+    if (!recipientRole) {
+      showToast('Please select broadcast recipients', 'error');
+      return;
+    }
+
+    payload = {
+      subject,
+      body,
+      isBroadcast: true,
+      recipientRole,
+    };
+  } else {
+    const recipientId = document.getElementById('direct-recipient').value;
+    if (!recipientId) {
+      showToast('Please select a recipient', 'error');
+      return;
+    }
+
+    payload = {
+      subject,
+      body,
+      recipientId,
+    };
+  }
+
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      showToast(
+        messageType === 'broadcast' ? 'Broadcast sent successfully!' : 'Message sent successfully!',
+        'success'
+      );
+      closeModal('compose-modal');
+      await loadMessages();
+    } else {
+      const error = await response.json();
+      showToast(error.message || 'Failed to send message', 'error');
+    }
+  } catch (error) {
+    console.error('Error sending message:', error);
+    showToast('Failed to send message', 'error');
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>

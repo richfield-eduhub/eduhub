@@ -1,5 +1,3 @@
-version: "3.8"
-
 # This file is automatically merged with docker-compose.yml for local development.
 # Just run: docker compose up
 
@@ -11,10 +9,11 @@ services:
     environment:
       NODE_ENV: development
       BACKEND_COMMAND: npm run dev
+      FRONTEND_PATH: /frontend
     volumes:
       - ./backend:/app
       - /app/node_modules
-      - ./frontend:/frontend-html:ro
+      - ./frontend:/frontend:ro
 
   nginx:
     build:
@@ -22,3 +21,4 @@ services:
       dockerfile: ./nginx/Dockerfile
     volumes:
       - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/frontend-routes.conf:/etc/nginx/frontend-routes.conf:ro

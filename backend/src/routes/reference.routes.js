@@ -55,26 +55,41 @@ router.get('/document-requirements', async (req, res, next) => {
 
 router.get('/qualifications', async (_req, res, next) => {
   try {
+    // Fetch from the qualifications table (not reference_qualifications) because modules are linked there
     const rows = await sequelize.query(
       `SELECT q.id,
               q.code,
               q.name,
-              COALESCE(f.name, q.faculty_code) AS faculty,
+              q.faculty,
               q.duration_years,
-              q.total_credits,
-              q.saqa_id,
+              q.total_fee as total_credits,
               q.is_active
-       FROM reference_qualifications q
-       LEFT JOIN reference_faculties f
-         ON f.code = q.faculty_code
+       FROM qualifications q
        WHERE q.is_active = true
        ORDER BY q.name ASC`,
       { type: sequelize.QueryTypes.SELECT },
     );
 
+    // Fetch modules for each qualification
+    const qualificationsWithModules = await Promise.all(
+      rows.map(async (qual) => {
+        const modules = await sequelize.query(
+          `SELECT id, code, name, year, semester, credits, is_active
+           FROM modules
+           WHERE qualification_id = :qualId AND is_active = true
+           ORDER BY year ASC, semester ASC, code ASC`,
+          {
+            replacements: { qualId: qual.id },
+            type: sequelize.QueryTypes.SELECT,
+          }
+        );
+        return { ...qual, modules };
+      })
+    );
+
     return ResponseHandler.success(
       res,
-      rows,
+      qualificationsWithModules,
       'Reference qualifications retrieved successfully',
     );
   } catch (err) {

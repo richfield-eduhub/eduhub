@@ -8,7 +8,9 @@ const {
   PAGINATION,
   LIFECYCLE_STATUS,
   ACADEMIC_STATUS,
+  USER_ROLES,
 } = require("../utils/constants");
+const { FileUploadUtility } = require('../utils/fileUpload');
 
 class StudentService {
   /**
@@ -48,8 +50,8 @@ class StudentService {
     const [countResult] = await sequelize.query(
       `SELECT COUNT(*)::int as total
        FROM students s
-       INNER JOIN users u ON s.user_id = u.user_id
-       LEFT JOIN user_details ud ON u.user_id = ud.user_id
+       INNER JOIN users u ON s.user_id = u.id
+       LEFT JOIN user_details ud ON u.id = ud.user_id
        WHERE 1=1 ${whereClause}`,
       {
         bind: bindings,
@@ -60,15 +62,15 @@ class StudentService {
     // Get students
     bindings.push(limitValue, offset);
     const students = await sequelize.query(
-      `SELECT s.student_id, s.user_id, s.student_number, s.qualification_id,
+      `SELECT s.id as student_id, s.user_id, s.student_number, s.qualification_id,
               s.lifecycle_status, s.academic_status, s.enrollment_date,
               u.email, u.account_status,
-              ud.first_name, ud.last_name, ud.phone_number,
+              ud.first_name, ud.last_name, ud.phone,
               q.name as qualification_name, q.code as qualification_code
        FROM students s
-       INNER JOIN users u ON s.user_id = u.user_id
-       LEFT JOIN user_details ud ON u.user_id = ud.user_id
-       LEFT JOIN qualifications q ON s.qualification_id = q.qualification_id
+       INNER JOIN users u ON s.user_id = u.id
+       LEFT JOIN user_details ud ON u.id = ud.user_id
+       LEFT JOIN qualifications q ON s.qualification_id = q.id
        WHERE 1=1 ${whereClause}
        ORDER BY s.created_at DESC
        LIMIT $${bindIndex} OFFSET $${bindIndex + 1}`,
@@ -142,15 +144,15 @@ class StudentService {
    * Get student by user ID
    */
   async getStudentByUserId(userId) {
-    const [students] = await sequelize.query(
-      `SELECT s.student_id, s.user_id, s.student_number, s.qualification_id,
+    const students = await sequelize.query(
+      `SELECT s.id as student_id, s.user_id, s.student_number, s.qualification_id,
               s.lifecycle_status, s.academic_status, s.enrollment_date,
-              s.expected_graduation, s.graduation_date,
               ud.first_name, ud.last_name,
               q.name as qualification_name
        FROM students s
-       LEFT JOIN user_details ud ON s.user_id = ud.user_id
-       LEFT JOIN qualifications q ON s.qualification_id = q.qualification_id
+       INNER JOIN users u ON s.user_id = u.id
+       LEFT JOIN user_details ud ON u.id = ud.user_id
+       LEFT JOIN qualifications q ON s.qualification_id = q.id
        WHERE s.user_id = $1`,
       {
         bind: [userId],
@@ -347,6 +349,100 @@ class StudentService {
     );
 
     return outRows[0];
+  }
+
+  /**
+   * Upload profile photo for student
+   */
+  async uploadProfilePhoto(studentUserId, file) {
+    // Get student record
+    const [student] = await sequelize.query(
+      `SELECT user_id, profile_photo_url
+       FROM Students
+       WHERE user_id = ?`,
+      {
+        replacements: [studentUserId],
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (!student) {
+      throw { statusCode: 404, message: 'Student not found' };
+    }
+
+    // Delete old photo if exists
+    if (student.profile_photo_url) {
+      try {
+        await FileUploadUtility.deleteFile(student.profile_photo_url);
+      } catch (error) {
+        console.warn('[StudentService] Failed to delete old profile photo:', error.message);
+      }
+    }
+
+    // Get file metadata
+    const metadata = file.metadata || FileUploadUtility.getFileMetadata(
+      file,
+      file.filename,
+      file.destination
+    );
+
+    // Update student record with new photo URL
+    await sequelize.query(
+      `UPDATE Students
+       SET profile_photo_url = ?,
+           updated_at = NOW()
+       WHERE user_id = ?`,
+      {
+        replacements: [metadata.storagePath, studentUserId],
+      }
+    );
+
+    return {
+      profile_photo_url: metadata.storagePath,
+      file_name: metadata.originalName,
+      file_size: file.size,
+      formatted_size: FileUploadUtility.formatFileSize(file.size),
+    };
+  }
+
+  /**
+   * Delete profile photo for student
+   */
+  async deleteProfilePhoto(studentUserId) {
+    // Get student record
+    const [student] = await sequelize.query(
+      `SELECT user_id, profile_photo_url
+       FROM Students
+       WHERE user_id = ?`,
+      {
+        replacements: [studentUserId],
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    if (!student) {
+      throw { statusCode: 404, message: 'Student not found' };
+    }
+
+    if (!student.profile_photo_url) {
+      throw { statusCode: 404, message: 'No profile photo to delete' };
+    }
+
+    // Delete file from storage
+    await FileUploadUtility.deleteFile(student.profile_photo_url);
+
+    // Update student record
+    await sequelize.query(
+      `UPDATE Students
+       SET profile_photo_url = NULL,
+           updated_at = NOW()
+       WHERE user_id = ?`,
+      {
+        replacements: [studentUserId],
+      }
+    );
+
+    return { success: true, message: 'Profile photo deleted successfully' };
   }
 }
 

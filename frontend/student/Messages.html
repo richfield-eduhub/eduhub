@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Messages — EduHub Student</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .message-card { background: white; border-radius: 10px; border: 1px solid var(--rf-border); margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
+    .message-card:hover { box-shadow: 0 3px 10px rgba(0,20,77,0.08); transform: translateY(-1px); }
+    .message-card.unread { border-left: 4px solid var(--rf-blue); }
+    .message-header { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+    .message-subject { font-weight: 600; font-size: 14px; color: var(--rf-navy); margin-bottom: 4px; }
+    .message-from { font-size: 12px; color: var(--rf-gray); }
+    .message-date { font-size: 12px; color: var(--rf-gray); white-space: nowrap; }
+    .unread-badge { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--rf-blue); margin-right: 8px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--rf-border); }
+    .tab { padding: 12px 20px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--rf-gray); position: relative; }
+    .tab.active { color: var(--rf-blue); }
+    .tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: var(--rf-blue); }
+    .fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--rf-blue); color: white; border: none; cursor: pointer; font-size: 24px; box-shadow: 0 4px 12px rgba(5,150,105,0.3); transition: all 0.2s; z-index: 100; }
+    .fab:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(5,150,105,0.4); }
+    .compose-form { display: flex; flex-direction: column; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-weight: 600; font-size: 13px; color: var(--rf-navy); }
+    .form-select, .form-input, .form-textarea { padding: 10px 12px; border: 1.5px solid var(--rf-border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+    .form-select:focus, .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--rf-blue); }
+    .form-textarea { resize: vertical; min-height: 150px; }
+    .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 12px; border: 1px solid var(--rf-border); }
+  </style>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">MESSAGES</h1>
+  <p class="section-subtitle">Send messages to your lecturers</p>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('inbox')">📥 Inbox <span id="unread-count"></span></button>
+    <button class="tab" onclick="switchTab('sent')">📤 Sent</button>
+  </div>
+
+  <!-- Messages List -->
+  <div id="messages-container">
+    <div style="text-align:center;padding:40px">
+      <div class="spinner"></div>
+      <p style="color:var(--rf-gray);margin-top:12px">Loading messages...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Compose FAB -->
+<button class="fab" onclick="openComposeModal()" title="New Message">✉️</button>
+
+<!-- Compose Modal -->
+<div id="compose-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">New Message</div>
+      <button class="modal-close" onclick="closeModal('compose-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <form class="compose-form" onsubmit="sendMessage(event)">
+        <div class="form-group">
+          <label class="form-label">To (Lecturer) <span class="required">*</span></label>
+          <select id="recipient" class="form-select" required>
+            <option value="">Select a lecturer...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject <span class="required">*</span></label>
+          <input type="text" id="subject" class="form-input" placeholder="Enter subject..." required maxlength="255"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message <span class="required">*</span></label>
+          <textarea id="body" class="form-textarea" placeholder="Type your message here..." required></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('compose-modal')">Cancel</button>
+      <button class="btn btn-success" onclick="sendMessage(event)">📤 Send Message</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Message Modal -->
+<div id="view-modal" class="modal-overlay hidden">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="view-subject"></div>
+      <button class="modal-close" onclick="closeModal('view-modal')">×</button>
+    </div>
+    <div class="modal-body" id="view-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('view-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="../shared.js"></script>
+<script>
+requireAuth('student');
+renderNavbar('student-messages');
+
+let currentTab = 'inbox';
+let allMessages = [];
+let sentMessages = [];
+let lecturers = [];
+
+// Load data on page load
+(async () => {
+  await loadLecturers();
+  await loadMessages();
+})();
+
+async function loadLecturers() {
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/messages/lecturers`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      lecturers = data.lecturers || [];
+      populateLecturersDropdown();
+    }
+  } catch (error) {
+    console.error('Error loading lecturers:', error);
+  }
+}
+
+function populateLecturersDropdown() {
+  const select = document.getElementById('recipient');
+  select.innerHTML = '<option value="">Select a lecturer...</option>';
+
+  lecturers.forEach(lecturer => {
+    const option = document.createElement('option');
+    option.value = lecturer.id;
+    option.textContent = `${lecturer.first_name} ${lecturer.last_name}${lecturer.department ? ' (' + lecturer.department + ')' : ''}`;
+    select.appendChild(option);
+  });
+}
+
+async function loadMessages() {
+  try {
+    // Load inbox
+    const inboxResponse = await fetch(`${APP_CONFIG.API_URL}/messages`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (inboxResponse.ok) {
+      const data = await inboxResponse.json();
+      allMessages = data.messages || [];
+    }
+
+    // Load sent messages
+    const sentResponse = await fetch(`${APP_CONFIG.API_URL}/messages/sent`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (sentResponse.ok) {
+      const data = await sentResponse.json();
+      sentMessages = data.messages || [];
+    }
+
+    renderMessages();
+  } catch (error) {
+    console.error('Error loading messages:', error);
+    document.getElementById('messages-container').innerHTML = `
+      <div class="empty-state">
+        <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+        <h3 style="color:var(--rf-navy);margin-bottom:8px">Failed to Load Messages</h3>
+        <p style="color:var(--rf-gray)">Please refresh the page to try again.</p>
+      </div>`;
+  }
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderMessages();
+}
+
+function renderMessages() {
+  const messages = currentTab === 'inbox' ? allMessages : sentMessages;
+  const unreadCount = allMessages.filter(m => !m.is_read).length;
+
+  // Update unread badge
+  const badge = document.getElementById('unread-count');
+  if (badge) {
+    badge.textContent = unreadCount > 0 ? `(${unreadCount})` : '';
+    badge.style.color = 'var(--rf-blue)';
+    badge.style.fontWeight = '700';
+  }
+
+  if (messages.length === 0) {
+    document.getElementById('messages-container').innerHTML = `
+      <div class="empty-state">
+        <div style="font-size:48px;margin-bottom:16px">📭</div>
+        <h3 style="color:var(--rf-navy);margin-bottom:8px">No ${currentTab === 'inbox' ? 'Received' : 'Sent'} Messages</h3>
+        <p style="color:var(--rf-gray)">${currentTab === 'inbox' ? 'Messages from lecturers and admins will appear here.' : 'Messages you send will appear here.'}</p>
+      </div>`;
+    return;
+  }
+
+  const container = document.getElementById('messages-container');
+  container.innerHTML = messages.map(msg => `
+    <div class="message-card ${!msg.is_read && currentTab === 'inbox' ? 'unread' : ''}" onclick="viewMessage('${msg.id}', '${currentTab}')">
+      <div class="message-header">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center">
+            ${!msg.is_read && currentTab === 'inbox' ? '<span class="unread-badge"></span>' : ''}
+            <div class="message-subject">${escapeHtml(msg.subject)}</div>
+          </div>
+          <div class="message-from">
+            ${currentTab === 'inbox'
+              ? (msg.is_broadcast
+                  ? `📢 Broadcast to ${msg.recipient_role === 'all' ? 'Everyone' : msg.recipient_role + 's'}`
+                  : `From: ${msg.sender_first_name || ''} ${msg.sender_last_name || ''} (${msg.sender_email || ''})`)
+              : `To: ${msg.recipient_first_name || ''} ${msg.recipient_last_name || ''} (${msg.recipient_email || ''})`}
+          </div>
+        </div>
+        <div class="message-date">${fmtDateTime(msg.created_at)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function viewMessage(id, tab) {
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/messages/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const msg = data.message;
+
+      document.getElementById('view-subject').textContent = msg.subject;
+      document.getElementById('view-body').innerHTML = `
+        <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--rf-border)">
+          <div style="font-size:12px;color:var(--rf-gray);margin-bottom:8px">
+            ${tab === 'inbox'
+              ? (msg.is_broadcast
+                  ? `<strong>📢 Broadcast Message</strong> to ${msg.recipient_role === 'all' ? 'Everyone' : msg.recipient_role + 's'}`
+                  : `<strong>From:</strong> ${msg.sender_first_name} ${msg.sender_last_name} (${msg.sender_email})`)
+              : `<strong>To:</strong> ${msg.recipient_first_name} ${msg.recipient_last_name} (${msg.recipient_email})`}
+          </div>
+          <div style="font-size:12px;color:var(--rf-gray)">
+            <strong>Date:</strong> ${fmtDateTime(msg.created_at)}
+          </div>
+        </div>
+        <div style="white-space:pre-wrap;line-height:1.7;font-size:14px;color:var(--rf-navy)">
+          ${escapeHtml(msg.body)}
+        </div>
+      `;
+
+      openModal('view-modal');
+
+      // Reload messages to update unread count
+      if (tab === 'inbox' && !msg.is_read) {
+        setTimeout(() => loadMessages(), 500);
+      }
+    }
+  } catch (error) {
+    console.error('Error viewing message:', error);
+    showToast('Failed to load message', 'error');
+  }
+}
+
+function openComposeModal() {
+  document.getElementById('subject').value = '';
+  document.getElementById('body').value = '';
+  document.getElementById('recipient').value = '';
+  openModal('compose-modal');
+}
+
+async function sendMessage(event) {
+  event.preventDefault();
+
+  const recipientId = document.getElementById('recipient').value;
+  const subject = document.getElementById('subject').value.trim();
+  const body = document.getElementById('body').value.trim();
+
+  if (!recipientId || !subject || !body) {
+    showToast('Please fill in all fields', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        recipientId,
+        subject,
+        body,
+      }),
+    });
+
+    if (response.ok) {
+      showToast('Message sent successfully!', 'success');
+      closeModal('compose-modal');
+      await loadMessages();
+    } else {
+      const error = await response.json();
+      showToast(error.message || 'Failed to send message', 'error');
+    }
+  } catch (error) {
+    console.error('Error sending message:', error);
+    showToast('Failed to send message', 'error');
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>

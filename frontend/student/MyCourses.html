@@ -17,14 +17,198 @@
 const user = requireAuth('student');
 renderNavbar('student-mycourses');
 
+// Download proof of registration as HTML
+async function downloadProofOfRegistration() {
+  try {
+    showToast('Generating proof of registration...', 'info');
+
+    const token = getToken();
+    if (!token) {
+      showToast('Please login again to download proof of registration', 'error');
+      return;
+    }
+
+    const res = await fetch('/api/registrations/proof', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      showToast(data.message || 'Failed to generate proof of registration', 'error');
+      return;
+    }
+
+    const proof = data.proof;
+
+    // Generate HTML document
+    const html = generateProofHTML(proof);
+
+    // Create blob and download
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Proof_of_Registration_${proof.student.student_number}_${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('Proof of registration downloaded successfully', 'success');
+  } catch (err) {
+    console.error('Error downloading proof:', err);
+    showToast('Error generating proof of registration', 'error');
+  }
+}
+
+function generateProofHTML(proof) {
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A';
+    return new Date(dateStr).toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Proof of Registration - ${proof.student.student_number}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; padding: 40px 20px; background: #f8f9fa; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border: 1px solid #dee2e6; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+    .header { text-align: center; border-bottom: 3px solid #001A4D; padding-bottom: 20px; margin-bottom: 30px; }
+    .logo { font-size: 28px; font-weight: 900; color: #001A4D; letter-spacing: 2px; margin-bottom: 5px; }
+    .subtitle { font-size: 14px; color: #6c757d; }
+    .doc-title { text-align: center; font-size: 22px; font-weight: 700; color: #001A4D; margin: 30px 0 20px; text-transform: uppercase; letter-spacing: 1px; }
+    .section { margin-bottom: 25px; }
+    .section-title { font-size: 16px; font-weight: 700; color: #001A4D; background: #f8f9fa; padding: 8px 12px; border-left: 4px solid #F5A623; margin-bottom: 12px; }
+    .info-row { display: flex; padding: 8px 0; border-bottom: 1px solid #e9ecef; }
+    .info-label { font-weight: 600; color: #495057; width: 200px; flex-shrink: 0; }
+    .info-value { color: #212529; flex: 1; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { text-align: left; padding: 12px; border: 1px solid #dee2e6; }
+    th { background: #001A4D; color: white; font-weight: 600; font-size: 14px; }
+    td { font-size: 14px; }
+    .summary { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 20px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 15px; }
+    .summary-row strong { color: #001A4D; }
+    .footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #dee2e6; text-align: center; font-size: 12px; color: #6c757d; }
+    .watermark { text-align: center; margin-top: 15px; font-size: 11px; color: #adb5bd; font-style: italic; }
+    @media print {
+      body { background: white; padding: 0; }
+      .container { box-shadow: none; border: none; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">EDUHUB GRADUATE INSTITUTE</div>
+      <div class="subtitle">Excellence in Education • Innovation in Learning</div>
+    </div>
+
+    <div class="doc-title">PROOF OF REGISTRATION</div>
+
+    <div class="section">
+      <div class="section-title">Student Information</div>
+      <div class="info-row"><div class="info-label">Student Number:</div><div class="info-value"><strong>${proof.student.student_number}</strong></div></div>
+      <div class="info-row"><div class="info-label">Full Name:</div><div class="info-value">${proof.student.first_name} ${proof.student.last_name}</div></div>
+      <div class="info-row"><div class="info-label">ID Number:</div><div class="info-value">${proof.student.id_number || 'N/A'}</div></div>
+      <div class="info-row"><div class="info-label">Email:</div><div class="info-value">${proof.student.email}</div></div>
+      <div class="info-row"><div class="info-label">Phone:</div><div class="info-value">${proof.student.phone || 'N/A'}</div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Programme Details</div>
+      <div class="info-row"><div class="info-label">Qualification:</div><div class="info-value"><strong>${proof.student.qualification}</strong></div></div>
+      <div class="info-row"><div class="info-label">Qualification Code:</div><div class="info-value">${proof.student.qualification_code}</div></div>
+      <div class="info-row"><div class="info-label">Enrollment Date:</div><div class="info-value">${formatDate(proof.student.enrollment_date)}</div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Semester Information</div>
+      <div class="info-row"><div class="info-label">Academic Period:</div><div class="info-value"><strong>${proof.semester.name} ${proof.semester.year}</strong></div></div>
+      <div class="info-row"><div class="info-label">Start Date:</div><div class="info-value">${formatDate(proof.semester.start_date)}</div></div>
+      <div class="info-row"><div class="info-label">End Date:</div><div class="info-value">${formatDate(proof.semester.end_date)}</div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Registered Modules</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Module Code</th>
+            <th>Module Name</th>
+            <th style="text-align:center">Credits</th>
+            <th style="text-align:center">Status</th>
+            <th style="text-align:right">Fee (ZAR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${proof.registrations.map(r => `
+          <tr>
+            <td><strong>${r.module_code}</strong></td>
+            <td>${r.module_name}</td>
+            <td style="text-align:center">${r.credits}</td>
+            <td style="text-align:center"><span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600">${r.status.toUpperCase()}</span></td>
+            <td style="text-align:right">R ${parseFloat(r.fee).toLocaleString('en-ZA', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+          </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <div class="summary">
+        <div class="summary-row"><span>Total Modules:</span><strong>${proof.summary.total_modules}</strong></div>
+        <div class="summary-row"><span>Total Credits:</span><strong>${proof.summary.total_credits}</strong></div>
+        <div class="summary-row" style="font-size:17px;margin-top:8px;padding-top:8px;border-top:2px solid #dee2e6"><span>Total Fees:</span><strong>R ${parseFloat(proof.summary.total_fees).toLocaleString('en-ZA', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div><strong>This document certifies that the above student is officially registered for the listed modules.</strong></div>
+      <div style="margin-top:10px">Generated on: ${formatDate(proof.generated_at)}</div>
+      <div>Document ID: ${proof.document_id}</div>
+      <div class="watermark">This is an official document from EduHub Graduate Institute</div>
+    </div>
+
+    <div class="no-print" style="text-align:center;margin-top:20px">
+      <button onclick="window.print()" style="background:#001A4D;color:white;border:none;padding:12px 24px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer">🖨️ Print This Document</button>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+(async () => {
+  // Load data from API first
+  await ensureDashboardData();
+
+const sid = user.studentId || user.student_number || user.student_id || '';
 const apps = getApplications();
 const regs = getRegistrations();
-const myApp = apps.find(a => a.studentId === user.studentId && a.status === 'approved');
-const qual  = QUALIFICATIONS.find(q => q.code === myApp?.qualificationCode);
-const myAllocs = regs.filter(r => r.studentId === user.studentId && (r.status === 'allocated' || r.status === 'approved'))
-                     .sort((a,b) => a.studyYear !== b.studyYear ? a.studyYear-b.studyYear : a.semester-b.semester);
 
-if (!myApp) {
+// Find approved application - check both studentId and user_id
+const myApp = apps.find(a => (a.studentId === sid || a.user_id === user.user_id) && a.status === 'approved');
+
+// If no application with studentId, try to find by email or user_id
+const fallbackApp = !myApp ? apps.find(a =>
+  (a.email === user.email || a.user_id === user.user_id) && a.status === 'approved'
+) : null;
+
+const foundApp = myApp || fallbackApp;
+const qual = QUALIFICATIONS.find(q => q.code === foundApp?.qualificationCode);
+
+// Find registrations by checking multiple fields
+const myAllocs = regs.filter(r =>
+  (r.studentId === sid || r.user_id === user.user_id || r.student_id === sid) &&
+  (r.status === 'allocated' || r.status === 'approved')
+).sort((a,b) => a.studyYear !== b.studyYear ? a.studyYear-b.studyYear : a.semester-b.semester);
+
+// Show "apply now" only if there are no registrations and no application
+if (!foundApp && myAllocs.length === 0) {
   document.getElementById('content').innerHTML = `
     <div style="text-align:center;padding:60px 20px;background:white;border-radius:12px;border:1px solid var(--rf-border)">
       <div style="font-size:52px;margin-bottom:16px">📋</div>
@@ -36,8 +220,8 @@ if (!myApp) {
   document.getElementById('content').innerHTML = `
     <div style="background:linear-gradient(135deg,#001A4D,#123f7a);color:white;border-radius:12px;padding:24px 28px;margin-bottom:20px">
       <div style="font-size:12px;opacity:.65;margin-bottom:4px;letter-spacing:1px">ENROLLED IN</div>
-      <div style="font-weight:800;font-size:20px">${myApp.qualificationName}</div>
-      <div style="font-size:13px;opacity:.75;margin-top:4px">${qual?.faculty} · ${qual?.duration}</div>
+      <div style="font-weight:800;font-size:20px">${foundApp?.qualificationName || 'Not Specified'}</div>
+      <div style="font-size:13px;opacity:.75;margin-top:4px">${qual?.faculty || ''} · ${qual?.duration || ''}</div>
     </div>
     <div style="text-align:center;padding:52px 20px;background:white;border-radius:12px;border:2px dashed #C7D2FE">
       <div style="font-size:52px;margin-bottom:16px">⏳</div>
@@ -51,13 +235,18 @@ if (!myApp) {
     <div style="background:linear-gradient(135deg,#001A4D,#123f7a);color:white;border-radius:12px;padding:24px 28px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
       <div>
         <div style="font-size:12px;opacity:.65;margin-bottom:4px;letter-spacing:1px">ENROLLED IN</div>
-        <div style="font-weight:800;font-size:20px">${myApp.qualificationName}</div>
-        <div style="font-size:13px;opacity:.75;margin-top:4px">${qual?.faculty} · ${qual?.duration}</div>
+        <div style="font-weight:800;font-size:20px">${foundApp?.qualificationName || 'Programme'}</div>
+        <div style="font-size:13px;opacity:.75;margin-top:4px">${qual?.faculty || ''} ${qual?.faculty && qual?.duration ? '·' : ''} ${qual?.duration || ''}</div>
       </div>
       <div style="display:flex;gap:24px;text-align:center">
         <div><div style="font-size:24px">📚</div><div style="font-weight:900;font-size:26px">${totalMods}</div><div style="font-size:11px;opacity:.7">Modules</div></div>
         <div><div style="font-size:24px">⭐</div><div style="font-weight:900;font-size:26px">${totalCreds}</div><div style="font-size:11px;opacity:.7">Credits</div></div>
       </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+      <button onclick="downloadProofOfRegistration()" class="btn btn-primary" style="display:flex;align-items:center;gap:8px">
+        <span>📄</span> Download Proof of Registration
+      </button>
     </div>
     ${myAllocs.map(reg => `
     <div style="background:white;border-radius:12px;border:1px solid var(--rf-border);margin-bottom:20px;overflow:hidden">
@@ -88,6 +277,7 @@ if (!myApp) {
     </div>`).join('')}
     <div class="alert alert-info"><span>📞</span><div>For queries about your course allocation, contact <strong>admissions@eduhub.ac.za</strong> or call <strong>0860 742 434</strong>.</div></div>`;
 }
+})();
 </script>
 </body>
 </html>

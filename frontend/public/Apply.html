@@ -89,6 +89,44 @@
   </head>
   <body>
     <div id="navbar-root"></div>
+
+    <!-- Loading Overlay -->
+    <div
+      id="loading-overlay"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <div style="text-align: center; color: white">
+        <div
+          style="
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+          "
+        ></div>
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px">
+          Submitting Your Application
+        </div>
+        <div style="font-size: 14px; color: rgba(255, 255, 255, 0.8)">
+          Please wait while we process your submission...
+        </div>
+      </div>
+    </div>
+
     <div
       id="app"
       style="
@@ -246,6 +284,7 @@
         submitted: false,
         submittedApp: null,
         draftId: null,
+        savedApplicationId: null,
         draftStarted: false,
         savingDraft: false,
         submittingDraft: false,
@@ -304,6 +343,7 @@
         apsResult: null,
         apsLoading: false,
         errors: {},
+        existingApplications: [], // Store user's existing applications to prevent duplicates
       };
 
       // If re-enrol mode and student found, pre-fill form from existing record
@@ -390,6 +430,24 @@
         return `${fullYear}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
       }
 
+      // SA ID digits 7–10: 0000–4999 = Female, 5000–9999 = Male
+      function deriveGenderFromSaId(idNumber) {
+        const digits = String(idNumber || "").replace(/\D/g, "");
+        if (digits.length < 10) return "";
+        const sequence = Number(digits.slice(6, 10));
+        if (!Number.isFinite(sequence)) return "";
+        return sequence < 5000 ? "Female" : "Male";
+      }
+
+      function applySaIdDerivedFields(idNumber) {
+        if (isForeign()) return;
+        const digits = String(idNumber || "").replace(/\D/g, "");
+        set("dateOfBirth", deriveDobFromSaId(digits) || "");
+        set("gender", deriveGenderFromSaId(digits) || "");
+        const dobInput = document.getElementById("date-of-birth-input");
+        if (dobInput) dobInput.value = state.form.dateOfBirth || "";
+      }
+
       function validateSAIdDOB(idNumber, dateOfBirth) {
         const derivedDob = deriveDobFromSaId(idNumber);
         if (!derivedDob || !dateOfBirth) return false;
@@ -397,23 +455,30 @@
         return derivedDob === dob;
       }
 
-      // SA ID checksum (Luhn) validation
+      // SA ID checksum validation (last digit)
       function isValidSouthAfricanIdNumber(idNumber) {
         const digits = String(idNumber || "").replace(/\D/g, "");
         if (!/^\d{13}$/.test(digits)) return false;
-        let sum = 0;
-        let shouldDouble = false;
-        for (let i = digits.length - 1; i >= 0; i -= 1) {
-          let n = Number(digits[i]);
-          if (shouldDouble) {
-            n *= 2;
-            if (n > 9) n -= 9;
-          }
-          sum += n;
-          shouldDouble = !shouldDouble;
+
+        let oddSum = 0;
+        let evenDigits = "";
+        for (let i = 0; i < 12; i += 1) {
+          if (i % 2 === 0) oddSum += Number(digits[i]);
+          else evenDigits += digits[i];
         }
-        return sum % 10 === 0;
+        const sumEven = String(Number(evenDigits) * 2)
+          .split("")
+          .reduce((total, digit) => total + Number(digit), 0);
+        const checkDigit = (10 - ((oddSum + sumEven) % 10)) % 10;
+        return checkDigit === Number(digits[12]);
       }
+
+      const SA_ID_CHECKSUM_ERROR =
+        "Invalid SA ID number. The check digit (last digit) does not match — please re-check your ID.";
+      const CONTACT_EMAIL_ERROR =
+        "This email is already in use by another user. Use a different email or log in to your existing account.";
+      const CONTACT_PHONE_ERROR =
+        "This phone number is already in use by another user. Please use a different number.";
 
       function isValidCompanyRegistrationNumber(value) {
         const normalized = String(value || "")
@@ -430,17 +495,13 @@
         inputEl.value = digits;
         set("idNumber", digits);
         if (isForeign()) return;
-        const derivedDob = deriveDobFromSaId(digits);
-        set("dateOfBirth", derivedDob || "");
-        const dobInput = document.getElementById("date-of-birth-input");
-        if (dobInput) dobInput.value = state.form.dateOfBirth || "";
+        applySaIdDerivedFields(digits);
       }
 
       function setNationality(value) {
         state.form.nationality = value;
         if (value === "South African") {
-          const derivedDob = deriveDobFromSaId(state.form.idNumber);
-          state.form.dateOfBirth = derivedDob || "";
+          applySaIdDerivedFields(state.form.idNumber || state.identityNumber);
         }
         render();
       }
@@ -474,6 +535,9 @@
         const draftDob =
           draft.date_of_birth ||
           (!isPassportIdentity ? deriveDobFromSaId(draftIdNumber) : "");
+        const draftGender =
+          draft.gender ||
+          (!isPassportIdentity ? deriveGenderFromSaId(draftIdNumber) : "");
         const draftSubjectEntries = ensureMinimumSubjectRows(
           (Array.isArray(draft.mark_entries) ? draft.mark_entries : []).map(
             (entry) => ({
@@ -496,7 +560,7 @@
           idNumber: draftIdNumber,
           passportNumber: draft.passport_number || "",
           dateOfBirth: draftDob,
-          gender: draft.gender || "",
+          gender: draftGender,
           nationality: draft.nationality || "South African",
           phone: draft.phone || "",
           email: draft.email || "",
@@ -545,6 +609,7 @@
               ? "other"
               : "new";
         state.draftId = draft.id || draft.draft_id || state.draftId;
+        state.savedApplicationId = state.draftId;
         state.apsResult = draft.aps_result || null;
       }
 
@@ -657,10 +722,47 @@
         state.form.additionalQualifications = list;
       }
 
+      function sanitizeMarkInput(rawValue) {
+        let value = String(rawValue || "")
+          .trim()
+          .toUpperCase()
+          .replace(/[^\dA-G\- ]/g, "");
+        if (!value) return "";
+        if (/^-+\d*$/.test(value)) value = value.replace(/^-+/, "");
+        if (!value) return "";
+
+        if (/^[A-G]$/.test(value)) return value;
+
+        if (/^\d+$/.test(value)) {
+          const num = Number(value);
+          if (num > 100) return "100";
+          return value;
+        }
+
+        const rangeMatch = value.match(/^(\d{1,3})\s*-\s*(\d{0,3})$/);
+        if (rangeMatch) {
+          const min = Math.min(Number(rangeMatch[1]), 100);
+          const maxPart = rangeMatch[2];
+          if (!maxPart) return `${min}-`;
+          const max = Math.min(Number(maxPart), 100);
+          return `${min}-${max}`;
+        }
+
+        if (/^\d{0,3}$/.test(value)) {
+          if (value && Number(value) > 100) return "100";
+          return value;
+        }
+
+        if (/^[A-G]?$/.test(value)) return value;
+
+        return value.slice(0, -1);
+      }
+
       function setSubjectEntryField(index, key, value) {
         const rows = [...(state.form.subjectEntries || [])];
         if (!rows[index]) return;
-        rows[index][key] = value;
+        rows[index][key] =
+          key === "mark" ? sanitizeMarkInput(value) : value;
         state.form.subjectEntries = rows;
       }
 
@@ -701,12 +803,21 @@
               if (!isForeign()) {
                 if (!f.idNumber || f.idNumber.length < 13)
                   e.idNumber = "Enter a valid 13-digit SA ID";
+                else if (!isValidSouthAfricanIdNumber(f.idNumber))
+                  e.idNumber = SA_ID_CHECKSUM_ERROR;
                 else if (
                   f.dateOfBirth &&
                   !validateSAIdDOB(f.idNumber, f.dateOfBirth)
                 )
                   e.idNumber =
                     "First 6 digits of your ID must match your date of birth (YYMMDD). E.g. born 2002-09-08 → ID starts with 020908";
+                else if (
+                  f.gender &&
+                  deriveGenderFromSaId(f.idNumber) &&
+                  f.gender !== deriveGenderFromSaId(f.idNumber)
+                )
+                  e.gender =
+                    "Gender must match your SA ID (digits 7–10: 0000–4999 Female, 5000–9999 Male)";
               }
               if (
                 isForeign() &&
@@ -734,15 +845,37 @@
                 e.campusId = "Please select a campus for this qualification";
             }
             if (s === 3) {
-              const coreSubjects = getApsSubjectsPayload().filter(
-                (item) =>
-                  String(item.name || "")
-                    .trim()
-                    .toLowerCase() !== "life orientation",
-              );
-              if (coreSubjects.length < 6) {
+              const rows = state.form.subjectEntries || [];
+              const markWithoutSubject = rows.find((row) => {
+                const name = String(row?.subject || "").trim();
+                const mark = String(row?.mark || "").trim();
+                return mark && normalizeMarkToken(mark) && !name;
+              });
+              if (markWithoutSubject) {
                 e.subjectEntries =
-                  "Enter at least 6 subjects with marks (excluding Life Orientation).";
+                  "Select a subject for every mark entered.";
+              } else {
+                const invalidMarkRow = rows.find((row) => {
+                  const name = String(row?.subject || "").trim();
+                  const mark = String(row?.mark || "").trim();
+                  if (!name) return false;
+                  return !mark || !normalizeMarkToken(mark);
+                });
+                if (invalidMarkRow) {
+                  e.subjectEntries =
+                    "Each subject needs a valid mark: percentage 0–100, symbol A–G, or range like 70-79.";
+                } else {
+                  const coreSubjects = getApsSubjectsPayload().filter(
+                    (item) =>
+                      String(item.name || "")
+                        .trim()
+                        .toLowerCase() !== "life orientation",
+                  );
+                  if (coreSubjects.length < 6) {
+                    e.subjectEntries =
+                      "Enter at least 6 subjects with marks (excluding Life Orientation).";
+                  }
+                }
               }
             }
             if (s === 2) {
@@ -757,8 +890,7 @@
                 if (!f.guardianIdNumber)
                   e.guardianIdNumber = "Guardian ID number is required";
                 else if (!isValidSouthAfricanIdNumber(f.guardianIdNumber))
-                  e.guardianIdNumber =
-                    "Enter a valid South African ID number (13 digits).";
+                  e.guardianIdNumber = SA_ID_CHECKSUM_ERROR;
                 if (!f.payerEmail || !f.payerEmail.includes("@"))
                   e.payerEmail = "Valid email is required";
                 if (!f.payerAddress)
@@ -797,6 +929,38 @@
         state.errors = e;
         render();
         return Object.keys(e).length === 0;
+      }
+
+      async function validateContactAvailability() {
+        if (!state.form.email && !state.form.phone) return true;
+
+        const res = await checkApplicationContactAvailability({
+          email: state.form.email,
+          phone: state.form.phone,
+          draft_id: state.draftId || undefined,
+          id_number: state.form.idNumber || undefined,
+          passport_number: state.form.passportNumber || undefined,
+        });
+
+        if (!res.ok || !res.data) {
+          showToast(
+            res.message || "Could not verify contact details.",
+            "error",
+          );
+          return false;
+        }
+
+        let valid = true;
+        if (res.data.email_available === false) {
+          state.errors.email = CONTACT_EMAIL_ERROR;
+          valid = false;
+        }
+        if (res.data.phone_available === false) {
+          state.errors.phone = CONTACT_PHONE_ERROR;
+          valid = false;
+        }
+        if (!valid) render();
+        return valid;
       }
 
       function admissionToYear(af) {
@@ -907,19 +1071,61 @@
         return payload;
       }
 
+      const MARK_SYMBOL_AVERAGES = {
+        A: 85,
+        B: 75,
+        C: 65,
+        D: 55,
+        E: 45,
+        F: 35,
+        G: 20,
+      };
+
+      function resolveMarkPercentage(rawValue) {
+        const token = normalizeMarkToken(rawValue);
+        if (!token) return null;
+        if (token.percentage != null) return token.percentage;
+        if (token.symbol) return MARK_SYMBOL_AVERAGES[token.symbol] ?? null;
+        if (token.range) {
+          const [min, max] = token.range.split("-").map(Number);
+          return Math.round((min + max) / 2);
+        }
+        return null;
+      }
+
+      function formatMarkDisplay(rawValue) {
+        const mark = String(rawValue || "").trim().toUpperCase();
+        if (!mark) return "";
+        const token = normalizeMarkToken(mark);
+        if (!token) return mark;
+        if (token.symbol) {
+          return `${token.symbol} (${MARK_SYMBOL_AVERAGES[token.symbol]}%)`;
+        }
+        if (token.range) {
+          return `${token.range} (~${resolveMarkPercentage(mark)}%)`;
+        }
+        return `${token.percentage}%`;
+      }
+
       function normalizeMarkToken(rawValue) {
         const value = String(rawValue || "")
           .trim()
           .toUpperCase();
         if (!value) return null;
         if (/^\d{1,3}$/.test(value)) {
-          return { percentage: Number(value) };
+          const num = Number(value);
+          if (num < 0 || num > 100) return null;
+          return { percentage: num };
         }
         if (/^[A-G]$/.test(value)) {
           return { symbol: value };
         }
         if (/^\d{1,3}\s*-\s*\d{1,3}$/.test(value)) {
-          return { range: value.replace(/\s+/g, "") };
+          const [minStr, maxStr] = value.split(/\s*-\s*/);
+          const min = Number(minStr);
+          const max = Number(maxStr);
+          if (min < 0 || max > 100 || min > max) return null;
+          return { range: `${min}-${max}` };
         }
         return null;
       }
@@ -941,6 +1147,31 @@
       }
 
       async function runApsEvaluation() {
+        const rows = state.form.subjectEntries || [];
+        const markWithoutSubject = rows.find((row) => {
+          const name = String(row?.subject || "").trim();
+          const mark = String(row?.mark || "").trim();
+          return mark && normalizeMarkToken(mark) && !name;
+        });
+        if (markWithoutSubject) {
+          showToast(
+            "Select a subject for every mark entered before calculating APS.",
+            "error",
+          );
+          return;
+        }
+        const invalidMarkRow = rows.find((row) => {
+          const name = String(row?.subject || "").trim();
+          const mark = String(row?.mark || "").trim();
+          return name && (!mark || !normalizeMarkToken(mark));
+        });
+        if (invalidMarkRow) {
+          showToast(
+            "Each subject needs a valid mark (0–100, A–G, or range like 70-79).",
+            "error",
+          );
+          return;
+        }
         const subjects = getApsSubjectsPayload();
         if (!subjects.length) {
           showToast("Enter at least one subject mark first.", "error");
@@ -1002,7 +1233,10 @@
 
       async function ensureDraftStarted() {
         if (state.reenrolMode || state.appType === "returning") return true;
-        if (state.draftId) return true;
+        if (state.draftId) {
+          state.savedApplicationId = state.draftId;
+          return true;
+        }
         const res = await startApplicationDraft(buildMinimalDraftPayload());
         if (!res.ok || !res.data || !res.data.draft || !res.data.draft.id) {
           showToast(
@@ -1012,6 +1246,7 @@
           return false;
         }
         state.draftId = res.data.draft.id;
+        state.savedApplicationId = res.data.draft.id; // Save for document uploads
         state.draftStarted = true;
         return true;
       }
@@ -1027,10 +1262,16 @@
         );
         state.savingDraft = false;
         if (!res.ok) {
-          showToast(
-            res.message || "Autosave failed. Please try again.",
-            "error",
-          );
+          const message = res.message || "Autosave failed. Please try again.";
+          if (res.status === 409) {
+            if (message.toLowerCase().includes("email")) {
+              state.errors.email = CONTACT_EMAIL_ERROR;
+            } else if (message.toLowerCase().includes("phone")) {
+              state.errors.phone = CONTACT_PHONE_ERROR;
+            }
+            render();
+          }
+          showToast(message, "error");
           return false;
         }
         return true;
@@ -1046,6 +1287,14 @@
           return;
         }
         if (!validate()) return;
+        if (
+          !state.reenrolMode &&
+          (state.appType === "new" || state.appType === "other") &&
+          state.step === 1
+        ) {
+          const contactOk = await validateContactAvailability();
+          if (!contactOk) return;
+        }
         if (
           !state.reenrolMode &&
           state.appType !== "returning" &&
@@ -1092,15 +1341,28 @@
           submissionPayload,
         );
 
+        console.log("[Apply] Checking submission path conditions:", {
+          reenrolMode: state.reenrolMode,
+          appType: state.appType,
+          draftId: state.draftId,
+          willUseDraftFlow:
+            !state.reenrolMode &&
+            state.appType !== "returning" &&
+            state.draftId,
+        });
+
         if (
           !state.reenrolMode &&
           state.appType !== "returning" &&
           state.draftId
         ) {
+          console.log("[Apply] Using draft flow - Starting payment intent...");
           state.submittingDraft = true;
+          render(); // Show loading spinner immediately
           const paymentIntent = await createApplicationPaymentIntent(
             state.draftId,
           );
+          console.log("[Apply] Payment intent result:", paymentIntent);
           if (!paymentIntent.ok) {
             state.submittingDraft = false;
             showToast(
@@ -1109,10 +1371,12 @@
             );
             return;
           }
+          console.log("[Apply] Confirming payment...");
           const paymentConfirm = await confirmApplicationPayment(
             state.draftId,
             { paid: true },
           );
+          console.log("[Apply] Payment confirm result:", paymentConfirm);
           if (!paymentConfirm.ok) {
             state.submittingDraft = false;
             showToast(
@@ -1121,7 +1385,11 @@
             );
             return;
           }
+          console.log(
+            "[Apply] Submitting draft to generate student number and send email...",
+          );
           const submitted = await submitApplicationDraft(state.draftId);
+          console.log("[Apply] Submit result:", submitted);
           state.submittingDraft = false;
           if (!submitted.ok || !submitted.data) {
             showToast(
@@ -1130,6 +1398,10 @@
             );
             return;
           }
+          console.log(
+            "[Apply] Draft submitted successfully! Student number:",
+            submitted.data.student_number,
+          );
           setState({
             submitted: true,
             submittedApp: {
@@ -1142,6 +1414,10 @@
           });
           return;
         }
+
+        console.log(
+          "[Apply] Using direct submission flow (bypassing draft submit - no email will be sent)",
+        );
 
         const app = await submitApplication(submissionPayload);
         const fallbackId =
@@ -1312,6 +1588,14 @@
           return;
         }
         if (
+          state.identityDocumentType === "id" &&
+          !isValidSouthAfricanIdNumber(normalized)
+        ) {
+          state.identityError = SA_ID_CHECKSUM_ERROR;
+          render();
+          return;
+        }
+        if (
           state.identityDocumentType === "passport" &&
           (!normalized || normalized.length < 5)
         ) {
@@ -1326,6 +1610,7 @@
         if (!isPassport) {
           state.form.nationality = "South African";
           state.form.dateOfBirth = deriveDobFromSaId(normalized) || "";
+          state.form.gender = deriveGenderFromSaId(normalized) || "";
         }
 
         state.checkingIdentity = true;
@@ -1342,6 +1627,37 @@
         }
 
         state.identityStatus = statusRes.data;
+
+        // Check if user already exists and needs to login
+        if (statusRes.data.requires_login && statusRes.data.existing_user) {
+          const user = statusRes.data.existing_user;
+          const userName =
+            user.first_name && user.last_name
+              ? `${user.first_name} ${user.last_name}`
+              : user.email;
+
+          const shouldLogin = confirm(
+            `Welcome back${user.first_name ? ", " + user.first_name : ""}!\n\n` +
+              `We found an existing account (${user.email}) with this ${statusRes.data.identity_type === "id_number" ? "ID number" : "passport number"}.\n\n` +
+              `Please login to continue your application with your saved information.\n\n` +
+              `Click OK to go to login page, or Cancel to stay here.`,
+          );
+
+          if (shouldLogin) {
+            // Redirect to login with return URL
+            window.location.href = `/login?returnTo=${encodeURIComponent("/apply")}`;
+            return;
+          } else {
+            // User chose to cancel - show error message
+            state.identityError =
+              `This ${statusRes.data.identity_type === "id_number" ? "ID number" : "passport"} is already registered. ` +
+              `Please login to continue.`;
+            state.identityChecked = false;
+            render();
+            return;
+          }
+        }
+
         const latest = statusRes.data.latest_status;
         if (latest && latest !== "draft") {
           const statusUi = getIdentityStatusInfo(latest);
@@ -1479,6 +1795,14 @@
         const app = document.getElementById("app");
         const f = state.form;
 
+        // Control loading overlay
+        const loadingOverlay = document.getElementById("loading-overlay");
+        if (loadingOverlay) {
+          loadingOverlay.style.display = state.submittingDraft
+            ? "flex"
+            : "none";
+        }
+
         // ── SUBMITTED ──
         if (state.submitted && state.submittedApp) {
           app.innerHTML = `
@@ -1494,7 +1818,7 @@
           <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3;margin-bottom:16px">
             ⏱ <strong>Next Steps:</strong> Our admissions team will review within <strong>3–5 business days</strong>. You'll be contacted at <strong>${f.email}</strong>.
           </div>
-          <a href="#" onclick="window.location.href=rootPath('index.html')" style="display:block;background:#123f7a;color:white;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none">← Back to Home</a>
+          <a href="/" style="display:block;background:#123f7a;color:white;border:none;padding:12px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none">← Back to Home</a>
         </div>
       </div>`;
           return;
@@ -1902,7 +2226,8 @@
   <div class="form-row" style="margin-bottom:10px">
     <div class="form-group">
       <label class="form-label">${state.identityDocumentType === "passport" ? "Passport Number" : "SA ID Number"} <span class="required">*</span></label>
-      <input value="${state.identityNumber || ""}" oninput="state.identityNumber=normalizeIdentityInput(this.value,state.identityDocumentType);this.value=state.identityNumber" placeholder="${state.identityDocumentType === "passport" ? "A12345678" : "0001015009087"}" style="width:100%;padding:10px 14px;border:1.5px solid ${state.identityError ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px"/>
+      <input value="${state.identityNumber || ""}" oninput="state.identityNumber=normalizeIdentityInput(this.value,state.identityDocumentType);this.value=state.identityNumber" placeholder="${state.identityDocumentType === "passport" ? "A12345678" : "9001015800088"}" maxlength="${state.identityDocumentType === "passport" ? "20" : "13"}" inputmode="${state.identityDocumentType === "passport" ? "text" : "numeric"}" style="width:100%;padding:10px 14px;border:1.5px solid ${state.identityError ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px"/>
+      ${state.identityDocumentType === "id" ? `<div style="font-size:12px;color:#6b7280;margin-top:6px">13 digits including the check digit (last number).</div>` : ""}
     </div>
     <div class="form-group">
       <label class="form-label">Applicant Country <span class="required">*</span></label>
@@ -1934,6 +2259,9 @@
 
       function renderPersonalContact() {
         const f = state.form;
+        const saIdGenderOptions = ["Male", "Female"];
+        const genderOptions = isForeign() ? getGenders() : saIdGenderOptions;
+        const genderLocked = !isForeign();
         return `<div class="form-section-header"><span style="font-size:20px">👤</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Personal & Contact Details</h3></div>
   <div style="background:#F4F6FB;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:13px;color:#374151;margin-bottom:12px">${state.identityDocumentType === "passport" ? "Passport" : "SA ID"}: <strong>${state.identityNumber || "Not set"}</strong></div>
   <div class="form-row">
@@ -1942,12 +2270,12 @@
   </div>
 
   <div class="form-row">
-    <div class="form-group"><label class="form-label">Date of Birth <span class="required">*</span></label><input id="date-of-birth-input" type="date" value="${f.dateOfBirth}" oninput="set('dateOfBirth',this.value)" ${!isForeign() ? "disabled" : ""} style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.dateOfBirth ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px;${!isForeign() ? "background:#f9fafb;color:#6b7280;cursor:not-allowed;" : ""}"/>
+    <div class="form-group"><label class="form-label">Date of Birth <span class="required">*</span></label><input id="date-of-birth-input" type="date" value="${f.dateOfBirth}" oninput="set('dateOfBirth',this.value)" ${genderLocked ? "disabled" : ""} style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.dateOfBirth ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px;${genderLocked ? "background:#f9fafb;color:#6b7280;cursor:not-allowed;" : ""}"/>
     ${errSpan("dateOfBirth")}</div>
     <div class="form-group"><label class="form-label">Gender <span class="required">*</span></label>
-    <select onchange="set('gender',this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.gender ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px;background:white">
-      <option value="">Select...</option>
-      ${getGenders()
+    <select onchange="set('gender',this.value)" ${genderLocked ? "disabled" : ""} style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.gender ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px;${genderLocked ? "background:#f9fafb;color:#6b7280;cursor:not-allowed;" : "background:white"}">
+      <option value="">${genderLocked ? "Enter a valid 13-digit SA ID first" : "Select..."}</option>
+      ${genderOptions
         .map(
           (g) =>
             `<option value="${g}" ${f.gender === g ? "selected" : ""}>${g}</option>`,
@@ -1955,7 +2283,7 @@
         .join("")}
     </select>${errSpan("gender")}</div>
   </div>
-  ${!isForeign() ? `<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3">🪪 <strong>SA ID detected:</strong> Date of birth is auto-filled from the first 6 digits of your ID number.</div>` : ""}
+  ${!isForeign() ? `<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3">🪪 <strong>SA ID detected:</strong> Date of birth and gender are auto-filled from your ID number (YYMMDD and digits 7–10).</div>` : ""}
   ${isForeign() ? `<div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:13px 16px;font-size:14px;color:#3730a3">🌍 <strong>Foreign National:</strong> You'll need certified passport copy and valid study permit/visa.</div>` : ""}
   <div class="form-row">
     <div class="form-group"><label class="form-label">Phone <span class="required">*</span></label>${inp("phone", "+27 XX XXX XXXX", "tel")}${errSpan("phone")}</div>
@@ -2050,6 +2378,55 @@
   </div>`;
       }
 
+      // Check if user already has an application for this qualification
+      function checkDuplicateQualification(qualCode) {
+        if (
+          !qualCode ||
+          !state.existingApplications ||
+          state.existingApplications.length === 0
+        ) {
+          return null; // No duplicate
+        }
+
+        const duplicate = state.existingApplications.find(
+          (app) => app.qualification_code === qualCode,
+        );
+
+        return duplicate || null;
+      }
+
+      // Handle qualification selection with duplicate check
+      function handleQualificationChange(qualCode) {
+        const duplicate = checkDuplicateQualification(qualCode);
+
+        if (duplicate) {
+          const qualName =
+            QUALIFICATIONS.find((q) => q.code === qualCode)?.name || qualCode;
+          const statusText =
+            duplicate.status === "approved" ? "approved" : "pending approval";
+
+          showToast(
+            `You already have an application for "${qualName}" (Status: ${statusText}). Please select a different qualification.`,
+            "error",
+          );
+
+          // Clear the selection
+          set("qualificationCode", "");
+          set("qualificationName", "");
+          set("campusId", "");
+          setState({});
+          return;
+        }
+
+        // No duplicate - proceed with selection
+        const qual = QUALIFICATIONS.find((q) => q.code === qualCode);
+        set("qualificationCode", qualCode);
+        set("qualificationName", qual?.name || "");
+        set("campusId", "");
+        setState({});
+        refreshQualificationCampuses();
+      }
+
       function renderIntentStep() {
         const f = state.form;
         const typeOptions = [
@@ -2071,7 +2448,33 @@
           /online|distance|remote/i.test(
             `${campus?.name || ""} ${campus?.code || ""} ${campus?.city || ""}`,
           );
+
+        // Show existing applications notice
+        const existingAppsNotice =
+          state.existingApplications && state.existingApplications.length > 0
+            ? `<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:14px 16px;margin-bottom:20px">
+              <div style="font-weight:700;font-size:14px;color:#92400e;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+                <span style="font-size:18px">ℹ️</span> Existing Applications
+              </div>
+              <div style="font-size:13px;color:#92400e;line-height:1.6;margin-bottom:10px">
+                You already have ${state.existingApplications.length} active application(s). Please select a different qualification.
+              </div>
+              ${state.existingApplications
+                .map(
+                  (app) => `
+                <div style="background:white;border-radius:6px;padding:10px 12px;margin-top:8px;font-size:13px">
+                  <div style="font-weight:600;color:#001A4D">${app.qualification_name || app.qualification_code}</div>
+                  <div style="color:#6b7280;margin-top:2px">Status: <span style="font-weight:600;color:${app.status === "approved" ? "#059669" : "#f59e0b"}">${app.status === "approved" ? "Approved" : "Pending"}</span></div>
+                  ${app.reference_number ? `<div style="color:#6b7280;margin-top:2px;font-family:var(--font-mono);font-size:12px">Ref: ${app.reference_number}</div>` : ""}
+                </div>
+              `,
+                )
+                .join("")}
+            </div>`
+            : "";
+
         return `<div class="form-section-header"><span style="font-size:20px">🧭</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Application Intent</h3></div>
+  ${existingAppsNotice}
   <div style="font-weight:700;font-size:15px;color:#001A4D;margin-bottom:12px">Application Type <span class="required">*</span></div>
   <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px">
     ${typeOptions
@@ -2113,9 +2516,13 @@
   </div>
   ${errSpan("admissionStartSemester")}
   <div style="font-weight:700;font-size:15px;color:#001A4D;margin:14px 0 12px">Course Applied For <span class="required">*</span></div>
-  <select onchange="set('qualificationCode',this.value);set('qualificationName',QUALIFICATIONS.find(q=>q.code===this.value)?.name||'');set('campusId','');setState({});refreshQualificationCampuses()" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.qualificationCode ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px;color:#001A4D;background:white">
+  <select onchange="handleQualificationChange(this.value)" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.qualificationCode ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px;color:#001A4D;background:white">
     <option value="">Please Select</option>
-    ${QUALIFICATIONS.map((q) => `<option value="${q.code}" ${f.qualificationCode === q.code ? "selected" : ""}>${q.name}</option>`).join("")}
+    ${QUALIFICATIONS.map((q) => {
+      const isDuplicate = checkDuplicateQualification(q.code);
+      const label = isDuplicate ? `${q.name} ⚠️ (Already Applied)` : q.name;
+      return `<option value="${q.code}" ${f.qualificationCode === q.code ? "selected" : ""} ${isDuplicate ? 'style="color:#dc2626;font-style:italic"' : ""}>${label}</option>`;
+    }).join("")}
   </select>
   ${errSpan("qualificationCode")}
   <div style="font-weight:700;font-size:15px;color:#001A4D;margin:14px 0 12px">Campus / Online Study Option <span class="required">*</span></div>
@@ -2144,11 +2551,15 @@
         const subjectRows = ensureMinimumSubjectRows(state.form.subjectEntries);
         state.form.subjectEntries = subjectRows;
         const aps = state.apsResult;
-        const apsIncluded = Array.isArray(aps?.subject_breakdown)
-          ? aps.subject_breakdown.filter(
-              (item) => !item.ignored && item.resolved_percentage != null,
-            )
+        const breakdown = Array.isArray(aps?.subject_breakdown)
+          ? aps.subject_breakdown
           : [];
+        const hasCountedFlag = breakdown.some((item) => item.counted_in_aps);
+        const apsIncluded = hasCountedFlag
+          ? breakdown.filter((item) => item.counted_in_aps)
+          : breakdown.filter(
+              (item) => !item.ignored && item.resolved_percentage != null,
+            );
         const apsAverage = apsIncluded.length
           ? (
               apsIncluded.reduce(
@@ -2157,6 +2568,28 @@
               ) / apsIncluded.length
             ).toFixed(1)
           : null;
+        const formatBreakdownMark = (item) => {
+          if (item.source === "symbol" && item.source_symbol) {
+            return `${item.source_symbol} (${item.resolved_percentage}%)`;
+          }
+          if (item.source === "range" && item.source_range) {
+            return `${item.source_range} (~${item.resolved_percentage}%)`;
+          }
+          if (item.resolved_percentage != null) {
+            return `${item.resolved_percentage}%`;
+          }
+          return "—";
+        };
+        const breakdownRows = breakdown
+          .map(
+            (item) => `<tr>
+          <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb">${item.name}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb">${formatBreakdownMark(item)}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:center">${item.aps_points ?? "—"}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid #e5e7eb;text-align:center">${item.ignored ? "Excluded (LO)" : item.counted_in_aps ? "✓ Top 6" : "—"}</td>
+        </tr>`,
+          )
+          .join("");
         const renderSubjectCell = (
           row,
           index,
@@ -2165,11 +2598,16 @@
           locked = false,
         ) => {
           const safeSubject = String(row.subject || "").replace(/"/g, "&quot;");
+          const markFilled = Boolean(
+            String(row.mark || "").trim() && normalizeMarkToken(row.mark),
+          );
+          const subjectMissing = markFilled && !String(row.subject || "").trim();
+          const subjectBorder = subjectMissing ? "#dc2626" : "#d1d5db";
           if (locked) {
             return `<input value="${safeSubject}" disabled style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;background:#f3f4f6;color:#4b5563"/>`;
           }
           if (options.length) {
-            return `<select onchange="setSubjectEntryField(${index},'subject',this.value)" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;background:white">
+            return `<select onchange="setSubjectEntryField(${index},'subject',this.value)" title="${subjectMissing ? "Select a subject for this mark" : ""}" style="width:100%;padding:10px 12px;border:1px solid ${subjectBorder};border-radius:8px;font-size:13px;background:white">
               <option value="">${placeholder}</option>
               ${options
                 .map(
@@ -2179,15 +2617,22 @@
                 .join("")}
             </select>`;
           }
-          return `<input value="${safeSubject}" oninput="setSubjectEntryField(${index},'subject',this.value)" placeholder="${placeholder}" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;background:white"/>`;
+          return `<input value="${safeSubject}" oninput="setSubjectEntryField(${index},'subject',this.value)" placeholder="${placeholder}" title="${subjectMissing ? "Enter a subject for this mark" : ""}" style="width:100%;padding:10px 12px;border:1px solid ${subjectBorder};border-radius:8px;font-size:13px;background:white"/>`;
         };
         const renderMarkCell = (row, index) => {
           const safeMark = String(row.mark || "").replace(/"/g, "&quot;");
-          return `<input value="${safeMark}" oninput="setSubjectEntryField(${index},'mark',this.value.toUpperCase())" placeholder="e.g. 74 / B / 70-79" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;background:white"/>`;
+          const hasSubject = String(row.subject || "").trim().length > 0;
+          const markValue = String(row.mark || "").trim();
+          const markInvalid =
+            hasSubject &&
+            markValue.length > 0 &&
+            !normalizeMarkToken(markValue);
+          const borderColor = markInvalid ? "#dc2626" : "#d1d5db";
+          return `<input value="${safeMark}" oninput="const v=sanitizeMarkInput(this.value);this.value=v;setSubjectEntryField(${index},'mark',v)" placeholder="e.g. 74 / B / 70-79" title="${markInvalid ? "Enter a percentage (0–100), symbol (A–G), or range (e.g. 70-79)" : ""}" style="width:100%;padding:10px 12px;border:1px solid ${borderColor};border-radius:8px;font-size:13px;background:white"/>`;
         };
         return `<div class="form-section-header"><span style="font-size:20px">📊</span><h3 style="font-weight:700;font-size:16px;color:#001A4D">Marks & APS</h3></div>
   <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:12px 14px;font-size:13px;color:#3730a3;margin-bottom:14px">
-    Enter marks as <strong>percentage</strong> (74), <strong>symbol</strong> (B), or <strong>range</strong> (70-79).
+    Enter marks as <strong>percentage</strong> (0–100), <strong>symbol</strong> (A–G), or <strong>range</strong> (e.g. 70-79). Symbols use NSC midpoints — A=85%, B=75%, C=65%, D=55%, E=45%, F=35%, G=20%. You can mix symbols and percentages.
   </div>
   <div style="background:#F4F6FB;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:13px;color:#374151;margin-bottom:12px">
     APS is calculated using your <strong>top 6 subjects</strong>, excluding <strong>Life Orientation</strong>.
@@ -2196,11 +2641,11 @@
     <div style="background:#f3f4f6;padding:10px 12px;font-weight:700;font-size:13px;color:#111827">Compulsory Subjects (4)</div>
     <div style="padding:10px 12px">
       <div class="form-row" style="margin-bottom:8px">
-        <div class="form-group"><label class="form-label">Home Language</label>${renderSubjectCell(subjectRows[0], 0, "Select home language", LANGUAGE_SUBJECT_OPTIONS)}</div>
+        <div class="form-group"><label class="form-label">Language</label>${renderSubjectCell(subjectRows[0], 0, "Select language", LANGUAGE_SUBJECT_OPTIONS)}</div>
         <div class="form-group"><label class="form-label">Mark</label>${renderMarkCell(subjectRows[0], 0)}</div>
       </div>
       <div class="form-row" style="margin-bottom:8px">
-        <div class="form-group"><label class="form-label">First Additional Language</label>${renderSubjectCell(subjectRows[1], 1, "Select first additional language", LANGUAGE_SUBJECT_OPTIONS)}</div>
+        <div class="form-group"><label class="form-label">Language</label>${renderSubjectCell(subjectRows[1], 1, "Select another language", LANGUAGE_SUBJECT_OPTIONS)}</div>
         <div class="form-group"><label class="form-label">Mark</label>${renderMarkCell(subjectRows[1], 1)}</div>
       </div>
       <div class="form-row" style="margin-bottom:8px">
@@ -2257,8 +2702,23 @@
       ? `<div style="margin-top:14px;background:#F4F6FB;border:1px solid #e5e7eb;border-radius:10px;padding:14px">
       <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap">
         <div><div style="font-size:13px;color:#6b7280">APS Score</div><div style="font-size:28px;font-weight:800;color:#123f7a">${aps.aps_score ?? 0}</div></div>
-        <div><div style="font-size:13px;color:#6b7280">APS Subjects Average</div><div style="font-size:24px;font-weight:800;color:#0f766e">${apsAverage !== null ? `${apsAverage}%` : "—"}</div></div>
+        <div><div style="font-size:13px;color:#6b7280">Top 6 Subjects Average</div><div style="font-size:24px;font-weight:800;color:#0f766e">${apsAverage !== null ? `${apsAverage}%` : "—"}</div></div>
       </div>
+      ${
+        breakdownRows
+          ? `<div style="margin-top:12px;overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:#eef2ff;color:#3730a3">
+            <th style="padding:8px 10px;text-align:left">Subject</th>
+            <th style="padding:8px 10px;text-align:left">Mark (resolved)</th>
+            <th style="padding:8px 10px;text-align:center">APS Pts</th>
+            <th style="padding:8px 10px;text-align:center">Counted</th>
+          </tr></thead>
+          <tbody>${breakdownRows}</tbody>
+        </table>
+      </div>`
+          : ""
+      }
       <div style="font-size:12px;color:#6b7280;margin-top:8px">
         Recommended: <strong>${aps.recommended?.length || 0}</strong> · Possibly eligible: <strong>${aps.possibly_eligible?.length || 0}</strong> · Not eligible: <strong>${aps.not_eligible?.length || 0}</strong>
       </div>
@@ -2601,7 +3061,7 @@
   ${
     isGuardian
       ? `<div class="form-row">
-    <div class="form-group"><label class="form-label">Guardian ID Number <span class="required">*</span></label><input value="${f.guardianIdNumber || ""}" oninput="set('guardianIdNumber',this.value.replace(/\\D/g,'').slice(0,13))" maxlength="13" placeholder="e.g. 8001015009087" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.guardianIdNumber ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px"/>${errSpan("guardianIdNumber")}</div>
+    <div class="form-group"><label class="form-label">Guardian ID Number <span class="required">*</span></label><input value="${f.guardianIdNumber || ""}" oninput="set('guardianIdNumber',this.value.replace(/\\D/g,'').slice(0,13))" maxlength="13" inputmode="numeric" placeholder="e.g. 9001015800088" style="width:100%;padding:10px 14px;border:1.5px solid ${state.errors.guardianIdNumber ? "#dc2626" : "#e5e7eb"};border-radius:8px;font-size:14px"/>${errSpan("guardianIdNumber")}</div>
     <div class="form-group"><label class="form-label">Billing/Residential Address <span class="required">*</span></label>${inp("payerAddress", "Street, suburb, city")}${errSpan("payerAddress")}</div>
   </div>
   <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;margin-top:4px">
@@ -2685,15 +3145,159 @@
         setState({ typeConfirmed: true, step: 0 });
       }
 
-      function handleDocFile(input, doc) {
-        if (input.files && input.files[0]) {
-          if (!state.form.docsUploaded.includes(doc)) {
-            state.form.docsUploaded = [...state.form.docsUploaded, doc];
+      async function handleDocFile(input, docType) {
+        if (!input.files || !input.files[0]) return;
+
+        const file = input.files[0];
+        const maxSize = 10 * 1024 * 1024; // 10MB
+
+        // Validate file size
+        if (file.size > maxSize) {
+          showToast("File too large. Maximum size is 10MB", "error");
+          input.value = "";
+          return;
+        }
+
+        // Validate file type
+        const allowedTypes = [
+          "application/pdf",
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+        ];
+        if (!allowedTypes.includes(file.type)) {
+          showToast("Invalid file type. Only PDF and images allowed", "error");
+          input.value = "";
+          return;
+        }
+
+        // Need a saved draft ID so files attach to your application record
+        const applicationId = state.draftId || state.savedApplicationId;
+        if (!applicationId) {
+          showToast(
+            "Your application draft is not saved yet. Click Continue on each previous step to save your progress, then upload documents here.",
+            "warning",
+          );
+          input.value = "";
+          return;
+        }
+
+        try {
+          showToast(`Uploading ${docType}...`, "info");
+
+          const formData = new FormData();
+          formData.append("document", file);
+          formData.append("documentType", docType);
+
+          const headers = {};
+          const token = getToken();
+          if (token) headers.Authorization = `Bearer ${token}`;
+
+          const response = await fetch(
+            `/api/applications/drafts/${applicationId}/documents`,
+            {
+              method: "POST",
+              headers,
+              body: formData,
+            },
+          );
+
+          const result = await response.json();
+
+          if (response.ok && (result.success || result.ok)) {
+            // Mark document as uploaded
+            if (!state.form.docsUploaded.includes(docType)) {
+              state.form.docsUploaded = [...state.form.docsUploaded, docType];
+            }
+            showToast(`${docType} uploaded successfully ✓`, "success");
+            render();
+          } else {
+            showToast(result.message || "Upload failed", "error");
           }
-          render();
-          showToast(doc + " — file selected ✓", "success");
+        } catch (error) {
+          console.error("Upload error:", error);
+          showToast("Upload failed. Please try again", "error");
+        }
+
+        // Reset input
+        input.value = "";
+      }
+      // Pre-populate form with logged-in user's profile data and check existing applications
+      async function loadUserProfileData() {
+        const currentUser = getCurrentUser();
+        if (!currentUser) return;
+
+        try {
+          // Fetch user profile
+          const res = await fetch("/api/users/profile", {
+            headers: { Authorization: `Bearer ${currentUser.token}` },
+          });
+
+          if (!res.ok) return;
+
+          const data = await res.json();
+          if (!data.ok || !data.user) return;
+
+          const user = data.user;
+
+          // Pre-populate form fields with user profile data
+          state.form.firstName = user.first_name || state.form.firstName;
+          state.form.lastName = user.last_name || state.form.lastName;
+          state.form.idNumber = user.id_number || state.form.idNumber;
+          state.form.passportNumber =
+            user.passport_number || state.form.passportNumber;
+          state.form.dateOfBirth =
+            user.date_of_birth ||
+            deriveDobFromSaId(state.form.idNumber) ||
+            state.form.dateOfBirth;
+          state.form.gender =
+            user.gender ||
+            deriveGenderFromSaId(state.form.idNumber) ||
+            state.form.gender;
+          state.form.nationality = user.nationality || state.form.nationality;
+          state.form.phone = user.phone || state.form.phone;
+          state.form.email = user.email || state.form.email;
+          state.form.streetAddress =
+            user.street_address || state.form.streetAddress;
+          state.form.suburb = user.suburb || state.form.suburb;
+          state.form.city = user.city || state.form.city;
+          state.form.province = user.province || state.form.province;
+          state.form.postalCode = user.postal_code || state.form.postalCode;
+
+          // Set identity values for identity check
+          if (user.id_number) {
+            state.identityDocumentType = "id";
+            state.identityNumber = user.id_number;
+          } else if (user.passport_number) {
+            state.identityDocumentType = "passport";
+            state.identityNumber = user.passport_number;
+          }
+
+          // Fetch existing applications to prevent duplicates
+          const appsRes = await fetch("/api/applications", {
+            headers: { Authorization: `Bearer ${currentUser.token}` },
+          });
+
+          if (appsRes.ok) {
+            const appsData = await appsRes.json();
+            if (appsData.ok && appsData.applications) {
+              // Store existing applications in state for duplicate checking
+              state.existingApplications = appsData.applications.filter(
+                (app) => app.status === "pending" || app.status === "approved",
+              );
+              console.log(
+                "[Apply] Found existing applications:",
+                state.existingApplications.length,
+              );
+            }
+          }
+
+          console.log("[Apply] Pre-populated form with user profile data");
+        } catch (err) {
+          console.error("[Apply] Failed to load user profile:", err);
         }
       }
+
       async function startPage() {
         renderNavbar("apply");
         const app = document.getElementById("app");
@@ -2701,6 +3305,10 @@
           app.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;min-height:220px;color:#6b7280;font-size:14px">Loading application data...</div>`;
         }
         await initReferenceData();
+
+        // Load user profile if logged in
+        await loadUserProfileData();
+
         if (state.form.qualificationCode) {
           await refreshQualificationCampuses();
         }

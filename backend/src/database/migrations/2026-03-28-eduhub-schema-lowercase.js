@@ -345,6 +345,7 @@ module.exports = {
         is_primary: { type: Sequelize.BOOLEAN, defaultValue: true },
 
         created_at: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('NOW()') },
+        updated_at: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal('NOW()') },
       }, { transaction });
 
       await queryInterface.addIndex('module_lecturers', ['module_id'], { name: 'idx_module_lecturers_module_id', transaction });

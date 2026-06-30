@@ -29,9 +29,11 @@ router.get('/', async (req, res, next) => {
 // GET /api/courses/:moduleCode/roster
 router.get('/:moduleCode/roster', async (req, res, next) => {
   try {
+    const { format } = req.query; // Support ?format=csv
+
     const roster = await sequelize.query(
       `SELECT u.id as user_id, ud.first_name, ud.last_name, u.email,
-              s.student_number, r.status AS registration_status
+              s.student_number, r.status AS registration_status, r.grade
        FROM registrations r
        JOIN students s ON r.student_id = s.id
        JOIN users u ON s.user_id = u.id
@@ -41,6 +43,21 @@ router.get('/:moduleCode/roster', async (req, res, next) => {
        ORDER BY ud.last_name, ud.first_name`,
       { replacements: [req.params.moduleCode], type: sequelize.QueryTypes.SELECT }
     ).catch(() => []);
+
+    // CSV export
+    if (format === 'csv') {
+      const csvHeaders = 'Student Number,First Name,Last Name,Email,Status,Grade\n';
+      const csvRows = roster.map(student =>
+        `${student.student_number || ''},${student.first_name || ''},${student.last_name || ''},${student.email || ''},${student.registration_status || ''},${student.grade || ''}`
+      ).join('\n');
+      const csv = csvHeaders + csvRows;
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="roster-${req.params.moduleCode}-${new Date().toISOString().split('T')[0]}.csv"`);
+      return res.send(csv);
+    }
+
+    // JSON response
     res.json({ ok: true, roster, total: roster.length });
   } catch (err) { next(err); }
 });

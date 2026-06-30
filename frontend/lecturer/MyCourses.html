@@ -31,67 +31,76 @@ const user = requireAuth('lecturer');
 renderNavbar('lecturer-courses');
 document.getElementById('subtitle').textContent = `Welcome, ${user.name}`;
 
-const regs   = getRegistrations();
-const users  = getUsers();
-const active = regs.filter(r => r.status==='allocated'||r.status==='approved');
+let regs = [];
+let users = [];
+let active = [];
 
-// Group by qualification
-const byQual = {};
-active.forEach(r => {
-  const key = r.qualificationCode;
-  if (!byQual[key]) byQual[key] = { name:r.qualificationName, code:r.qualificationCode, regs:[] };
-  byQual[key].regs.push(r);
-});
+(async () => {
+  // Load dashboard data from API first
+  await ensureDashboardData();
+  regs = getRegistrations();
+  users = getUsers();
+  active = regs.filter(r => r.status==='allocated'||r.status==='approved');
 
-const quals = Object.values(byQual);
+  // Group by qualification
+  const byQual = {};
+  active.forEach(r => {
+    const key = r.qualificationCode;
+    if (!byQual[key]) byQual[key] = { name:r.qualificationName, code:r.qualificationCode, regs:[] };
+    byQual[key].regs.push(r);
+  });
 
-if (!quals.length) {
-  document.getElementById('content').innerHTML = `
-    <div style="text-align:center;padding:60px;background:white;border-radius:12px;border:1px solid var(--rf-border)">
-      <div style="font-size:48px;margin-bottom:16px">📚</div>
-      <h3 style="color:var(--rf-navy);margin-bottom:8px">No Active Courses</h3>
-      <p style="color:var(--rf-gray)">No students are currently enrolled in any programmes.</p>
-    </div>`;
-} else {
-  document.getElementById('content').innerHTML = quals.map(q => {
-    const studentIds = [...new Set(q.regs.map(r => r.studentId))];
-    const semGroups = {};
-    q.regs.forEach(r => {
-      const k = `Y${r.studyYear}S${r.semester}`;
-      if (!semGroups[k]) semGroups[k] = { studyYear:r.studyYear, semester:r.semester, modules:r.modules, studentCount:0 };
-      semGroups[k].studentCount++;
-    });
-    return `
-    <div class="card mb-24" style="margin-bottom:20px">
-      <div class="card-header" style="background:linear-gradient(135deg,#001A4D,#123f7a);color:white;border-radius:12px 12px 0 0">
-        <div>
-          <div style="font-weight:800;font-size:17px">${q.name}</div>
-          <div style="font-size:13px;opacity:.75;margin-top:2px">${q.code} · ${studentIds.length} enrolled students</div>
-        </div>
-        <button onclick="openRoster('${q.code}')" class="btn btn-sm" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3)">📋 View Roster</button>
-      </div>
-      <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
-        ${Object.values(semGroups).map(sg => `
-        <div style="background:var(--rf-offwhite);border-radius:10px;padding:14px 16px;border:1px solid var(--rf-border)">
-          <div style="font-weight:700;font-size:14px;color:var(--rf-navy);margin-bottom:8px">Year ${sg.studyYear} · Semester ${sg.semester}</div>
-          <div style="font-size:13px;color:var(--rf-gray);margin-bottom:8px">${sg.modules.length} modules · ${sg.studentCount} student${sg.studentCount!==1?'s':''}</div>
-          <div style="display:flex;flex-direction:column;gap:4px">
-            ${sg.modules.slice(0,3).map(m=>`<div style="font-size:12px;font-weight:500">${m.name}</div>`).join('')}
-            ${sg.modules.length>3?`<div style="font-size:12px;color:var(--rf-gray)">+${sg.modules.length-3} more...</div>`:''}
+  const quals = Object.values(byQual);
+
+  if (!quals.length) {
+    document.getElementById('content').innerHTML = `
+      <div style="text-align:center;padding:60px;background:white;border-radius:12px;border:1px solid var(--rf-border)">
+        <div style="font-size:48px;margin-bottom:16px">📚</div>
+        <h3 style="color:var(--rf-navy);margin-bottom:8px">No Active Courses</h3>
+        <p style="color:var(--rf-gray)">No students are currently enrolled in any programmes.</p>
+      </div>`;
+  } else {
+    document.getElementById('content').innerHTML = quals.map(q => {
+      const studentIds = [...new Set(q.regs.map(r => r.studentId))];
+      const semGroups = {};
+      q.regs.forEach(r => {
+        const k = `Y${r.studyYear}S${r.semester}`;
+        if (!semGroups[k]) semGroups[k] = { studyYear:r.studyYear, semester:r.semester, modules:r.modules, studentCount:0 };
+        semGroups[k].studentCount++;
+      });
+      return `
+      <div class="card mb-24" style="margin-bottom:20px">
+        <div class="card-header" style="background:linear-gradient(135deg,#001A4D,#123f7a);color:white;border-radius:12px 12px 0 0">
+          <div>
+            <div style="font-weight:800;font-size:17px">${q.name}</div>
+            <div style="font-size:13px;opacity:.75;margin-top:2px">${q.code} · ${studentIds.length} enrolled students</div>
           </div>
-        </div>`).join('')}
-      </div>
-    </div>`;
-  }).join('');
-}
+          <button onclick="openRoster('${q.code}')" class="btn btn-sm" style="background:rgba(255,255,255,.2);color:white;border:1px solid rgba(255,255,255,.3)">📋 View Roster</button>
+        </div>
+        <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
+          ${Object.values(semGroups).map(sg => `
+          <div style="background:var(--rf-offwhite);border-radius:10px;padding:14px 16px;border:1px solid var(--rf-border)">
+            <div style="font-weight:700;font-size:14px;color:var(--rf-navy);margin-bottom:8px">Year ${sg.studyYear} · Semester ${sg.semester}</div>
+            <div style="font-size:13px;color:var(--rf-gray);margin-bottom:8px">${sg.modules.length} modules · ${sg.studentCount} student${sg.studentCount!==1?'s':''}</div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              ${sg.modules.slice(0,3).map(m=>`<div style="font-size:12px;font-weight:500">${m.name}</div>`).join('')}
+              ${sg.modules.length>3?`<div style="font-size:12px;color:var(--rf-gray)">+${sg.modules.length-3} more...</div>`:''}
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  }
+})();
 
 function openRoster(qualCode) {
   const qualRegs = active.filter(r => r.qualificationCode === qualCode);
   const q = QUALIFICATIONS.find(x => x.code === qualCode);
   document.getElementById('roster-title').textContent = `${q?.name || qualCode} — Class Roster`;
   const rows = qualRegs.map(r => {
-    const student = users.find(u => u.studentId === r.studentId);
-    return { name: student?.name||'Unknown', studentId: r.studentId, email: student?.email||'—', year: r.studyYear, sem: r.semester, mods: r.modules.length };
+    // Get student name from registration data (has first_name, last_name)
+    const studentName = r.name || (r.firstName && r.lastName ? `${r.firstName} ${r.lastName}` : 'Unknown');
+    return { name: studentName, studentId: r.studentId, email: '—', year: r.studyYear, sem: r.semester, mods: r.modules.length };
   });
   document.getElementById('roster-body').innerHTML = rows.length ? `
     <table class="data-table">

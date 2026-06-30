@@ -68,7 +68,7 @@ const getMyProfile = async (req, res) => {
  */
 const getMyModules = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.user_id;
     const { semester_id, active_only } = req.query;
 
     // First get lecturer profile to get lecturer ID

@@ -13,6 +13,7 @@ const EDUHUB_LOGO =
 
 const DEFAULT_APP_CONFIG = {
   API_BASE: "/api",
+  API_URL: "/api",
   LOCALE: "en-ZA",
   ROUTES: {
     login: "/login",
@@ -29,7 +30,7 @@ const DEFAULT_APP_CONFIG = {
     toastMs: 4000,
     minuteMs: 60000,
     referenceDataTtlMs: 24 * 60 * 60 * 1000,
-    referenceDataVersion: "v2",
+    referenceDataVersion: "v3",
     homeConfigTtlMs: 24 * 60 * 60 * 1000,
     homeConfigVersion: "v1",
     popularProgrammesLimit: 4,
@@ -295,6 +296,175 @@ function normalizeQualification(q) {
   };
 }
 
+function pickField(obj, ...keys) {
+  for (const key of keys) {
+    if (obj[key] !== undefined && obj[key] !== null && obj[key] !== "") {
+      return obj[key];
+    }
+  }
+  return undefined;
+}
+
+function normalizeApplication(a) {
+  if (!a || typeof a !== "object") return a;
+  const firstName = pickField(a, "firstName", "first_name") || "";
+  const lastName = pickField(a, "lastName", "last_name") || "";
+  return {
+    ...a,
+    id: a.id,
+    firstName,
+    lastName,
+    email: a.email || "",
+    phone: pickField(a, "phone", "phone_number") || "",
+    studentId: pickField(a, "studentId", "student_number", "student_id") || "",
+    idNumber: pickField(a, "idNumber", "id_number") || "",
+    passportNumber: pickField(a, "passportNumber", "passport_number") || "",
+    nationality: a.nationality || "",
+    gender: a.gender || "",
+    dateOfBirth: pickField(a, "dateOfBirth", "date_of_birth") || "",
+    qualificationCode:
+      pickField(a, "qualificationCode", "qualification_code") || "",
+    qualificationName:
+      pickField(a, "qualificationName", "qualification_name") || "",
+    campusId: pickField(a, "campusId", "campus_id") || "",
+    campusName: pickField(a, "campusName", "campus_name") || "",
+    admissionFor: pickField(a, "admissionFor", "admission_for") || "",
+    studyYear: pickField(a, "studyYear", "study_year") || "",
+    applicationType:
+      pickField(a, "applicationType", "application_type") || "new",
+    status: a.status || "",
+    submittedAt:
+      pickField(a, "submittedAt", "submitted_at", "created_at") || "",
+    createdAt: pickField(a, "createdAt", "created_at") || "",
+    updatedAt: pickField(a, "updatedAt", "updated_at") || "",
+    docsUploaded: pickField(a, "docsUploaded", "docs_uploaded") || false,
+    referenceNumber:
+      pickField(a, "referenceNumber", "reference_number") || "",
+  };
+}
+
+function normalizeUser(u) {
+  if (!u || typeof u !== "object") return u;
+  const firstName = pickField(u, "firstName", "first_name") || "";
+  const lastName = pickField(u, "lastName", "last_name") || "";
+  const id = pickField(u, "id", "user_id") || "";
+  const name = pickField(u, "name") || `${firstName} ${lastName}`.trim();
+  const studentId = pickField(u, "studentId", "student_number", "student_id") || "";
+  return {
+    ...u,
+    id,
+    user_id: id,
+    firstName,
+    lastName,
+    name,
+    email: u.email || "",
+    role: u.role || "",
+    phone: pickField(u, "phone", "phone_number") || "",
+    studentId,
+  };
+}
+
+function normalizeRegistration(r) {
+  if (!r || typeof r !== "object") return r;
+  const semester = Number(
+    pickField(r, "semester", "semester_number", "semesterNumber") || 1,
+  );
+  const studyYear = Number(
+    pickField(r, "studyYear", "year", "year_of_study", "yearOfStudy") || 1,
+  );
+  return {
+    ...r,
+    studentId: pickField(r, "studentId", "student_number", "student_id") || "",
+    firstName: pickField(r, "firstName", "first_name") || "",
+    lastName: pickField(r, "lastName", "last_name") || "",
+    moduleCode: pickField(r, "moduleCode", "module_code") || "",
+    moduleName: pickField(r, "moduleName", "module_name") || "",
+    qualificationCode:
+      pickField(r, "qualificationCode", "qualification_code") || "",
+    qualificationName:
+      pickField(r, "qualificationName", "qualification_name") || "",
+    semester,
+    year: studyYear,
+    studyYear,
+    credits: Number(r.credits || 0),
+    status: r.status || "",
+    declineReason: pickField(r, "declineReason", "decline_reason") || "",
+    totalFee: Number(pickField(r, "totalFee", "quotation_amount") || 0),
+    submittedAt:
+      pickField(r, "submittedAt", "submitted_at", "created_at") || "",
+    createdAt: pickField(r, "createdAt", "created_at") || "",
+  };
+}
+
+function resolveRegistrationGroupStatus(statuses) {
+  if (statuses.includes("declined")) return "declined";
+  if (statuses.includes("pending")) return "pending";
+  if (statuses.every((status) => status === "approved")) return "allocated";
+  if (statuses.includes("approved")) return "approved";
+  return statuses[0] || "pending";
+}
+
+function groupRegistrationsForLegacyUI(rows) {
+  const groups = new Map();
+
+  for (const row of rows.map(normalizeRegistration)) {
+    const key = [
+      row.studentId || "unknown",
+      row.qualificationCode || "",
+      row.semester,
+      row.studyYear,
+    ].join("|");
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        id: row.id,
+        studentId: row.studentId,
+        firstName: row.firstName,
+        lastName: row.lastName,
+        qualificationCode: row.qualificationCode,
+        qualificationName: row.qualificationName,
+        semester: row.semester,
+        year: row.studyYear,
+        studyYear: row.studyYear,
+        modules: [],
+        statuses: [],
+        totalFee: 0,
+        submittedAt: row.submittedAt,
+        feePaid: false,
+        declineReason: row.declineReason || "",
+      });
+    }
+
+    const group = groups.get(key);
+    group.statuses.push(row.status || "pending");
+    if (row.moduleCode) {
+      group.modules.push({
+        code: row.moduleCode,
+        name: row.moduleName || row.moduleCode,
+        credits: row.credits,
+      });
+    }
+    if (row.totalFee) group.totalFee = row.totalFee;
+    if (row.declineReason) group.declineReason = row.declineReason;
+    if (!group.submittedAt && row.submittedAt) group.submittedAt = row.submittedAt;
+  }
+
+  return Array.from(groups.values()).map((group) => {
+    const feePerCredit = 350;
+    const computedFee = group.modules.reduce(
+      (sum, module) => sum + Number(module.credits || 0) * feePerCredit,
+      0,
+    );
+    const status = resolveRegistrationGroupStatus(group.statuses);
+    return {
+      ...group,
+      status,
+      totalFee: group.totalFee || computedFee,
+      feePaid: status === "allocated" || status === "approved",
+    };
+  });
+}
+
 async function fetchReferenceDataFromApi() {
   let qualifications = [];
 
@@ -398,16 +568,46 @@ function setToken(t) {
     ? localStorage.setItem("authToken", t)
     : localStorage.removeItem("authToken");
 }
+function normalizeCachedUser(u) {
+  if (!u || typeof u !== "object") return u;
+  const firstName = pickField(u, "firstName", "first_name") || "";
+  const lastName = pickField(u, "lastName", "last_name") || "";
+  const id = pickField(u, "id", "user_id") || "";
+  const lecturerId = pickField(u, "lecturer_id", "lecturerId") || "";
+  const studentId = pickField(u, "studentId", "student_id", "student_number") || "";
+  const name =
+    pickField(u, "name") || `${firstName} ${lastName}`.trim() || u.email || "";
+  return {
+    ...u,
+    id,
+    user_id: id,
+    lecturer_id: lecturerId,
+    lecturerId: lecturerId,
+    studentId: studentId,
+    student_id: studentId,
+    student_number: studentId,
+    firstName,
+    lastName,
+    first_name: firstName,
+    last_name: lastName,
+    name,
+    tempPassword: Boolean(
+      u.tempPassword ?? u.require_password_change ?? u.is_default_password,
+    ),
+  };
+}
+
 function getCachedUser() {
   try {
-    return JSON.parse(localStorage.getItem("currentUser") || "null");
+    const raw = JSON.parse(localStorage.getItem("currentUser") || "null");
+    return raw ? normalizeCachedUser(raw) : null;
   } catch {
     return null;
   }
 }
 function setCachedUser(u) {
   u
-    ? localStorage.setItem("currentUser", JSON.stringify(u))
+    ? localStorage.setItem("currentUser", JSON.stringify(normalizeCachedUser(u)))
     : localStorage.removeItem("currentUser");
 }
 function getCurrentUser() {
@@ -445,9 +645,39 @@ async function login(email, password) {
   const res = await api("POST", "/auth/login", { email, password });
   if (!res.ok)
     return { success: false, message: res.message || "Login failed." };
+
+  // Check if MFA is required
+  if (res.data.mfaRequired) {
+    return {
+      success: false,
+      mfaRequired: true,
+      userId: res.data.userId,
+      email: res.data.email,
+      message: res.data.message || "MFA verification required",
+    };
+  }
+
   setToken(res.data.accessToken);
   setCachedUser(res.data.user);
   return { success: true, user: res.data.user };
+}
+
+async function verifyMFA(userId, code, useBackupCode = false) {
+  const res = await fetch(`${APP_CONFIG.API_BASE}/auth/mfa/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, code, useBackupCode }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    return { success: false, message: data.message || "MFA verification failed." };
+  }
+
+  setToken(data.data.accessToken);
+  setCachedUser(data.data.user);
+  return { success: true, user: data.data.user };
 }
 
 async function logout() {
@@ -516,11 +746,108 @@ async function changePassword(currentPassword, newPassword) {
 }
 
 /* ═══════════════════════════════════════════════════
+   DASHBOARD DATA CACHE
+   Legacy HTML pages read applications/registrations/users
+   synchronously; we preload once and refresh after mutations.
+   ═══════════════════════════════════════════════════ */
+const dashboardCache = {
+  applications: [],
+  registrations: [],
+  users: [],
+  ready: false,
+  loading: null,
+};
+
+async function refreshDashboardData(force = false) {
+  if (!force && dashboardCache.ready) return dashboardCache;
+
+  const currentUser = getCurrentUser();
+  const isAdmin = currentUser?.role === "admin";
+
+  const [appsRes, regsRes, usersRes] = await Promise.all([
+    api("GET", "/applications"),
+    api("GET", "/registrations"),
+    isAdmin
+      ? api("GET", "/admin/users")
+      : Promise.resolve({ ok: true, users: [] }),
+  ]);
+
+  dashboardCache.applications =
+    appsRes.ok && Array.isArray(appsRes.applications)
+      ? appsRes.applications.map(normalizeApplication)
+      : [];
+  dashboardCache.registrations = groupRegistrationsForLegacyUI(
+    regsRes.ok && Array.isArray(regsRes.registrations)
+      ? regsRes.registrations
+      : [],
+  );
+  dashboardCache.users =
+    usersRes.ok && Array.isArray(usersRes.users)
+      ? usersRes.users.map(normalizeUser)
+      : [];
+  dashboardCache.ready = true;
+
+  if (typeof document !== "undefined") {
+    document.dispatchEvent(new CustomEvent("eduhub:dashboard-data-ready"));
+  }
+
+  return dashboardCache;
+}
+
+function ensureDashboardData(force = false) {
+  if (force) dashboardCache.ready = false;
+  if (!dashboardCache.loading) {
+    dashboardCache.loading = refreshDashboardData(force).finally(() => {
+      dashboardCache.loading = null;
+    });
+  }
+  return dashboardCache.loading;
+}
+
+function getApplications() {
+  return dashboardCache.applications;
+}
+
+function getRegistrations() {
+  return dashboardCache.registrations;
+}
+
+function getUsers() {
+  return dashboardCache.users;
+}
+
+async function fetchApplications() {
+  const res = await api("GET", "/applications");
+  const applications =
+    res.ok && Array.isArray(res.applications)
+      ? res.applications.map(normalizeApplication)
+      : [];
+  dashboardCache.applications = applications;
+  return applications;
+}
+
+async function fetchRegistrations() {
+  const res = await api("GET", "/registrations");
+  const registrations = groupRegistrationsForLegacyUI(
+    res.ok && Array.isArray(res.registrations) ? res.registrations : [],
+  );
+  dashboardCache.registrations = registrations;
+  return registrations;
+}
+
+async function fetchUsers() {
+  const res = await api("GET", "/admin/users");
+  const users =
+    res.ok && Array.isArray(res.users) ? res.users.map(normalizeUser) : [];
+  dashboardCache.users = users;
+  return users;
+}
+
+/* ═══════════════════════════════════════════════════
    APPLICATIONS  →  /api/applications/*
    ═══════════════════════════════════════════════════ */
-async function getApplications() {
-  const res = await api("GET", "/applications");
-  return res.ok ? res.applications : [];
+async function loadApplications() {
+  return fetchApplications();
 }
 async function submitApplication(appData) {
   return api("POST", "/applications", appData);
@@ -535,6 +862,16 @@ async function checkApplicationIdentityStatus(payload) {
   if (payload?.passport_number) params.set("passport_number", payload.passport_number);
   const qs = params.toString();
   return api("GET", `/applications/identity/status${qs ? `?${qs}` : ""}`);
+}
+async function checkApplicationContactAvailability(payload) {
+  const params = new URLSearchParams();
+  if (payload?.email) params.set("email", payload.email);
+  if (payload?.phone) params.set("phone", payload.phone);
+  if (payload?.draft_id) params.set("draft_id", payload.draft_id);
+  if (payload?.id_number) params.set("id_number", payload.id_number);
+  if (payload?.passport_number) params.set("passport_number", payload.passport_number);
+  const qs = params.toString();
+  return api("GET", `/applications/contact/check${qs ? `?${qs}` : ""}`);
 }
 async function getApplicationDraft(draftId) {
   return api("GET", `/applications/drafts/${draftId}`);
@@ -564,10 +901,14 @@ async function getApplication(id) {
   return api("GET", `/applications/${id}`);
 }
 async function approveApplication(id) {
-  return api("PUT", `/applications/${id}/approve`);
+  const res = await api("PUT", `/applications/${id}/approve`);
+  await refreshDashboardData(true);
+  return res;
 }
 async function rejectApplication(id, reason) {
-  return api("PUT", `/applications/${id}/reject`, { reason });
+  const res = await api("PUT", `/applications/${id}/reject`, { reason });
+  await refreshDashboardData(true);
+  return res;
 }
 async function uploadDocument(appId, documentName) {
   return api("POST", `/applications/${appId}/documents`, { documentName });
@@ -576,20 +917,37 @@ async function uploadDocument(appId, documentName) {
 /* ═══════════════════════════════════════════════════
    REGISTRATIONS  →  /api/registrations/*
    ═══════════════════════════════════════════════════ */
-async function getRegistrations() {
-  const res = await api("GET", "/registrations");
-  return res.ok ? res.registrations : [];
+async function loadRegistrations() {
+  return fetchRegistrations();
+}
+async function approveRegistration(id) {
+  const res = await api("PUT", `/registrations/${id}/approve`).catch(() =>
+    api("PATCH", `/registrations/${id}/approve`),
+  );
+  await refreshDashboardData(true);
+  return res;
+}
+async function declineRegistration(id, reason) {
+  const res = await api("PUT", `/registrations/${id}/reject`, { reason }).catch(
+    () => api("PATCH", `/registrations/${id}/reject`, { reason }),
+  );
+  await refreshDashboardData(true);
+  return res;
 }
 async function allocateModules(applicationId, modules, semester, studyYear) {
-  return api("POST", "/registrations", {
+  const res = await api("POST", "/registrations", {
     applicationId,
     modules,
     semester,
     studyYear,
   });
+  await refreshDashboardData(true);
+  return res;
 }
 async function dropRegistration(id) {
-  return api("DELETE", `/registrations/${id}`);
+  const res = await api("DELETE", `/registrations/${id}`);
+  await refreshDashboardData(true);
+  return res;
 }
 async function getEligibleModules() {
   const res = await api("GET", "/registrations/eligible");
@@ -609,11 +967,7 @@ async function getCourseRoster(moduleCode) {
 /* ═══════════════════════════════════════════════════
    ADMIN  →  /api/admin/*
    ═══════════════════════════════════════════════════ */
-async function getUsers() {
-  const res = await api("GET", "/admin/users");
-  return res.ok ? res.users : [];
-}
-async function getAdminUsers() {
+function getAdminUsers() {
   return getUsers();
 }
 async function getStatistics() {
@@ -1129,8 +1483,11 @@ function setLoading(btnId, loading, text) {
 
 function badge(status) {
   const map = {
+    draft: "badge-draft",
     pending: "badge-pending",
+    applied: "badge-applied",
     approved: "badge-approved",
+    rejected: "badge-rejected",
     declined: "badge-declined",
     allocated: "badge-allocated",
   };
@@ -1164,16 +1521,28 @@ function closeModal(id) {
   document.getElementById(id)?.classList.add("hidden");
 }
 
+const TOAST_COLORS = {
+  success: { background: "#059669", color: "#ffffff" },
+  error: { background: "#dc2626", color: "#ffffff" },
+  info: { background: "#3730a3", color: "#ffffff" },
+  warning: { background: "#d97706", color: "#ffffff" },
+};
+
 function showToast(msg, type, ms) {
+  const knownTypes = ["success", "error", "info", "warning"];
+  const toastType = knownTypes.includes(type) ? type : "success";
+  const colors = TOAST_COLORS[toastType];
+
   let t = document.getElementById("_toast");
   if (!t) {
     t = document.createElement("div");
     t.id = "_toast";
-    t.className = "toast hidden";
     document.body.appendChild(t);
   }
   t.textContent = msg;
-  t.className = `toast toast-${type || "success"}`;
+  t.className = `toast toast-${toastType}`;
+  t.style.background = colors.background;
+  t.style.color = colors.color;
   clearTimeout(t._timer);
   t._timer = setTimeout(
     () => t.classList.add("hidden"),
@@ -1184,6 +1553,35 @@ function showToast(msg, type, ms) {
 /* ═══════════════════════════════════════════════════
    NAVBAR
    ═══════════════════════════════════════════════════ */
+function escapeHtml(text) {
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getNavUserDisplay(user) {
+  const displayName =
+    user.name ||
+    `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+    user.email.split("@")[0];
+  const roleLabels = {
+    admin: "Administrator",
+    student: "Student",
+    lecturer: "Lecturer",
+  };
+  const roleLabel = roleLabels[user.role] || user.role;
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+  return { displayName, roleLabel, initials: initials || "?" };
+}
+
 function renderNavbar(activePage) {
   const user = getCachedUser();
   const links = {
@@ -1194,7 +1592,6 @@ function renderNavbar(activePage) {
         href: "/apply",
         label: "New Application",
         key: "apply",
-        highlight: true,
       },
       { href: "/login", label: "Login", key: "login" },
     ],
@@ -1214,14 +1611,19 @@ function renderNavbar(activePage) {
         href: "/admin/allocations",
         label: "Allocate Modules",
         key: "allocations",
-        highlight: true,
       },
       { href: "/admin/students", label: "Students", key: "students" },
+      { href: "/admin/lecturers", label: "Lecturers", key: "admin-lecturers" },
+      { href: "/admin/messages", label: "Messages", key: "admin-messages" },
+      { href: "/admin/audits", label: "Audits", key: "audits" },
+      { href: "/settings", label: "Settings", key: "settings" },
     ],
     student: [
       { href: "/student", label: "Dashboard", key: "dashboard" },
       { href: "/student/register", label: "Register Modules", key: "register" },
       { href: "/student/modules", label: "My Modules", key: "modules" },
+      { href: "/student/messages", label: "Messages", key: "student-messages" },
+      { href: "/settings", label: "Settings", key: "settings" },
     ],
     lecturer: [
       { href: "/lecturer", label: "Dashboard", key: "lecturer-dashboard" },
@@ -1236,6 +1638,8 @@ function renderNavbar(activePage) {
         label: "Announcements",
         key: "lecturer-announcements",
       },
+      { href: "/lecturer/messages", label: "Messages", key: "lecturer-messages" },
+      { href: "/settings", label: "Settings", key: "settings" },
     ],
   };
   const role = user ? user.role : "public";
@@ -1243,20 +1647,27 @@ function renderNavbar(activePage) {
   const linksHtml = navLinks
     .map(
       (l) =>
-        `<a href="${l.href}" class="nav-link${activePage === l.key ? " active" : ""}${l.highlight ? " highlight" : ""}">${l.label}</a>`,
+        `<a href="${l.href}" class="nav-link${activePage === l.key ? " active" : ""}">${l.label}</a>`,
     )
     .join("");
   const cachedCount = parseInt(localStorage.getItem("_unreadCount") || "0");
+  const navUser = user ? getNavUserDisplay(user) : null;
   const userHtml = user
     ? `
-    <div style="position:relative;margin-left:8px">
-      <button class="notif-btn" id="notif-btn" onclick="toggleNotifs(event)">🔔
-        <span id="notif-badge" style="position:absolute;top:4px;right:4px;width:16px;height:16px;background:#e8192c;border-radius:50%;font-size:10px;font-weight:700;display:${cachedCount > 0 ? "flex" : "none"};align-items:center;justify-content:center">${cachedCount}</span>
-      </button>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-left:12px">
-      <div style="text-align:right"><div style="font-size:13px;font-weight:600">${user.first_name || user.email.split("@")[0]}</div><div style="font-size:11px;opacity:.7;text-transform:capitalize">${user.role}</div></div>
-      <button onclick="doLogout()" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">Logout</button>
+    <div class="navbar-actions">
+      <div style="position:relative">
+        <button class="notif-btn" id="notif-btn" onclick="toggleNotifs(event)" aria-label="Notifications">🔔
+          <span id="notif-badge" class="notif-badge" style="display:${cachedCount > 0 ? "flex" : "none"}">${cachedCount}</span>
+        </button>
+      </div>
+      <div class="navbar-user" title="${escapeHtml(navUser.displayName)}">
+        <div class="navbar-user-avatar" aria-hidden="true">${escapeHtml(navUser.initials)}</div>
+        <div class="navbar-user-info">
+          <div class="navbar-user-name">${escapeHtml(navUser.displayName)}</div>
+          <div class="navbar-user-role">${escapeHtml(navUser.roleLabel)}</div>
+        </div>
+      </div>
+      <button class="navbar-logout-btn" onclick="doLogout()">Logout</button>
     </div>`
     : "";
   const notifHtml = user
@@ -1273,11 +1684,14 @@ function renderNavbar(activePage) {
     : "";
   const navMarkup = `
       <nav class="navbar">
-        <a href="${user ? "/" + user.role : "/"}" style="display:flex;align-items:center;gap:8px">
-          <img src="${EDUHUB_LOGO}" alt="EduHub" style="height:36px" onerror="this.style.display='none'">
-          <span class="navbar-logo-text" style="color:white">EDUHUB</span>
+        <a href="${user ? "/" + user.role : "/"}" class="navbar-brand">
+          <img src="${EDUHUB_LOGO}" alt="EduHub" onerror="this.style.display='none'">
+          <span class="navbar-logo-text">EDUHUB</span>
         </a>
-        <div class="navbar-links">${linksHtml}${userHtml}</div>
+        <div class="navbar-right">
+          <div class="navbar-links">${linksHtml}</div>
+          ${userHtml}
+        </div>
       </nav>${notifHtml}`;
   const placeholder =
     document.getElementById("navbar-placeholder") ||
@@ -1379,4 +1793,12 @@ function renderFooter() {
   </div>
   <div class="footer-bottom">© ${new Date().getFullYear()} EduHub — A Learning Experience of a Lifetime · All rights reserved</div>
   </footer>`;
+}
+
+if (typeof window !== "undefined" && getToken()) {
+  const path = window.location.pathname.replace(/\.html$/, "");
+  const isAuthPage = ["/login", "/register", "/forgot-password", "/verify-email", "/apply"].includes(path);
+  if (!isAuthPage) {
+    ensureDashboardData();
+  }
 }

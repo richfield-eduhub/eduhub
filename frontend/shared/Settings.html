@@ -1,0 +1,1701 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Settings — EduHub</title>
+    <link rel="stylesheet" href="../shared.css" />
+    <style>
+      .tabs {
+        display: flex;
+        gap: 4px;
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 32px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+      }
+      .tab {
+        padding: 10px 16px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #6b7280;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .tab:hover {
+        color: var(--rf-navy);
+        background: #f3f4f6;
+      }
+      .tab.active {
+        color: var(--rf-navy);
+        border-bottom-color: var(--rf-navy);
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .security-card {
+        background: white;
+        border: 1px solid var(--rf-border);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      .security-card.success {
+        border-left: 4px solid #059669;
+        background: #f0fdf4;
+      }
+      .security-card.warning {
+        border-left: 4px solid #f59e0b;
+        background: #fffbeb;
+      }
+      .qr-code-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 24px;
+        background: white;
+        border-radius: 12px;
+        border: 2px dashed var(--rf-border);
+      }
+      .backup-code {
+        font-family: var(--font-mono);
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--rf-navy);
+        padding: 12px;
+        background: #f3f4f6;
+        border-radius: 6px;
+        margin: 4px 0;
+        text-align: center;
+      }
+      .avatar-ring {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--rf-navy), var(--rf-blue));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        font-weight: 900;
+        color: white;
+        flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+      }
+      .avatar-ring img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="navbar-root"></div>
+    <div class="main-content" style="max-width: 1200px">
+      <h1 class="section-title">SETTINGS</h1>
+      <p class="section-subtitle">
+        Manage your profile, security, and account preferences
+      </p>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('profile')">👤 Profile</div>
+        <div class="tab" onclick="switchTab('security')">🔐 Security</div>
+        <div class="tab" onclick="switchTab('password')">🔑 Password</div>
+        <div class="tab" onclick="switchTab('emergency')">
+          🚨 Emergency Contacts
+        </div>
+        <div class="tab" onclick="switchTab('payer')">💳 Account Payer</div>
+        <div class="tab" onclick="switchTab('fees')">💰 Fees</div>
+        <div class="tab" onclick="switchTab('documents')">📄 Documents</div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+       TAB 1: PROFILE
+       ═══════════════════════════════════════════════════════════════ -->
+      <div id="tab-profile" class="tab-content active">
+        <!-- Profile header card -->
+        <div class="card mb-24" style="margin-bottom: 20px">
+          <div
+            class="card-body"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 20px;
+              flex-wrap: wrap;
+            "
+          >
+            <div class="avatar-ring" id="avatar-display">
+              <span id="avatar-initials"></span>
+              <img id="avatar-img" style="display: none" />
+            </div>
+            <div style="flex: 1">
+              <div
+                id="profile-name"
+                style="font-weight: 800; font-size: 20px; color: var(--rf-navy)"
+              ></div>
+              <div
+                id="profile-meta"
+                style="font-size: 14px; color: var(--rf-gray); margin-top: 4px"
+              ></div>
+            </div>
+            <div style="display: flex; gap: 8px">
+              <label class="btn btn-secondary btn-sm" style="cursor: pointer">
+                📷 Change Photo
+                <input
+                  type="file"
+                  id="avatar-input"
+                  accept="image/*"
+                  style="display: none"
+                  onchange="handleAvatarUpload(this)"
+                />
+              </label>
+              <button
+                id="delete-photo-btn"
+                class="btn btn-secondary btn-sm"
+                onclick="deleteProfilePhoto()"
+                style="display: none"
+              >
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email Card -->
+        <div
+          class="card mb-24"
+          style="margin-bottom: 20px; border-left: 4px solid var(--rf-blue)"
+        >
+          <div
+            class="card-body"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 16px;
+              padding: 16px 20px;
+            "
+          >
+            <div style="font-size: 28px; flex-shrink: 0">📧</div>
+            <div style="flex: 1">
+              <div
+                style="
+                  font-size: 11px;
+                  font-weight: 700;
+                  color: #6b7280;
+                  text-transform: uppercase;
+                  letter-spacing: 0.5px;
+                  margin-bottom: 4px;
+                "
+              >
+                Your Email Address
+              </div>
+              <div
+                id="my-email-display"
+                style="
+                  font-size: 17px;
+                  font-weight: 700;
+                  color: var(--rf-navy);
+                  letter-spacing: 0.2px;
+                "
+              >
+                —
+              </div>
+            </div>
+            <button onclick="copyEmail()" class="btn btn-secondary btn-sm">
+              📋 Copy
+            </button>
+          </div>
+        </div>
+
+        <!-- Personal Information - View Mode -->
+        <div class="card mb-24" id="profile-view-card">
+          <div
+            class="card-header"
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <span style="font-weight: 700; font-size: 15px"
+              >Personal Information</span
+            >
+            <button
+              class="btn btn-secondary btn-sm"
+              onclick="toggleEditMode(true)"
+            >
+              ✏️ Edit
+            </button>
+          </div>
+          <div class="card-body">
+            <div id="profile-alert"></div>
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px"
+            >
+              <div>
+                <div
+                  style="
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: #6b7280;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 4px;
+                  "
+                >
+                  First Name
+                </div>
+                <div
+                  id="view-firstName"
+                  style="font-size: 15px; color: #1e2a3a; font-weight: 600"
+                >
+                  —
+                </div>
+              </div>
+              <div>
+                <div
+                  style="
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: #6b7280;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 4px;
+                  "
+                >
+                  Last Name
+                </div>
+                <div
+                  id="view-lastName"
+                  style="font-size: 15px; color: #1e2a3a; font-weight: 600"
+                >
+                  —
+                </div>
+              </div>
+              <div>
+                <div
+                  style="
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: #6b7280;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 4px;
+                  "
+                >
+                  Phone Number
+                </div>
+                <div id="view-phone" style="font-size: 15px; color: #1e2a3a">
+                  —
+                </div>
+              </div>
+              <div>
+                <div
+                  style="
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: #6b7280;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 4px;
+                  "
+                >
+                  Date of Birth
+                </div>
+                <div id="view-dob" style="font-size: 15px; color: #1e2a3a">
+                  —
+                </div>
+              </div>
+              <div>
+                <div
+                  style="
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: #6b7280;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 4px;
+                  "
+                >
+                  Gender
+                </div>
+                <div id="view-gender" style="font-size: 15px; color: #1e2a3a">
+                  —
+                </div>
+              </div>
+              <div>
+                <div
+                  style="
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: #6b7280;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 4px;
+                  "
+                >
+                  Nationality
+                </div>
+                <div
+                  id="view-nationality"
+                  style="font-size: 15px; color: #1e2a3a"
+                >
+                  —
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Information - Edit Mode -->
+        <div class="card mb-24" style="display: none" id="profile-edit-card">
+          <div class="card-header">
+            <span style="font-weight: 700; font-size: 15px"
+              >Update Personal Information</span
+            >
+          </div>
+          <div class="card-body">
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px"
+            >
+              <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input type="text" id="edit-firstName" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input type="text" id="edit-lastName" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" id="edit-phone" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" id="edit-dob" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Gender</label>
+                <select id="edit-gender" class="form-input">
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nationality</label>
+                <input type="text" id="edit-nationality" class="form-input" />
+              </div>
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 20px">
+              <button
+                class="btn btn-primary"
+                onclick="saveProfile()"
+                id="save-profile-btn"
+              >
+                💾 Save Changes
+              </button>
+              <button class="btn btn-secondary" onclick="toggleEditMode(false)">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+       TAB 2: SECURITY (MFA)
+       ═══════════════════════════════════════════════════════════════ -->
+      <div id="tab-security" class="tab-content">
+        <!-- MFA Status Card -->
+        <div id="mfa-status-card" class="security-card">
+          <div style="text-align: center; padding: 20px">
+            <div class="spinner"></div>
+            <p style="color: var(--rf-gray); margin-top: 12px">
+              Loading security settings...
+            </p>
+          </div>
+        </div>
+
+        <!-- MFA Setup Card -->
+        <div id="mfa-setup-card" style="display: none">
+          <div class="security-card">
+            <h3
+              style="
+                font-size: 18px;
+                font-weight: 800;
+                color: var(--rf-navy);
+                margin-bottom: 16px;
+              "
+            >
+              🔐 Enable Two-Factor Authentication
+            </h3>
+            <p
+              style="
+                color: var(--rf-gray);
+                margin-bottom: 20px;
+                line-height: 1.6;
+              "
+            >
+              Two-factor authentication adds an extra layer of security to your
+              account.
+            </p>
+
+            <div id="setup-step-1" style="display: none">
+              <h4
+                style="
+                  font-size: 15px;
+                  font-weight: 700;
+                  color: var(--rf-navy);
+                  margin-bottom: 12px;
+                "
+              >
+                Step 1: Scan QR Code
+              </h4>
+              <p
+                style="
+                  color: var(--rf-gray);
+                  font-size: 14px;
+                  margin-bottom: 16px;
+                "
+              >
+                Scan with Google Authenticator, Authy, or any authenticator app
+              </p>
+              <div class="qr-code-container">
+                <div id="qr-code"></div>
+                <p
+                  style="
+                    margin-top: 16px;
+                    font-size: 13px;
+                    color: var(--rf-gray);
+                  "
+                >
+                  Or enter manually:
+                </p>
+                <div
+                  style="
+                    font-family: var(--font-mono);
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: var(--rf-navy);
+                    margin-top: 8px;
+                  "
+                  id="mfa-secret"
+                ></div>
+              </div>
+            </div>
+
+            <div id="setup-step-2" style="display: none; margin-top: 24px">
+              <h4
+                style="
+                  font-size: 15px;
+                  font-weight: 700;
+                  color: var(--rf-navy);
+                  margin-bottom: 12px;
+                "
+              >
+                Step 2: Verify Code
+              </h4>
+              <div id="verify-alert"></div>
+              <div style="display: flex; gap: 12px; max-width: 400px">
+                <input
+                  type="text"
+                  id="verification-code"
+                  class="form-input"
+                  placeholder="000000"
+                  maxlength="6"
+                  pattern="[0-9]{6}"
+                  style="
+                    text-align: center;
+                    font-size: 24px;
+                    font-weight: 700;
+                    letter-spacing: 4px;
+                    font-family: var(--font-mono);
+                  "
+                />
+                <button
+                  class="btn btn-primary"
+                  onclick="verifyMFASetup()"
+                  id="verify-btn"
+                >
+                  ✓ Verify
+                </button>
+              </div>
+            </div>
+
+            <div id="setup-step-3" style="display: none; margin-top: 24px">
+              <div
+                style="
+                  background: #f0fdf4;
+                  border: 1px solid #86efac;
+                  border-radius: 8px;
+                  padding: 16px;
+                  margin-bottom: 16px;
+                "
+              >
+                <h4
+                  style="
+                    font-size: 15px;
+                    font-weight: 700;
+                    color: #059669;
+                    margin-bottom: 8px;
+                  "
+                >
+                  ✓ MFA Enabled!
+                </h4>
+              </div>
+              <h4
+                style="
+                  font-size: 15px;
+                  font-weight: 700;
+                  color: var(--rf-navy);
+                  margin-bottom: 12px;
+                "
+              >
+                📋 Backup Codes
+              </h4>
+              <div
+                id="backup-codes-container"
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 8px;
+                  margin-bottom: 16px;
+                "
+              ></div>
+              <button
+                class="btn btn-secondary btn-sm"
+                onclick="copyBackupCodes()"
+              >
+                📋 Copy All
+              </button>
+            </div>
+
+            <div
+              style="
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid var(--rf-border);
+              "
+            >
+              <button
+                class="btn btn-primary"
+                onclick="startMFASetup()"
+                id="start-setup-btn"
+              >
+                🔐 Start Setup
+              </button>
+              <button
+                class="btn btn-secondary"
+                onclick="cancelMFASetup()"
+                id="cancel-setup-btn"
+                style="display: none"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+       TAB 3: PASSWORD
+       ═══════════════════════════════════════════════════════════════ -->
+      <div id="tab-password" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <span style="font-weight: 700; font-size: 15px"
+              >🔑 Change Password</span
+            >
+          </div>
+          <div class="card-body">
+            <div id="password-alert"></div>
+            <p
+              style="
+                color: var(--rf-gray);
+                margin-bottom: 32px;
+                font-size: 14px;
+                line-height: 1.6;
+              "
+            >
+              Choose a strong password that you haven't used elsewhere. Must be
+              at least 8 characters.
+            </p>
+            <div style="max-width: 500px">
+              <div class="form-group" style="margin-bottom: 24px">
+                <label
+                  class="form-label"
+                  style="margin-bottom: 8px; display: block; font-weight: 600"
+                  >Current Password</label
+                >
+                <input
+                  type="password"
+                  id="current-password"
+                  class="form-input"
+                  placeholder="Enter current password"
+                  style="width: 100%"
+                />
+              </div>
+              <div class="form-group" style="margin-bottom: 24px">
+                <label
+                  class="form-label"
+                  style="margin-bottom: 8px; display: block; font-weight: 600"
+                  >New Password</label
+                >
+                <input
+                  type="password"
+                  id="new-password"
+                  class="form-input"
+                  placeholder="Enter new password"
+                  style="width: 100%"
+                />
+              </div>
+              <div class="form-group" style="margin-bottom: 32px">
+                <label
+                  class="form-label"
+                  style="margin-bottom: 8px; display: block; font-weight: 600"
+                  >Confirm New Password</label
+                >
+                <input
+                  type="password"
+                  id="confirm-password"
+                  class="form-input"
+                  placeholder="Confirm new password"
+                  style="width: 100%"
+                />
+              </div>
+              <button
+                class="btn btn-primary"
+                onclick="changePassword()"
+                id="change-password-btn"
+                style="padding: 12px 24px"
+              >
+                🔐 Change Password
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+       TAB 4: EMERGENCY CONTACTS
+       ═══════════════════════════════════════════════════════════════ -->
+      <div id="tab-emergency" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <span style="font-weight: 700; font-size: 15px"
+              >🚨 Emergency Contacts</span
+            >
+          </div>
+          <div class="card-body">
+            <div id="emergency-alert"></div>
+            <p
+              style="
+                color: var(--rf-gray);
+                margin-bottom: 24px;
+                font-size: 14px;
+                line-height: 1.6;
+              "
+            >
+              Emergency contacts are people we can reach in case of an urgent
+              situation.
+            </p>
+            <div id="emergency-contacts-list"></div>
+            <div
+              id="no-emergency-contacts"
+              style="text-align: center; padding: 40px; display: none"
+            >
+              <div style="font-size: 48px; margin-bottom: 16px">📞</div>
+              <h3
+                style="
+                  color: var(--rf-navy);
+                  margin-bottom: 8px;
+                  font-size: 16px;
+                "
+              >
+                No Emergency Contacts
+              </h3>
+              <p style="color: var(--rf-gray); font-size: 14px">
+                You haven't added any emergency contacts yet.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+       TAB 5: ACCOUNT PAYER
+       ═══════════════════════════════════════════════════════════════ -->
+      <div id="tab-payer" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <span style="font-weight: 700; font-size: 15px"
+              >💳 Account Payer Information</span
+            >
+          </div>
+          <div class="card-body">
+            <div id="payer-alert"></div>
+            <p
+              style="
+                color: var(--rf-gray);
+                margin-bottom: 24px;
+                font-size: 14px;
+                line-height: 1.6;
+              "
+            >
+              This is the person or entity responsible for paying your tuition
+              fees.
+            </p>
+            <div id="payer-info-content"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+       TAB 6: FEES
+       ═══════════════════════════════════════════════════════════════ -->
+      <div id="tab-fees" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <span style="font-weight: 700; font-size: 15px"
+              >💰 Fees & Payments</span
+            >
+          </div>
+          <div class="card-body">
+            <div id="fees-alert"></div>
+
+            <!-- Fees Summary -->
+            <div
+              id="fees-summary-cards"
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 16px;
+                margin-bottom: 32px;
+              "
+            ></div>
+
+            <!-- Detailed Registrations -->
+            <h3
+              style="
+                font-size: 16px;
+                font-weight: 700;
+                color: var(--rf-navy);
+                margin-bottom: 16px;
+              "
+            >
+              Module Registrations
+            </h3>
+            <div id="fees-registrations-list"></div>
+            <div
+              id="no-fees"
+              style="text-align: center; padding: 40px; display: none"
+            >
+              <div style="font-size: 48px; margin-bottom: 16px">💰</div>
+              <h3
+                style="
+                  color: var(--rf-navy);
+                  margin-bottom: 8px;
+                  font-size: 16px;
+                "
+              >
+                No Fee Records
+              </h3>
+              <p style="color: var(--rf-gray); font-size: 14px">
+                You don't have any registered modules with fees yet.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+       TAB 7: DOCUMENTS
+       ═══════════════════════════════════════════════════════════════ -->
+      <div id="tab-documents" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <span style="font-weight: 700; font-size: 15px"
+              >📄 Submitted Documents</span
+            >
+          </div>
+          <div class="card-body">
+            <div id="documents-alert"></div>
+            <p
+              style="
+                color: var(--rf-gray);
+                margin-bottom: 24px;
+                font-size: 14px;
+                line-height: 1.6;
+              "
+            >
+              View all documents you've submitted with your applications.
+            </p>
+            <div id="documents-list"></div>
+            <div
+              id="no-documents"
+              style="text-align: center; padding: 40px; display: none"
+            >
+              <div style="font-size: 48px; margin-bottom: 16px">📄</div>
+              <h3
+                style="
+                  color: var(--rf-navy);
+                  margin-bottom: 8px;
+                  font-size: 16px;
+                "
+              >
+                No Documents
+              </h3>
+              <p style="color: var(--rf-gray); font-size: 14px">
+                You haven't uploaded any documents yet.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../shared.js"></script>
+    <script>
+      const user = requireAuth();
+      renderNavbar("settings");
+
+      let profileData = null;
+      let mfaSecret = "";
+      let backupCodes = [];
+
+      // Tab switching
+      function switchTab(tabName) {
+        // Update tabs
+        document
+          .querySelectorAll(".tab")
+          .forEach((t) => t.classList.remove("active"));
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((c) => c.classList.remove("active"));
+        event.target.classList.add("active");
+        document.getElementById(`tab-${tabName}`).classList.add("active");
+
+        // Load data if needed (lazy loading)
+        if (
+          tabName === "security" &&
+          !document.getElementById("mfa-status-card").dataset.loaded
+        ) {
+          loadMFAStatus();
+        } else if (
+          tabName === "emergency" &&
+          !document.getElementById("emergency-contacts-list").dataset.loaded
+        ) {
+          document.getElementById("emergency-contacts-list").dataset.loaded =
+            "true";
+          loadEmergencyContacts();
+        } else if (
+          tabName === "payer" &&
+          !document.getElementById("payer-info-content").dataset.loaded
+        ) {
+          document.getElementById("payer-info-content").dataset.loaded = "true";
+          loadPayerInfo();
+        } else if (
+          tabName === "fees" &&
+          !document.getElementById("fees-summary-cards").dataset.loaded
+        ) {
+          document.getElementById("fees-summary-cards").dataset.loaded = "true";
+          loadFees();
+        } else if (
+          tabName === "documents" &&
+          !document.getElementById("documents-list").dataset.loaded
+        ) {
+          document.getElementById("documents-list").dataset.loaded = "true";
+          loadDocuments();
+        }
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // PROFILE TAB
+      // ═══════════════════════════════════════════════════════════════
+      loadProfile();
+
+      async function loadProfile() {
+        try {
+          const res = await api("GET", "/users/profile");
+          if (!res.ok)
+            return showAlert(
+              "profile-alert",
+              res.message || "Failed to load profile",
+              "error",
+            );
+
+          profileData = res.user; // Changed from res.data to res.user
+          renderProfile(profileData);
+        } catch (err) {
+          console.error("Load profile error:", err);
+        }
+      }
+
+      function renderProfile(data) {
+        const fullName =
+          `${data.first_name || ""} ${data.last_name || ""}`.trim() ||
+          "No Name";
+        const initials = fullName
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((w) => w[0].toUpperCase())
+          .join("");
+
+        document.getElementById("profile-name").textContent = fullName;
+        document.getElementById("profile-meta").textContent =
+          `${data.role || "Student"} • Member since ${new Date(data.created_at).getFullYear()}`;
+        document.getElementById("avatar-initials").textContent = initials;
+        document.getElementById("my-email-display").textContent =
+          data.email || "—";
+
+        // View mode
+        document.getElementById("view-firstName").textContent =
+          data.first_name || "—";
+        document.getElementById("view-lastName").textContent =
+          data.last_name || "—";
+        document.getElementById("view-phone").textContent = data.phone || "—";
+        document.getElementById("view-dob").textContent =
+          data.date_of_birth || "—";
+        document.getElementById("view-gender").textContent = data.gender || "—";
+        document.getElementById("view-nationality").textContent =
+          data.nationality || "—";
+
+        // Edit mode
+        document.getElementById("edit-firstName").value = data.first_name || "";
+        document.getElementById("edit-lastName").value = data.last_name || "";
+        document.getElementById("edit-phone").value = data.phone || "";
+        document.getElementById("edit-dob").value = data.date_of_birth || "";
+        document.getElementById("edit-gender").value = data.gender || "";
+        document.getElementById("edit-nationality").value =
+          data.nationality || "";
+
+        if (data.photo_url) {
+          document.getElementById("avatar-img").src = data.photo_url;
+          document.getElementById("avatar-img").style.display = "block";
+          document.getElementById("delete-photo-btn").style.display =
+            "inline-block";
+        }
+      }
+
+      function toggleEditMode(edit) {
+        document.getElementById("profile-view-card").style.display = edit
+          ? "none"
+          : "block";
+        document.getElementById("profile-edit-card").style.display = edit
+          ? "block"
+          : "none";
+        clearAlert("profile-alert");
+      }
+
+      async function saveProfile() {
+        clearAlert("profile-alert");
+        const data = {
+          first_name: document.getElementById("edit-firstName").value.trim(),
+          last_name: document.getElementById("edit-lastName").value.trim(),
+          phone: document.getElementById("edit-phone").value.trim(),
+          date_of_birth: document.getElementById("edit-dob").value,
+          gender: document.getElementById("edit-gender").value,
+          nationality: document.getElementById("edit-nationality").value.trim(),
+        };
+
+        setLoading("save-profile-btn", true, "Saving...");
+        const res = await api("PUT", "/users/profile", data);
+        setLoading("save-profile-btn", false, "💾 Save Changes");
+
+        if (!res.ok)
+          return showAlert(
+            "profile-alert",
+            res.message || "Failed to save",
+            "error",
+          );
+
+        showToast("Profile updated successfully", "success");
+        profileData = res.data;
+        renderProfile(profileData);
+        toggleEditMode(false);
+      }
+
+      function copyEmail() {
+        const email = document.getElementById("my-email-display").textContent;
+        navigator.clipboard
+          .writeText(email)
+          .then(() => showToast("Email copied!", "success"));
+      }
+
+      function handleAvatarUpload(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        if (file.size > 5 * 1024 * 1024)
+          return showToast("File too large. Max 5MB.", "error");
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById("avatar-img").src = e.target.result;
+          document.getElementById("avatar-img").style.display = "block";
+          document.getElementById("delete-photo-btn").style.display =
+            "inline-block";
+          showToast(
+            "Photo uploaded! (Demo mode - not saved to server)",
+            "success",
+          );
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function deleteProfilePhoto() {
+        document.getElementById("avatar-img").style.display = "none";
+        document.getElementById("delete-photo-btn").style.display = "none";
+        showToast("Photo removed", "success");
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // SECURITY TAB (MFA)
+      // ═══════════════════════════════════════════════════════════════
+      async function loadMFAStatus() {
+        try {
+          const token = getToken();
+          const response = await fetch(
+            `${APP_CONFIG.API_URL}/auth/mfa/status`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            renderMFAStatus(data.data);
+            document.getElementById("mfa-status-card").dataset.loaded = "true";
+          } else {
+            document.getElementById("mfa-status-card").innerHTML = `
+        <div style="text-align:center;padding:20px">
+          <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+          <h3 style="color:var(--rf-navy);margin-bottom:8px">Failed to Load Settings</h3>
+          <p style="color:var(--rf-gray)">Please refresh the page.</p>
+        </div>`;
+          }
+        } catch (error) {
+          console.error("Error loading MFA:", error);
+        }
+      }
+
+      function renderMFAStatus(status) {
+        const statusCard = document.getElementById("mfa-status-card");
+        const setupCard = document.getElementById("mfa-setup-card");
+
+        if (status.mfaEnabled) {
+          statusCard.className = "security-card success";
+          statusCard.innerHTML = `
+      <div style="display:flex;align-items:flex-start;gap:20px">
+        <div style="font-size:48px;flex-shrink:0">✓</div>
+        <div style="flex:1">
+          <h3 style="font-size:18px;font-weight:800;color:#059669;margin-bottom:8px">
+            Two-Factor Authentication Enabled
+          </h3>
+          <p style="color:#065f46;margin-bottom:16px">Your account is protected with MFA.</p>
+          <div style="display:flex;gap:12px">
+            <button class="btn btn-secondary btn-sm" onclick="regenerateBackupCodes()">🔄 Regenerate Codes</button>
+            <button class="btn btn-danger btn-sm" onclick="disableMFA()">🔓 Disable MFA</button>
+          </div>
+        </div>
+      </div>`;
+          setupCard.style.display = "none";
+        } else {
+          statusCard.className = "security-card warning";
+          statusCard.innerHTML = `
+      <div style="display:flex;align-items:flex-start;gap:20px">
+        <div style="font-size:48px;flex-shrink:0">⚠️</div>
+        <div style="flex:1">
+          <h3 style="font-size:18px;font-weight:800;color:#f59e0b">MFA Disabled</h3>
+          <p style="color:#92400e">We recommend enabling MFA to secure your account.</p>
+        </div>
+      </div>`;
+          setupCard.style.display = "block";
+        }
+      }
+
+      async function startMFASetup() {
+        try {
+          const token = getToken();
+          setLoading("start-setup-btn", true, "Setting up...");
+
+          const response = await fetch(`${APP_CONFIG.API_URL}/auth/mfa/setup`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          const data = await response.json();
+          if (response.ok) {
+            mfaSecret = data.data.secret;
+            document.getElementById("qr-code").innerHTML =
+              `<img src="${data.data.qr_code_url}" alt="QR Code" style="width:200px;height:200px;border-radius:8px"/>`;
+            document.getElementById("mfa-secret").textContent = mfaSecret;
+            document.getElementById("setup-step-1").style.display = "block";
+            document.getElementById("setup-step-2").style.display = "block";
+            document.getElementById("start-setup-btn").style.display = "none";
+            document.getElementById("cancel-setup-btn").style.display =
+              "inline-block";
+          } else {
+            showToast(data.message || "Setup failed", "error");
+          }
+        } catch (error) {
+          console.error("Setup error:", error);
+          showToast("An error occurred", "error");
+        } finally {
+          setLoading("start-setup-btn", false, "🔐 Start Setup");
+        }
+      }
+
+      async function verifyMFASetup() {
+        const code = document.getElementById("verification-code").value.trim();
+        if (!code || code.length !== 6)
+          return showAlert("verify-alert", "Enter 6-digit code", "error");
+
+        try {
+          const token = getToken();
+          setLoading("verify-btn", true, "Verifying...");
+          clearAlert("verify-alert");
+
+          const response = await fetch(
+            `${APP_CONFIG.API_URL}/auth/mfa/verify-setup`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ code }),
+            },
+          );
+
+          const data = await response.json();
+          if (response.ok) {
+            backupCodes = data.data.backup_codes;
+            document.getElementById("backup-codes-container").innerHTML =
+              backupCodes
+                .map((c) => `<div class="backup-code">${c}</div>`)
+                .join("");
+            document.getElementById("setup-step-3").style.display = "block";
+            document.getElementById("cancel-setup-btn").textContent = "Done";
+            showToast("MFA enabled!", "success");
+            setTimeout(() => {
+              loadMFAStatus();
+              cancelMFASetup();
+            }, 5000);
+          } else {
+            showAlert("verify-alert", data.message || "Invalid code", "error");
+          }
+        } catch (error) {
+          showAlert("verify-alert", "Verification error", "error");
+        } finally {
+          setLoading("verify-btn", false, "✓ Verify");
+        }
+      }
+
+      function cancelMFASetup() {
+        document.getElementById("setup-step-1").style.display = "none";
+        document.getElementById("setup-step-2").style.display = "none";
+        document.getElementById("setup-step-3").style.display = "none";
+        document.getElementById("start-setup-btn").style.display =
+          "inline-block";
+        document.getElementById("cancel-setup-btn").style.display = "none";
+        document.getElementById("verification-code").value = "";
+      }
+
+      async function disableMFA() {
+        const password = prompt("Enter password to disable MFA:");
+        if (!password) return;
+
+        try {
+          const token = getToken();
+          const response = await fetch(
+            `${APP_CONFIG.API_URL}/auth/mfa/disable`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ password }),
+            },
+          );
+
+          const data = await response.json();
+          if (response.ok) {
+            showToast("MFA disabled", "success");
+            await loadMFAStatus();
+          } else {
+            showToast(data.message || "Failed", "error");
+          }
+        } catch (error) {
+          showToast("Error", "error");
+        }
+      }
+
+      async function regenerateBackupCodes() {
+        const password = prompt("Enter password to regenerate codes:");
+        if (!password) return;
+
+        try {
+          const token = getToken();
+          const response = await fetch(
+            `${APP_CONFIG.API_URL}/auth/mfa/regenerate-codes`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ password }),
+            },
+          );
+
+          const data = await response.json();
+          if (response.ok) {
+            alert(
+              `New Codes:\n\n${data.data.backup_codes.join("\n")}\n\nSave these!`,
+            );
+            showToast("Codes regenerated", "success");
+          } else {
+            showToast(data.message || "Failed", "error");
+          }
+        } catch (error) {
+          showToast("Error", "error");
+        }
+      }
+
+      function copyBackupCodes() {
+        navigator.clipboard
+          .writeText(backupCodes.join("\n"))
+          .then(() => showToast("Codes copied", "success"));
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // PASSWORD TAB
+      // ═══════════════════════════════════════════════════════════════
+      async function changePassword() {
+        clearAlert("password-alert");
+        const current = document.getElementById("current-password").value;
+        const newPass = document.getElementById("new-password").value;
+        const confirm = document.getElementById("confirm-password").value;
+
+        if (!current || !newPass || !confirm)
+          return showAlert("password-alert", "All fields required", "error");
+        if (newPass !== confirm)
+          return showAlert("password-alert", "Passwords don't match", "error");
+        if (newPass.length < 8)
+          return showAlert(
+            "password-alert",
+            "Password must be 8+ characters",
+            "error",
+          );
+
+        setLoading("change-password-btn", true, "Changing...");
+        const res = await api("PUT", "/users/password", {
+          currentPassword: current,
+          newPassword: newPass,
+        });
+        setLoading("change-password-btn", false, "🔐 Change Password");
+
+        if (!res.ok)
+          return showAlert("password-alert", res.message || "Failed", "error");
+
+        showAlert(
+          "password-alert",
+          "Password changed successfully!",
+          "success",
+        );
+        document.getElementById("current-password").value = "";
+        document.getElementById("new-password").value = "";
+        document.getElementById("confirm-password").value = "";
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // EMERGENCY CONTACTS TAB
+      // ═══════════════════════════════════════════════════════════════
+      async function loadEmergencyContacts() {
+        try {
+          const res = await api("GET", "/users/emergency-contacts");
+          if (!res.ok)
+            return showAlert(
+              "emergency-alert",
+              res.message || "Failed to load",
+              "error",
+            );
+
+          const contacts = res.contacts || [];
+          const listEl = document.getElementById("emergency-contacts-list");
+          const noContactsEl = document.getElementById("no-emergency-contacts");
+
+          if (contacts.length === 0) {
+            listEl.innerHTML = "";
+            noContactsEl.style.display = "block";
+            return;
+          }
+
+          noContactsEl.style.display = "none";
+          listEl.innerHTML = contacts
+            .map(
+              (contact) => `
+      <div style="border:1px solid var(--rf-border);border-radius:8px;padding:20px;margin-bottom:16px;${contact.is_primary ? "border-left:4px solid var(--rf-blue);background:#f0f9ff" : ""}">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
+          <div>
+            <h4 style="font-size:16px;font-weight:700;color:var(--rf-navy);margin-bottom:4px">${contact.name}</h4>
+            <div style="font-size:13px;color:var(--rf-gray)">${contact.relationship}${contact.is_primary ? " • Primary Contact" : ""}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;font-size:14px">
+          <div>
+            <div style="font-size:12px;color:var(--rf-gray);margin-bottom:4px">Phone</div>
+            <div style="font-weight:600;color:var(--rf-navy)">${contact.phone || "—"}</div>
+          </div>
+          ${
+            contact.alternate_phone
+              ? `
+          <div>
+            <div style="font-size:12px;color:var(--rf-gray);margin-bottom:4px">Alternate Phone</div>
+            <div style="font-weight:600;color:var(--rf-navy)">${contact.alternate_phone}</div>
+          </div>`
+              : ""
+          }
+          ${
+            contact.email
+              ? `
+          <div>
+            <div style="font-size:12px;color:var(--rf-gray);margin-bottom:4px">Email</div>
+            <div style="font-weight:600;color:var(--rf-navy)">${contact.email}</div>
+          </div>`
+              : ""
+          }
+        </div>
+        ${
+          contact.address
+            ? `
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--rf-border)">
+          <div style="font-size:12px;color:var(--rf-gray);margin-bottom:4px">Address</div>
+          <div style="font-size:14px;color:var(--rf-navy)">${contact.address}</div>
+        </div>`
+            : ""
+        }
+      </div>
+    `,
+            )
+            .join("");
+        } catch (err) {
+          console.error("Load emergency contacts error:", err);
+          showAlert("emergency-alert", "Error loading contacts", "error");
+        }
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // PAYER INFO TAB
+      // ═══════════════════════════════════════════════════════════════
+      async function loadPayerInfo() {
+        try {
+          const res = await api("GET", "/users/payer-info");
+          if (!res.ok)
+            return showAlert(
+              "payer-alert",
+              res.message || "Failed to load",
+              "error",
+            );
+
+          const payer = res.payer || {};
+          const contentEl = document.getElementById("payer-info-content");
+
+          if (payer.payer_type === "self" || !payer.payer_name) {
+            contentEl.innerHTML = `
+        <div style="text-align:center;padding:40px">
+          <div style="font-size:48px;margin-bottom:16px">💳</div>
+          <h3 style="color:var(--rf-navy);margin-bottom:8px;font-size:16px">Self-Funded</h3>
+          <p style="color:var(--rf-gray);font-size:14px">You are responsible for your own fees.</p>
+        </div>
+      `;
+            return;
+          }
+
+          contentEl.innerHTML = `
+      <div style="border:1px solid var(--rf-border);border-radius:8px;padding:24px;background:white">
+        <h4 style="font-size:16px;font-weight:700;color:var(--rf-navy);margin-bottom:16px">Payer Details</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px">
+          <div>
+            <div style="font-size:12px;color:var(--rf-gray);margin-bottom:4px">Payer Type</div>
+            <div style="font-size:15px;font-weight:600;color:var(--rf-navy);text-transform:capitalize">${payer.payer_type || "—"}</div>
+          </div>
+          <div>
+            <div style="font-size:12px;color:var(--rf-gray);margin-bottom:4px">Name</div>
+            <div style="font-size:15px;font-weight:600;color:var(--rf-navy)">${payer.payer_name || "—"}</div>
+          </div>
+          ${
+            payer.payer_relation
+              ? `
+          <div>
+            <div style="font-size:12px;color:var(--rf-gray);margin-bottom:4px">Relationship</div>
+            <div style="font-size:15px;font-weight:600;color:var(--rf-navy)">${payer.payer_relation}</div>
+          </div>`
+              : ""
+          }
+          ${
+            payer.payer_phone
+              ? `
+          <div>
+            <div style="font-size:12px;color:var(--rf-gray);margin-bottom:4px">Phone</div>
+            <div style="font-size:15px;font-weight:600;color:var(--rf-navy)">${payer.payer_phone}</div>
+          </div>`
+              : ""
+          }
+          ${
+            payer.payer_email
+              ? `
+          <div>
+            <div style="font-size:12px;color:var(--rf-gray);margin-bottom:4px">Email</div>
+            <div style="font-size:15px;font-weight:600;color:var(--rf-navy)">${payer.payer_email}</div>
+          </div>`
+              : ""
+          }
+        </div>
+        ${
+          payer.payer_address
+            ? `
+        <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--rf-border)">
+          <div style="font-size:12px;color:var(--rf-gray);margin-bottom:4px">Address</div>
+          <div style="font-size:14px;color:var(--rf-navy);line-height:1.6">${payer.payer_address}</div>
+        </div>`
+            : ""
+        }
+      </div>
+    `;
+        } catch (err) {
+          console.error("Load payer info error:", err);
+          showAlert("payer-alert", "Error loading payer info", "error");
+        }
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // FEES TAB
+      // ═══════════════════════════════════════════════════════════════
+      async function loadFees() {
+        try {
+          const res = await api("GET", "/users/fees");
+          if (!res.ok)
+            return showAlert(
+              "fees-alert",
+              res.message || "Failed to load",
+              "error",
+            );
+
+          const fees = res.fees || {};
+          const registrations = fees.registrations || [];
+          const summary = fees.summary || {};
+
+          // Render summary cards
+          const summaryEl = document.getElementById("fees-summary-cards");
+          summaryEl.innerHTML = `
+      <div style="background:linear-gradient(135deg,#3b82f6,#2563eb);border-radius:12px;padding:20px;color:white">
+        <div style="font-size:13px;opacity:0.9;margin-bottom:8px">Total Fees</div>
+        <div style="font-size:28px;font-weight:800">R ${parseFloat(summary.totalFees || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#10b981,#059669);border-radius:12px;padding:20px;color:white">
+        <div style="font-size:13px;opacity:0.9;margin-bottom:8px">Paid</div>
+        <div style="font-size:28px;font-weight:800">R ${parseFloat(summary.paidFees || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</div>
+      </div>
+      <div style="background:linear-gradient(135deg,${parseFloat(summary.outstandingFees || 0) > 0 ? "#ef4444,#dc2626" : "#6b7280,#4b5563"});border-radius:12px;padding:20px;color:white">
+        <div style="font-size:13px;opacity:0.9;margin-bottom:8px">Outstanding</div>
+        <div style="font-size:28px;font-weight:800">R ${parseFloat(summary.outstandingFees || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</div>
+      </div>
+    `;
+
+          // Render registrations list
+          const listEl = document.getElementById("fees-registrations-list");
+          const noFeesEl = document.getElementById("no-fees");
+
+          if (registrations.length === 0) {
+            listEl.innerHTML = "";
+            summaryEl.innerHTML = "";
+            noFeesEl.style.display = "block";
+            return;
+          }
+
+          noFeesEl.style.display = "none";
+
+          // Group by semester
+          const grouped = {};
+          registrations.forEach((r) => {
+            const key = `${r.year} - ${r.semester_name}`;
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(r);
+          });
+
+          listEl.innerHTML = Object.entries(grouped)
+            .map(
+              ([semester, regs]) => `
+      <div style="margin-bottom:24px">
+        <h4 style="font-size:14px;font-weight:700;color:var(--rf-navy);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--rf-border)">${semester}</h4>
+        <div style="display:grid;gap:12px">
+          ${regs
+            .map(
+              (r) => `
+            <div style="border:1px solid var(--rf-border);border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:700;font-size:15px;color:var(--rf-navy);margin-bottom:4px">${r.module_code} - ${r.module_name}</div>
+                <div style="font-size:13px;color:var(--rf-gray)">${r.credits} Credits • Status: <span style="text-transform:capitalize;font-weight:600;color:${getStatusColor(r.status)}">${r.status}</span></div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:20px;font-weight:800;color:var(--rf-navy)">R ${parseFloat(r.quotation_amount || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2 })}</div>
+              </div>
+            </div>
+          `,
+            )
+            .join("")}
+        </div>
+      </div>
+    `,
+            )
+            .join("");
+        } catch (err) {
+          console.error("Load fees error:", err);
+          showAlert("fees-alert", "Error loading fees", "error");
+        }
+      }
+
+      function getStatusColor(status) {
+        const colors = {
+          approved: "#10b981",
+          completed: "#059669",
+          pending: "#f59e0b",
+          rejected: "#ef4444",
+          dropped: "#6b7280",
+        };
+        return colors[status] || "#6b7280";
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // DOCUMENTS TAB
+      // ═══════════════════════════════════════════════════════════════
+      async function loadDocuments() {
+        try {
+          const res = await api("GET", "/users/documents");
+          if (!res.ok)
+            return showAlert(
+              "documents-alert",
+              res.message || "Failed to load",
+              "error",
+            );
+
+          const applications = res.documents || [];
+          const totalDocs = res.totalDocuments || 0;
+          const listEl = document.getElementById("documents-list");
+          const noDocsEl = document.getElementById("no-documents");
+
+          if (totalDocs === 0) {
+            listEl.innerHTML = "";
+            noDocsEl.style.display = "block";
+            return;
+          }
+
+          noDocsEl.style.display = "none";
+          listEl.innerHTML = applications
+            .map(
+              (app) => `
+      <div style="margin-bottom:24px;border:1px solid var(--rf-border);border-radius:12px;overflow:hidden">
+        <div style="background:#f9fafb;padding:16px;border-bottom:1px solid var(--rf-border)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <h4 style="font-size:15px;font-weight:700;color:var(--rf-navy);margin-bottom:4px">
+                Application ${app.application_ref || "Unknown"}
+              </h4>
+              <div style="font-size:13px;color:var(--rf-gray)">
+                Status: <span style="text-transform:capitalize;font-weight:600;color:${getStatusColor(app.application_status)}">${app.application_status}</span>
+              </div>
+            </div>
+            <div style="background:${app.application_status === "approved" ? "#ecfdf5" : "#fef3c7"};color:${app.application_status === "approved" ? "#059669" : "#92400e"};padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700">
+              ${app.documents.length} Document${app.documents.length !== 1 ? "s" : ""}
+            </div>
+          </div>
+        </div>
+        <div style="padding:20px">
+          <div style="display:grid;gap:12px">
+            ${app.documents
+              .map(
+                (doc) => `
+              <div style="border:1px solid var(--rf-border);border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center;${doc.is_verified ? "border-left:4px solid #10b981;background:#f0fdf4" : ""}">
+                <div style="flex:1">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <div style="font-size:24px">${getDocumentIcon(doc.document_type)}</div>
+                    <div>
+                      <div style="font-weight:700;font-size:14px;color:var(--rf-navy)">${formatDocumentType(doc.document_type)}</div>
+                      <div style="font-size:12px;color:var(--rf-gray)">${doc.file_name}</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:16px;font-size:12px;color:var(--rf-gray)">
+                    <div>📅 ${new Date(doc.uploaded_at).toLocaleDateString("en-ZA")}</div>
+                    <div>📦 ${formatFileSize(doc.file_size)}</div>
+                    ${doc.is_verified ? '<div style="color:#059669;font-weight:600">✓ Verified</div>' : '<div style="color:#f59e0b;font-weight:600">⏳ Pending</div>'}
+                  </div>
+                  ${doc.notes ? `<div style="margin-top:8px;padding:8px;background:#fef3c7;border-radius:4px;font-size:12px;color:#92400e">📝 ${doc.notes}</div>` : ""}
+                </div>
+              </div>
+            `,
+              )
+              .join("")}
+          </div>
+        </div>
+      </div>
+    `,
+            )
+            .join("");
+        } catch (err) {
+          console.error("Load documents error:", err);
+          showAlert("documents-alert", "Error loading documents", "error");
+        }
+      }
+
+      function formatDocumentType(type) {
+        const types = {
+          id_document: "ID Document",
+          matric_certificate: "Matric Certificate",
+          tertiary_transcript: "Tertiary Transcript",
+          proof_of_payment: "Proof of Payment",
+          passport_photo: "Passport Photo",
+          study_permit: "Study Permit",
+          saqa_evaluation: "SAQA Evaluation",
+          other: "Other Document",
+        };
+        return types[type] || type;
+      }
+
+      function getDocumentIcon(type) {
+        const icons = {
+          id_document: "🪪",
+          matric_certificate: "📜",
+          tertiary_transcript: "📋",
+          proof_of_payment: "💳",
+          passport_photo: "📸",
+          study_permit: "✈️",
+          saqa_evaluation: "🎓",
+          other: "📄",
+        };
+        return icons[type] || "📄";
+      }
+
+      function formatFileSize(bytes) {
+        if (!bytes) return "Unknown size";
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+        return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+      }
+    </script>
+  </body>
+</html>

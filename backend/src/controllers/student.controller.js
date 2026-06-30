@@ -101,6 +101,42 @@ class StudentController {
       next(error);
     }
   }
+
+  /**
+   * POST /api/students/:id/profile-photo
+   * Upload profile photo
+   */
+  async uploadProfilePhoto(req, res, next) {
+    try {
+      const { id } = req.params;
+
+      if (!req.file) {
+        return ResponseHandler.badRequest(res, 'No file uploaded');
+      }
+
+      const result = await studentService.uploadProfilePhoto(id, req.file);
+
+      return ResponseHandler.success(res, result, 'Profile photo uploaded successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * DELETE /api/students/:id/profile-photo
+   * Delete profile photo
+   */
+  async deleteProfilePhoto(req, res, next) {
+    try {
+      const { id } = req.params;
+
+      await studentService.deleteProfilePhoto(id);
+
+      return ResponseHandler.success(res, null, 'Profile photo deleted successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new StudentController();

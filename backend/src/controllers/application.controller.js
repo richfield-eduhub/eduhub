@@ -3,6 +3,7 @@
  */
 
 const applicationService = require('../services/application.service');
+const documentService = require('../services/document.service');
 const ResponseHandler = require('../utils/responseHandler');
 
 class ApplicationController {
@@ -15,6 +16,22 @@ class ApplicationController {
         passport_number,
       });
       return ResponseHandler.success(res, result, 'Identity status retrieved');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async checkContactAvailability(req, res, next) {
+    try {
+      const { email, phone, draft_id, id_number, passport_number } = req.query;
+      const result = await applicationService.checkContactAvailability({
+        email,
+        phone,
+        draft_id,
+        id_number,
+        passport_number,
+      });
+      return ResponseHandler.success(res, result, 'Contact availability checked');
     } catch (error) {
       next(error);
     }
@@ -142,6 +159,33 @@ class ApplicationController {
     try {
       const result = await applicationService.evaluateApsEligibility(req.body);
       return ResponseHandler.success(res, result, 'APS eligibility evaluated successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async uploadDraftDocument(req, res, next) {
+    try {
+      const { draftId } = req.params;
+      const { documentType } = req.body;
+
+      await applicationService.assertDraftAllowsUpload(draftId);
+
+      if (!req.file) {
+        return ResponseHandler.badRequest(res, 'No file uploaded');
+      }
+      if (!documentType) {
+        return ResponseHandler.badRequest(res, 'Document type is required');
+      }
+
+      const document = await documentService.saveDocument({
+        applicationId: draftId,
+        documentType,
+        file: req.file,
+        uploadedBy: req.user?.user_id || null,
+      });
+
+      return ResponseHandler.created(res, document, 'Document uploaded successfully');
     } catch (error) {
       next(error);
     }

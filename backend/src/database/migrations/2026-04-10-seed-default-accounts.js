@@ -21,17 +21,17 @@ module.exports = {
       const studentId  = '20000003-0000-4000-8000-000000000003';
 
       await sequelize.query(`INSERT INTO users (id,email,password_hash,member_number,role,account_status,is_verified,is_default_password,created_at,updated_at) VALUES (:id,:email,:pw,:mn,:role,'active',true,true,NOW(),NOW()) ON CONFLICT (id) DO NOTHING`,
-        { replacements:{id:adminId,email:'admin@eduhub.ac.za',pw:defaultPassword,mn:'ADMIN001',role:'admin'}, transaction });
+        { replacements:{id:adminId,email:'admin@eduhub.ac.za',pw:defaultPassword,mn:'2630000004',role:'admin'}, transaction });
       await sequelize.query(`INSERT INTO user_details (id,user_id,first_name,last_name,date_of_birth,gender,nationality,id_number,phone,city,province,created_at,updated_at) VALUES (:id,:uid,'System','Admin','1990-01-01','Prefer not to say','South African','9001010001088','0800000000','Johannesburg','Gauteng',NOW(),NOW()) ON CONFLICT (id) DO NOTHING`,
         { replacements:{id:'21000001-0000-4000-8000-000000000001',uid:adminId}, transaction });
 
       await sequelize.query(`INSERT INTO users (id,email,password_hash,member_number,role,account_status,is_verified,is_default_password,created_at,updated_at) VALUES (:id,:email,:pw,:mn,:role,'active',true,true,NOW(),NOW()) ON CONFLICT (id) DO NOTHING`,
-        { replacements:{id:lecturerId,email:'john.smith@eduhub.ac.za',pw:defaultPassword,mn:'EMP2024001',role:'lecturer'}, transaction });
+        { replacements:{id:lecturerId,email:'john.smith@eduhub.ac.za',pw:defaultPassword,mn:'2620000006',role:'lecturer'}, transaction });
       await sequelize.query(`INSERT INTO user_details (id,user_id,first_name,last_name,date_of_birth,gender,nationality,id_number,phone,city,province,created_at,updated_at) VALUES (:id,:uid,'John','Smith','1980-05-20','Male','South African','8005200001083','0112345678','Johannesburg','Gauteng',NOW(),NOW()) ON CONFLICT (id) DO NOTHING`,
         { replacements:{id:'31000001-0000-4000-8000-000000000001',uid:lecturerId}, transaction });
 
       await sequelize.query(`INSERT INTO users (id,email,password_hash,member_number,role,account_status,is_verified,is_default_password,created_at,updated_at) VALUES (:id,:email,:pw,:mn,:role,'active',true,true,NOW(),NOW()) ON CONFLICT (id) DO NOTHING`,
-        { replacements:{id:studentId,email:'thabo.molefe@student.eduhub.ac.za',pw:defaultPassword,mn:'2026-0001',role:'student'}, transaction });
+        { replacements:{id:studentId,email:'thabo.molefe@student.eduhub.ac.za',pw:defaultPassword,mn:'2610000008',role:'student'}, transaction });
       await sequelize.query(`INSERT INTO user_details (id,user_id,first_name,last_name,date_of_birth,gender,nationality,id_number,phone,city,province,created_at,updated_at) VALUES (:id,:uid,'Thabo','Molefe','2000-03-15','Male','South African','0003150001083','0821234567','Johannesburg','Gauteng',NOW(),NOW()) ON CONFLICT (id) DO NOTHING`,
         { replacements:{id:'41000001-0000-4000-8000-000000000001',uid:studentId}, transaction });
 

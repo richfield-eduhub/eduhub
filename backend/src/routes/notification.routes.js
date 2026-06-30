@@ -1,48 +1,103 @@
 /**
- * Notification Routes — in-memory store per server session
+ * Notification Routes — persistent database storage
  * Frontend uses these for the notification bell.
  */
 const express = require('express');
 const router  = express.Router();
 const { authenticateToken } = require('../middleware/auth.middleware');
-
-// Simple in-memory store (resets on server restart; replace with DB table if needed)
-const notifications = [];
-let   notifSeq      = 1;
-
-function userNotifs(userId) {
-  return notifications.filter(n => n.userId === userId);
-}
+const notificationService = require('../services/notification.service');
+const ResponseHandler = require('../utils/responseHandler');
 
 router.use(authenticateToken);
 
-// GET /api/notifications
-router.get('/', (req, res) => {
-  const mine   = userNotifs(req.user.user_id);
-  const unread = mine.filter(n => !n.read).length;
-  res.json({ ok: true, notifications: mine, unread, total: mine.length });
+// GET /api/notifications - Get user's notifications
+router.get('/', async (req, res, next) => {
+  try {
+    const userId = req.user.user_id;
+    const { limit, offset, unreadOnly } = req.query;
+
+    const result = await notificationService.getUserNotifications(userId, {
+      limit: limit ? parseInt(limit) : undefined,
+      offset: offset ? parseInt(offset) : undefined,
+      unreadOnly: unreadOnly === 'true',
+    });
+
+    res.json({
+      ok: true,
+      notifications: result.notifications,
+      unread: result.unread,
+      total: result.total,
+    });
+  } catch (err) { next(err); }
 });
 
-// PUT /api/notifications/:id/read
-router.put('/:id/read', (req, res) => {
-  const notif = notifications.find(n => n.id === req.params.id && n.userId === req.user.user_id);
-  if (!notif) return res.status(404).json({ ok: false, message: 'Notification not found.' });
-  notif.read   = true;
-  notif.readAt = new Date().toISOString();
-  res.json({ ok: true, message: 'Marked as read.', notification: notif });
+// PUT /api/notifications/:id/read - Mark as read
+router.put('/:id/read', async (req, res, next) => {
+  try {
+    const userId = req.user.user_id;
+    const notificationId = req.params.id;
+
+    const notification = await notificationService.markAsRead(notificationId, userId);
+
+    res.json({
+      ok: true,
+      message: 'Marked as read.',
+      notification,
+    });
+  } catch (err) { next(err); }
 });
 
-// DELETE /api/notifications/:id
-router.delete('/:id', (req, res) => {
-  const idx = notifications.findIndex(n => n.id === req.params.id && n.userId === req.user.user_id);
-  if (idx === -1) return res.status(404).json({ ok: false, message: 'Notification not found.' });
-  notifications.splice(idx, 1);
-  res.json({ ok: true, message: 'Notification deleted.' });
+// POST /api/notifications/mark-all-read - Mark all as read
+router.post('/mark-all-read', async (req, res, next) => {
+  try {
+    const userId = req.user.user_id;
+
+    const result = await notificationService.markAllAsRead(userId);
+
+    res.json({
+      ok: true,
+      message: result.message,
+    });
+  } catch (err) { next(err); }
 });
 
-// Export the push helper so other routes can create notifications
-router.pushNotif = function(userId, title, message, type = 'info') {
-  notifications.unshift({ id: String(notifSeq++), userId, title, message, type, read: false, createdAt: new Date().toISOString() });
+// DELETE /api/notifications/:id - Delete notification
+router.delete('/:id', async (req, res, next) => {
+  try {
+    const userId = req.user.user_id;
+    const notificationId = req.params.id;
+
+    const result = await notificationService.deleteNotification(notificationId, userId);
+
+    res.json({
+      ok: true,
+      message: result.message,
+    });
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/notifications/read - Delete all read notifications
+router.delete('/read/all', async (req, res, next) => {
+  try {
+    const userId = req.user.user_id;
+
+    const result = await notificationService.deleteAllRead(userId);
+
+    res.json({
+      ok: true,
+      message: result.message,
+      count: result.count,
+    });
+  } catch (err) { next(err); }
+});
+
+// Export the push helper so other services can create notifications
+router.pushNotif = async function(userId, title, message, type = 'info') {
+  try {
+    await notificationService.pushNotification(userId, title, message, type);
+  } catch (error) {
+    console.error('[NotificationRoutes] Failed to push notification:', error.message);
+  }
 };
 
 module.exports = router;

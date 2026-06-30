@@ -1,2 +1,16 @@
 .DS_Store
 logs/
+backend/coverage/
+backend/tests/integration/.db-ready
+
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment files with secrets
+.env
+*.env
+!.env.example
+backend/.env
+backend/*.env
+!backend/.env.example

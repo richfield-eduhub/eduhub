@@ -6,6 +6,12 @@ const express = require("express");
 const { body, query, param } = require("express-validator");
 const applicationController = require("../controllers/application.controller");
 const { validate } = require("../middleware/validator.middleware");
+const { optionalAuth } = require("../middleware/auth.middleware");
+const {
+  uploadSingle,
+  handleUploadError,
+  validateUploadedFiles,
+} = require("../middleware/upload.middleware");
 const { APPLICATION_STATUS } = require("../utils/constants");
 
 const router = express.Router();
@@ -156,6 +162,18 @@ router.post(
 );
 
 router.post(
+  "/drafts/:draftId/documents",
+  optionalAuth,
+  draftIdParamValidation,
+  uploadSingle("document"),
+  handleUploadError,
+  validateUploadedFiles,
+  [body("documentType").trim().notEmpty().withMessage("Document type is required")],
+  validate,
+  applicationController.uploadDraftDocument,
+);
+
+router.post(
   "/eligibility/aps",
   [
     body("subjects").optional().isArray(),
@@ -178,6 +196,19 @@ router.get(
   identityStatusValidation,
   validate,
   applicationController.checkIdentityStatus,
+);
+
+router.get(
+  "/contact/check",
+  [
+    query("email").optional().isEmail().normalizeEmail(),
+    query("phone").optional().trim(),
+    query("draft_id").optional().isUUID(),
+    query("id_number").optional().trim(),
+    query("passport_number").optional().trim(),
+  ],
+  validate,
+  applicationController.checkContactAvailability,
 );
 
 router.get(

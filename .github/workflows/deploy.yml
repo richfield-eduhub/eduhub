@@ -30,10 +30,21 @@ jobs:
               - '.env.example'
               - 'README.md'
 
-  # ─── Build Backend ────────────────────────────────────────────────────────
-  build-backend:
+  # ─── Backend tests (unit + integration + coverage) ────────────────────────
+  backend-tests:
     needs: changes
     if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.root == 'true'
+    uses: ./.github/workflows/backend-tests.yml
+    with:
+      with_coverage: true
+
+  # ─── Build Backend ────────────────────────────────────────────────────────
+  build-backend:
+    needs: [changes, backend-tests]
+    if: |
+      always() &&
+      (needs.backend-tests.result == 'success' || needs.backend-tests.result == 'skipped') &&
+      (needs.changes.outputs.backend == 'true' || needs.changes.outputs.root == 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -83,8 +94,13 @@ jobs:
 
   # ─── Deploy ───────────────────────────────────────────────────────────────
   deploy:
-    needs: [changes, build-backend, build-nginx]
-    if: always() && (needs.build-backend.result == 'success' || needs.build-backend.result == 'skipped') && (needs.build-nginx.result == 'success' || needs.build-nginx.result == 'skipped') && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.nginx == 'true' || needs.changes.outputs.root == 'true')
+    needs: [changes, backend-tests, build-backend, build-nginx]
+    if: |
+      always() &&
+      (needs.backend-tests.result == 'success' || needs.backend-tests.result == 'skipped') &&
+      (needs.build-backend.result == 'success' || needs.build-backend.result == 'skipped') &&
+      (needs.build-nginx.result == 'success' || needs.build-nginx.result == 'skipped') &&
+      (needs.changes.outputs.backend == 'true' || needs.changes.outputs.nginx == 'true' || needs.changes.outputs.root == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -165,10 +181,18 @@ jobs:
                   JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_this}
                   JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
                   JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
+                  SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+                  SMTP_PORT: ${SMTP_PORT:-587}
+                  SMTP_SECURE: ${SMTP_SECURE:-false}
+                  SMTP_USER: ${SMTP_USER}
+                  SMTP_PASS: ${SMTP_PASS}
+                  EMAIL_FROM: ${EMAIL_FROM:-admissions@eduhub.ac.za}
+                  ADMISSIONS_EMAIL: ${ADMISSIONS_EMAIL:-admissions@eduhub.ac.za}
                 ports:
                   - "${BACKEND_PORT:-3000}:3000"
                 volumes:
                   - ./logs/backend:/app/logs
+                  - eduhub_uploads:/app/uploads
                 depends_on:
                   db:
                     condition: service_healthy
@@ -220,6 +244,8 @@ jobs:
                 driver: local
               eduhub_pgadmin:
                 driver: local
+              eduhub_uploads:
+                driver: local
             networks:
               eduhub_network:
                 driver: bridge
@@ -248,6 +274,13 @@ jobs:
             DOMAIN=edu-hub.duckdns.org
             LETSENCRYPT_EMAIL=admin@eduhub.co.za
             ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,https://edu-hub.duckdns.org
+            SMTP_HOST=smtp.gmail.com
+            SMTP_PORT=587
+            SMTP_SECURE=false
+            SMTP_USER=${{ secrets.SMTP_USER }}
+            SMTP_PASS=${{ secrets.SMTP_PASS }}
+            EMAIL_FROM=admissions@eduhub.ac.za
+            ADMISSIONS_EMAIL=admissions@eduhub.ac.za
             EOF
 
             # Login to GHCR

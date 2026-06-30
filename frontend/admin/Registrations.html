@@ -58,11 +58,11 @@ let selectedReg=null;
 
 function render(){
   const regs=getRegistrations();
-  const counts={all:regs.length,pending:regs.filter(r=>r.status==='pending').length,approved:regs.filter(r=>r.status==='approved').length,declined:regs.filter(r=>r.status==='declined').length};
+  const counts={all:regs.length,pending:regs.filter(r=>r.status==='pending').length,approved:regs.filter(r=>r.status==='approved'||r.status==='allocated').length,declined:regs.filter(r=>r.status==='declined').length};
   document.getElementById('filter-bar').innerHTML=['all','pending','approved','declined'].map(f=>
     `<button class="filter-btn ${currentFilter===f?'active':''}" onclick="setFilter('${f}')">${f} (${counts[f]})</button>`
   ).join('');
-  const filtered=currentFilter==='all'?regs:regs.filter(r=>r.status===currentFilter);
+  const filtered=currentFilter==='all'?regs:regs.filter(r=>currentFilter==='approved'?r.status==='approved'||r.status==='allocated':r.status===currentFilter);
   if(filtered.length===0){
     document.getElementById('table-wrap').innerHTML=`<div style="padding:48px;text-align:center;color:var(--rf-gray)"><div style="font-size:40px;margin-bottom:12px">📝</div><div>No ${currentFilter==='all'?'':currentFilter} registrations found</div></div>`;
     return;
@@ -116,10 +116,11 @@ function openView(id){
 }
 
 function doApprove(id){
-  approveRegistration(id);
-  closeModal('view-modal');
-  showToast('Registration approved!','success');
-  render();
+  approveRegistration(id).then(() => {
+    closeModal('view-modal');
+    showToast('Registration approved!','success');
+    render();
+  }).catch(() => showToast('Could not approve registration','error'));
 }
 
 function openDecline(id){
@@ -133,13 +134,18 @@ function openDecline(id){
 function confirmDecline(){
   const reason=document.getElementById('decline-reason').value.trim();
   if(!reason)return showToast('Please provide a reason','error');
-  declineRegistration(selectedReg.id,reason);
-  closeModal('decline-modal');
-  showToast('Registration declined.','info');
-  render();
+  declineRegistration(selectedReg.id,reason).then(() => {
+    closeModal('decline-modal');
+    showToast('Registration declined.','info');
+    render();
+  }).catch(() => showToast('Could not decline registration','error'));
 }
 
-render();
+(async () => {
+  await ensureDashboardData();
+  render();
+})();
+document.addEventListener('eduhub:dashboard-data-ready', render);
 </script>
 </body>
 </html>

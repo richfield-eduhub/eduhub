@@ -66,7 +66,28 @@ const optionalAuth = async (req, res, next) => {
   }
 };
 
+/**
+ * Role-based authorization middleware
+ * Usage: authorize(['admin', 'lecturer'])
+ */
+const authorize = (allowedRoles = []) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return ResponseHandler.unauthorized(res, 'Authentication required');
+    }
+
+    const userRole = req.user.role;
+
+    if (!allowedRoles.includes(userRole)) {
+      return ResponseHandler.forbidden(res, 'Insufficient permissions');
+    }
+
+    next();
+  };
+};
+
 module.exports = {
   authenticateToken,
   optionalAuth,
+  authorize,
 };

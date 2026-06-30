@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Announcements — EduHub</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .announcement-card { background: white; border-radius: 12px; border: 1px solid var(--rf-border); margin-bottom: 16px; overflow: hidden; transition: box-shadow 0.2s; }
+    .announcement-card:hover { box-shadow: 0 4px 12px rgba(0,20,77,0.08); }
+    .announcement-header { padding: 16px 20px; border-bottom: 1px solid var(--rf-border); }
+    .announcement-body { padding: 16px 20px; font-size: 14px; color: var(--rf-navy); line-height: 1.7; white-space: pre-wrap; }
+    .priority-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .priority-low { background: #e0f2fe; color: #075985; }
+    .priority-normal { background: #dbeafe; color: #1e40af; }
+    .priority-high { background: #fed7aa; color: #9a3412; }
+    .priority-urgent { background: #fee2e2; color: #991b1b; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+    .filter-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-tab { padding: 8px 16px; border-radius: 8px; border: 2px solid var(--rf-border); background: white; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+    .filter-tab:hover { border-color: var(--rf-blue); }
+    .filter-tab.active { background: var(--rf-blue); color: white; border-color: var(--rf-blue); }
+  </style>
+</head>
+<body>
+<div id="navbar-root"></div>
+<div class="main-content">
+  <h1 class="section-title">ANNOUNCEMENTS</h1>
+  <p class="section-subtitle">Stay updated with important notices from your lecturers</p>
+
+  <!-- Priority filter tabs -->
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-filter="all" onclick="filterByPriority('all')">All Announcements</button>
+    <button class="filter-tab" data-filter="urgent" onclick="filterByPriority('urgent')">🔴 Urgent</button>
+    <button class="filter-tab" data-filter="high" onclick="filterByPriority('high')">⚠️ Important</button>
+    <button class="filter-tab" data-filter="normal" onclick="filterByPriority('normal')">ℹ️ Normal</button>
+    <button class="filter-tab" data-filter="low" onclick="filterByPriority('low')">🔵 Info</button>
+  </div>
+
+  <!-- Announcements list -->
+  <div id="announcements-list">
+    <div style="text-align:center;padding:40px">
+      <div class="spinner"></div>
+      <p style="color:var(--rf-gray);margin-top:12px">Loading announcements...</p>
+    </div>
+  </div>
+</div>
+
+<script src="../shared.js"></script>
+<script>
+const user = requireAuth('student');
+renderNavbar('student');
+
+let allAnnouncements = [];
+let currentFilter = 'all';
+
+// Load announcements on page load
+loadAnnouncements();
+
+async function loadAnnouncements() {
+  try {
+    const response = await fetch(`${APP_CONFIG.API_URL}/students/me/announcements`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      allAnnouncements = data.data || [];
+      renderAnnouncements();
+    } else {
+      document.getElementById('announcements-list').innerHTML = `
+        <div style="text-align:center;padding:40px;background:white;border-radius:12px;border:1px solid var(--rf-border)">
+          <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+          <h3 style="color:var(--rf-navy);margin-bottom:8px">Failed to Load Announcements</h3>
+          <p style="color:var(--rf-gray)">Please refresh the page to try again.</p>
+        </div>`;
+    }
+  } catch (error) {
+    console.error('Error loading announcements:', error);
+    document.getElementById('announcements-list').innerHTML = `
+      <div style="text-align:center;padding:40px;background:white;border-radius:12px;border:1px solid var(--rf-border)">
+        <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+        <h3 style="color:var(--rf-navy);margin-bottom:8px">Error Loading Announcements</h3>
+        <p style="color:var(--rf-gray)">${error.message}</p>
+      </div>`;
+  }
+}
+
+function filterByPriority(priority) {
+  currentFilter = priority;
+
+  // Update active tab
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    if (tab.dataset.filter === priority) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  renderAnnouncements();
+}
+
+function renderAnnouncements() {
+  const container = document.getElementById('announcements-list');
+
+  // Filter announcements
+  const filteredAnnouncements = currentFilter === 'all'
+    ? allAnnouncements
+    : allAnnouncements.filter(ann => ann.priority === currentFilter);
+
+  if (filteredAnnouncements.length === 0) {
+    if (currentFilter === 'all') {
+      container.innerHTML = `
+        <div style="text-align:center;padding:60px;background:white;border-radius:12px;border:1px solid var(--rf-border)">
+          <div style="font-size:64px;margin-bottom:16px">📢</div>
+          <h3 style="color:var(--rf-navy);margin-bottom:8px">No Announcements Yet</h3>
+          <p style="color:var(--rf-gray);margin-bottom:24px">You'll see announcements from your lecturers here when they post updates.</p>
+        </div>`;
+    } else {
+      container.innerHTML = `
+        <div style="text-align:center;padding:60px;background:white;border-radius:12px;border:1px solid var(--rf-border)">
+          <div style="font-size:48px;margin-bottom:16px">📭</div>
+          <h3 style="color:var(--rf-navy);margin-bottom:8px">No ${capitalizeFirst(currentFilter)} Announcements</h3>
+          <p style="color:var(--rf-gray)">Try selecting a different filter</p>
+        </div>`;
+    }
+    return;
+  }
+
+  const priorityEmoji = {
+    low: '🔵',
+    normal: 'ℹ️',
+    high: '⚠️',
+    urgent: '🔴'
+  };
+
+  container.innerHTML = filteredAnnouncements.map(ann => {
+    const moduleName = ann.module_code && ann.module_name
+      ? `${ann.module_code} - ${ann.module_name}`
+      : 'Module';
+
+    return `
+      <div class="announcement-card">
+        <div class="announcement-header">
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:8px">
+            <span style="font-size:32px;flex-shrink:0">${priorityEmoji[ann.priority] || 'ℹ️'}</span>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+                <div style="font-weight:800;font-size:17px;color:var(--rf-navy)">${escapeHtml(ann.title)}</div>
+                <span class="priority-badge priority-${ann.priority}">${ann.priority.toUpperCase()}</span>
+              </div>
+              <div style="font-size:13px;color:var(--rf-gray)">
+                ${moduleName} · ${ann.lecturer_name || 'Lecturer'} · ${formatDate(ann.created_at)}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="announcement-body">${escapeHtml(ann.content)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+
+  return date.toLocaleDateString('en-ZA', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function capitalizeFirst(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+</script>
+</body>
+</html>

@@ -69,6 +69,54 @@ class AdminController {
   }
 
   /**
+   * POST /api/admin/applications/bulk-update
+   * Bulk approve/reject applications
+   */
+  async bulkUpdateApplications(req, res, next) {
+    try {
+      const { applicationIds, status, rejection_reason } = req.body;
+      const reviewerId = req.user.user_id;
+
+      if (!applicationIds || !Array.isArray(applicationIds) || applicationIds.length === 0) {
+        return ResponseHandler.badRequest(res, 'applicationIds must be a non-empty array');
+      }
+
+      if (!status) {
+        return ResponseHandler.badRequest(res, 'status is required');
+      }
+
+      const results = [];
+      const errors = [];
+
+      for (const appId of applicationIds) {
+        try {
+          const result = await applicationService.updateApplicationStatusAdmin(appId, reviewerId, {
+            status,
+            rejection_reason,
+          });
+          results.push(result);
+        } catch (error) {
+          errors.push({
+            applicationId: appId,
+            error: error.message,
+          });
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: `${results.length} application(s) updated successfully, ${errors.length} failed`,
+        data: {
+          updated: results,
+          failed: errors,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * GET /api/admin/stats/applications
    */
   async getApplicationStats(req, res, next) {
