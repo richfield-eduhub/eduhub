@@ -76,7 +76,10 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/eduhub-backend:latest
+          no-cache: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/eduhub-backend:latest
+            ghcr.io/${{ github.repository_owner }}/eduhub-backend:${{ github.sha }}
 
   # ─── Build Nginx ──────────────────────────────────────────────────────────
   build-nginx:
@@ -105,7 +108,10 @@ jobs:
           context: .
           file: ./nginx/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/eduhub-nginx:latest
+          no-cache: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/eduhub-nginx:latest
+            ghcr.io/${{ github.repository_owner }}/eduhub-nginx:${{ github.sha }}
 
   # ─── Deploy ───────────────────────────────────────────────────────────────
   deploy:
@@ -335,15 +341,15 @@ jobs:
               SERVICE=$1
               CONTAINER="eduhub_${SERVICE}"
               echo "Deploying $SERVICE..."
-              
-              # Pull new image
-              docker compose -f docker-compose.yml -f docker-compose.prod.yml pull $SERVICE
-              
+
+              # Pull new image (force pull to bypass cache)
+              docker compose -f docker-compose.yml -f docker-compose.prod.yml pull --ignore-buildable $SERVICE
+
               # Store current image as rollback point
               CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' "$CONTAINER" 2>/dev/null || echo "none")
-              
-              # Update only this service
-              docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps $SERVICE
+
+              # Update only this service (force recreate to ensure new image is used)
+              docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps --force-recreate $SERVICE
               
               # Wait for health check
               echo "Waiting for $SERVICE health check..."
