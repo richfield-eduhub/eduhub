@@ -3,7 +3,6 @@
 A comprehensive full-stack educational institution portal with PostgreSQL backend, RESTful API, and multi-role HTML frontend.
 
 **Implementation Achievement:** 150% of original scope delivered
-
 - 150+ RESTful API endpoints
 - 38 responsive HTML pages
 - 10 complete database models
@@ -11,14 +10,14 @@ A comprehensive full-stack educational institution portal with PostgreSQL backen
 
 ## Stack
 
-| Layer            | Technology                               |
-| ---------------- | ---------------------------------------- |
-| Backend          | Node.js 20.x + Express 4.18              |
-| Database         | PostgreSQL 16 (via Sequelize 6.35 ORM)   |
-| Auth             | JWT (access + refresh tokens) + MFA/TOTP |
-| Frontend         | Vanilla HTML/CSS/JS + Bootstrap 5.3      |
-| Testing          | Jest 29.x + Supertest                    |
-| Containerization | Docker + Docker Compose                  |
+| Layer        | Technology                               |
+|--------------|------------------------------------------|
+| Backend      | Node.js 20.x + Express 4.18              |
+| Database     | PostgreSQL 16 (via Sequelize 6.35 ORM)   |
+| Auth         | JWT (access + refresh tokens) + MFA/TOTP |
+| Frontend     | Vanilla HTML/CSS/JS + Bootstrap 5.3      |
+| Testing      | Jest 29.x + Supertest                    |
+| Containerization | Docker + Docker Compose              |
 
 ## Project Structure
 
@@ -64,7 +63,6 @@ make init
 ```
 
 **Services Available:**
-
 - **Frontend:** http://localhost
 - **Backend API:** http://localhost/api
 - **pgAdmin:** http://localhost:5050
@@ -119,7 +117,6 @@ The project implements a **production-grade CI/CD pipeline** with automated test
 #### 1. Continuous Integration (`.github/workflows/backend-tests.yml`)
 
 **Automated Testing on Every Push:**
-
 - **Unit Tests:** Runs 43 unit test files (no database required)
 - **Integration Tests:** Runs 7 integration test files with PostgreSQL 16 test database
 - **Coverage Report:** Generates code coverage (72% achieved)
@@ -127,7 +124,6 @@ The project implements a **production-grade CI/CD pipeline** with automated test
 - **Make Integration:** Uses `make test-unit`, `make test-integration`, `make test-coverage`
 
 **Features:**
-
 - PostgreSQL test database automatically provisioned via GitHub Services
 - Test results published to GitHub Actions summary
 - Coverage artifacts uploaded for review (14-day retention)
@@ -176,7 +172,6 @@ The project implements a **production-grade CI/CD pipeline** with automated test
    - Domain: edu-hub.duckdns.org
 
 **GitHub Secrets Used:**
-
 - `DB_PASSWORD` - Production database password
 - `JWT_SECRET` - JWT signing secret
 - `JWT_REFRESH_SECRET` - Refresh token secret
@@ -191,7 +186,6 @@ The project implements a **production-grade CI/CD pipeline** with automated test
 - `SSH_PORT` - SSH port
 
 **Deployment Features:**
-
 - **Change-Based Deployment:** Only deploys modified services
 - **Health Checks:** Validates deployment before completion
 - **Rollback Support:** Automatically reverts failed deployments
@@ -202,7 +196,6 @@ The project implements a **production-grade CI/CD pipeline** with automated test
 - **Resource Cleanup:** Automatic Docker image pruning
 
 **Production Infrastructure:**
-
 - **Backend:** Node.js + Express in Docker container
 - **Frontend:** Nginx serving static files + reverse proxy
 - **Database:** PostgreSQL 16 with persistent volumes
@@ -235,13 +228,11 @@ make deploy  # Pulls latest images and redeploys
 ### Production Monitoring
 
 **Health Checks:**
-
 - Backend API: http://edu-hub.duckdns.org/api/health (30s interval)
 - Nginx: http://edu-hub.duckdns.org/healthz (30s interval)
 - Database: pg_isready check (5s interval)
 
 **Logs:**
-
 ```bash
 # View production logs
 make logs-backend
@@ -258,12 +249,12 @@ docker compose logs -f nginx
 
 ## Demo Accounts
 
-| Role     | Email                               | Password     |
-| -------- | ----------------------------------- | ------------ |
-| Admin    | admin@eduhub.ac.za                  | Password123! |
-| Lecturer | john.smith@eduhub.ac.za             | Password123! |
-| Lecturer | sarah.jones@eduhub.ac.za            | Password123! |
-| Student  | thabo.molefe@student.eduhub.ac.za   | Password123! |
+| Role     | Email                              | Password      |
+|----------|------------------------------------|---------------|
+| Admin    | admin@eduhub.ac.za                 | Password123!  |
+| Lecturer | john.smith@eduhub.ac.za            | Password123!  |
+| Lecturer | sarah.jones@eduhub.ac.za           | Password123!  |
+| Student  | thabo.molefe@student.eduhub.ac.za  | Password123!  |
 | Student  | lerato.khumalo@student.eduhub.ac.za | Password123! |
 
 ---
@@ -273,55 +264,54 @@ docker compose logs -f nginx
 **Total Implemented: 150+ RESTful API endpoints across 18 categories**
 
 For complete endpoint documentation with request/response examples, see:
-
 - `backend/postman/EduHub-API-Collection.json` (Postman collection)
 - `docs/5_implementation_phase_20260629/implementation-phase-FINAL.md` (Complete documentation)
 
 ### Core API Categories
 
-| Category                      | Endpoints | Description                                                |
-| ----------------------------- | --------- | ---------------------------------------------------------- |
-| **Authentication & Security** | 16        | Register, login, MFA, password reset, email verification   |
-| **Student Management**        | 7         | Student profiles, academic records, search                 |
-| **Lecturer Management**       | 6         | Lecturer profiles, workload, assigned modules              |
-| **Application Management**    | 26        | Draft, submit, approve, reject, documents, bulk operations |
-| **Module Registration**       | 12        | Browse, register, validate, drop, bulk operations          |
-| **Document Management**       | 9         | Upload, verify, download, categorize                       |
-| **Emergency Contacts**        | 6         | Add, update, delete, set primary                           |
-| **Announcements**             | 7         | Create, publish, target by role, read tracking             |
-| **Notifications**             | 8         | Real-time delivery, preferences, read status               |
-| **Messaging**                 | 6         | Send, inbox, threads, search                               |
-| **Admin Management**          | 24        | Users, roles, statistics, system operations                |
-| **Qualifications**            | 4         | List programs, requirements, modules                       |
-| **Modules/Courses**           | 6         | Catalog, search, prerequisites                             |
-| **Campuses**                  | 5         | List, filter by province/qualification                     |
-| **Semesters**                 | 4         | List, current semester, calendar                           |
-| **Audit Logging**             | 5         | Activity tracking, user trails                             |
-| **System Settings**           | 10        | Configuration, categories, history                         |
-| **Reference Data**            | 3+        | Countries, provinces, constants                            |
+| Category | Endpoints | Description |
+|----------|-----------|-------------|
+| **Authentication & Security** | 16 | Register, login, MFA, password reset, email verification |
+| **Student Management** | 7 | Student profiles, academic records, search |
+| **Lecturer Management** | 6 | Lecturer profiles, workload, assigned modules |
+| **Application Management** | 26 | Draft, submit, approve, reject, documents, bulk operations |
+| **Module Registration** | 12 | Browse, register, validate, drop, bulk operations |
+| **Document Management** | 9 | Upload, verify, download, categorize |
+| **Emergency Contacts** | 6 | Add, update, delete, set primary |
+| **Announcements** | 7 | Create, publish, target by role, read tracking |
+| **Notifications** | 8 | Real-time delivery, preferences, read status |
+| **Messaging** | 6 | Send, inbox, threads, search |
+| **Admin Management** | 24 | Users, roles, statistics, system operations |
+| **Qualifications** | 4 | List programs, requirements, modules |
+| **Modules/Courses** | 6 | Catalog, search, prerequisites |
+| **Campuses** | 5 | List, filter by province/qualification |
+| **Semesters** | 4 | List, current semester, calendar |
+| **Audit Logging** | 5 | Activity tracking, user trails |
+| **System Settings** | 10 | Configuration, categories, history |
+| **Reference Data** | 3+ | Countries, provinces, constants |
 
 ### Key Endpoints (Sample)
 
-| Method | Path                          | Description                           | Auth   |
-| ------ | ----------------------------- | ------------------------------------- | ------ |
-| POST   | /api/auth/register            | Register new user                     | Public |
-| POST   | /api/auth/login               | Login                                 | Public |
-| POST   | /api/auth/mfa/setup           | Setup MFA with QR code                | Bearer |
-| POST   | /api/auth/password/forgot     | Request password reset                | Public |
-| POST   | /api/applications             | Create/submit application             | Bearer |
-| POST   | /api/applications/:id/approve | Approve application (creates student) | Admin  |
-| POST   | /api/registrations            | Register for modules                  | Bearer |
-| GET    | /api/students                 | List students (paginated)             | Staff  |
-| GET    | /api/lecturers/:id/modules    | Get lecturer's modules                | Staff  |
-| POST   | /api/documents/upload         | Upload document with validation       | Bearer |
-| POST   | /api/emergency-contacts       | Add emergency contact                 | Bearer |
-| POST   | /api/announcements            | Create announcement                   | Staff  |
-| GET    | /api/notifications            | Get user notifications                | Bearer |
-| POST   | /api/messages                 | Send message                          | Bearer |
-| GET    | /api/admin/statistics         | Dashboard stats                       | Admin  |
-| GET    | /api/audit                    | Get audit logs                        | Admin  |
-| PATCH  | /api/settings/:key            | Update system setting                 | Admin  |
-| GET    | /api/health                   | Health check                          | Public |
+| Method | Path                          | Description                   | Auth     |
+|--------|-------------------------------|-------------------------------|----------|
+| POST   | /api/auth/register            | Register new user             | Public   |
+| POST   | /api/auth/login               | Login                         | Public   |
+| POST   | /api/auth/mfa/setup           | Setup MFA with QR code        | Bearer   |
+| POST   | /api/auth/password/forgot     | Request password reset        | Public   |
+| POST   | /api/applications             | Create/submit application     | Bearer   |
+| POST   | /api/applications/:id/approve | Approve application (creates student) | Admin    |
+| POST   | /api/registrations            | Register for modules          | Bearer   |
+| GET    | /api/students                 | List students (paginated)     | Staff    |
+| GET    | /api/lecturers/:id/modules    | Get lecturer's modules        | Staff    |
+| POST   | /api/documents/upload         | Upload document with validation | Bearer   |
+| POST   | /api/emergency-contacts       | Add emergency contact         | Bearer   |
+| POST   | /api/announcements            | Create announcement           | Staff    |
+| GET    | /api/notifications            | Get user notifications        | Bearer   |
+| POST   | /api/messages                 | Send message                  | Bearer   |
+| GET    | /api/admin/statistics         | Dashboard stats               | Admin    |
+| GET    | /api/audit                    | Get audit logs                | Admin    |
+| PATCH  | /api/settings/:key            | Update system setting         | Admin    |
+| GET    | /api/health                   | Health check                  | Public   |
 
 ---
 
@@ -330,80 +320,77 @@ For complete endpoint documentation with request/response examples, see:
 **Total: 38 responsive HTML pages (17,000+ lines of code)**
 
 ### Public Portal (7 pages)
-
-| URL              | Page               | Features                    |
-| ---------------- | ------------------ | --------------------------- |
-| /                | Home/Landing       | Hero, programs, features    |
-| /login           | Login              | Email/password, MFA support |
-| /register        | Registration       | Account creation            |
-| /apply           | Application Form   | 9-step wizard, draft saving |
-| /programmes      | Programmes Catalog | All qualifications, details |
-| /forgot-password | Password Reset     | Reset request               |
-| /verify-email    | Email Verification | Token validation            |
+| URL                    | Page                        | Features |
+|------------------------|-----------------------------|----------|
+| /                      | Home/Landing                | Hero, programs, features |
+| /login                 | Login                       | Email/password, MFA support |
+| /register              | Registration                | Account creation |
+| /apply                 | Application Form            | 9-step wizard, draft saving |
+| /programmes            | Programmes Catalog          | All qualifications, details |
+| /forgot-password       | Password Reset              | Reset request |
+| /verify-email          | Email Verification          | Token validation |
 
 ### Student Portal (11 pages)
-
-| URL                         | Page                | Features                      |
-| --------------------------- | ------------------- | ----------------------------- |
-| /student                    | Dashboard           | Stats, announcements, courses |
-| /student/profile            | Profile Management  | Edit personal info            |
-| /student/register           | Module Registration | Browse, select, validate      |
-| /student/my-courses         | My Courses          | Enrolled modules              |
-| /student/courses            | Course Catalog      | All available modules         |
-| /student/modules            | Module Details      | Prerequisites, description    |
-| /student/applications       | Application Status  | Track application             |
-| /student/announcements      | Announcements       | View, mark read               |
-| /student/messages           | Messages/Inbox      | Internal messaging            |
-| /student/emergency-contacts | Emergency Contacts  | Manage contacts (max 3)       |
-| /student/documents          | Document Management | Upload, view status           |
+| URL                    | Page                        | Features |
+|------------------------|-----------------------------|----------|
+| /student               | Dashboard                   | Stats, announcements, courses |
+| /student/profile       | Profile Management          | Edit personal info |
+| /student/register      | Module Registration         | Browse, select, validate |
+| /student/my-courses    | My Courses                  | Enrolled modules |
+| /student/courses       | Course Catalog              | All available modules |
+| /student/modules       | Module Details              | Prerequisites, description |
+| /student/applications  | Application Status          | Track application |
+| /student/announcements | Announcements               | View, mark read |
+| /student/messages      | Messages/Inbox              | Internal messaging |
+| /student/emergency-contacts | Emergency Contacts     | Manage contacts (max 3) |
+| /student/documents     | Document Management         | Upload, view status |
 
 ### Lecturer Portal (5 pages)
-
-| URL                     | Page          | Features                  |
-| ----------------------- | ------------- | ------------------------- |
-| /lecturer               | Dashboard     | Stats, assigned modules   |
-| /lecturer/my-courses    | My Courses    | Assigned modules          |
-| /lecturer/roster        | Class Roster  | Enrolled students, search |
-| /lecturer/announcements | Announcements | Create, publish           |
-| /lecturer/messages      | Messages      | Communication             |
+| URL                    | Page                        | Features |
+|------------------------|-----------------------------|----------|
+| /lecturer              | Dashboard                   | Stats, assigned modules |
+| /lecturer/my-courses   | My Courses                  | Assigned modules |
+| /lecturer/roster       | Class Roster                | Enrolled students, search |
+| /lecturer/announcements| Announcements               | Create, publish |
+| /lecturer/messages     | Messages                    | Communication |
 
 ### Admin Portal (12 pages)
-
-| URL                  | Page                        | Features                   |
-| -------------------- | --------------------------- | -------------------------- |
-| /admin               | Dashboard                   | System statistics, charts  |
-| /admin/applications  | Application Review          | Approve, reject, bulk ops  |
-| /admin/students      | Student Management          | List, search, edit         |
-| /admin/lecturers     | Lecturer Management         | List, edit, workload       |
-| /admin/courses       | Course/Module Management    | CRUD operations            |
-| /admin/users         | User Management             | Roles, activate/deactivate |
-| /admin/registrations | Registration Management     | View all registrations     |
-| /admin/allocations   | Lecturer-Module Allocations | Assign lecturers           |
-| /admin/reports       | Reports & Analytics         | Generate, export           |
-| /admin/audits        | Audit Logs                  | Activity tracking          |
-| /admin/messages      | Messages                    | System communication       |
-| /admin/settings      | System Settings             | Configuration              |
+| URL                    | Page                        | Features |
+|------------------------|-----------------------------|----------|
+| /admin                 | Dashboard                   | System statistics, charts |
+| /admin/applications    | Application Review          | Approve, reject, bulk ops |
+| /admin/students        | Student Management          | List, search, edit |
+| /admin/lecturers       | Lecturer Management         | List, edit, workload |
+| /admin/courses         | Course/Module Management    | CRUD operations |
+| /admin/users           | User Management             | Roles, activate/deactivate |
+| /admin/registrations   | Registration Management     | View all registrations |
+| /admin/allocations     | Lecturer-Module Allocations | Assign lecturers |
+| /admin/reports         | Reports & Analytics         | Generate, export |
+| /admin/audits          | Audit Logs                  | Activity tracking |
+| /admin/messages        | Messages                    | System communication |
+| /admin/settings        | System Settings             | Configuration |
 
 ### Shared Pages (3 pages)
-
-| URL                   | Page                 | Features                   |
-| --------------------- | -------------------- | -------------------------- |
-| /shared/security      | Security Settings    | MFA setup, backup codes    |
-| /shared/settings      | User Settings        | Preferences                |
-| /shared/notifications | Notifications Center | View, manage notifications |
+| URL                    | Page                        | Features |
+|------------------------|-----------------------------|----------|
+| /shared/security       | Security Settings           | MFA setup, backup codes |
+| /shared/settings       | User Settings               | Preferences |
+| /shared/notifications  | Notifications Center        | View, manage notifications |
 
 ---
 
 ## Environment Variables
 
-| Variable           | Default    | Description          |
-| ------------------ | ---------- | -------------------- |
-| PORT               | 3000       | Server port          |
-| DB_HOST            | localhost  | PostgreSQL host      |
-| DB_PORT            | 5433       | PostgreSQL port      |
-| DB_NAME            | eduhub     | Database name        |
-| DB_USER            | postgres   | Database user        |
-| DB_PASSWORD        | postgres   | Database password    |
-| JWT_SECRET         | (required) | JWT signing secret   |
-| JWT_REFRESH_SECRET | (optional) | Refresh token secret |
-| JWT_EXPIRES_IN     | 7d         | Token expiry         |
+| Variable           | Default      | Description                     |
+|--------------------|--------------|---------------------------------|
+| PORT               | 3000         | Server port                     |
+| DB_HOST            | localhost    | PostgreSQL host                 |
+| DB_PORT            | 5433         | PostgreSQL port                 |
+| DB_NAME            | eduhub       | Database name                   |
+| DB_USER            | postgres     | Database user                   |
+| DB_PASSWORD        | postgres     | Database password               |
+| JWT_SECRET         | (required)   | JWT signing secret              |
+| JWT_REFRESH_SECRET | (optional)   | Refresh token secret            |
+| JWT_EXPIRES_IN     | 7d           | Token expiry                    |
+
+
