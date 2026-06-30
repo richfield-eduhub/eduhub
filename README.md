@@ -2,6 +2,8 @@
 
 A comprehensive full-stack educational institution portal with PostgreSQL backend, RESTful API, and multi-role HTML frontend.
 
+<!-- Last deployment trigger: 2026-06-30 -->
+
 **Implementation Achievement:** 150% of original scope delivered
 - 150+ RESTful API endpoints
 - 38 responsive HTML pages
