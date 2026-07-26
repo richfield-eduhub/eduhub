@@ -1,6 +1,10 @@
-# Project Template Guide - Based on EduHub Architecture
+# Project Template Guide - Security-First Architecture
 
-> **Purpose:** This document serves as a comprehensive template for creating new full-stack web applications. It captures the proven architecture, patterns, and best practices from the EduHub Student Management System.
+> **Purpose:** This document serves as a comprehensive, security-hardened template for creating new full-stack web applications. It captures the proven architecture, patterns, and best practices from the EduHub Student Management System, enhanced with enterprise-grade security protections.
+>
+> **Security Level:** Production-ready with OWASP Top 10 protections
+>
+> **Last Updated:** 2026-07-26
 
 ---
 
@@ -11,12 +15,13 @@
 3. [Database Setup](#3-database-setup)
 4. [Backend Architecture](#4-backend-architecture)
 5. [Frontend Architecture](#5-frontend-architecture)
-6. [Docker Configuration](#6-docker-configuration)
-7. [GitHub Workflows (CI/CD)](#7-github-workflows-cicd)
-8. [Testing Strategy](#8-testing-strategy)
-9. [Security Implementation](#9-security-implementation)
+6. [Security Architecture](#6-security-architecture)
+7. [Docker Configuration](#7-docker-configuration)
+8. [GitHub Workflows (CI/CD)](#8-github-workflows-cicd)
+9. [Testing Strategy](#9-testing-strategy)
 10. [Deployment Configuration](#10-deployment-configuration)
 11. [Development Workflow](#11-development-workflow)
+12. [Security Checklist](#12-security-checklist)
 
 ---
 
@@ -27,28 +32,31 @@
 - **Framework:** Express 5.x
 - **ORM:** Sequelize 6.x
 - **Database:** PostgreSQL 16
-- **Authentication:** JWT (jsonwebtoken)
+- **Cache/Rate Limiting:** Redis 7.x (CRITICAL for security)
+- **Authentication:** JWT (jsonwebtoken) with enhanced security
 - **Validation:** express-validator
-- **File Upload:** Multer
+- **File Upload:** Multer with security checks
 - **Email:** Nodemailer
 - **MFA:** Speakeasy + QRCode
 - **Testing:** Jest + Supertest
+- **Security:** helmet, xss-clean, express-rate-limit
 
 ### Frontend
 - **Architecture:** Multi-Page Application (MPA)
 - **Base:** Vanilla JavaScript (ES6+)
 - **Styling:** Custom CSS + responsive design
-- **HTTP Client:** Fetch API
-- **State:** localStorage + sessionStorage
+- **HTTP Client:** Fetch API with security wrappers
+- **State:** localStorage + sessionStorage (sanitized)
 
 ### Infrastructure
 - **Containerization:** Docker + Docker Compose
-- **Reverse Proxy:** Nginx
+- **Reverse Proxy:** Nginx (with security headers)
+- **Cache:** Redis (rate limiting, session management)
 - **Database Admin:** pgAdmin 4
 - **SSL/TLS:** Let's Encrypt (Certbot)
 - **VPN:** Tailscale (for secure deployments)
 - **Registry:** GitHub Container Registry (GHCR)
-- **CI/CD:** GitHub Actions
+- **CI/CD:** GitHub Actions with security scanning
 
 ---
 
@@ -3565,6 +3573,489 @@ docker compose -f docker-compose.prod.yml up -d
 # 5. Monitor logs
 docker compose -f docker-compose.prod.yml logs -f
 ```
+
+---
+
+## 6. Security Architecture
+
+### Core Security Principles
+
+**Every project MUST implement these 10 critical protections:**
+
+#### 1. IDOR Protection (Insecure Direct Object References)
+
+**Problem:** Users can access other users' data by changing IDs in URLs.
+
+**Solution:** Always verify ownership before serving data.
+
+```javascript
+// ❌ VULNERABLE
+router.get('/:id', controller.get);
+
+// ✅ SECURE
+const { checkOwnership } = require('../middleware/ownership.middleware');
+router.get('/:id', checkOwnership('Resource'), controller.get);
+```
+
+**Implementation:** `backend/src/middleware/ownership.middleware.js`
+
+#### 2. Server-Side Enforcement
+
+**Problem:** Frontend decides prices, permissions, or features.
+
+**Rule:** ALL security decisions on server, NEVER in frontend.
+
+```javascript
+// ❌ VULNERABLE (Frontend decides price)
+const price = plan === 'pro' ? 4900 : 900;
+api('/checkout', { body: JSON.stringify({ plan, price }) });
+
+// ✅ SECURE (Server decides price)
+api('/checkout', { body: JSON.stringify({ plan }) });
+// Server looks up price from database/config
+```
+
+#### 3. Per-User Rate Limiting
+
+**Problem:** One user can run up your bill with expensive API calls (email, SMS, AI).
+
+**Solution:** Rate limit by USER (not just IP) with cost tracking.
+
+```javascript
+const { perUserRateLimit } = require('../middleware/perUserRateLimit.middleware');
+
+router.post(
+  '/send-email',
+  authenticateToken,
+  perUserRateLimit('email_send', 5, 20, 10), // 5/hour, 20/day, $0.10 each
+  controller.sendEmail
+);
+```
+
+**Requires:** Redis for distributed rate limiting
+
+#### 4. JWT Security
+
+**Requirements:**
+- ✅ Strong secrets (64+ characters, 256-bit minimum)
+- ✅ Token expiration
+- ✅ Signature verification on every request
+- ✅ Token blacklisting (for logout)
+- ✅ JTI (JWT ID) for tracking individual tokens
+- ✅ All tokens invalidated on password change
+- ✅ Secret rotation capability
+
+**Implementation:** `backend/src/services/jwt.service.js`
+
+#### 5. Pre-Authentication Rate Limiting
+
+**Problem:** Attackers abuse signup, password reset, or login before authentication.
+
+**Solution:** Rate limit by IP + device fingerprint.
+
+```javascript
+router.post(
+  '/register',
+  advancedRateLimit('signup', {
+    perIP: 3,           // 3 signups per IP per day
+    perFingerprint: 2,  // 2 signups per device per day
+    global: 1000,       // 1000 signups globally per hour
+  }),
+  controller.register
+);
+```
+
+#### 6. File Access Control
+
+**Problem:** Anyone can list or access files in your storage bucket.
+
+**Rule:** NEVER serve files directly. ALWAYS check permissions.
+
+```javascript
+// ❌ VULNERABLE
+app.use('/uploads', express.static('uploads'));
+
+// ✅ SECURE
+app.get('/uploads/:filename', authenticateToken, async (req, res) => {
+  const file = await FileUpload.findOne({ where: { filename: req.params.filename } });
+  if (!file || (file.user_id !== req.user.user_id && !['admin'].includes(req.user.role))) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  res.sendFile(file.storage_path);
+});
+```
+
+**Requires:** `file_uploads` table tracking ownership
+
+#### 7. SSRF Prevention (Server-Side Request Forgery)
+
+**Problem:** App fetches URLs provided by users, attacker points to internal services.
+
+**Rule:** NEVER fetch user-provided URLs without validation.
+
+**Blocked:**
+- Private IPs (10.x, 192.168.x, 172.16-31.x)
+- Localhost (127.x)
+- Cloud metadata (169.254.169.254)
+- Internal DNS names
+
+**Implementation:** `backend/src/utils/urlValidator.js` + `safeHttpClient.js`
+
+#### 8. Input Sanitization
+
+**Rule:** Sanitize ALL user input on server, validate format.
+
+```javascript
+const { sanitizeInputs } = require('../middleware/sanitize.middleware');
+app.use(sanitizeInputs); // Global middleware
+```
+
+**Protects against:** XSS, SQL injection (with ORM), script injection
+
+#### 9. Audit Logging
+
+**Rule:** Log ALL sensitive operations with user, IP, timestamp, old/new values.
+
+**Log these operations:**
+- Authentication (login, logout, password change)
+- Authorization failures
+- Data modifications
+- Permission changes
+- File uploads/downloads
+- Expensive operations (email, SMS)
+
+**Implementation:** `audit_logs` table + middleware
+
+#### 10. Global Spend Caps
+
+**Rule:** Hard daily cap on expensive operations.
+
+```javascript
+const MAX_DAILY_SPEND = 50000; // $500 in cents
+
+// Track in Redis
+if (totalSpend > MAX_DAILY_SPEND) {
+  return res.status(503).json({
+    error: 'Service temporarily unavailable'
+  });
+}
+```
+
+---
+
+### Security Middleware Stack
+
+**Required order in app.js:**
+
+```javascript
+// 1. Trust proxy (for X-Forwarded-For)
+app.set('trust proxy', 1);
+
+// 2. Security headers
+app.use(require('./middleware/securityHeaders.middleware'));
+
+// 3. Rate limiting (global)
+app.use(require('./middleware/rateLimit.middleware').globalRateLimit);
+
+// 4. CORS
+app.use(require('./middleware/cors.middleware'));
+
+// 5. Body parsers
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// 6. Input sanitization
+app.use(require('./middleware/sanitize.middleware').sanitizeInputs);
+
+// 7. HTTP logging
+app.use(morgan('combined'));
+
+// 8. Routes (with route-specific middleware)
+app.use('/api/auth', require('./routes/auth.routes'));
+// ... more routes
+
+// 9. Error handler (MUST be last)
+app.use(require('./middleware/errorHandler.middleware'));
+```
+
+---
+
+### Secure Route Pattern Template
+
+```javascript
+const express = require('express');
+const router = express.Router();
+const controller = require('../controllers/resource.controller');
+const { authenticateToken, authorize } = require('../middleware/auth.middleware');
+const { checkOwnership } = require('../middleware/ownership.middleware');
+const { perUserRateLimit } = require('../middleware/perUserRateLimit.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const { validation } = require('../validators/resource.validator');
+
+// Public routes (strict rate limiting)
+router.get(
+  '/public',
+  perUserRateLimit('public_api', 20, 100),
+  controller.getPublic
+);
+
+// Authenticated routes
+router.use(authenticateToken);
+
+// Read operations (verify ownership)
+router.get('/', controller.getAll);
+router.get('/:id', checkOwnership('Resource'), controller.getById);
+
+// Write operations (ownership + rate limiting)
+router.post(
+  '/',
+  perUserRateLimit('resource_create', 10, 50),
+  validation.create,
+  validate,
+  controller.create
+);
+
+router.patch(
+  '/:id',
+  checkOwnership('Resource'),
+  validation.update,
+  validate,
+  controller.update
+);
+
+// Admin-only operations
+router.delete('/:id', authorize(['admin']), controller.delete);
+
+// Expensive operations (strict limits + cost tracking)
+router.post(
+  '/send-email',
+  perUserRateLimit('email_send', 5, 20, 10), // 5/hr, 20/day, $0.10 each
+  validation.sendEmail,
+  validate,
+  controller.sendEmail
+);
+
+module.exports = router;
+```
+
+---
+
+### Frontend Security Patterns
+
+**Rule:** Frontend is for UX, Backend is for Security
+
+| Decision Type | Frontend | Backend |
+|--------------|----------|---------|
+| Hide/show buttons | ✅ Yes | N/A |
+| Validate form inputs | ✅ Yes (UX) | ✅ Yes (Security) |
+| Calculate prices | ❌ Never | ✅ Always |
+| Check permissions | ❌ Never | ✅ Always |
+| Grant access | ❌ Never | ✅ Always |
+| Determine features | ❌ Never | ✅ Always |
+
+**Secure Frontend API Client:**
+
+```javascript
+// frontend/shared.js
+async function api(endpoint, options = {}) {
+  const token = secureStorage.getItem('authToken');
+
+  const config = {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options.headers,
+    },
+  };
+
+  const response = await fetch(`/api${endpoint}`, config);
+
+  // Handle unauthorized (token expired)
+  if (response.status === 401) {
+    const refreshed = await refreshAuthToken();
+    if (refreshed) {
+      return api(endpoint, options); // Retry
+    } else {
+      logout(); // Refresh failed
+      return;
+    }
+  }
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || `HTTP ${response.status}`);
+  }
+
+  return data;
+}
+
+// NEVER trust client-side checks for security
+function requireAuth(requiredRole = null) {
+  if (!isAuthenticated()) {
+    window.location.href = '/login';
+    return false;
+  }
+
+  // CLIENT-SIDE ROLE CHECK IS FOR UX ONLY
+  // Server MUST verify role on every request
+  if (requiredRole) {
+    const user = getCurrentUser();
+    if (user.role !== requiredRole) {
+      window.location.href = '/';
+      return false;
+    }
+  }
+
+  return true;
+}
+```
+
+---
+
+### Redis Integration (CRITICAL)
+
+**Why Redis is mandatory:**
+- Per-user rate limiting (fast, atomic counters)
+- JWT blacklisting (logout)
+- Cost tracking across requests
+- Distributed caching
+- Session management (optional)
+
+**Add to docker-compose.yml:**
+
+```yaml
+services:
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - myapp_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+    restart: unless-stopped
+
+volumes:
+  myapp_redis:
+```
+
+**Environment variables:**
+
+```bash
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_PASSWORD=your-redis-password
+```
+
+---
+
+### Keycloak vs Custom JWT Decision
+
+**When to use Custom JWT (this template):**
+- ✅ Simple requirements (< 10K users, basic roles)
+- ✅ Full control over auth flow
+- ✅ Better performance (no extra hop)
+- ✅ Easier to customize
+- ✅ Less infrastructure overhead
+
+**When to migrate to Keycloak:**
+- SSO across multiple applications
+- Enterprise integration (LDAP, Active Directory)
+- Social login (Google, Facebook)
+- Complex role hierarchies
+- Multi-tenancy
+- Compliance requirements (SOC2, ISO 27001)
+
+**Recommendation:** Start with custom JWT, migrate to Keycloak only when you need advanced features.
+
+---
+
+## 12. Security Checklist
+
+### Pre-Production Security Audit
+
+**Authentication & Authorization:**
+- [ ] JWT secrets are 64+ characters (256-bit minimum)
+- [ ] Tokens have expiration (`exp` claim)
+- [ ] Token blacklisting implemented (logout)
+- [ ] MFA available for admin accounts
+- [ ] Password strength requirements enforced (min 8 chars, complexity)
+- [ ] Account lockout after 5 failed login attempts
+- [ ] All tokens invalidated on password change
+
+**IDOR Protection:**
+- [ ] All `:id` routes have ownership checks
+- [ ] Service layer validates ownership (defense in depth)
+- [ ] Staff bypass is intentional and logged
+- [ ] Ownership middleware applied to ALL resource routes
+
+**Rate Limiting:**
+- [ ] Global rate limiting enabled (100 req/min per IP)
+- [ ] Per-user rate limiting on expensive operations
+- [ ] Pre-authentication rate limiting (signup, password reset, login)
+- [ ] Hard daily spend cap configured
+- [ ] Rate limit headers in responses
+- [ ] Redis running and connected
+
+**Input Validation:**
+- [ ] `express-validator` on all POST/PATCH/PUT routes
+- [ ] XSS protection via input sanitization
+- [ ] SQL injection prevented (Sequelize parameterized queries)
+- [ ] File upload validation (type, size, malicious content)
+- [ ] No `eval()` or `Function()` with user input
+- [ ] Content-Type validation
+
+**File Security:**
+- [ ] Directory listing disabled
+- [ ] Files tracked in `file_uploads` table
+- [ ] Ownership checked before serving files
+- [ ] S3 buckets are private (if using cloud storage)
+- [ ] Signed URLs for temporary access
+- [ ] File size limits enforced
+- [ ] Dangerous file extensions blocked
+
+**Headers & CORS:**
+- [ ] `X-Frame-Options: DENY`
+- [ ] `X-Content-Type-Options: nosniff`
+- [ ] `X-XSS-Protection: 1; mode=block`
+- [ ] `Content-Security-Policy` configured
+- [ ] `Referrer-Policy` set
+- [ ] CORS allows only trusted origins
+- [ ] Server tokens disabled (`server_tokens off`)
+
+**Logging & Monitoring:**
+- [ ] Audit logs for sensitive operations
+- [ ] Failed login attempts logged
+- [ ] IDOR attempts logged with user/IP
+- [ ] Cost tracking alerts configured
+- [ ] Error logging (without sensitive data in logs)
+- [ ] Log rotation configured
+
+**Infrastructure:**
+- [ ] HTTPS enforced in production
+- [ ] SSL certificates auto-renew (Let's Encrypt)
+- [ ] Database connections encrypted
+- [ ] Redis password protected
+- [ ] Docker containers run as non-root user
+- [ ] Secrets in environment variables (never in code)
+- [ ] `.env` file in `.gitignore`
+
+**Testing:**
+- [ ] Security tests pass (`make test-security`)
+- [ ] Dependency vulnerabilities < moderate (`npm audit`)
+- [ ] No secrets in git history
+- [ ] Docker images scanned for vulnerabilities
+- [ ] IDOR tests cover all resource types
+- [ ] Rate limiting tests pass
+
+**Documentation:**
+- [ ] `SECURITY.md` exists with reporting instructions
+- [ ] API documentation includes auth requirements
+- [ ] Deployment guide includes security setup steps
+- [ ] Environment variables documented in `.env.example`
 
 ---
 
